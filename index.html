@@ -1,89 +1,93 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <title>🧠 Remy AI Hub - Alle chats & spaces</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#4285f4">
-  <link rel="manifest" href="data:application/manifest+json,{
-    \"name\": \"Remy AI Hub\", \"short_name\": \"AIHub\", \"start_url\": \".\", \"display\": \"standalone\", \"background_color\": \"#f8f9fa\", \"theme_color\": \"#4285f4\",
-    \"icons\": [{\"src\": \"data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTkyIiBoZWlnaHQ9IjE5MiIgdmlld0JveD0iMCAwIDE5MiAxOTIiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiBmaWxsPSIjNDI4NWY0IiByeD0iMjQiLz4KPHRleHQgeD0iOTYiIHk9IjEwNSIgZm9udC1mYW1pbHk9IkFwcGxlLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjYwIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+QUk8L3RleHQ+Cjwvc3ZnPg==\", \"sizes\": \"192x192\", \"type\": \"image/svg+xml\"}]
-  }">
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 20px; background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); min-height: 100vh; display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; }
-    h1 { grid-column: 1 / -1; text-align: center; color: #202124; margin-bottom: 10px; font-size: 1.8em; font-weight: 600; }
-    .subtitle { grid-column: 1 / -1; text-align: center; color: #5f6368; margin: -10px 0 30px; }
-    a { display: block; padding: 28px 24px; background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%); color: white; text-decoration: none; border-radius: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); transition: all 0.3s ease; position: relative; overflow: hidden; }
-    a::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transition: left 0.5s; }
-    a:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 20px 50px rgba(0,0,0,0.25); }
-    a:hover::before { left: 100%; }
-    a:active { transform: translateY(-2px); }
-    a h2 { margin: 0 0 6px; font-size: 1.5em; font-weight: 600; }
-    a p { margin: 0; opacity: 0.95; font-size: 0.95em; }
-    .perplexity { --bg1: #6366f1; --bg2: #8b5cf6; }
-    .google { --bg1: #4285f4; --bg2: #34a853; }
-    .openui { --bg1: #ec4899; --bg2: #f43f5e; }
-    .grok { --bg1: #1f2937; --bg2: #374151; }
-    .chatgpt { --bg1: #10a37f; --bg2: #179c82; }
-    @media (max-width: 768px) { body { padding: 15px; gap: 20px; } a { padding: 24px 20px; } }
-  </style>
+<title>Remy AI Hub</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#4285f4">
+<style>
+* {box-sizing:border-box}
+body {margin:0;padding:20px;background:linear-gradient(135deg,#f5f7fa,#c3cfe2);font-family:system-ui;display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));min-height:100vh}
+h1 {grid-column:1/-1;text-align:center;color:#202124;font-size:clamp(1.4em,5vw,2em);margin:0 0 .5em}
+.subtitle {grid-column:1/-1;text-align:center;color:#5f6368;font-size:.95em;margin:0 0 1.5em}
+a {display:block;padding:24px 20px;color:#fff;text-decoration:none;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.12);transition:all .3s;position:relative;overflow:hidden}
+a::before {content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transition:left .6s}
+a:hover {transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.2)}
+a:hover::before {left:100%}
+a h2 {margin:0 0 4px;font-size:1.3em;font-weight:600}
+a p {margin:0;opacity:.92;font-size:.92em}
+.perplexity {background:linear-gradient(135deg,#667eea,#764ba2)}
+.google {background:linear-gradient(135deg,#4285f4,#34a853)}
+.openwebui {background:linear-gradient(135deg,#ec4899,#f43f5e)}
+.grok {background:linear-gradient(135deg,#1f2937,#374151)}
+.chatgpt {background:linear-gradient(135deg,#10a37f,#179c82)}
+@media (max-width:600px) {body {padding:15px;gap:16px}}
+</style>
 </head>
 <body>
-  <h1>🧠 Remy AI Hub</h1>
-  <p class="subtitle">Alle 12 chats & spaces in één app — tik & ga!</p>
-  
-  <!-- Perplexity Spaces -->
-  <a href="https://www.perplexity.ai/spaces/medical-expert-CvvTDVfjQrCAbNRRa4z0jA" class="perplexity">
-    <h2>🏥 Medical Expert</h2>
-    <p>Perplexity Space</p>
-  </a>
-  <a href="https://www.perplexity.ai/spaces/nova-r-d-A8bhLAk9SAmMWyg6lspGqw" class="perplexity">
-    <h2>🔬 Nova R&D</h2>
-    <p>Research & ontwikkeling</p>
-  </a>
-  <a href="https://www.perplexity.ai/spaces/relatie-therapeut-sonet-claude-Hj.ga70SSXWk_OtCg2hZ1A" class="perplexity">
-    <h2>❤️ Relatie Therapeut</h2>
-    <p>Sonet Claude</p>
-  </a>
-  <a href="https://www.perplexity.ai/spaces/alex-gpt-38Ol57a9T5KkpYMuwVHxVA" class="perplexity">
-    <h2>💪 Alex GPT</h2>
-    <p>Coach chats</p>
-  </a>
-  <a href="https://www.perplexity.ai/spaces/ha-en-ai-pc-claude-sonnet-4-6-t6ReBrqcSeifhHWu_PRc4Q" class="perplexity">
-    <h2>💻 Coding HA/AI PC</h2>
-    <p>Claude Sonnet 4.6</p>
-  </a>
-  <a href="https://www.perplexity.ai/spaces/clyde-sonar-a8w3jGN2Rx28xXNQzoUz8w" class="perplexity">
-    <h2>🏋️ Clyde Sonar</h2>
-    <p>Gym coach</p>
-  </a>
-  <a href="https://www.perplexity.ai/" class="perplexity">
-    <h2>❓ Perplexity Algemeen</h2>
-    <p>Snelle threads/vragen</p>
-  </a>
-  
-  <!-- Google -->
-  <a href="https://gemini.google.com/app" class="google">
-    <h2>🤖 Google Gemini</h2>
-    <p>Lege chat - normale vragen</p>
-  </a>
-  <a href="https://aistudio.google.com/?project=gen-lang-client-0932412151" class="google">
-    <h2>🎨 Google AI Studio</h2>
-    <p>Project gen-lang-client</p>
-  </a>
-  
-  <!-- Andere -->
-  <a href="https://ai.ha-remy.uk" class="openui">
-    <h2>⚙️ OpenWebUI</h2>
-    <p>Jouw lokale AI (HA)</p>
-  </a>
-  <a href="https://grok.com/" class="grok">
-    <h2>🚀 Grok</h2>
-    <p>xAI chats</p>
-  </a>
-  <a href="https://chatgpt.com/" class="chatgpt">
-    <h2>💬 ChatGPT</h2>
-    <p>OpenAI chats</p>
-  </a>
+
+<h1>🧠 Remy AI Hub</h1>
+<p class="subtitle">Alle spaces & chats — tik & ga!</p>
+
+<a href="https://www.perplexity.ai/spaces/medical-expert-CvvTDVfjQrCAbNRRa4z0jA" class="perplexity">
+  <h2>🏥 Medical Expert</h2>
+  <p>AI Model Sonar</p>
+</a>
+
+<a href="https://www.perplexity.ai/spaces/nova-r-d-A8bhLAk9SAmMWyg6lspGqw" class="perplexity">
+  <h2>🔬 Nova R&amp;D</h2>
+  <p>AI Model Sonar</p>
+</a>
+
+<a href="https://www.perplexity.ai/spaces/relatie-therapeut-sonet-claude-Hj.ga70SSXWk_OtCg2hZ1A" class="perplexity">
+  <h2>❤️ Relatie Therapeut</h2>
+  <p>AI Model Claude Sonnet</p>
+</a>
+
+<a href="https://www.perplexity.ai/spaces/alex-gpt-38Ol57a9T5KkpYMuwVHxVA" class="perplexity">
+  <h2>💪 Alex</h2>
+  <p>AI Model GPT5.2</p>
+</a>
+
+<a href="https://www.perplexity.ai/spaces/ha-en-ai-pc-claude-sonnet-4-6-t6ReBrqcSeifhHWu_PRc4Q" class="perplexity">
+  <h2>💻 HA AI Coding</h2>
+  <p>AI Model Claude Sonnet 4.6</p>
+</a>
+
+<a href="https://www.perplexity.ai/spaces/clyde-sonar-a8w3jGN2Rx28xXNQzoUz8w" class="perplexity">
+  <h2>🏋️ Clyde</h2>
+  <p>AI Model Sonar</p>
+</a>
+
+<a href="https://www.perplexity.ai/" class="perplexity">
+  <h2>❓ Perplexity Algemeen</h2>
+  <p>Snelle vragen</p>
+</a>
+
+<a href="https://gemini.google.com/app" class="google">
+  <h2>🤖 Gemini Chat</h2>
+  <p>Normale vragen</p>
+</a>
+
+<a href="https://aistudio.google.com/?project=gen-lang-client-0932412151" class="google">
+  <h2>🎨 Google AI Studio</h2>
+  <p>Rem</p>
+</a>
+
+<a href="https://ai.ha-remy.uk" class="openwebui">
+  <h2>⚙️ OpenWebUI</h2>
+  <p>Rem en meer</p>
+</a>
+
+<a href="https://grok.com/" class="grok">
+  <h2>🚀 Grok</h2>
+  <p>xAI chats</p>
+</a>
+
+<a href="https://chatgpt.com/" class="chatgpt">
+  <h2>💬 ChatGPT</h2>
+  <p>OpenAI chats</p>
+</a>
+
 </body>
 </html>
