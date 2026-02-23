@@ -4,90 +4,551 @@
 <title>Remy AI Hub</title>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#4285f4">
+<meta name="theme-color" content="#07080f">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧠</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
-* {box-sizing:border-box}
-body {margin:0;padding:20px;background:linear-gradient(135deg,#f5f7fa,#c3cfe2);font-family:system-ui;display:grid;gap:20px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));min-height:100vh}
-h1 {grid-column:1/-1;text-align:center;color:#202124;font-size:clamp(1.4em,5vw,2em);margin:0 0 .5em}
-.subtitle {grid-column:1/-1;text-align:center;color:#5f6368;font-size:.95em;margin:0 0 1.5em}
-a {display:block;padding:24px 20px;color:#fff;text-decoration:none;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.12);transition:all .3s;position:relative;overflow:hidden}
-a::before {content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);transition:left .6s}
-a:hover {transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.2)}
-a:hover::before {left:100%}
-a h2 {margin:0 0 4px;font-size:1.3em;font-weight:600}
-a p {margin:0;opacity:.92;font-size:.92em}
-.perplexity {background:linear-gradient(135deg,#667eea,#764ba2)}
-.google {background:linear-gradient(135deg,#4285f4,#34a853)}
-.openwebui {background:linear-gradient(135deg,#ec4899,#f43f5e)}
-.grok {background:linear-gradient(135deg,#1f2937,#374151)}
-.chatgpt {background:linear-gradient(135deg,#10a37f,#179c82)}
-@media (max-width:600px) {body {padding:15px;gap:16px}}
+:root {
+  --bg: #07080f;
+  --surface: rgba(255,255,255,0.04);
+  --border: rgba(255,255,255,0.08);
+  --text: #e8eaf0;
+  --muted: rgba(255,255,255,0.35);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: 'DM Mono', monospace;
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 24px 60px;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 600px;
+  background: radial-gradient(ellipse, rgba(102,126,234,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* HEADER */
+header {
+  text-align: center;
+  margin-bottom: 40px;
+  animation: fadeDown 0.6s ease both;
+}
+
+header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2em, 6vw, 3em);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #e8eaf0 30%, #667eea);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+header p {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.8em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* SEARCH */
+.search-wrap {
+  position: relative;
+  margin-bottom: 40px;
+  animation: fadeDown 0.6s 0.1s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-52%);
+  color: var(--muted);
+  font-size: 1.2em;
+  pointer-events: none;
+  font-family: sans-serif;
+}
+
+#search {
+  width: 100%;
+  padding: 14px 20px 14px 46px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.9em;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+#search::placeholder { color: var(--muted); }
+
+#search:focus {
+  border-color: rgba(102,126,234,0.45);
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.08);
+}
+
+/* SECTIONS */
+.section {
+  margin-bottom: 40px;
+  animation: fadeUp 0.5s ease both;
+  opacity: 0;
+  animation-fill-mode: both;
+}
+
+.section:nth-of-type(1) { animation-delay: 0.18s; }
+.section:nth-of-type(2) { animation-delay: 0.28s; }
+.section:nth-of-type(3) { animation-delay: 0.38s; }
+
+.section-label {
+  font-size: 0.7em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+  padding-left: 2px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 12px;
+}
+
+/* CARDS */
+.card {
+  display: block;
+  padding: 22px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--text);
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  background: radial-gradient(circle at 20% 50%, var(--glow) 0%, transparent 60%);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(255,255,255,0.13);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+  .card:hover::before { opacity: 0.09; }
+  .card:hover .kbd { opacity: 1; }
+}
+
+.dot {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--glow);
+  box-shadow: 0 0 7px var(--glow);
+  opacity: 0.5;
+}
+
+.kbd {
+  position: absolute;
+  bottom: 14px;
+  right: 14px;
+  font-size: 0.62em;
+  color: var(--muted);
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 2px 7px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+/* Recent badge */
+.card.recent .dot {
+  opacity: 1;
+  animation: glow-pulse 2s infinite;
+}
+
+.recent-tag {
+  display: none;
+  font-size: 0.58em;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--glow);
+  opacity: 0.75;
+  margin-bottom: 10px;
+}
+
+.card.recent .recent-tag { display: block; }
+
+@keyframes glow-pulse {
+  0%,100% { box-shadow: 0 0 6px var(--glow); }
+  50%      { box-shadow: 0 0 16px var(--glow); }
+}
+
+.card h2 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.1em;
+  font-weight: 600;
+  margin-bottom: 5px;
+  letter-spacing: -0.01em;
+}
+
+.card p {
+  font-size: 0.78em;
+  color: var(--muted);
+  letter-spacing: 0.02em;
+}
+
+/* Glow colors per category */
+.agent   { --glow: #cc785c; }
+.general { --glow: #667eea; }
+.tool    { --glow: #10b981; }
+
+/* Search hidden state */
+.card.hidden  { display: none; }
+.section.empty { display: none; }
+
+/* No results */
+#no-results {
+  display: none;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.85em;
+  padding: 50px 20px;
+  letter-spacing: 0.04em;
+}
+
+.hint {
+  text-align: center;
+  color: rgba(255,255,255,0.2);
+  font-size: 0.7em;
+  letter-spacing: 0.1em;
+  margin-top: 16px;
+}
+
+@media (max-width: 600px) {
+  body { padding: 24px 14px 40px; }
+  .grid { grid-template-columns: 1fr; }
+  .hint { display: none; }
+}
+
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 </style>
 </head>
 <body>
+<div class="wrapper">
 
-<h1>🧠 Remy AI Hub</h1>
-<p class="subtitle">Alle spaces & chats — tik & ga!</p>
+  <header>
+    <h1>🧠 Remy AI Hub</h1>
+    <p>Alle agents &amp; tools — tik &amp; ga</p>
+  </header>
 
-<a href="https://www.perplexity.ai/spaces/medical-expert-CvvTDVfjQrCAbNRRa4z0jA" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>🏥 Medical Expert</h2>
-  <p>AI Model Sonar</p>
-</a>
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="search" placeholder="Zoek agent of tool...   ( druk / )" autocomplete="off" spellcheck="false">
+  </div>
 
-<a href="https://www.perplexity.ai/spaces/nova-r-d-A8bhLAk9SAmMWyg6lspGqw" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>🔬 Nova R&amp;D</h2>
-  <p>AI Model Sonar</p>
-</a>
+  <!-- MIJN AGENTS -->
+  <section class="section" id="sec-agents">
+    <div class="section-label">Mijn Agents</div>
+    <div class="grid">
 
-<a href="https://www.perplexity.ai/spaces/relatie-therapeut-sonet-claude-Hj.ga70SSXWk_OtCg2hZ1A" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>❤️ Relatie Therapeut</h2>
-  <p>AI Model Claude Sonnet</p>
-</a>
+      <a href="https://claude.ai/project/019c8aa5-f843-7141-b663-cb017a540215"
+         class="card agent" data-key="1" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>🏥 Dr. NeuroCut</h2>
+        <p>Remy zijn medische specialist</p>
+        <span class="kbd">1</span>
+      </a>
 
-<a href="https://www.perplexity.ai/spaces/alex-gpt-38Ol57a9T5KkpYMuwVHxVA" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>💪 Alex</h2>
-  <p>AI Model GPT5.2</p>
-</a>
+      <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79"
+         class="card agent" data-key="2" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>🔬 Nova R&amp;D</h2>
+        <p>Remy PWN companion</p>
+        <span class="kbd">2</span>
+      </a>
 
-<a href="https://www.perplexity.ai/spaces/ha-en-ai-pc-claude-sonnet-4-6-t6ReBrqcSeifhHWu_PRc4Q" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>💻 HA AI Coding</h2>
-  <p>AI Model Claude Sonnet 4.6</p>
-</a>
+      <a href="https://claude.ai/project/019c8aa7-933b-7514-b519-8362446b492b"
+         class="card agent" data-key="3" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>❤️ Jan Mars</h2>
+        <p>Relatie Therapeut</p>
+        <span class="kbd">3</span>
+      </a>
 
-<a href="https://www.perplexity.ai/spaces/clyde-sonar-a8w3jGN2Rx28xXNQzoUz8w" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>🏋️ Clyde</h2>
-  <p>AI Model Claude Sonnet</p>
-</a>
+      <a href="https://claude.ai/project/019c8a99-57fe-718e-98ba-20d52329ad36"
+         class="card agent" data-key="4" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>💪 Alex</h2>
+        <p>Personal coach</p>
+        <span class="kbd">4</span>
+      </a>
 
-<a href="https://www.perplexity.ai/" class="perplexity" target="_blank" rel="noopener noreferrer">
-  <h2>❓ Perplexity Algemeen</h2>
-  <p>Snelle vragen</p>
-</a>
+      <a href="https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6"
+         class="card agent" data-key="5" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>💻 Voltex Coder</h2>
+        <p>HA &amp; AI Coding</p>
+        <span class="kbd">5</span>
+      </a>
 
-<a href="https://gemini.google.com/u/0/app" class="google" target="_blank" rel="noopener noreferrer">
-  <h2>🤖 Gemini Chat</h2>
-  <p>Normale vragen</p>
-</a>
+      <a href="https://claude.ai/project/019bb342-d02a-77cd-afc8-d70b1e8a8b36"
+         class="card agent" data-key="6" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>🏋️ Clyde</h2>
+        <p>Fitness buddy</p>
+        <span class="kbd">6</span>
+      </a>
 
-<a href="https://aistudio.google.com/?project=gen-lang-client-0932412151" class="google" target="_blank" rel="noopener noreferrer">
-  <h2>🎨 Google AI Studio</h2>
-  <p>Rem</p>
-</a>
+    </div>
+  </section>
 
-<a href="https://ai.ha-remy.uk" class="openwebui" target="_blank" rel="noopener noreferrer">
-  <h2>⚙️ OpenWebUI</h2>
-  <p>Rem en meer</p>
-</a>
+  <!-- ALGEMEEN -->
+  <section class="section" id="sec-general">
+    <div class="section-label">Algemeen</div>
+    <div class="grid">
 
-<a href="https://grok.com/" class="grok" target="_blank" rel="noopener noreferrer">
-  <h2>🚀 Grok</h2>
-  <p>xAI chats</p>
-</a>
+      <a href="https://claude.ai/new"
+         class="card general" data-key="7" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>✨ Claude</h2>
+        <p>Nieuw gesprek</p>
+        <span class="kbd">7</span>
+      </a>
 
-<a href="https://chatgpt.com/" class="chatgpt" target="_blank" rel="noopener noreferrer">
-  <h2>💬 ChatGPT</h2>
-  <p>OpenAI chats</p>
-</a>
+      <a href="https://www.perplexity.ai/"
+         class="card general" data-key="8" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>❓ Perplexity</h2>
+        <p>Snelle vragen</p>
+        <span class="kbd">8</span>
+      </a>
 
+      <a href="https://chatgpt.com/"
+         class="card general" data-key="9" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>💬 ChatGPT</h2>
+        <p>OpenAI chats</p>
+        <span class="kbd">9</span>
+      </a>
+
+      <a href="https://grok.com/"
+         class="card general" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>🚀 Grok</h2>
+        <p>xAI chats</p>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- TOOLS -->
+  <section class="section" id="sec-tools">
+    <div class="section-label">Tools &amp; Platforms</div>
+    <div class="grid">
+
+      <a href="https://ai.ha-remy.uk"
+         class="card tool" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>⚙️ OpenWebUI</h2>
+        <p>Rem en meer</p>
+      </a>
+
+      <a href="https://gemini.google.com/u/0/app"
+         class="card tool" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>🤖 Gemini Chat</h2>
+        <p>Normale vragen</p>
+      </a>
+
+      <a href="https://aistudio.google.com/?project=gen-lang-client-0932412151"
+         class="card tool" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span>
+        <div class="dot"></div>
+        <h2>🎨 Google AI Studio</h2>
+        <p>Rem</p>
+      </a>
+
+    </div>
+  </section>
+
+  <div id="no-results">Geen resultaten voor "<span id="no-results-term"></span>"</div>
+  <p class="hint">Toets 1–9 om direct te openen &nbsp;&nbsp;·&nbsp;&nbsp; / om te zoeken &nbsp;&nbsp;·&nbsp;&nbsp; Esc om te sluiten</p>
+
+</div>
+
+<script>
+// ── LAST USED (localStorage) ──────────────────────────
+const STORAGE_KEY = 'remy_hub_recent_v2';
+
+function getRecent() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveRecent(href) {
+  let list = getRecent().filter(h => h !== href);
+  list.unshift(href);
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 3))); }
+  catch {}
+}
+
+function applyRecent() {
+  const recent = getRecent();
+  document.querySelectorAll('.card').forEach(card => {
+    const isRecent = recent.some(r => card.href && card.href.includes(r.replace(location.origin, '')));
+    card.classList.toggle('recent', isRecent);
+  });
+}
+
+document.querySelectorAll('.card').forEach(card => {
+  card.addEventListener('click', () => saveRecent(card.getAttribute('href')));
+});
+
+applyRecent();
+
+// ── KEYBOARD SHORTCUTS ─────────────────────────────────
+document.addEventListener('keydown', e => {
+  const active = document.activeElement;
+  const typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+
+  if (e.key === '/' && !typing) {
+    e.preventDefault();
+    document.getElementById('search').focus();
+    return;
+  }
+
+  if (e.key === 'Escape' && typing) {
+    active.blur();
+    clearSearch();
+    return;
+  }
+
+  if (typing) return;
+
+  const num = parseInt(e.key);
+  if (num >= 1 && num <= 9) {
+    const card = document.querySelector(`.card[data-key="${num}"]`);
+    if (card) {
+      saveRecent(card.getAttribute('href'));
+      window.open(card.href, '_blank', 'noopener');
+    }
+  }
+});
+
+// ── SEARCH / FILTER ────────────────────────────────────
+const searchEl = document.getElementById('search');
+const noResults = document.getElementById('no-results');
+const noResultsTerm = document.getElementById('no-results-term');
+
+function clearSearch() {
+  searchEl.value = '';
+  filterCards('');
+}
+
+function filterCards(query) {
+  const q = query.toLowerCase().trim();
+  let totalVisible = 0;
+
+  document.querySelectorAll('.section').forEach(section => {
+    let visible = 0;
+    section.querySelectorAll('.card').forEach(card => {
+      const match = !q || card.textContent.toLowerCase().includes(q);
+      card.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    section.classList.toggle('empty', visible === 0);
+    totalVisible += visible;
+  });
+
+  noResults.style.display = (totalVisible === 0 && q) ? 'block' : 'none';
+  noResultsTerm.textContent = query;
+}
+
+searchEl.addEventListener('input', e => filterCards(e.target.value));
+</script>
 </body>
 </html>
