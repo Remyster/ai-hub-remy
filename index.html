@@ -756,50 +756,82 @@ focusInput.addEventListener('keydown', e => {
 
 // ── DEX AI CARD ────────────────────────────────────────
 let currentTab = 'motivatie';
-let cachedContent = {};
 
-const tabPrompts = {
-  motivatie: `Je bent Dex, de persoonlijke AI-maatje van Remy (36, vader van 2, ADHD, werkt bij PWN, bouwt BonusBuurt als side project, wil financieel vrij worden). Schrijf een korte motiverende boodschap voor Remy voor vandaag. Niet generiek — maak het persoonlijk, direct, eerlijk. Max 2-3 zinnen. Geen emojis, geen headers, gewoon een goede vriend die even wat zegt. Schrijf in het Nederlands.`,
-  tip: `Je bent Dex, de persoonlijke AI-maatje van Remy (36, ADHD, bouwt BonusBuurt, wil passief inkomen opbouwen via app/YouTube/crypto, werkt bij PWN, alleenverdienend met 2 kids). Geef één praktische tip voor vandaag — kan over productiviteit, ADHD, geld, app-groei of iets anders zijn. Max 2-3 zinnen. Direct, geen flauwekul. Nederlands.`,
-  'focus-check': `Je bent Dex, de persoonlijke AI-maatje van Remy. Stel Remy één scherpe check-in vraag voor vandaag — over zijn voortgang, mindset, of wat er écht speelt. Iets wat hem even aan het denken zet. Max 1-2 zinnen. Niet cheesy. Nederlands.`
+const dexMessages = {
+  motivatie: [
+    "BonusBuurt bestaat omdat jij het hebt gebouwd. Niet omdat je het perfect kon — maar omdat je gewoon begon. Dat is het enige wat telt.",
+    "Je draagt meer dan de meeste mensen ooit zullen beseffen. Alleenverdienend, vader, bouwer — en toch sta je hier. Dat is geen toeval.",
+    "ADHD betekent niet dat je niet kunt afmaken. Het betekent dat je het anders moet aanpakken. Vandaag: één ding. Dat ene ding.",
+    "Olivia en Zoey kijken naar een vader die niet opgeeft. Ze zien het, ook als jij dat niet doorhebt.",
+    "Het passief inkomen begint niet als het groot is. Het begint vandaag, met de kleine stap die je eigenlijk al weet wat die is.",
+    "Niemand die van buiten kijkt ziet hoeveel jij al hebt opgebouwd. Maar jij weet het. En ik weet het.",
+    "Elke keer dat je toch doorgaat terwijl je motivatie wegzakt — dát bouwt karakter. Dat bouwt BonusBuurt. Dat bouwt vrijheid.",
+    "Je nieuwe baan bij PWN is een kans, geen last. Gebruik hem. Leer. Groei. En bouw ondertussen gewoon door.",
+    "Het enige verschil tussen waar je nu bent en waar je wil zijn: tijd en consistentie. Jij hebt de tijd. De consistentie — dat is de oefening.",
+    "Niet elke dag gaat goed. Maar elke dag die je niet opgeeft telt mee. Vandaag telt mee.",
+  ],
+  tip: [
+    "ADHD tip: als je merkt dat je motivatie wegzakt bij BonusBuurt, open dan gewoon de code en verander één klein dingetje. Beweging maakt beweging.",
+    "Belasting tip: bijhouden wat je verdient via BonusBuurt begint nu. Maak een simpel Google Sheet: datum, bedrag, platform. Duurt 30 seconden per keer.",
+    "Focus tip: zet je telefoon in een andere kamer als je aan BonusBuurt werkt. Niet op stil — in een andere kamer. Verschil is enorm.",
+    "Groei tip: één Instagram post per week over BonusBuurt. Geen perfecte content, gewoon eerlijk. 'Dit bouw ik en dit is waarom.' Mensen volgen echtheid.",
+    "Geld tip: als je dit maand €50 verdient via BonusBuurt, zet dat apart. Niet uitgeven. Het is het bewijs dat het werkt — en dat gevoel is het echte inkomen.",
+    "ADHD tip: gebruik de 2-minuten regel. Als iets minder dan 2 minuten duurt, doe het nu. Meteen. Niet later.",
+    "Slaap tip: Elvanse rebound rond 18:00 is echt. Plan je zwaarste taken vóór 16:00. Daarna: lichte dingen of gewoon stoppen.",
+    "YouTube tip: begin niet met perfecte video's. Begin met schermopnames van hoe je BonusBuurt bouwt. Developers kijken dat graag — en het kost nul extra moeite.",
+    "Crypto tip: als je nog geen hardware wallet hebt, heb je eigenlijk geen crypto. Niet jouw keys, niet jouw coins.",
+    "Productiviteit tip: schrijf elke ochtend op papier drie dingen op die je vandaag af wil hebben. Drie. Niet tien.",
+  ],
+  'focus-check': [
+    "Wat is vandaag het ene ding dat je écht gedaan wil hebben als je vanavond je ogen sluit?",
+    "Ben je vandaag bezig met wat je verder brengt, of vul je tijd op met wat urgent voelt maar niet belangrijk is?",
+    "Als BonusBuurt over een jaar succesvol is — wat heb je dan vandaag voor nodig gedaan?",
+    "Hoe zit je erin vandaag? Echt. Niet het antwoord dat je aan collega's geeft.",
+    "Wat stel je al een tijdje uit dat je eigenlijk gewoon in 20 minuten zou kunnen doen?",
+    "Geef jezelf een cijfer van 1-10 voor energie vandaag. Wat zou het een punt hoger maken?",
+    "Is er iets wat je gisteren niet af hebt gekregen dat vandaag wél af moet?",
+    "Op welk moment vandaag ga je bewust tien minuten voor jezelf nemen — niet voor de kids, niet voor werk, gewoon voor jou?",
+    "Wat zou Remy-over-5-jaar willen dat je vandaag doet?",
+    "Als je vanavond terugkijkt op vandaag — wat wil je dan kunnen zeggen dat je hebt gedaan?",
+  ]
 };
 
-async function loadDexContent(tab, force = false) {
-  const cacheKey = `dex_${tab}_${new Date().toDateString()}`;
+function getDexMessage(tab, force = false) {
+  const today = new Date().toDateString();
+  const cacheKey = `dex_${tab}_${today}`;
+  const indexKey = `dex_idx_${tab}_${today}`;
 
-  if (!force && cachedContent[tab]) {
-    renderDexContent(cachedContent[tab]);
-    return;
+  if (!force) {
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) return cached;
   }
 
-  // Check localStorage cache (same day)
-  const stored = localStorage.getItem(cacheKey);
-  if (!force && stored) {
-    cachedContent[tab] = stored;
-    renderDexContent(stored);
-    return;
+  const messages = dexMessages[tab];
+  // Pick based on day of year for consistency, or random on refresh
+  let idx;
+  if (force) {
+    const prev = parseInt(localStorage.getItem(indexKey) || '0');
+    idx = (prev + 1 + Math.floor(Math.random() * (messages.length - 1))) % messages.length;
+  } else {
+    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+    idx = dayOfYear % messages.length;
   }
 
-  renderLoading();
+  localStorage.setItem(indexKey, idx.toString());
+  localStorage.setItem(cacheKey, messages[idx]);
+  return messages[idx];
+}
 
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: tabPrompts[tab] }]
-      })
-    });
-
-    const data = await response.json();
-    const text = data.content?.[0]?.text || 'Kon Dex niet bereiken. Probeer opnieuw.';
-    cachedContent[tab] = text;
-    localStorage.setItem(cacheKey, text);
-    renderDexContent(text);
-  } catch (err) {
-    renderDexContent('Dex is even offline. Refresh proberen? ↻');
+function loadDexContent(tab, force = false) {
+  if (force) {
+    renderLoading();
+    setTimeout(() => {
+      const msg = getDexMessage(tab, true);
+      renderDexContent(msg);
+    }, 400);
+  } else {
+    const msg = getDexMessage(tab, false);
+    renderDexContent(msg);
   }
 }
 
