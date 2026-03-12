@@ -36,177 +36,171 @@ body::before {
 }
 body::after {
   content: '';
-  position: fixed;
-  top: -20%; left: 50%; transform: translateX(-50%);
+  position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
   width: 900px; height: 600px;
   background: radial-gradient(ellipse, rgba(102,126,234,0.07) 0%, transparent 70%);
   pointer-events: none; z-index: 0;
 }
 .wrapper { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; }
 
-/* ── POPUP ── */
+/* ══ POPUP ══ */
 #popup-overlay {
   position: fixed; inset: 0;
-  background: rgba(0,0,0,0.78);
-  backdrop-filter: blur(7px);
+  background: rgba(0,0,0,0.82);
+  backdrop-filter: blur(8px);
   z-index: 1000;
-  display: flex; align-items: center; justify-content: center;
+  display: none;
+  align-items: center; justify-content: center;
   padding: 20px;
-  animation: fadeIn 0.35s ease both;
 }
+#popup-overlay.show { display: flex; animation: fadeIn 0.3s ease both; }
+
 #popup {
   background: #0d0e18;
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 22px;
   padding: 36px 32px 28px;
-  max-width: 560px; width: 100%;
-  position: relative;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.65);
+  max-width: 580px; width: 100%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
   animation: popIn 0.4s cubic-bezier(0.34,1.56,0.64,1) both;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.popup-top {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  margin-bottom: 22px;
 }
 .popup-date {
-  font-size: 0.65em;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 24px;
+  font-size: 0.65em; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--muted);
 }
+.popup-greeting {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3em; font-weight: 800;
+  background: linear-gradient(135deg, #e8eaf0 30%, #cc785c);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 4px;
+}
+.popup-subtext {
+  font-size: 0.72em; color: var(--muted); margin-bottom: 24px; line-height: 1.5;
+}
+
+.ai-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 0.6em; letter-spacing: 0.1em; text-transform: uppercase;
+  color: #10b981; background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.18);
+  border-radius: 20px; padding: 3px 10px; margin-bottom: 22px;
+}
+.ai-dot {
+  width: 6px; height: 6px; border-radius: 50%; background: #10b981;
+  animation: glow-pulse 2s infinite;
+}
+
 .popup-block {
-  margin-bottom: 18px;
-  padding: 18px 20px;
-  border-radius: 12px;
-  border-left: 3px solid var(--bc);
+  margin-bottom: 16px; padding: 18px 20px;
+  border-radius: 12px; border-left: 3px solid var(--bc);
   background: rgba(255,255,255,0.03);
-  min-height: 80px;
 }
 .popup-block-label {
-  font-size: 0.62em;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--bc);
-  margin-bottom: 10px;
+  font-size: 0.62em; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--bc); margin-bottom: 10px;
 }
 .popup-block-text {
-  font-size: 0.88em;
-  line-height: 1.68;
-  color: var(--text);
+  font-size: 0.88em; line-height: 1.72; color: var(--text);
 }
 .popup-block.quote    { --bc: #cc785c; }
 .popup-block.lifehack { --bc: #667eea; }
 .popup-block.fact     { --bc: #10b981; }
 
-/* Loading shimmer */
-.loading-shimmer {
-  height: 14px; border-radius: 6px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.05) 75%);
+/* Shimmer loader */
+.shimmer {
+  height: 13px; border-radius: 6px; margin-bottom: 8px;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.1) 50%,
+    rgba(255,255,255,0.04) 75%);
   background-size: 200% 100%;
-  animation: shimmer 1.4s infinite;
-  margin-bottom: 8px;
+  animation: shimmer 1.3s infinite;
 }
-.loading-shimmer:last-child { width: 70%; margin-bottom: 0; }
-@keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
-
-/* AI badge */
-.ai-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-size: 0.6em;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #10b981;
-  background: rgba(16,185,129,0.08);
-  border: 1px solid rgba(16,185,129,0.18);
-  border-radius: 20px;
-  padding: 3px 10px;
-  margin-bottom: 20px;
-}
-.ai-dot { width:6px; height:6px; border-radius:50%; background:#10b981; animation: glow-pulse 2s infinite; }
+.shimmer.short { width: 65%; margin-bottom: 0; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
 .popup-close {
-  display: block; width: 100%;
-  margin-top: 10px; padding: 13px;
-  background: rgba(255,255,255,0.06);
+  display: block; width: 100%; margin-top: 14px; padding: 14px;
+  background: linear-gradient(135deg, rgba(204,120,92,0.15), rgba(102,126,234,0.15));
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 0.82em; letter-spacing: 0.08em;
-  cursor: pointer; transition: background 0.2s; text-align: center;
+  border-radius: 12px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.85em;
+  letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s; text-align: center;
 }
-.popup-close:hover { background: rgba(255,255,255,0.11); }
+.popup-close:hover {
+  background: linear-gradient(135deg, rgba(204,120,92,0.25), rgba(102,126,234,0.25));
+  border-color: rgba(255,255,255,0.14);
+}
 
-/* ── API KEY MODAL ── */
+/* Refresh button */
+.popup-refresh {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin-top: 8px; padding: 10px;
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 10px; color: var(--muted);
+  font-family: 'DM Mono', monospace; font-size: 0.75em;
+  letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s;
+}
+.popup-refresh:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.refresh-icon { display: inline-block; transition: transform 0.4s; }
+.popup-refresh:hover .refresh-icon { transform: rotate(180deg); }
+
+/* ══ API KEY MODAL ══ */
 #apikey-modal {
-  display: none;
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.85);
-  backdrop-filter: blur(8px);
-  z-index: 2000;
-  align-items: center; justify-content: center;
-  padding: 20px;
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
+  z-index: 2000; align-items: center; justify-content: center; padding: 20px;
 }
 #apikey-modal.show { display: flex; }
 #apikey-box {
-  background: #0d0e18;
-  border: 1px solid rgba(255,165,0,0.3);
-  border-radius: 20px;
-  padding: 36px 30px;
-  max-width: 500px; width: 100%;
-  box-shadow: 0 0 60px rgba(255,165,0,0.08);
+  background: #0d0e18; border: 1px solid rgba(255,165,0,0.25);
+  border-radius: 22px; padding: 36px 30px; max-width: 500px; width: 100%;
+  box-shadow: 0 0 80px rgba(255,165,0,0.06);
 }
-#apikey-box h3 {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.2em; margin-bottom: 8px;
-  color: #fbbf24;
-}
-#apikey-box p { font-size: 0.8em; color: var(--muted); line-height: 1.6; margin-bottom: 20px; }
+#apikey-box h3 { font-family: 'Syne', sans-serif; font-size: 1.2em; margin-bottom: 12px; color: #fbbf24; }
+#apikey-box p { font-size: 0.8em; color: var(--muted); line-height: 1.65; margin-bottom: 18px; }
 #apikey-box a { color: #667eea; }
-#apikey-input {
-  width: 100%; padding: 12px 16px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,165,0,0.25);
-  border-radius: 10px;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-  font-size: 0.85em; outline: none;
-  margin-bottom: 14px;
-  transition: border-color 0.2s;
+.warning-box {
+  background: rgba(255,165,0,0.06); border: 1px solid rgba(255,165,0,0.18);
+  border-radius: 10px; padding: 14px 16px;
+  font-size: 0.76em; color: #fbbf24; line-height: 1.65; margin-bottom: 18px;
 }
-#apikey-input:focus { border-color: rgba(255,165,0,0.5); }
+#apikey-input {
+  width: 100%; padding: 13px 16px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,165,0,0.2);
+  border-radius: 10px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.85em;
+  outline: none; margin-bottom: 14px; transition: border-color 0.2s;
+}
+#apikey-input:focus { border-color: rgba(255,165,0,0.45); }
 #apikey-input::placeholder { color: var(--muted); }
 .apikey-btns { display: flex; gap: 10px; }
 .btn-save {
-  flex: 1; padding: 12px;
-  background: linear-gradient(135deg, #10b981, #059669);
-  border: none; border-radius: 10px;
-  color: #fff; font-family: 'DM Mono', monospace;
-  font-size: 0.82em; cursor: pointer; transition: opacity 0.2s;
+  flex: 1; padding: 13px; background: linear-gradient(135deg, #10b981, #059669);
+  border: none; border-radius: 10px; color: #fff;
+  font-family: 'DM Mono', monospace; font-size: 0.82em; cursor: pointer; transition: opacity 0.2s;
 }
 .btn-save:hover { opacity: 0.85; }
 .btn-skip {
-  padding: 12px 18px;
-  background: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
-  border-radius: 10px;
+  padding: 13px 18px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px;
   color: var(--muted); font-family: 'DM Mono', monospace;
   font-size: 0.82em; cursor: pointer; transition: background 0.2s;
 }
-.btn-skip:hover { background: rgba(255,255,255,0.09); }
-.warning-box {
-  background: rgba(255,165,0,0.06);
-  border: 1px solid rgba(255,165,0,0.2);
-  border-radius: 8px;
-  padding: 12px 14px;
-  font-size: 0.75em;
-  color: #fbbf24;
-  line-height: 1.6;
-  margin-bottom: 16px;
-}
+.btn-skip:hover { background: rgba(255,255,255,0.08); }
 
-/* ── HEADER ── */
+/* ══ HEADER ══ */
 header { text-align: center; margin-bottom: 40px; animation: fadeDown 0.6s ease both; }
 header h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(2em, 6vw, 3em); font-weight: 800;
+  font-family: 'Syne', sans-serif; font-size: clamp(2em, 6vw, 3em); font-weight: 800;
   letter-spacing: -0.02em;
   background: linear-gradient(135deg, #e8eaf0 30%, #667eea);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
@@ -228,12 +222,12 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
 }
 .settings-badge:hover { background: rgba(251,191,36,0.15); }
 
-/* ── SEARCH ── */
+/* ══ SEARCH ══ */
 .search-wrap {
   position: relative; margin-bottom: 40px;
   animation: fadeDown 0.6s 0.1s ease both; opacity: 0; animation-fill-mode: both;
 }
-.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-52%); color: var(--muted); font-size: 1.2em; pointer-events: none; font-family: sans-serif; }
+.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-52%); color: var(--muted); font-size: 1.2em; pointer-events: none; }
 #search {
   width: 100%; padding: 14px 20px 14px 46px;
   background: rgba(255,255,255,0.05); border: 1px solid var(--border);
@@ -244,20 +238,20 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
 #search::placeholder { color: var(--muted); }
 #search:focus { border-color: rgba(102,126,234,0.45); box-shadow: 0 0 0 3px rgba(102,126,234,0.08); }
 
-/* ── SECTIONS ── */
+/* ══ SECTIONS ══ */
 .section { margin-bottom: 40px; animation: fadeUp 0.5s ease both; opacity: 0; animation-fill-mode: both; }
 .section:nth-of-type(1) { animation-delay: 0.18s; }
 .section:nth-of-type(2) { animation-delay: 0.28s; }
 .section:nth-of-type(3) { animation-delay: 0.38s; }
 .section-label {
   font-size: 0.7em; letter-spacing: 0.16em; text-transform: uppercase;
-  color: var(--muted); margin-bottom: 14px; padding-left: 2px;
+  color: var(--muted); margin-bottom: 14px;
   display: flex; align-items: center; gap: 12px;
 }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-
-/* ── GRID & CARDS ── */
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+
+/* ══ CARDS ══ */
 .card {
   display: block; padding: 22px 20px;
   background: var(--surface); border: 1px solid var(--border);
@@ -266,8 +260,7 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
   transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
 }
 .card::before {
-  content: ''; position: absolute; inset: 0; opacity: 0;
-  transition: opacity 0.3s;
+  content: ''; position: absolute; inset: 0; opacity: 0; transition: opacity 0.3s;
   background: radial-gradient(circle at 20% 50%, var(--glow) 0%, transparent 60%);
 }
 @media (hover: hover) {
@@ -280,7 +273,7 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
 .recent-tag { display: none; font-size: 0.58em; letter-spacing: 0.1em; text-transform: uppercase; color: var(--glow); opacity: 0.75; margin-bottom: 10px; }
 .card.recent .recent-tag { display: block; }
 .card.recent .dot { opacity: 1; animation: glow-pulse 2s infinite; }
-@keyframes glow-pulse { 0%,100% { box-shadow: 0 0 6px var(--glow); } 50% { box-shadow: 0 0 16px var(--glow); } }
+@keyframes glow-pulse { 0%,100%{box-shadow:0 0 6px var(--glow)} 50%{box-shadow:0 0 16px var(--glow)} }
 .card h2 { font-family: 'Syne', sans-serif; font-size: 1.1em; font-weight: 600; margin-bottom: 5px; letter-spacing: -0.01em; }
 .card p { font-size: 0.78em; color: var(--muted); }
 .agent   { --glow: #cc785c; }
@@ -298,75 +291,82 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
   #popup { padding: 24px 18px 20px; }
 }
 
-@keyframes fadeIn   { from { opacity:0 } to { opacity:1 } }
-@keyframes fadeDown { from { opacity:0; transform:translateY(-14px) } to { opacity:1; transform:translateY(0) } }
-@keyframes fadeUp   { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
-@keyframes popIn    { from { opacity:0; transform:scale(0.88) } to { opacity:1; transform:scale(1) } }
+@keyframes fadeIn   { from{opacity:0}to{opacity:1} }
+@keyframes fadeDown { from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)} }
+@keyframes fadeUp   { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
+@keyframes popIn    { from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)} }
 </style>
 </head>
 <body>
 
-<!-- ── API KEY MODAL ── -->
+<!-- ══ API KEY MODAL ══ -->
 <div id="apikey-modal">
   <div id="apikey-box">
     <h3>🔑 Gemini API Key instellen</h3>
     <div class="warning-box">
       ⚠️ REMY — DIT IS NIET JE GOOGLE WACHTWOORD.<br>
-      Dit is een aparte API sleutel van Google AI Studio.<br>
-      Hoe krijg je hem? → <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a><br>
+      Dit is een aparte gratis sleutel van Google AI Studio.<br>
+      → <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a><br>
       Klik "Create API Key" → kopieer → plak hieronder.
     </div>
-    <p>De key wordt lokaal opgeslagen in je browser. Hij verlaat nooit je apparaat behalve naar Google's API.</p>
+    <p>De key wordt lokaal opgeslagen in je browser. Hij gaat alleen naar Google's API — nergens anders naartoe.</p>
     <input type="password" id="apikey-input" placeholder="AIzaSy...">
     <div class="apikey-btns">
       <button class="btn-save" onclick="saveApiKey()">✓ Opslaan & activeren</button>
-      <button class="btn-skip" onclick="skipApiKey()">Overslaan (gebruik fallback)</button>
+      <button class="btn-skip" onclick="skipApiKey()">Overslaan (fallback)</button>
     </div>
   </div>
 </div>
 
-<!-- ── DAILY POPUP ── -->
-<div id="popup-overlay" style="display:none;">
+<!-- ══ DAILY POPUP ══ -->
+<div id="popup-overlay">
   <div id="popup">
-    <div class="popup-date" id="popup-date"></div>
-    <div class="ai-badge"><span class="ai-dot"></span> <span id="ai-source-label">AI gegenereerd</span></div>
+    <div class="popup-top">
+      <div>
+        <div class="popup-greeting" id="popup-greeting">Yo Remy 👋</div>
+        <div class="popup-date" id="popup-date"></div>
+      </div>
+    </div>
+    <div class="popup-subtext" id="popup-subtext">Even laden wat Gemini voor je heeft...</div>
+
+    <div class="ai-badge"><span class="ai-dot"></span><span id="ai-label">Gemini gegenereerd</span></div>
 
     <div class="popup-block quote">
-      <div class="popup-block-label">💬 Quote van de dag</div>
+      <div class="popup-block-label">💬 Voor jou</div>
       <div class="popup-block-text" id="popup-quote">
-        <div class="loading-shimmer"></div>
-        <div class="loading-shimmer"></div>
+        <div class="shimmer"></div><div class="shimmer short"></div>
       </div>
     </div>
 
     <div class="popup-block lifehack">
       <div class="popup-block-label">⚡ Life Hack</div>
       <div class="popup-block-text" id="popup-hack">
-        <div class="loading-shimmer"></div>
-        <div class="loading-shimmer"></div>
+        <div class="shimmer"></div><div class="shimmer short"></div>
       </div>
     </div>
 
     <div class="popup-block fact">
-      <div class="popup-block-label">🧠 Feit van de dag</div>
+      <div class="popup-block-label">🧠 Wist je dat</div>
       <div class="popup-block-text" id="popup-fact">
-        <div class="loading-shimmer"></div>
-        <div class="loading-shimmer"></div>
+        <div class="shimmer"></div><div class="shimmer short"></div>
       </div>
     </div>
 
-    <button class="popup-close" onclick="closePopup()">Let's go → Hub openen</button>
+    <button class="popup-close" onclick="closePopup()">Let's go Remy → Hub openen 🚀</button>
+    <button class="popup-refresh" onclick="refreshContent()">
+      <span class="refresh-icon">↻</span> Andere content genereren
+    </button>
   </div>
 </div>
 
-<!-- ── MAIN HUB ── -->
+<!-- ══ MAIN HUB ══ -->
 <div class="wrapper">
   <header>
     <h1>🧠 Remy AI Hub</h1>
     <p>Alle agents &amp; tools — tik &amp; ga</p>
     <div class="header-btns">
-      <span class="daily-badge" onclick="openPopup()">📅 Dagelijkse tip</span>
-      <span class="settings-badge" onclick="openApiKeyModal()">🔑 API Key wijzigen</span>
+      <span class="daily-badge" onclick="openPopup()">✨ Nieuwe tip ophalen</span>
+      <span class="settings-badge" onclick="openApiKeyModal()">🔑 API Key</span>
     </div>
   </header>
 
@@ -375,7 +375,7 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
     <input type="text" id="search" placeholder="Zoek agent of tool...   ( druk / )" autocomplete="off" spellcheck="false">
   </div>
 
-  <section class="section" id="sec-agents">
+  <section class="section">
     <div class="section-label">Mijn Agents</div>
     <div class="grid">
       <a href="https://claude.ai/project/019c8aa5-f843-7141-b663-cb017a540215" class="card agent" data-key="1" target="_blank" rel="noopener noreferrer">
@@ -405,7 +405,7 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
     </div>
   </section>
 
-  <section class="section" id="sec-general">
+  <section class="section">
     <div class="section-label">Algemeen</div>
     <div class="grid">
       <a href="https://claude.ai/new" class="card general" data-key="7" target="_blank" rel="noopener noreferrer">
@@ -427,7 +427,7 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
     </div>
   </section>
 
-  <section class="section" id="sec-tools">
+  <section class="section">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
       <a href="https://notebooklm.google.com/?pli=1" class="card tool" target="_blank" rel="noopener noreferrer">
@@ -454,297 +454,258 @@ header p { margin-top: 8px; color: var(--muted); font-size: 0.8em; letter-spacin
 </div>
 
 <script>
-// ══════════════════════════════════════════════════════════════
-// FALLBACK CONTENT (als API niet beschikbaar is)
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// REMY'S PERSOONLIJKE CONTEXT — pas dit aan als nodig
+// ══════════════════════════════════════════════════════
+const REMY = {
+  naam: "Remy",
+  leeftijd: 36,
+  partner: "Danique",
+  kinderen: ["Olivia (7 jaar)", "Zoey (2 jaar)"],
+  werk: "PWN (drinkwaterbedrijf)",
+  woonplaats: "Blokker",
+  hobby: ["gaming", "smarthome bouwen met Home Assistant", "fitness bij Next Gym Life", "doe-het-zelven"],
+  bijzonder: ["ADHD", "enige kostwinner", "houdt van directe no-nonsense communicatie", "altijd bezig met zichzelf verbeteren"]
+};
+
+// ══════════════════════════════════════════════════════
+// FALLBACK (als API offline is)
+// ══════════════════════════════════════════════════════
 const FALLBACK = {
   quotes: [
+    "Jij bent de reden dat Olivia en Zoey geloven dat dromen uitkomen. Blijf dat waarmaken.",
+    "Elke dag dat je opstaat voor je gezin is een dag dat je wint — ook als het zwaar is.",
     "Discipline is kiezen tussen wat je nu wilt en wat je het meest wilt.",
-    "Kleine dagelijkse verbeteringen zijn de sleutel tot resultaten die iedereen versteld doen staan.",
-    "Je bent sterker dan je denkt, slimmer dan je gelooft.",
-    "Succes is de som van kleine inspanningen, elke dag herhaald.",
-    "Werk hard in stilte. Laat je succes het geluid maken.",
-    "Motivatie brengt je op gang, gewoonte houdt je gaande.",
     "Word elke dag 1% beter. Na een jaar ben je 37x zo goed.",
-    "De beste investering die je kunt doen is in jezelf.",
-    "Stop met wachten op het perfecte moment. Maak dit moment perfect.",
     "Consistentie verslaat altijd intensiteit op de lange termijn.",
   ],
   hacks: [
-    "Zet je telefoon 's ochtends pas na 30 minuten aan. Begin de dag op jouw tempo.",
+    "Plan je training als een vergadering — zet hem in je agenda. Wat gepland staat, gebeurt.",
     "De 2-minuten regel: als iets minder dan 2 minuten duurt, doe het dan direct.",
-    "Drink een groot glas water direct na het opstaan. Je lichaam is 8 uur uitgedroogd.",
-    "Plan je zwaarste taak als eerste in de ochtend — dan heb je al gewonnen voor de lunch.",
-    "Gebruik de Pomodoro techniek: 25 minuten focus, 5 minuten pauze.",
-    "Maak je bed elke ochtend. Het is je eerste overwinning van de dag.",
-    "Leg kleding voor morgen 's avonds klaar. Bespaar energie voor wat telt.",
-    "Gebruik dark mode altijd. Minder oogvermoeidheid, minder batterijverbruik.",
-    "Luister podcasts op 1.5x snelheid. Wennen in een dag.",
-    "Schrijf 's avonds 3 dingen op die je de volgende dag wilt doen.",
+    "Maak de avond ervoor al klaar wat je de volgende ochtend nodig hebt. Bespaar die energie voor wat telt.",
+    "Schrijf 's avonds 3 prioriteiten op voor morgen. Je brein verwerkt dit terwijl je slaapt.",
+    "Batch vergelijkbare taken samen — e-mail, klussen, boodschappen. Minder context switching = meer energie.",
   ],
   facts: [
-    "Je brein verbruikt 20% van alle energie maar weegt slechts 2% van je lichaamsgewicht.",
-    "Honing bederft nooit. In Egyptische piramiden gevonden honing van 3000 jaar was nog eetbaar.",
-    "Cleopatra leefde dichter bij de iPhone dan bij de bouw van de piramides.",
-    "De Eiffelstoren wordt 's zomers 15 cm langer door warmte-uitzetting.",
-    "Nintendo werd opgericht in 1889 — als speelkaartenmaker.",
-    "Een octopus heeft drie harten, blauw bloed en negen hersenen.",
-    "Het menselijk lichaam heeft genoeg ijzer om een spijker van 3 cm te maken.",
-    "Er zijn meer mogelijke schaakspellen dan atomen in het zichtbare universum.",
-    "Mensen en bananen delen 60% van hun DNA.",
-    "Het duurt 8 minuten en 20 seconden voor licht van de zon om de aarde te bereiken.",
+    "Je brein kan niet onderscheid maken tussen een herinnering en een verbeelding — beide activeren dezelfde neuronen.",
+    "Vaders die actief betrokken zijn hebben kinderen met een aantoonbaar hogere IQ en emotionele intelligentie.",
+    "Home Assistant heeft meer dan 3000 integraties — jij gebruikt er waarschijnlijk maar 0.1% van.",
+    "Regelmatige krachttraining verhoogt je testosteronspiegel significant, wat direct effect heeft op energie en focus.",
+    "Het menselijk brein verwerkt visuele informatie 60.000 keer sneller dan tekst.",
   ]
 };
 
-function getDayFallback(arr) {
-  const d = new Date();
-  return arr[(Math.floor((d - new Date(d.getFullYear(),0,0)) / 86400000)) % arr.length];
+function getRandFallback(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+// ══════════════════════════════════════════════════════
+// GEMINI PROMPT — volledig gepersonaliseerd
+// ══════════════════════════════════════════════════════
+function buildPrompt() {
+  const dag = new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
+  const uur = new Date().getHours();
+  const dagdeel = uur < 12 ? 'ochtend' : uur < 17 ? 'middag' : 'avond';
+
+  return `Je genereert gepersonaliseerde content voor ${REMY.naam} (${REMY.leeftijd} jaar).
+
+PERSOONLIJKE CONTEXT VAN ${REMY.naam.toUpperCase()}:
+- Partner: ${REMY.partner}
+- Kinderen: ${REMY.kinderen.join(', ')}
+- Werk: ${REMY.werk}
+- Woont in: ${REMY.woonplaats}
+- Hobby's: ${REMY.hobby.join(', ')}
+- Bijzonderheden: ${REMY.bijzonder.join(', ')}
+- Het is nu: ${dagdeel} op ${dag}
+
+OPDRACHT:
+Genereer 3 unieke, PERSOONLIJKE items voor ${REMY.naam}. Gebruik zijn context actief — verwijs naar zijn kinderen, partner, werk, fitness of smarthome. Maak het voelbaar dat dit specifiek voor hem is geschreven, niet generiek.
+
+Regels:
+- Schrijf in het Nederlands
+- Maximaal 2-3 zinnen per item
+- Wees direct, no-nonsense (hij houdt niet van wolligheid)
+- Quote mag emotioneel zijn maar niet soft
+- Verras hem — geen clichés
+- Elke keer anders dan de vorige keer (hoge temperatuur)
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen markdown backticks:
+{
+  "greeting": "korte begroeting voor ${REMY.naam} passend bij de ${dagdeel} (max 8 woorden, direct en persoonlijk)",
+  "subtext": "één zin die zijn situatie raakt — vader, werker, gamer, bouwer (max 15 woorden)",
+  "quote": "motiverende of persoonlijke quote specifiek voor ${REMY.naam}'s leven (max 3 zinnen)",
+  "hack": "concrete life hack of tip die past bij zijn leven als vader/kostwinner/gamer/fitness (max 3 zinnen)",
+  "fact": "interessant of verrassend feit — mag gaan over gaming, smarthome, gezin, wetenschap, technologie (max 2 zinnen)"
+}`;
 }
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // API KEY BEHEER
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const KEY_STORE = 'remy_gemini_key';
-const CACHE_STORE = 'remy_daily_cache_v2';
 
-function getApiKey() {
-  try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; }
-}
+function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
 
 function saveApiKey() {
   const val = document.getElementById('apikey-input').value.trim();
   if (!val || !val.startsWith('AIza')) {
-    alert('❌ Dat ziet er niet uit als een geldige Gemini API key. Begin met "AIza..."');
+    alert('❌ Geen geldige Gemini API key. Moet beginnen met "AIza..."');
     return;
   }
-  // REMY: dit is ALLEEN je Gemini API key, niet je wachtwoord
   try { localStorage.setItem(KEY_STORE, val); } catch {}
   closeApiKeyModal();
-  clearDailyCache();
   openPopup();
-  loadDailyContent();
+  loadContent();
 }
 
-function skipApiKey() {
-  closeApiKeyModal();
-  openPopup();
-  loadFallbackContent('Fallback quotes');
-}
-
+function skipApiKey() { closeApiKeyModal(); openPopup(); loadFallback(); }
 function openApiKeyModal() {
   document.getElementById('apikey-modal').classList.add('show');
-  const existing = getApiKey();
-  if (existing) document.getElementById('apikey-input').value = existing;
+  const k = getApiKey();
+  if (k) document.getElementById('apikey-input').value = k;
 }
+function closeApiKeyModal() { document.getElementById('apikey-modal').classList.remove('show'); }
 
-function closeApiKeyModal() {
-  document.getElementById('apikey-modal').classList.remove('show');
-}
+// ══════════════════════════════════════════════════════
+// GEMINI FETCH
+// ══════════════════════════════════════════════════════
+async function fetchGemini() {
+  const key = getApiKey();
+  if (!key) { loadFallback(); return; }
 
-function clearDailyCache() {
-  try { localStorage.removeItem(CACHE_STORE); } catch {}
-}
+  showShimmers();
 
-// ══════════════════════════════════════════════════════════════
-// GEMINI API CALL
-// ══════════════════════════════════════════════════════════════
-async function fetchFromGemini(apiKey) {
-  const today = new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
-
-  const prompt = `Genereer voor vandaag (${today}) drie unieke Nederlandse items voor een persoonlijke AI hub pagina van Remy (36 jaar, man, gezin, gamer, smarthome, fitness). 
-
-Geef ALLEEN dit JSON terug, zonder uitleg of markdown:
-{
-  "quote": "een originele motiverende quote in het Nederlands (max 2 zinnen, niet cliché)",
-  "hack": "een praktische life hack of productiviteitstip in het Nederlands (max 2 zinnen, concreet en bruikbaar)",
-  "fact": "een interessant, verrassend of grappig feit in het Nederlands (max 2 zinnen, echt waar)"
-}`;
-
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { temperature: 0.95, maxOutputTokens: 400 }
-      })
-    }
-  );
-
-  if (!res.ok) throw new Error(`API error: ${res.status}`);
-  const data = await res.json();
-  const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
-  const cleaned = raw.replace(/```json|```/g, '').trim();
-  return JSON.parse(cleaned);
-}
-
-// ══════════════════════════════════════════════════════════════
-// DAILY CONTENT LOGICA
-// ══════════════════════════════════════════════════════════════
-function getTodayKey() {
-  const d = new Date();
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-}
-
-function getCachedContent() {
   try {
-    const raw = localStorage.getItem(CACHE_STORE);
-    if (!raw) return null;
-    const { key, content } = JSON.parse(raw);
-    if (key === getTodayKey()) return content;
-    return null;
-  } catch { return null; }
-}
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: buildPrompt() }] }],
+          generationConfig: { temperature: 1.1, maxOutputTokens: 500 }
+        })
+      }
+    );
 
-function setCachedContent(content) {
-  try {
-    localStorage.setItem(CACHE_STORE, JSON.stringify({ key: getTodayKey(), content }));
-  } catch {}
-}
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const cleaned = raw.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
 
-function setPopupContent(quote, hack, fact, source) {
-  document.getElementById('popup-quote').textContent = quote;
-  document.getElementById('popup-hack').textContent  = hack;
-  document.getElementById('popup-fact').textContent  = fact;
-  document.getElementById('ai-source-label').textContent = source;
-}
+    document.getElementById('popup-greeting').textContent = parsed.greeting || `Yo ${REMY.naam} 👋`;
+    document.getElementById('popup-subtext').textContent  = parsed.subtext  || '';
+    document.getElementById('popup-quote').textContent    = parsed.quote;
+    document.getElementById('popup-hack').textContent     = parsed.hack;
+    document.getElementById('popup-fact').textContent     = parsed.fact;
+    document.getElementById('ai-label').textContent       = '✨ Gemini — vers gegenereerd';
 
-function loadFallbackContent(label) {
-  setPopupContent(
-    getDayFallback(FALLBACK.quotes),
-    getDayFallback(FALLBACK.hacks),
-    getDayFallback(FALLBACK.facts),
-    label || 'Dagelijkse selectie'
-  );
-}
-
-async function loadDailyContent() {
-  // Check cache eerst
-  const cached = getCachedContent();
-  if (cached) {
-    setPopupContent(cached.quote, cached.hack, cached.fact, '✓ Gemini — gecached');
-    return;
+  } catch (err) {
+    console.warn('Gemini fout:', err);
+    loadFallback('Fallback — API tijdelijk niet beschikbaar');
   }
+}
 
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    loadFallbackContent('Fallback — stel API key in');
-    return;
-  }
+function loadFallback(label) {
+  document.getElementById('popup-greeting').textContent = `Yo ${REMY.naam} 👋`;
+  document.getElementById('popup-subtext').textContent  = 'Vader. Bouwer. Gamer. Goed bezig.';
+  document.getElementById('popup-quote').textContent    = getRandFallback(FALLBACK.quotes);
+  document.getElementById('popup-hack').textContent     = getRandFallback(FALLBACK.hacks);
+  document.getElementById('popup-fact').textContent     = getRandFallback(FALLBACK.facts);
+  document.getElementById('ai-label').textContent       = label || 'Fallback content';
+}
 
-  // Toon shimmer loading state
+function showShimmers() {
   ['popup-quote','popup-hack','popup-fact'].forEach(id => {
     document.getElementById(id).innerHTML =
-      '<div class="loading-shimmer"></div><div class="loading-shimmer"></div>';
+      '<div class="shimmer"></div><div class="shimmer short"></div>';
   });
-
-  try {
-    const result = await fetchFromGemini(apiKey);
-    setCachedContent(result);
-    setPopupContent(result.quote, result.hack, result.fact, '✨ Gemini gegenereerd');
-  } catch (err) {
-    console.warn('Gemini API fout:', err);
-    loadFallbackContent('Fallback (API tijdelijk niet beschikbaar)');
-  }
+  document.getElementById('popup-greeting').textContent = `Yo ${REMY.naam}...`;
+  document.getElementById('popup-subtext').textContent  = 'Even Gemini raadplegen...';
 }
 
-// ══════════════════════════════════════════════════════════════
-// POPUP LOGICA
-// ══════════════════════════════════════════════════════════════
+function loadContent() { fetchGemini(); }
+
+// ══════════════════════════════════════════════════════
+// POPUP
+// ══════════════════════════════════════════════════════
 function formatDate() {
   return new Date().toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
 }
 
 function openPopup() {
-  const o = document.getElementById('popup-overlay');
-  o.style.display = 'flex';
   document.getElementById('popup-date').textContent = formatDate();
+  document.getElementById('popup-overlay').classList.add('show');
+  loadContent();
 }
 
 function closePopup() {
-  const o = document.getElementById('popup-overlay');
-  o.style.opacity = '1';
-  o.style.transition = 'opacity 0.25s';
-  o.style.opacity = '0';
-  setTimeout(() => o.style.display = 'none', 260);
+  document.getElementById('popup-overlay').classList.remove('show');
+}
+
+function refreshContent() {
+  loadContent();
 }
 
 document.getElementById('popup-overlay').addEventListener('click', function(e) {
   if (e.target === this) closePopup();
 });
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // LAST USED
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const REC_KEY = 'remy_hub_recent_v2';
-function getRecent() { try { return JSON.parse(localStorage.getItem(REC_KEY) || '[]'); } catch { return []; } }
-function saveRecent(href) {
-  let l = getRecent().filter(h => h !== href); l.unshift(href);
-  try { localStorage.setItem(REC_KEY, JSON.stringify(l.slice(0,3))); } catch {}
-}
-function applyRecent() {
-  const r = getRecent();
-  document.querySelectorAll('.card').forEach(c => c.classList.toggle('recent', r.includes(c.getAttribute('href'))));
-}
-document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => saveRecent(c.getAttribute('href'))));
+function getRecent() { try { return JSON.parse(localStorage.getItem(REC_KEY)||'[]'); } catch { return []; } }
+function saveRecent(h) { let l=getRecent().filter(x=>x!==h); l.unshift(h); try{localStorage.setItem(REC_KEY,JSON.stringify(l.slice(0,3)));}catch{} }
+function applyRecent() { const r=getRecent(); document.querySelectorAll('.card').forEach(c=>c.classList.toggle('recent',r.includes(c.getAttribute('href')))); }
+document.querySelectorAll('.card').forEach(c=>c.addEventListener('click',()=>saveRecent(c.getAttribute('href'))));
 applyRecent();
 
-// ══════════════════════════════════════════════════════════════
-// KEYBOARD SHORTCUTS
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════════════
 document.addEventListener('keydown', e => {
   const active = document.activeElement;
-  const typing = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
-  if (e.key === '/' && !typing) { e.preventDefault(); document.getElementById('search').focus(); return; }
-  if (e.key === 'Escape') {
+  const typing = active && (active.tagName==='INPUT'||active.tagName==='TEXTAREA');
+  if (e.key==='/' && !typing) { e.preventDefault(); document.getElementById('search').focus(); return; }
+  if (e.key==='Escape') {
     if (document.getElementById('apikey-modal').classList.contains('show')) { closeApiKeyModal(); return; }
-    if (document.getElementById('popup-overlay').style.display !== 'none') { closePopup(); return; }
-    if (typing) { active.blur(); filterCards(''); document.getElementById('search').value = ''; }
+    if (document.getElementById('popup-overlay').classList.contains('show')) { closePopup(); return; }
+    if (typing) { active.blur(); filterCards(''); document.getElementById('search').value=''; }
     return;
   }
   if (typing) return;
   const num = parseInt(e.key);
-  if (num >= 1 && num <= 9) {
-    const card = document.querySelector(`.card[data-key="${num}"]`);
-    if (card) { saveRecent(card.getAttribute('href')); window.open(card.href, '_blank', 'noopener'); }
+  if (num>=1&&num<=9) {
+    const card=document.querySelector(`.card[data-key="${num}"]`);
+    if (card) { saveRecent(card.getAttribute('href')); window.open(card.href,'_blank','noopener'); }
   }
 });
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // SEARCH
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 const searchEl = document.getElementById('search');
 function filterCards(q) {
-  q = q.toLowerCase().trim();
-  let total = 0;
-  document.querySelectorAll('.section').forEach(s => {
-    let vis = 0;
-    s.querySelectorAll('.card').forEach(c => {
-      const m = !q || c.textContent.toLowerCase().includes(q);
-      c.classList.toggle('hidden', !m);
-      if (m) vis++;
-    });
-    s.classList.toggle('empty', vis === 0);
-    total += vis;
+  q=q.toLowerCase().trim(); let total=0;
+  document.querySelectorAll('.section').forEach(s=>{
+    let vis=0;
+    s.querySelectorAll('.card').forEach(c=>{ const m=!q||c.textContent.toLowerCase().includes(q); c.classList.toggle('hidden',!m); if(m)vis++; });
+    s.classList.toggle('empty',vis===0); total+=vis;
   });
-  const nr = document.getElementById('no-results');
-  nr.style.display = (!total && q) ? 'block' : 'none';
-  document.getElementById('no-results-term').textContent = q;
+  document.getElementById('no-results').style.display=(!total&&q)?'block':'none';
+  document.getElementById('no-results-term').textContent=q;
 }
-searchEl.addEventListener('input', e => filterCards(e.target.value));
+searchEl.addEventListener('input',e=>filterCards(e.target.value));
 
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 // INIT
-// ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
 window.addEventListener('load', () => {
-  const hasKey = !!getApiKey();
-  if (!hasKey) {
-    // Eerste keer: toon API key modal vóór popup
+  document.getElementById('popup-date').textContent = formatDate();
+  if (!getApiKey()) {
     openApiKeyModal();
   } else {
     openPopup();
-    loadDailyContent();
   }
 });
 </script>
