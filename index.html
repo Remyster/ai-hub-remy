@@ -398,7 +398,7 @@ header h1 {
       <div class="popup-block-text" id="popup-fact"><div class="shimmer"></div><div class="shimmer short"></div></div>
     </div>
     <button class="popup-close" onclick="closePopup()">Let's go Remy → Hub openen 🚀</button>
-    <button class="popup-refresh" onclick="fetchGemini()"><span class="refresh-icon">↻</span> Andere content genereren</button>
+    <button class="popup-refresh" ><span class="refresh-icon">↻</span> Andere content genereren</button>
   </div>
 </div>
 
@@ -729,10 +729,9 @@ function saveApiKey() {
   try { localStorage.setItem(KEY_STORE, val); } catch {}
   closeApiKeyModal();
   openPopup();
-  fetchGemini();
 }
 
-function skipApiKey() { closeApiKeyModal(); openPopup(); loadFallback(); }
+function skipApiKey() { closeApiKeyModal(); openPopup(); }
 function openApiKeyModal() {
   document.getElementById('apikey-modal').classList.add('show');
   const k = getApiKey(); if (k) document.getElementById('apikey-input').value = k;
@@ -766,10 +765,19 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 }`;
 }
 
+// ── LOADING FLAG — voorkomt dubbele calls ──
+let geminiLoading = false;
+
 async function fetchGemini() {
+  // Blokkeer als er al een call loopt
+  if (geminiLoading) return;
+  geminiLoading = true;
+
   const key = getApiKey();
-  if (!key) { loadFallback(); return; }
+  if (!key) { loadFallback(); geminiLoading = false; return; }
+
   showShimmers();
+
   try {
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
@@ -795,6 +803,9 @@ async function fetchGemini() {
   } catch (err) {
     console.warn('Gemini fout:', err);
     loadFallback('Fallback — API tijdelijk niet beschikbaar');
+  } finally {
+    // Altijd vrijgeven, ook bij error
+    geminiLoading = false;
   }
 }
 
@@ -821,9 +832,21 @@ function openPopup() {
   fetchGemini();
 }
 
-function closePopup() { document.getElementById('popup-overlay').classList.remove('show'); }
+function closePopup() {
+  document.getElementById('popup-overlay').classList.remove('show');
+}
 
-document.getElementById('popup-overlay').addEventListener('click', function(e) { if (e.target === this) closePopup(); });
+// Klik buiten popup = sluiten (NIET opnieuw fetchen)
+document.getElementById('popup-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePopup();
+});
+
+// Refresh knop — nieuwe call forceren
+document.querySelector('.popup-refresh').addEventListener('click', function(e) {
+  e.stopPropagation(); // voorkomt bubbling naar overlay
+  geminiLoading = false; // reset flag zodat nieuwe call mogelijk is
+  fetchGemini();
+});
 
 // ══════════════════════════════════════════════
 // LAST USED
