@@ -362,15 +362,16 @@ header h1 {
 <!-- ══ API KEY MODAL ══ -->
 <div id="apikey-modal">
   <div id="apikey-box">
-    <h3>🔑 Gemini API Key instellen</h3>
+    <h3>🔑 Claude API Key instellen</h3>
     <div class="warning-box">
-      ⚠️ REMY — DIT IS NIET JE GOOGLE WACHTWOORD.<br>
-      Dit is een aparte gratis sleutel van Google AI Studio.<br>
-      → <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com/app/apikey</a><br>
-      Klik "Create API Key" → kopieer → plak hieronder.
+      ⚠️ REMY — DIT IS NIET JE CLAUDE WACHTWOORD.<br>
+      Dit is een aparte sleutel van Anthropic Console.<br>
+      → <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a><br>
+      Klik "Create Key" → naam "Hub" → kopieer → plak hieronder.<br>
+      Stel $5 limiet in via Billing → Limits. Dan kan het nooit uit de hand lopen.
     </div>
-    <p>De key wordt lokaal opgeslagen in je browser. Gaat alleen naar Google's API.</p>
-    <input type="password" id="apikey-input" placeholder="AIzaSy...">
+    <p>Wordt lokaal opgeslagen in jouw browser. Gaat alleen naar Anthropic API. Kost je letterlijk centen per maand.</p>
+    <input type="password" id="apikey-input" placeholder="sk-ant-...">
     <div class="apikey-btns">
       <button class="btn-save" onclick="saveApiKey()">✓ Opslaan & activeren</button>
       <button class="btn-skip" onclick="skipApiKey()">Overslaan (fallback)</button>
@@ -720,12 +721,12 @@ const FALLBACK = {
 
 function getRand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-const KEY_STORE = 'remy_gemini_key';
+const KEY_STORE = 'remy_claude_key';
 function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
 
 function saveApiKey() {
   const val = document.getElementById('apikey-input').value.trim();
-  if (!val || !val.startsWith('AIza')) { alert('❌ Geen geldige key. Begint met "AIza..."'); return; }
+  if (!val || !val.startsWith('sk-ant-')) { alert('❌ Geen geldige Claude key. Begint met "sk-ant-..."'); return; }
   try { localStorage.setItem(KEY_STORE, val); } catch {}
   closeApiKeyModal();
   openPopup();
@@ -766,46 +767,59 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 }
 
 // ── LOADING FLAG — voorkomt dubbele calls ──
-let geminiLoading = false;
+let aiLoading = false;
 
-async function fetchGemini() {
-  // Blokkeer als er al een call loopt
-  if (geminiLoading) return;
-  geminiLoading = true;
+async function fetchAI() {
+  if (aiLoading) return;
+  aiLoading = true;
 
   const key = getApiKey();
-  if (!key) { loadFallback(); geminiLoading = false; return; }
+  if (!key) { loadFallback('Geen API key — klik 🔑 om in te stellen'); aiLoading = false; return; }
 
   showShimmers();
 
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: buildPrompt() }] }],
-          generationConfig: { temperature: 1.1, maxOutputTokens: 500 }
-        })
-      }
-    );
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'onbekend'}`);
+    }
+
     const data = await res.json();
-    const raw = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const raw = data.content?.[0]?.text || '';
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
     document.getElementById('popup-greeting').textContent = parsed.greeting || `Yo ${REMY.naam} 👋`;
     document.getElementById('popup-subtext').textContent  = parsed.subtext  || '';
     document.getElementById('popup-quote').textContent    = parsed.quote;
     document.getElementById('popup-hack').textContent     = parsed.hack;
     document.getElementById('popup-fact').textContent     = parsed.fact;
-    document.getElementById('ai-label').textContent       = '✨ Gemini — vers gegenereerd';
+    document.getElementById('ai-label').textContent       = '✨ Claude — vers gegenereerd';
+
   } catch (err) {
-    console.warn('Gemini fout:', err); const errMsg = err?.message || String(err); let uitleg = '❌ ' + errMsg; if(errMsg.includes('403')||errMsg.includes('USER_LOCATION')){uitleg='🇪🇺 EU-blokkade — gratis tier werkt niet in NL. Wissel naar betaald of Claude API.';} else if(errMsg.includes('401')||errMsg.includes('API_KEY')){uitleg='🔑 Ongeldige API key — maak nieuwe op aistudio.google.com/app/apikey';} else if(errMsg.includes('429')){uitleg='⏱️ Rate limit — even wachten.';} else if(errMsg.includes('404')){uitleg='🤖 Model niet gevonden.';}
+    console.warn('Claude API fout:', err);
+    const msg = err?.message || String(err);
+    let uitleg = '❌ ' + msg;
+    if (msg.includes('401')) uitleg = '🔑 Ongeldige API key — maak nieuwe op console.anthropic.com/settings/keys';
+    else if (msg.includes('429')) uitleg = '⏱️ Rate limit — even wachten, zo terug.';
+    else if (msg.includes('403')) uitleg = '🚫 Geen toegang — check je API key rechten.';
     loadFallback(uitleg);
   } finally {
-    // Altijd vrijgeven, ook bij error
-    geminiLoading = false;
+    aiLoading = false;
   }
 }
 
@@ -823,29 +837,27 @@ function showShimmers() {
     document.getElementById(id).innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
   });
   document.getElementById('popup-greeting').textContent = `Even wachten ${REMY.naam}...`;
-  document.getElementById('popup-subtext').textContent  = 'Gemini genereert iets persoonlijks voor jou...';
+  document.getElementById('popup-subtext').textContent  = 'Claude genereert iets persoonlijks voor jou...';
 }
 
 function openPopup() {
   document.getElementById('popup-date').textContent = new Date().toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('popup-overlay').classList.add('show');
-  fetchGemini();
+  fetchAI();
 }
 
 function closePopup() {
   document.getElementById('popup-overlay').classList.remove('show');
 }
 
-// Klik buiten popup = sluiten (NIET opnieuw fetchen)
 document.getElementById('popup-overlay').addEventListener('click', function(e) {
   if (e.target === this) closePopup();
 });
 
-// Refresh knop — nieuwe call forceren
 document.querySelector('.popup-refresh').addEventListener('click', function(e) {
-  e.stopPropagation(); // voorkomt bubbling naar overlay
-  geminiLoading = false; // reset flag zodat nieuwe call mogelijk is
-  fetchGemini();
+  e.stopPropagation();
+  aiLoading = false;
+  fetchAI();
 });
 
 // ══════════════════════════════════════════════
