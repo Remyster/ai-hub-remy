@@ -780,7 +780,7 @@ async function fetchGemini() {
 
   try {
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${key}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -801,8 +801,8 @@ async function fetchGemini() {
     document.getElementById('popup-fact').textContent     = parsed.fact;
     document.getElementById('ai-label').textContent       = '✨ Gemini — vers gegenereerd';
   } catch (err) {
-    console.warn('Gemini fout:', err);
-    loadFallback('Fallback — API tijdelijk niet beschikbaar');
+    console.warn('Gemini fout:', err); const errMsg = err?.message || String(err); let uitleg = '❌ ' + errMsg; if(errMsg.includes('403')||errMsg.includes('USER_LOCATION')){uitleg='🇪🇺 EU-blokkade — gratis tier werkt niet in NL. Wissel naar betaald of Claude API.';} else if(errMsg.includes('401')||errMsg.includes('API_KEY')){uitleg='🔑 Ongeldige API key — maak nieuwe op aistudio.google.com/app/apikey';} else if(errMsg.includes('429')){uitleg='⏱️ Rate limit — even wachten.';} else if(errMsg.includes('404')){uitleg='🤖 Model niet gevonden.';}
+    loadFallback(uitleg);
   } finally {
     // Altijd vrijgeven, ook bij error
     geminiLoading = false;
