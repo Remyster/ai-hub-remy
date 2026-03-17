@@ -402,9 +402,191 @@ header h1 {
 @keyframes popIn    { from{opacity:0;transform:scale(0.88)}to{opacity:1;transform:scale(1)} }
 @keyframes spin     { from{transform:rotate(0deg)}to{transform:rotate(360deg)} }
 .spinning { animation: spin 0.5s linear; }
+
+/* ══ PROMPT BUILDER FAB ══ */
+#pb-fab {
+  position: fixed; bottom: 28px; right: 28px; z-index: 900;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border: none; color: #fff; font-size: 1.5em; cursor: pointer;
+  box-shadow: 0 8px 32px rgba(102,126,234,0.45);
+  display: flex; align-items: center; justify-content: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+#pb-fab:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(102,126,234,0.6); }
+#pb-fab .fab-tooltip {
+  position: absolute; right: 66px; top: 50%; transform: translateY(-50%);
+  background: rgba(13,14,24,0.95); border: 1px solid rgba(102,126,234,0.3);
+  border-radius: 8px; padding: 6px 12px;
+  font-family: 'DM Mono', monospace; font-size: 0.7em; letter-spacing: 0.06em;
+  white-space: nowrap; color: var(--text); pointer-events: none;
+  opacity: 0; transition: opacity 0.2s;
+}
+#pb-fab:hover .fab-tooltip { opacity: 1; }
+
+/* ══ PROMPT BUILDER MODAL ══ */
+#pb-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
+  z-index: 1000; display: none;
+  align-items: center; justify-content: center; padding: 20px;
+}
+#pb-overlay.show { display: flex; animation: fadeIn 0.25s ease both; }
+#pb-modal {
+  background: #0d0e18; border: 1px solid rgba(102,126,234,0.2);
+  border-radius: 22px; padding: 32px 28px 24px;
+  max-width: 620px; width: 100%;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
+  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+  max-height: 92vh; overflow-y: auto;
+}
+.pb-title {
+  font-family: 'Syne', sans-serif; font-size: 1.2em; font-weight: 800;
+  background: linear-gradient(135deg, #e8eaf0 30%, #667eea);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin-bottom: 4px;
+}
+.pb-sub { font-size: 0.72em; color: var(--muted); margin-bottom: 22px; letter-spacing: 0.04em; }
+.pb-label { font-size: 0.63em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: block; }
+
+/* Platform pills */
+.pb-platforms { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.pb-pill {
+  padding: 7px 16px; border-radius: 20px; border: 1px solid var(--border);
+  background: none; color: var(--muted);
+  font-family: 'DM Mono', monospace; font-size: 0.72em; letter-spacing: 0.06em;
+  cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 6px;
+}
+.pb-pill:hover { border-color: rgba(102,126,234,0.4); color: var(--text); }
+.pb-pill.active { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.5); color: rgba(102,126,234,1); }
+
+/* Type pills */
+.pb-types { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.pb-type {
+  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  background: none; color: var(--muted);
+  font-family: 'DM Mono', monospace; font-size: 0.68em; letter-spacing: 0.06em;
+  cursor: pointer; transition: all 0.18s;
+}
+.pb-type:hover { border-color: rgba(204,120,92,0.4); color: var(--text); }
+.pb-type.active { background: rgba(204,120,92,0.1); border-color: rgba(204,120,92,0.5); color: #cc785c; }
+
+/* Textarea */
+#pb-input {
+  width: 100%; padding: 14px 16px; margin-bottom: 16px;
+  background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 12px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.85em; line-height: 1.6;
+  resize: vertical; outline: none; min-height: 100px; transition: border-color 0.2s;
+}
+#pb-input:focus { border-color: rgba(102,126,234,0.4); }
+#pb-input::placeholder { color: var(--muted); }
+
+/* Generate button */
+.pb-generate {
+  width: 100%; padding: 14px; margin-bottom: 20px;
+  background: linear-gradient(135deg, rgba(102,126,234,0.2), rgba(118,75,162,0.2));
+  border: 1px solid rgba(102,126,234,0.35); border-radius: 12px;
+  color: rgba(102,126,234,1); font-family: 'DM Mono', monospace;
+  font-size: 0.85em; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s;
+}
+.pb-generate:hover { background: linear-gradient(135deg, rgba(102,126,234,0.3), rgba(118,75,162,0.3)); }
+.pb-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Output */
+#pb-output-wrap { display: none; }
+.pb-output-label {
+  font-size: 0.63em; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #10b981; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.pb-output-label::after { content: ''; flex: 1; height: 1px; background: rgba(16,185,129,0.2); }
+#pb-output {
+  width: 100%; padding: 16px; margin-bottom: 10px;
+  background: rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 12px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.82em; line-height: 1.75;
+  resize: vertical; outline: none; min-height: 120px;
+}
+#pb-output:focus { border-color: rgba(16,185,129,0.3); }
+.pb-actions { display: flex; gap: 10px; }
+.pb-copy {
+  flex: 1; padding: 12px; background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25); border-radius: 10px;
+  color: #10b981; font-family: 'DM Mono', monospace;
+  font-size: 0.78em; cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em;
+}
+.pb-copy:hover { background: rgba(16,185,129,0.18); }
+.pb-again {
+  padding: 12px 16px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px;
+  color: var(--muted); font-family: 'DM Mono', monospace;
+  font-size: 0.78em; cursor: pointer; transition: all 0.2s;
+}
+.pb-again:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.pb-close-btn {
+  display: block; width: 100%; margin-top: 14px; padding: 12px;
+  background: transparent; border: 1px solid var(--border); border-radius: 10px;
+  color: var(--muted); font-family: 'DM Mono', monospace;
+  font-size: 0.78em; cursor: pointer; transition: all 0.2s; letter-spacing: 0.04em;
+}
+.pb-close-btn:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.pb-error { font-size: 0.75em; color: #f87171; margin-top: 8px; display: none; }
+@media (max-width: 600px) {
+  #pb-fab { bottom: 20px; right: 20px; }
+  #pb-modal { padding: 22px 16px 18px; }
+}
 </style>
 </head>
 <body>
+
+<!-- ══ PROMPT BUILDER FAB ══ -->
+<button id="pb-fab" onclick="openPromptBuilder()" aria-label="Prompt Builder">
+  ✦
+  <span class="fab-tooltip">Prompt Builder</span>
+</button>
+
+<!-- ══ PROMPT BUILDER MODAL ══ -->
+<div id="pb-overlay">
+  <div id="pb-modal">
+    <div class="pb-title">✦ Prompt Builder</div>
+    <div class="pb-sub">Typ je ruwe idee — ik maak er een perfect geoptimaliseerde prompt van.</div>
+
+    <span class="pb-label">🎯 Platform</span>
+    <div class="pb-platforms">
+      <button class="pb-pill active" data-platform="claude">🤖 Claude / Dex</button>
+      <button class="pb-pill" data-platform="gemini">✨ Gemini</button>
+      <button class="pb-pill" data-platform="perplexity">🔍 Perplexity</button>
+      <button class="pb-pill" data-platform="chatgpt">💬 ChatGPT</button>
+      <button class="pb-pill" data-platform="copilot">🪟 Copilot</button>
+    </div>
+
+    <span class="pb-label">⚡ Type</span>
+    <div class="pb-types">
+      <button class="pb-type active" data-type="tekst">📝 Tekst</button>
+      <button class="pb-type" data-type="beeld">🎨 Beeld</button>
+      <button class="pb-type" data-type="code">💻 Code</button>
+      <button class="pb-type" data-type="analyse">🔬 Analyse</button>
+      <button class="pb-type" data-type="roleplay">🎭 Roleplay</button>
+    </div>
+
+    <span class="pb-label">💡 Jouw idee (hoe ruwer hoe beter)</span>
+    <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af..."></textarea>
+
+    <button class="pb-generate" id="pb-gen-btn" onclick="generatePrompt()">✦ Genereer prompt</button>
+
+    <div id="pb-output-wrap">
+      <div class="pb-output-label">✓ Geoptimaliseerde prompt</div>
+      <textarea id="pb-output" readonly></textarea>
+      <div class="pb-actions">
+        <button class="pb-copy" onclick="copyPrompt()">📋 Kopieer prompt</button>
+        <button class="pb-again" onclick="generatePrompt()">↻ Andere versie</button>
+      </div>
+    </div>
+
+    <div class="pb-error" id="pb-error"></div>
+    <button class="pb-close-btn" onclick="closePromptBuilder()">✕ Sluiten</button>
+  </div>
+</div>
 
 <!-- ══ API KEY MODAL ══ -->
 <div id="apikey-modal">
@@ -1230,6 +1412,199 @@ function filterCards(q) {
   document.getElementById('no-results-term').textContent=q;
 }
 searchEl.addEventListener('input',e=>filterCards(e.target.value));
+
+// ══════════════════════════════════════════════
+// PROMPT BUILDER
+// ══════════════════════════════════════════════
+const PB_PLATFORMS = {
+  claude: {
+    naam: 'Claude / Dex',
+    instructie: `Je optimaliseert prompts voor Claude (Anthropic). Claude is goed in: redeneren, nuance, lange context, instructies volgen, creatief schrijven, code. Claude werkt het beste met:
+- Duidelijke rol + context bovenaan ("Je bent een...")
+- Expliciete stijlinstructies (toon, lengte, format)
+- Stapsgewijze instructies voor complexe taken
+- XML-tags voor structuur bij lange prompts
+- Specifieke output format instructies`
+  },
+  gemini: {
+    naam: 'Gemini',
+    instructie: `Je optimaliseert prompts voor Google Gemini. Gemini is goed in: multimodaal, Google-integraties, lange context, redeneren. Gemini werkt het beste met:
+- Directe, heldere instructies zonder teveel opmaak
+- Context over wat je wil bereiken
+- Specificeer gewenst formaat expliciet
+- Gebruik "Denk stap voor stap" voor complexe taken
+- Vermeld relevante context / achtergrond`
+  },
+  perplexity: {
+    naam: 'Perplexity',
+    instructie: `Je optimaliseert prompts voor Perplexity AI. Perplexity is een zoek-AI die bronnen citeert en actuele info geeft. Perplexity werkt het beste met:
+- Zoekgerichte vragen (wat, wie, wanneer, hoe, waarom)
+- Specifieke tijdsperiodes ("recent", "2024", "laatste maand")
+- Vergelijkingsvragen ("verschil tussen X en Y")
+- Vraag om bronnen / vergelijkingstabellen
+- Afbakening van het onderwerp`
+  },
+  chatgpt: {
+    naam: 'ChatGPT / GPT-4',
+    instructie: `Je optimaliseert prompts voor ChatGPT (OpenAI GPT-4). ChatGPT werkt het beste met:
+- Rol-instructies ("Jij bent een expert in...")
+- Few-shot voorbeelden (laat zien wat je wil)
+- Duidelijke delimiters (---, ===) voor secties
+- "Denk stap voor stap" voor redeneren
+- Expliciete output format (JSON, lijst, tabel, etc.)
+- System prompt stijl instructies bovenaan`
+  },
+  copilot: {
+    naam: 'Microsoft Copilot',
+    instructie: `Je optimaliseert prompts voor Microsoft Copilot. Copilot is geïntegreerd in Microsoft 365 en het web. Copilot werkt het beste met:
+- Zakelijke, professionele toon
+- Verwijzingen naar Office-context (document, email, Excel)
+- Concrete taakbeschrijving met gewenst eindresultaat
+- Korte, directe instructies
+- Specificeer of je web-zoekresultaten wil of document-analyse`
+  }
+};
+
+const PB_TYPES = {
+  tekst: 'Het gaat om tekst genereren (schrijven, samenvatten, uitleggen, vertalen, emails, etc.)',
+  beeld: 'Het gaat om beeldgeneratie (afbeeldingen, illustraties, foto-stijlen, Stable Diffusion, Midjourney, Imagen, etc.) — geef extra aandacht aan stijl, compositie, sfeer, lichtval, en technische parameters.',
+  code: 'Het gaat om code schrijven of debuggen (geef aan welke taal, wat het moet doen, edge cases, gewenste structuur).',
+  analyse: 'Het gaat om analyse (data interpreteren, conclusies trekken, vergelijken, beoordelen, voor- en nadelen).',
+  roleplay: 'Het gaat om roleplay of persona (de AI speelt een rol, karakter of expert — geef persona, stijl, grenzen en context).'
+};
+
+let pbPlatform = 'claude';
+let pbType = 'tekst';
+let pbLoading = false;
+
+function openPromptBuilder() {
+  document.getElementById('pb-overlay').classList.add('show');
+  document.getElementById('pb-output-wrap').style.display = 'none';
+  document.getElementById('pb-error').style.display = 'none';
+}
+function closePromptBuilder() {
+  document.getElementById('pb-overlay').classList.remove('show');
+}
+
+document.getElementById('pb-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closePromptBuilder();
+});
+
+// Platform pills
+document.querySelectorAll('.pb-pill').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pb-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pbPlatform = btn.dataset.platform;
+  });
+});
+
+// Type pills
+document.querySelectorAll('.pb-type').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.pb-type').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    pbType = btn.dataset.type;
+  });
+});
+
+async function generatePrompt() {
+  if (pbLoading) return;
+  const ruwIdee = document.getElementById('pb-input').value.trim();
+  if (!ruwIdee) { document.getElementById('pb-input').focus(); return; }
+
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+
+  pbLoading = true;
+  const genBtn = document.getElementById('pb-gen-btn');
+  genBtn.disabled = true;
+  genBtn.textContent = '⏳ Genereren...';
+  document.getElementById('pb-error').style.display = 'none';
+  document.getElementById('pb-output-wrap').style.display = 'none';
+
+  const platform = PB_PLATFORMS[pbPlatform];
+  const typeContext = PB_TYPES[pbType];
+
+  const systeemPrompt = `Je bent een expert prompt engineer. Je taak: neem het ruwe idee van de gebruiker en schrijf er een perfecte, direct bruikbare prompt van die geoptimaliseerd is voor ${platform.naam}.
+
+PLATFORM KENNIS:
+${platform.instructie}
+
+TYPE: ${typeContext}
+
+REGELS:
+- Schrijf ALLEEN de geoptimaliseerde prompt zelf — geen uitleg, geen inleiding, geen afsluiting
+- De prompt moet direct kopieerbaar en bruikbaar zijn
+- Schrijf in het Nederlands tenzij het onderwerp specifiek om Engels vraagt
+- Maak de prompt concreet, specifiek en volledig
+- Voeg relevante context toe die de gebruiker misschien vergeten is
+- Bij beeld: voeg altijd stijl, compositie en sfeer parameters toe
+- Bij code: voeg taalspecificatie en outputformat toe`;
+
+  const userMsg = `Ruw idee van de gebruiker: "${ruwIdee}"\n\nSchrijf hier de geoptimaliseerde prompt voor:`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        system: systeemPrompt,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'API fout'}`);
+    }
+
+    const data = await res.json();
+    const output = data.content?.[0]?.text?.trim() || '';
+    if (!output) throw new Error('Lege response van Claude');
+
+    document.getElementById('pb-output').value = output;
+    document.getElementById('pb-output-wrap').style.display = 'block';
+    document.getElementById('pb-output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  } catch(err) {
+    const errEl = document.getElementById('pb-error');
+    errEl.textContent = '❌ ' + (err.message || 'Onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    pbLoading = false;
+    genBtn.disabled = false;
+    genBtn.textContent = '✦ Genereer prompt';
+  }
+}
+
+function copyPrompt() {
+  const text = document.getElementById('pb-output').value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector('.pb-copy');
+    btn.textContent = '✓ Gekopieerd!';
+    setTimeout(() => btn.textContent = '📋 Kopieer prompt', 2000);
+  }).catch(() => {
+    document.getElementById('pb-output').select();
+    document.execCommand('copy');
+  });
+}
+
+// Escape sluit ook prompt builder
+// (patch de bestaande keydown handler)
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('pb-overlay').classList.contains('show')) {
+    closePromptBuilder();
+  }
+}, true);
 
 // ══════════════════════════════════════════════
 // INIT
