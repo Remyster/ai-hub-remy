@@ -341,7 +341,7 @@ header h1 {
 #search:focus { border-color: rgba(102,126,234,0.45); box-shadow: 0 0 0 3px rgba(102,126,234,0.08); }
 
 /* ══ SECTIONS ══ */
-.section { margin-bottom: 36px; animation: fadeUp 0.5s ease both; opacity: 0; animation-fill-mode: both; }
+.section { margin-bottom: 24px; animation: fadeUp 0.5s ease both; opacity: 0; animation-fill-mode: both; }
 .section:nth-of-type(1) { animation-delay: 0.22s; }
 .section:nth-of-type(2) { animation-delay: 0.30s; }
 .section:nth-of-type(3) { animation-delay: 0.38s; }
@@ -351,11 +351,11 @@ header h1 {
   display: flex; align-items: center; gap: 12px;
 }
 .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 9px; }
 
 /* ══ CARDS ══ */
 .card {
-  display: block; padding: 22px 20px;
+  display: block; padding: 15px 16px;
   background: var(--surface); border: 1px solid var(--border);
   border-radius: 14px; text-decoration: none; color: var(--text);
   position: relative; overflow: hidden;
@@ -383,6 +383,7 @@ header h1 {
 .tool    { --glow: #10b981; }
 .project { --glow: #a78bfa; }
 .trade   { --glow: #f59e0b; }
+.affiliate { --glow: #38bdf8; }
 .card.hidden { display: none; }
 .section.empty { display: none; }
 #no-results { display: none; text-align: center; color: var(--muted); font-size: 0.85em; padding: 50px 20px; letter-spacing: 0.04em; }
@@ -854,10 +855,6 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏠 Home Assistant</h2><p>Smarthome dashboard</p>
       </a>
-      <a href="https://remyster.github.io/neurocut-mindfull/" class="card project" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🧠 Neurocut Mindfulness</h2><p>Focus &amp; rust voor ADHD</p>
-      </a>
     </div>
   </section>
 
@@ -882,6 +879,41 @@ header h1 {
         <h2>🤖 Trade Coach</h2><p>Claude trading chat</p>
       </a>
 
+    </div>
+  </section>
+
+  <!-- AFFILIATE -->
+  <section class="section" id="sec-affiliate">
+    <div class="section-label">Affiliate &amp; Stekkerslim</div>
+    <div class="grid">
+      <a href="https://my.daisycon.com/dashboard" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🌼 Daisycon</h2><p>Affiliate dashboard</p>
+      </a>
+      <a href="https://affiliate.bol.com/nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>📦 bol.com Affiliate</h2><p>Partner programma</p>
+      </a>
+      <a href="https://ui.awin.com/idp/en/awin/login/prelogin?redirect=%2Flogin%3FnetworkGroup%3Dawin" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🔗 Awin</h2><p>Affiliate netwerk</p>
+      </a>
+      <a href="https://www.amazon.nl/ref=nav_logo" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🛒 Amazon NL</h2><p>Affiliate shop</p>
+      </a>
+      <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🔌 Stekkerslim.nl</h2><p>Website</p>
+      </a>
+      <a href="https://github.com/Remyster/stekkerslim" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
+      </a>
+      <a href="https://claude.ai/chat/41c7aa73-443c-4b4f-b025-a581cdfe03b0" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🤖 Affiliate Coach</h2><p>Claude chat</p>
+      </a>
     </div>
   </section>
 
