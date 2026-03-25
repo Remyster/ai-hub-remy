@@ -850,6 +850,39 @@ header h1 {
 .vl-loading { text-align:center;padding:40px;color:var(--muted);font-size:0.82em; }
 @media(max-width:600px) { .vl-row { grid-template-columns:1fr auto; } .vl-incasso { display:none; } }
 
+
+/* ══ SPAAR UITGEBREID ══ */
+.vl-spaar-grid-new { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px; }
+.vl-spaar-box-new {
+  padding:14px;border-radius:12px;background:rgba(167,139,250,0.05);
+  border:1px solid rgba(167,139,250,0.15);
+}
+.vl-spaar-top { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px; }
+.vl-spaar-naam-new { font-size:0.62em;letter-spacing:0.12em;text-transform:uppercase;color:rgba(167,139,250,0.8); }
+.vl-spaar-saldo-new { font-family:'Syne',sans-serif;font-size:1.2em;font-weight:800;color:rgba(167,139,250,0.95); }
+.vl-spaar-actions { display:flex;gap:5px;margin-bottom:6px; }
+.vl-spaar-inp-new {
+  flex:1;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(167,139,250,0.2);
+  border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;min-width:0;
+}
+.vl-spaar-inp-new:focus { border-color:rgba(167,139,250,0.45); }
+.vl-spaar-plus { padding:5px 10px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);border-radius:6px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
+.vl-spaar-plus:hover { background:rgba(16,185,129,0.2); }
+.vl-spaar-min { padding:5px 10px;background:rgba(248,113,113,0.08);border:1px solid rgba(248,113,113,0.2);border-radius:6px;color:#f87171;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
+.vl-spaar-min:hover { background:rgba(248,113,113,0.15); }
+.vl-spaar-hist-toggle { width:100%;background:none;border:none;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.65em;cursor:pointer;text-align:left;padding:2px 0;letter-spacing:0.04em;transition:color 0.2s; }
+.vl-spaar-hist-toggle:hover { color:var(--text); }
+.vl-spaar-history { display:none;margin-top:6px;max-height:120px;overflow-y:auto; }
+.vl-spaar-history.open { display:block; }
+.vl-mut-item { display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.7em; }
+.vl-mut-item:last-child { border-bottom:none; }
+.vl-mut-plus { color:#10b981; }
+.vl-mut-min { color:#f87171; }
+.vl-mut-datum { color:var(--muted);font-size:0.9em; }
+.vl-spaar-totaal { margin-bottom:12px;padding:10px 14px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.2);border-radius:10px;display:flex;justify-content:space-between;align-items:center; }
+.vl-spaar-totaal-label { font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:rgba(167,139,250,0.7); }
+.vl-spaar-totaal-val { font-family:'Syne',sans-serif;font-size:1.1em;font-weight:800;color:rgba(167,139,250,0.95); }
+
 </style>
 </head>
 <body>
@@ -930,11 +963,22 @@ header h1 {
       </div>
     </div>
 
+    <!-- SALDO INVOER -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+      <span style="font-size:0.65em;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap;">💳 Saldo op rekening</span>
+      <input type="number" step="0.01" id="vl-saldo-input" placeholder="0.00"
+        style="flex:1;min-width:120px;max-width:160px;padding:7px 12px;background:rgba(255,255,255,0.05);border:1px solid rgba(56,189,248,0.25);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.85em;outline:none;"
+        oninput="updateVlSaldo()" onchange="saveVlSaldo()">
+      <span style="font-size:0.7em;color:var(--muted);">Vul je huidig rekening saldo in</span>
+    </div>
     <div class="vl-summary" id="vl-summary">
       <div class="vl-sum-box rood"><div class="vl-sum-label">Nog te betalen</div><div class="vl-sum-val" id="vl-nog">€0</div></div>
       <div class="vl-sum-box groen"><div class="vl-sum-label">Al betaald</div><div class="vl-sum-val" id="vl-betaald">€0</div></div>
       <div class="vl-sum-box blauw"><div class="vl-sum-label">Totaal maand</div><div class="vl-sum-val" id="vl-totaal">€0</div></div>
-      <div class="vl-sum-box geel"><div class="vl-sum-label">Inkomen</div><div class="vl-sum-val">€4.384</div></div>
+      <div class="vl-sum-box" style="--glow:#10b981;border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.05);">
+        <div class="vl-sum-label" style="color:#10b981;">Overblijft na lasten</div>
+        <div class="vl-sum-val" id="vl-over" style="color:#10b981;">€0</div>
+      </div>
     </div>
 
     <div class="vl-import-row">
@@ -948,7 +992,7 @@ header h1 {
     <!-- SPAARREKENINGEN -->
     <div class="vl-cat">
       <div class="vl-cat-header">💰 Spaarrekeningen</div>
-      <div class="vl-spaar-grid" id="vl-spaar-grid"><div class="vl-loading">laden...</div></div>
+      <div id="vl-spaar-grid"><div class="vl-loading">laden...</div></div>
     </div>
 
     <button class="vl-close" onclick="closeVasteLasten()">✕ Sluiten</button>
@@ -1034,7 +1078,7 @@ header h1 {
     <div class="header-btns">
       <span class="hbtn hbtn-green" onclick="openPopup()">✨ Dagelijkse tip</span>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
-      <span class="hbtn hbtn-muted" onclick="copyIncognito()" id="incognito-btn">🕵️ Incognito</span>
+      <span class="hbtn hbtn-muted" onclick="copyIncognito()" id="incognito-btn" title="Kopieert URL → open Ctrl+Shift+N → plak">🕵️ Incognito <span style="font-size:0.8em;opacity:0.6;">(Ctrl+Shift+N)</span></span>
       <span class="hbtn" style="color:#fbbf24;background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.18);" onclick="openWerk()">💼 Werk</span>
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
     </div>
@@ -1776,14 +1820,13 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 function copyIncognito() {
   navigator.clipboard.writeText(location.href).then(() => {
     const btn = document.getElementById('incognito-btn');
-    btn.textContent = '✓ URL gekopieerd!';
-    setTimeout(() => btn.textContent = '🕵️ Incognito', 2200);
+    btn.innerHTML = '✓ Gekopieerd! <span style="font-size:0.8em;opacity:0.6;">→ Ctrl+Shift+N → plak</span>';
+    setTimeout(() => btn.innerHTML = '🕵️ Incognito <span style="font-size:0.8em;opacity:0.6;">(Ctrl+Shift+N)</span>', 3000);
+  }).catch(() => {
+    const url = location.href;
+    const ta = document.createElement('textarea');
+    ta.value = url; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
   });
-  const t = document.createElement('div');
-  t.style.cssText = 'position:fixed;bottom:90px;right:20px;background:#0d0e18;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 16px;font-size:0.75em;color:#e8eaf0;z-index:9999;animation:fadeIn 0.2s ease both;font-family:"DM Mono",monospace;';
-  t.textContent = '→ Ctrl+Shift+N → plak URL (Ctrl+V)';
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3500);
 }
 
 // ══════════════════════════════════════════════
@@ -2299,6 +2342,7 @@ function openVasteLasten() {
   vlJaar  = nu.getFullYear();
   vlMaand = nu.getMonth() + 1;
   document.getElementById('vl-overlay').classList.add('show');
+  loadVlSaldo();
   loadVasteLasten();
 }
 function closeVasteLasten() { document.getElementById('vl-overlay').classList.remove('show'); }
@@ -2354,6 +2398,7 @@ function renderVasteLasten() {
   document.getElementById('vl-nog').textContent     = euroFmt(nogTot);
   document.getElementById('vl-betaald').textContent = euroFmt(betaaldTot);
   document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
+  updateVlSaldo();
 
   const catOrder = ['wonen','abonnement','verzekering','auto','belasting','overig'];
   let html = '';
@@ -2444,6 +2489,7 @@ async function toggleBetaald(id) {
   document.getElementById('vl-nog').textContent     = euroFmt(nogTot);
   document.getElementById('vl-betaald').textContent = euroFmt(betaaldTot);
   document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
+  updateVlSaldo();
 }
 
 async function updateBedrag(id, val) {
@@ -2457,28 +2503,153 @@ async function updateBedrag(id, val) {
   }
 }
 
-function renderSpaar() {
-  if (!vlSpaar.length) { document.getElementById('vl-spaar-grid').innerHTML = '<div class="vl-loading">Geen spaarrekeningen gevonden</div>'; return; }
-  document.getElementById('vl-spaar-grid').innerHTML = vlSpaar.map(s => `
-    <div class="vl-spaar-box">
-      <div class="vl-spaar-naam">${escHtml(s.naam)}</div>
-      <div class="vl-spaar-saldo" id="spaar-saldo-${s.id}">${euroFmt(s.saldo)}</div>
-      <input class="vl-spaar-input" type="number" step="0.01" placeholder="Bedrag toevoegen..." id="spaar-inp-${s.id}">
-      <button class="vl-spaar-btn" onclick="spaarToevoegen(${s.id})">+ Toevoegen</button>
-    </div>`).join('');
+// spaar mutaties cache per pot
+let vlMutaties = {};
+
+async function loadSpaarMutaties(spaarId) {
+  const data = await sbGet('spaar_mutaties', `spaarrekening_id=eq.${spaarId}&order=datum.desc&limit=20`);
+  vlMutaties[spaarId] = Array.isArray(data) ? data : [];
+  renderSpaarHistory(spaarId);
 }
 
-async function spaarToevoegen(id) {
+function renderSpaar() {
+  if (!vlSpaar.length) { document.getElementById('vl-spaar-grid').innerHTML = '<div class="vl-loading">Geen spaarrekeningen gevonden</div>'; return; }
+  
+  const totaal = vlSpaar.reduce((s,p) => s + parseFloat(p.saldo||0), 0);
+  
+  let html = `<div class="vl-spaar-totaal">
+    <span class="vl-spaar-totaal-label">💰 Totaal spaarsaldo</span>
+    <span class="vl-spaar-totaal-val" id="spaar-totaal-val">${euroFmt(totaal)}</span>
+  </div>
+  <div class="vl-spaar-grid-new">`;
+
+  vlSpaar.forEach(s => {
+    html += `<div class="vl-spaar-box-new" id="spaar-box-${s.id}">
+      <div class="vl-spaar-top">
+        <div class="vl-spaar-naam-new">${escHtml(s.naam)}</div>
+        <div class="vl-spaar-saldo-new" id="spaar-saldo-${s.id}">${euroFmt(s.saldo)}</div>
+      </div>
+      <div class="vl-spaar-actions">
+        <input class="vl-spaar-inp-new" type="number" step="0.01" placeholder="Bedrag..." id="spaar-inp-${s.id}">
+        <button class="vl-spaar-plus" onclick="spaarMutatie(${s.id}, 'storting')">+ In</button>
+        <button class="vl-spaar-min" onclick="spaarMutatie(${s.id}, 'opname')">− Uit</button>
+      </div>
+      <button class="vl-spaar-hist-toggle" onclick="toggleSpaarHist(${s.id})">▾ Geschiedenis</button>
+      <div class="vl-spaar-history" id="spaar-hist-${s.id}">
+        <div style="font-size:0.7em;color:var(--muted);padding:4px 0;">Laden...</div>
+      </div>
+    </div>`;
+  });
+
+  html += '</div>';
+  document.getElementById('vl-spaar-grid').innerHTML = html;
+}
+
+function renderSpaarHistory(spaarId) {
+  const el = document.getElementById('spaar-hist-'+spaarId);
+  if (!el) return;
+  const muts = vlMutaties[spaarId] || [];
+  if (!muts.length) { el.innerHTML = '<div style="font-size:0.7em;color:var(--muted);padding:4px 0;">Nog geen mutaties</div>'; return; }
+  el.innerHTML = muts.map(m => {
+    const d = new Date(m.datum);
+    const datum = `${d.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][d.getMonth()]}`;
+    const klasse = m.type === 'storting' ? 'vl-mut-plus' : 'vl-mut-min';
+    const prefix = m.type === 'storting' ? '+' : '−';
+    return `<div class="vl-mut-item">
+      <span class="${klasse}">${prefix} ${euroFmt(m.bedrag)}</span>
+      ${m.omschrijving ? `<span style="color:var(--muted);font-size:0.9em;">${escHtml(m.omschrijving)}</span>` : ''}
+      <span class="vl-mut-datum">${datum}</span>
+    </div>`;
+  }).join('');
+}
+
+function toggleSpaarHist(id) {
+  const el = document.getElementById('spaar-hist-'+id);
+  if (!el) return;
+  const isOpen = el.classList.toggle('open');
+  if (isOpen && !vlMutaties[id]) loadSpaarMutaties(id);
+  else if (isOpen) renderSpaarHistory(id);
+}
+
+async function spaarMutatie(id, type) {
   const inp = document.getElementById('spaar-inp-'+id);
   const val = parseFloat(inp?.value||0);
-  if (!val) return;
+  if (!val || val <= 0) { inp?.focus(); return; }
+  
   const spaar = vlSpaar.find(s=>s.id===id);
   if (!spaar) return;
-  const nieuw = parseFloat(spaar.saldo||0) + val;
+
+  const delta = type === 'storting' ? val : -val;
+  const nieuw = Math.max(0, parseFloat(spaar.saldo||0) + delta);
+
+  // Update saldo
   await sbPatch('spaarrekeningen', `id=eq.${id}`, { saldo: nieuw, updated_at: new Date().toISOString() });
+  
+  // Voeg mutatie toe
+  await sbPost('spaar_mutaties', {
+    spaarrekening_id: id,
+    bedrag: val,
+    type: type,
+    datum: new Date().toISOString(),
+    omschrijving: null
+  });
+
   spaar.saldo = nieuw;
-  document.getElementById('spaar-saldo-'+id).textContent = euroFmt(nieuw);
   inp.value = '';
+
+  // Update UI
+  const saldoEl = document.getElementById('spaar-saldo-'+id);
+  if (saldoEl) saldoEl.textContent = euroFmt(nieuw);
+
+  // Herlaad history als open
+  const hist = document.getElementById('spaar-hist-'+id);
+  if (hist?.classList.contains('open')) {
+    if (!vlMutaties[id]) vlMutaties[id] = [];
+    vlMutaties[id].unshift({ bedrag: val, type, datum: new Date().toISOString(), omschrijving: null });
+    renderSpaarHistory(id);
+  }
+
+  // Update totaal
+  const totaal = vlSpaar.reduce((s,p) => s + parseFloat(p.saldo||0), 0);
+  const totaalEl = document.getElementById('spaar-totaal-val');
+  if (totaalEl) totaalEl.textContent = euroFmt(totaal);
+}
+
+
+// ══ REKENING SALDO BEREKENING ══
+const VL_SALDO_KEY = 'remy_vl_saldo';
+
+function saveVlSaldo() {
+  const val = document.getElementById('vl-saldo-input')?.value;
+  if (val) localStorage.setItem(VL_SALDO_KEY, val);
+  updateVlSaldo();
+}
+
+function updateVlSaldo() {
+  const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
+  const nogEl = document.getElementById('vl-nog');
+  const nog = parseFloat(nogEl?.textContent?.replace('€','').replace(',','.').replace('.','') || 0);
+  // Simpele berekening: saldo - nog te betalen
+  const nogRaw = vlLasten.reduce((sum, l) => {
+    const b = getBetaling(l.id);
+    if (b?.betaald) return sum;
+    return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
+  }, 0);
+  const over = saldo - nogRaw;
+  const overEl = document.getElementById('vl-over');
+  if (overEl) {
+    overEl.textContent = euroFmt(over);
+    overEl.style.color = over >= 0 ? '#10b981' : '#f87171';
+    overEl.closest('.vl-sum-box').style.borderColor = over >= 0 ? 'rgba(16,185,129,0.25)' : 'rgba(248,113,113,0.25)';
+    overEl.closest('.vl-sum-box').style.background = over >= 0 ? 'rgba(16,185,129,0.05)' : 'rgba(248,113,113,0.05)';
+    overEl.previousElementSibling.style.color = over >= 0 ? '#10b981' : '#f87171';
+  }
+}
+
+function loadVlSaldo() {
+  const saved = localStorage.getItem(VL_SALDO_KEY);
+  const inp = document.getElementById('vl-saldo-input');
+  if (saved && inp) { inp.value = saved; updateVlSaldo(); }
 }
 
 // ══ CSV IMPORT (ING formaat) ══
