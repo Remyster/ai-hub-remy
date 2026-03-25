@@ -226,6 +226,21 @@ header h1 {
 .hbtn-green:hover { background: rgba(16,185,129,0.18); }
 .hbtn-yellow { color: #fbbf24; background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.18); }
 .hbtn-yellow:hover { background: rgba(251,191,36,0.15); }
+.hbtn-muted { color: var(--muted); background: rgba(255,255,255,0.04); border-color: var(--border); }
+.hbtn-muted:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+
+/* ══ DEX AI BLOKJES ══ */
+.dex-ai-blocks { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 14px; }
+.dex-ai-block {
+  padding: 12px 14px; border-radius: 10px;
+  border-left: 2px solid var(--dbc);
+  background: rgba(255,255,255,0.025); font-size: 0.78em; line-height: 1.6; color: rgba(232,234,240,0.8);
+}
+.dex-ai-block-label { font-size: 0.58em; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dbc); margin-bottom: 6px; }
+.dex-ai-block.quote-b  { --dbc: #cc785c; }
+.dex-ai-block.hack-b   { --dbc: #667eea; }
+.dex-ai-block.fact-b   { --dbc: #10b981; }
+@media (max-width: 700px) { .dex-ai-blocks { grid-template-columns: 1fr; } }
 
 /* ══ DEX CARD ══ */
 .dex-card {
@@ -273,31 +288,134 @@ header h1 {
 }
 .dex-refresh:hover { color: var(--text); transform: rotate(180deg); }
 
-/* ══ FOCUS INPUT ══ */
+/* ══ FOCUS & ONTHOUDEN ══ */
 .focus-wrap {
-  margin-bottom: 28px; animation: fadeDown 0.6s 0.1s ease both;
+  margin-bottom: 20px; animation: fadeDown 0.6s 0.1s ease both;
   opacity: 0; animation-fill-mode: both;
 }
-.focus-label { font-size: 0.65em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: block; }
-.focus-inner { display: flex; gap: 10px; align-items: center; }
-#focus-input {
-  flex: 1; padding: 12px 18px;
+.focus-label { font-size: 0.65em; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; display: block; }
+.focus-inner { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+#focus-input, #onthouden-input {
+  flex: 1; padding: 10px 14px;
   background: rgba(255,255,255,0.04); border: 1px solid var(--border);
   border-radius: 10px; color: var(--text);
-  font-family: 'DM Mono', monospace; font-size: 0.85em;
-  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: 'DM Mono', monospace; font-size: 0.82em;
+  outline: none; transition: border-color 0.2s;
 }
-#focus-input::placeholder { color: var(--muted); }
-#focus-input:focus { border-color: rgba(102,126,234,0.4); box-shadow: 0 0 0 3px rgba(102,126,234,0.06); }
+#focus-input::placeholder, #onthouden-input::placeholder { color: var(--muted); }
+#focus-input:focus { border-color: rgba(102,126,234,0.4); }
+#onthouden-input:focus { border-color: rgba(204,120,92,0.4); }
 .focus-save {
-  padding: 12px 18px; background: rgba(102,126,234,0.12);
+  padding: 10px 14px; background: rgba(102,126,234,0.12);
   border: 1px solid rgba(102,126,234,0.25); border-radius: 10px;
   color: rgba(102,126,234,0.9); font-family: 'DM Mono', monospace;
-  font-size: 0.78em; cursor: pointer; transition: all 0.2s;
-  white-space: nowrap; letter-spacing: 0.04em;
+  font-size: 0.75em; cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
-.focus-save:hover { background: rgba(102,126,234,0.2); border-color: rgba(102,126,234,0.4); }
-.focus-saved { font-size: 0.7em; color: rgba(102,126,234,0.7); letter-spacing: 0.06em; margin-top: 8px; opacity: 0; transition: opacity 0.3s; }
+.focus-save:hover { background: rgba(102,126,234,0.2); }
+.onthouden-save {
+  padding: 10px 14px; background: rgba(204,120,92,0.1);
+  border: 1px solid rgba(204,120,92,0.25); border-radius: 10px;
+  color: rgba(204,120,92,0.9); font-family: 'DM Mono', monospace;
+  font-size: 0.75em; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.onthouden-save:hover { background: rgba(204,120,92,0.2); }
+/* Todo lijst */
+.todo-list { margin-top: 6px; display: flex; flex-direction: column; gap: 5px; }
+.todo-item {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 0.8em; color: var(--text); animation: fadeUp 0.2s ease both;
+}
+.todo-item.type-doel { border-left: 2px solid rgba(102,126,234,0.5); }
+.todo-item.type-onthoud { border-left: 2px solid rgba(204,120,92,0.5); }
+.todo-tag { font-size: 0.62em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); flex-shrink: 0; }
+.todo-text { flex: 1; }
+.todo-del {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1em; padding: 0 2px; transition: color 0.15s; line-height: 1;
+}
+.todo-del:hover { color: #f87171; }
+/* Agenda knop rij */
+.agenda-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+#agenda-tekst {
+  flex: 1; min-width: 140px; padding: 9px 12px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(16,185,129,0.2);
+  border-radius: 8px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.8em; outline: none;
+}
+#agenda-tekst:focus { border-color: rgba(16,185,129,0.4); }
+#agenda-tekst::placeholder { color: var(--muted); }
+#agenda-tijd {
+  padding: 9px 10px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(16,185,129,0.2); border-radius: 8px;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.8em; outline: none; cursor: pointer;
+}
+#agenda-tijd::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+.agenda-btn {
+  padding: 9px 14px; background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.25); border-radius: 8px;
+  color: #10b981; font-family: 'DM Mono', monospace;
+  font-size: 0.75em; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.agenda-btn:hover { background: rgba(16,185,129,0.18); }
+#agenda-result { font-size: 0.7em; color: var(--muted); margin-top: 6px; }
+/* Notities widget */
+.notities-wrap {
+  margin-bottom: 16px; animation: fadeDown 0.6s 0.12s ease both;
+  opacity: 0; animation-fill-mode: both;
+}
+.notities-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.notities-header .focus-label { margin-bottom: 0; }
+.notities-teller { font-size: 0.62em; color: var(--muted); }
+.notities-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+#notitie-input {
+  flex: 1; padding: 10px 14px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(167,139,250,0.2);
+  border-radius: 10px; color: var(--text);
+  font-family: 'DM Mono', monospace; font-size: 0.82em; outline: none;
+}
+#notitie-input::placeholder { color: var(--muted); }
+#notitie-input:focus { border-color: rgba(167,139,250,0.4); }
+.notitie-add {
+  padding: 10px 14px; background: rgba(167,139,250,0.1);
+  border: 1px solid rgba(167,139,250,0.25); border-radius: 10px;
+  color: rgba(167,139,250,0.9); font-family: 'DM Mono', monospace;
+  font-size: 0.75em; cursor: pointer; white-space: nowrap; transition: all 0.2s;
+}
+.notitie-add:hover { background: rgba(167,139,250,0.2); }
+.notities-lijst { display: flex; flex-direction: column; gap: 5px; }
+.notitie-item {
+  display: flex; align-items: center; gap: 8px; padding: 9px 12px;
+  background: rgba(167,139,250,0.04); border: 1px solid rgba(167,139,250,0.12);
+  border-radius: 8px; font-size: 0.8em; color: var(--text); animation: fadeUp 0.2s ease both;
+}
+.notitie-ts { font-size: 0.65em; color: var(--muted); flex-shrink: 0; }
+.notitie-text { flex: 1; }
+.notitie-del {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1em; padding: 0 2px; transition: color 0.15s;
+}
+.notitie-del:hover { color: #f87171; }
+/* Kalender iframe blok */
+.cal-wrap {
+  margin-bottom: 20px; animation: fadeDown 0.6s 0.14s ease both;
+  opacity: 0; animation-fill-mode: both;
+}
+.cal-toggle {
+  width: 100%; padding: 11px 16px;
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.78em;
+  cursor: pointer; text-align: left; display: flex; align-items: center; justify-content: space-between;
+  transition: all 0.2s; letter-spacing: 0.04em;
+}
+.cal-toggle:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+.cal-arrow { transition: transform 0.3s; font-size: 0.8em; }
+.cal-wrap.open .cal-arrow { transform: rotate(180deg); }
+.cal-frame-wrap { display: none; margin-top: 10px; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
+.cal-wrap.open .cal-frame-wrap { display: block; }
+.cal-frame-wrap iframe { width: 100%; height: 420px; border: none; display: block; }
+/* Marketing glow */
+.marketing { --glow: #f472b6; }
 
 /* ══ GOOGLE SEARCH ══ */
 .google-wrap {
@@ -668,6 +786,7 @@ header h1 {
     <div class="header-btns">
       <span class="hbtn hbtn-green" onclick="openPopup()">✨ Dagelijkse tip</span>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
+      <span class="hbtn hbtn-muted" onclick="copyIncognito()" id="incognito-btn">🕵️ Incognito</span>
     </div>
   </header>
 
@@ -685,17 +804,66 @@ header h1 {
     <div class="dex-content" id="dex-content">
       <div class="loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Dex laadt op...</div>
     </div>
+    <div class="dex-ai-blocks" id="dex-ai-blocks">
+      <div class="dex-ai-block quote-b">
+        <div class="dex-ai-block-label">💬 Voor jou</div>
+        <div id="dex-quote"><div class="shimmer"></div><div class="shimmer short"></div></div>
+      </div>
+      <div class="dex-ai-block hack-b">
+        <div class="dex-ai-block-label">⚡ Life Hack</div>
+        <div id="dex-hack"><div class="shimmer"></div><div class="shimmer short"></div></div>
+      </div>
+      <div class="dex-ai-block fact-b">
+        <div class="dex-ai-block-label">🧠 Wist je dat</div>
+        <div id="dex-fact"><div class="shimmer"></div><div class="shimmer short"></div></div>
+      </div>
+    </div>
     <button class="dex-refresh" id="dex-refresh" title="Nieuwe boodschap">↻</button>
   </div>
 
-  <!-- FOCUS -->
+  <!-- FOCUS & ONTHOUDEN -->
   <div class="focus-wrap">
-    <span class="focus-label">🎯 Vandaag focus ik op</span>
+    <span class="focus-label">🎯 Schrijf je doel</span>
     <div class="focus-inner">
-      <input type="text" id="focus-input" placeholder="Schrijf je #1 doel voor vandaag..." autocomplete="off" spellcheck="false">
-      <button class="focus-save" id="focus-save">Opslaan</button>
+      <input type="text" id="focus-input" placeholder="Wat is je #1 doel voor vandaag?" autocomplete="off" spellcheck="false">
+      <button class="focus-save" id="focus-save">+ Doel</button>
     </div>
-    <div class="focus-saved" id="focus-saved">✓ Opgeslagen. Nu doen.</div>
+    <span class="focus-label" style="margin-top:10px;">🧠 Wat wil je onthouden</span>
+    <div class="focus-inner">
+      <input type="text" id="onthouden-input" placeholder="Iets wat je niet wil vergeten..." autocomplete="off" spellcheck="false">
+      <button class="onthouden-save" id="onthouden-save">+ Onthoud</button>
+    </div>
+    <div class="todo-list" id="todo-list"></div>
+    <div class="agenda-row">
+      <input type="text" id="agenda-tekst" placeholder="Item in agenda zetten...">
+      <input type="time" id="agenda-tijd">
+      <button class="agenda-btn" id="agenda-btn">📅 Agenda →</button>
+    </div>
+    <div id="agenda-result"></div>
+  </div>
+
+  <!-- NOTITIES (blijven staan) -->
+  <div class="notities-wrap">
+    <div class="notities-header">
+      <span class="focus-label">📌 Notities — blijven staan tot je ze verwijdert</span>
+      <span class="notities-teller" id="notities-teller"></span>
+    </div>
+    <div class="notities-input-row">
+      <input type="text" id="notitie-input" placeholder="Nieuwe notitie...">
+      <button class="notitie-add" id="notitie-add">+ Notitie</button>
+    </div>
+    <div class="notities-lijst" id="notities-lijst"></div>
+  </div>
+
+  <!-- GOOGLE CALENDAR (ingeklapt) -->
+  <div class="cal-wrap" id="cal-wrap">
+    <button class="cal-toggle" onclick="toggleCalendar()">
+      <span>📅 Google Agenda — klik om te openen</span>
+      <span class="cal-arrow">▼</span>
+    </button>
+    <div class="cal-frame-wrap">
+      <iframe src="https://calendar.google.com/calendar/embed?showNav=1&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&mode=WEEK&hl=nl" allowfullscreen></iframe>
+    </div>
   </div>
 
   <!-- GOOGLE SEARCH -->
@@ -797,6 +965,10 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🎨 Google AI Studio</h2><p>Experimenteren</p>
       </a>
+      <a href="https://notebooklm.google.com/?pli=1" class="card general" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>📓 NotebookLM</h2><p>AI notities &amp; research</p>
+      </a>
     </div>
   </section>
 
@@ -804,17 +976,13 @@ header h1 {
   <section class="section" id="sec-tools">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
-      <a href="https://notebooklm.google.com/?pli=1" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📓 NotebookLM</h2><p>Google AI notities &amp; research</p>
-      </a>
-      <a href="https://ai.ha-remy.uk" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>⚙️ OpenWebUI</h2><p>Lokale AI modellen</p>
-      </a>
       <a href="https://drive.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>☁️ Google Drive</h2><p>Bestanden &amp; docs</p>
+      </a>
+      <a href="https://photos.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>📸 Google Photos</h2><p>Foto's &amp; albums</p>
       </a>
       <a href="https://github.com/Remyster" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -854,6 +1022,14 @@ header h1 {
       <a href="https://ha.ha-remy.uk/home/overview" class="card project" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏠 Home Assistant</h2><p>Smarthome dashboard</p>
+      </a>
+      <a href="https://www.stekkerslim.nl/" class="card project" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🔌 Stekkerslim</h2><p>Website</p>
+      </a>
+      <a href="https://github.com/Remyster/stekkerslim" class="card project" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
       </a>
     </div>
   </section>
@@ -910,10 +1086,17 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
       </a>
-      <a href="https://claude.ai/chat/41c7aa73-443c-4b4f-b025-a581cdfe03b0" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🤖 Affiliate Coach</h2><p>Claude chat</p>
-      </a>
+    </div>
+  </section>
+
+  <!-- MARKETING -->
+  <section class="section" id="sec-marketing">
+    <div class="section-label">Marketing</div>
+    <div class="grid">
+      <div class="card marketing" style="opacity:0.4; cursor:default;">
+        <div class="dot"></div>
+        <h2>🚧 Komt binnenkort</h2><p>Zeg maar wat hier moet</p>
+      </div>
     </div>
   </section>
 
@@ -1299,19 +1482,146 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 }
 
 // ══════════════════════════════════════════════
-// NOTITIES
+// INCOGNITO KNOP
+// ══════════════════════════════════════════════
+function copyIncognito() {
+  navigator.clipboard.writeText(location.href).then(() => {
+    const btn = document.getElementById('incognito-btn');
+    btn.textContent = '✓ URL gekopieerd!';
+    setTimeout(() => btn.textContent = '🕵️ Incognito', 2200);
+  });
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:90px;right:20px;background:#0d0e18;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:10px 16px;font-size:0.75em;color:#e8eaf0;z-index:9999;animation:fadeIn 0.2s ease both;font-family:"DM Mono",monospace;';
+  t.textContent = '→ Ctrl+Shift+N → plak URL (Ctrl+V)';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ══════════════════════════════════════════════
+// FOCUS & ONTHOUDEN TODO LIJST
+// ══════════════════════════════════════════════
+const TODO_KEY = 'remy_hub_todos_v2';
+function getTodos() { try { return JSON.parse(localStorage.getItem(TODO_KEY)||'[]'); } catch { return []; } }
+function saveTodos(arr) { try { localStorage.setItem(TODO_KEY, JSON.stringify(arr)); } catch {} }
+
+function renderTodos() {
+  const todos = getTodos();
+  const list = document.getElementById('todo-list');
+  if (!todos.length) { list.innerHTML = ''; return; }
+  list.innerHTML = todos.map((t,i) => `
+    <div class="todo-item type-${t.type}">
+      <span class="todo-tag">${t.type === 'doel' ? '🎯 doel' : '🧠 onthoud'}</span>
+      <span class="todo-text">${escHtml(t.text)}</span>
+      <button class="todo-del" onclick="deleteTodo(${i})" title="Verwijderen">✕</button>
+    </div>`).join('');
+}
+
+function addTodo(type) {
+  const id = type === 'doel' ? 'focus-input' : 'onthouden-input';
+  const val = document.getElementById(id).value.trim();
+  if (!val) return;
+  const todos = getTodos();
+  todos.unshift({ type, text: val, ts: Date.now() });
+  saveTodos(todos);
+  document.getElementById(id).value = '';
+  renderTodos();
+}
+
+function deleteTodo(i) {
+  const todos = getTodos();
+  todos.splice(i, 1);
+  saveTodos(todos);
+  renderTodos();
+}
+
+document.getElementById('focus-save').addEventListener('click', () => addTodo('doel'));
+document.getElementById('onthouden-save').addEventListener('click', () => addTodo('onthoud'));
+document.getElementById('focus-input').addEventListener('keydown', e => { if(e.key==='Enter') addTodo('doel'); });
+document.getElementById('onthouden-input').addEventListener('keydown', e => { if(e.key==='Enter') addTodo('onthoud'); });
+
+// ══════════════════════════════════════════════
+// AGENDA → GOOGLE CALENDAR
+// ══════════════════════════════════════════════
+document.getElementById('agenda-btn').addEventListener('click', () => {
+  const tekst = document.getElementById('agenda-tekst').value.trim();
+  const tijd  = document.getElementById('agenda-tijd').value;
+  const result = document.getElementById('agenda-result');
+  if (!tekst) { result.textContent = '⚠️ Typ wat je wil inplannen.'; return; }
+  if (!tijd)  { result.textContent = '⚠️ Selecteer een tijd.'; return; }
+  const nu = new Date();
+  const [uur, min] = tijd.split(':');
+  const start = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate(), parseInt(uur), parseInt(min));
+  const eind  = new Date(start.getTime() + 30 * 60000);
+  const fmt = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+    + `&text=${encodeURIComponent('🔔 ' + tekst)}`
+    + `&dates=${fmt(start)}/${fmt(eind)}`
+    + `&details=${encodeURIComponent('Aangemaakt via Remy AI Hub')}`;
+  window.open(url, '_blank', 'noopener');
+  result.textContent = `✓ Agenda geopend voor ${tijd}`;
+  document.getElementById('agenda-tekst').value = '';
+  document.getElementById('agenda-tijd').value = '';
+  setTimeout(() => result.textContent = '', 3000);
+});
+
+// ══════════════════════════════════════════════
+// NOTITIES WIDGET (persistent, met verwijderen)
+// ══════════════════════════════════════════════
+const NOTITIE_KEY = 'remy_hub_notities_v2';
+function getNotities() { try { return JSON.parse(localStorage.getItem(NOTITIE_KEY)||'[]'); } catch { return []; } }
+function saveNotities(arr) { try { localStorage.setItem(NOTITIE_KEY, JSON.stringify(arr)); } catch {} }
+
+function renderNotities() {
+  const nots = getNotities();
+  const lijst = document.getElementById('notities-lijst');
+  const teller = document.getElementById('notities-teller');
+  teller.textContent = nots.length ? `${nots.length} notitie${nots.length>1?'s':''}` : '';
+  if (!nots.length) { lijst.innerHTML = ''; return; }
+  lijst.innerHTML = nots.map((n,i) => `
+    <div class="notitie-item">
+      <span class="notitie-ts">${n.ts}</span>
+      <span class="notitie-text">${escHtml(n.text)}</span>
+      <button class="notitie-del" onclick="deleteNotitie(${i})" title="Verwijderen">✕</button>
+    </div>`).join('');
+}
+
+function addNotitie() {
+  const val = document.getElementById('notitie-input').value.trim();
+  if (!val) return;
+  const nots = getNotities();
+  const d = new Date();
+  const mnd = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const ts = `${d.getDate()} ${mnd[d.getMonth()]} ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+  nots.unshift({ text: val, ts });
+  saveNotities(nots);
+  document.getElementById('notitie-input').value = '';
+  renderNotities();
+}
+
+function deleteNotitie(i) {
+  const nots = getNotities();
+  nots.splice(i, 1);
+  saveNotities(nots);
+  renderNotities();
+}
+
+document.getElementById('notitie-add').addEventListener('click', addNotitie);
+document.getElementById('notitie-input').addEventListener('keydown', e => { if(e.key==='Enter') addNotitie(); });
+
+// ══════════════════════════════════════════════
+// KALENDER TOGGLE
+// ══════════════════════════════════════════════
+function toggleCalendar() {
+  document.getElementById('cal-wrap').classList.toggle('open');
+}
+
+// ══════════════════════════════════════════════
+// POPUP NOTITIES (legacy)
 // ══════════════════════════════════════════════
 const NOTES_KEY = 'remy_hub_notes';
 const notesEl = document.getElementById('popup-notes');
 const notesSaved = document.getElementById('notes-saved');
-
-// Laad opgeslagen notities
-function loadNotes() {
-  const saved = localStorage.getItem(NOTES_KEY);
-  if (saved) notesEl.value = saved;
-}
-
-// Auto-save bij typen
+function loadNotes() { const s = localStorage.getItem(NOTES_KEY); if(s) notesEl.value = s; }
 notesEl.addEventListener('input', () => {
   localStorage.setItem(NOTES_KEY, notesEl.value);
   notesSaved.style.opacity = '1';
@@ -1319,35 +1629,106 @@ notesEl.addEventListener('input', () => {
 });
 
 // ══════════════════════════════════════════════
-// REMINDER → GOOGLE CALENDAR
+// POPUP REMINDER (legacy)
 // ══════════════════════════════════════════════
 document.getElementById('reminder-save').addEventListener('click', () => {
   const tekst = document.getElementById('reminder-text').value.trim();
   const tijd  = document.getElementById('reminder-time').value;
   const result = document.getElementById('reminder-result');
-
   if (!tekst) { result.textContent = '⚠️ Typ eerst wat je wil onthouden.'; return; }
   if (!tijd)  { result.textContent = '⚠️ Selecteer een tijd.'; return; }
-
-  // Bouw Google Calendar URL
   const nu = new Date();
   const [uur, min] = tijd.split(':');
   const start = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate(), parseInt(uur), parseInt(min));
-  const eind  = new Date(start.getTime() + 30 * 60000); // 30 min later
-
+  const eind  = new Date(start.getTime() + 30 * 60000);
   const fmt = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
   const url = `https://calendar.google.com/calendar/render?action=TEMPLATE`
     + `&text=${encodeURIComponent('🔔 ' + tekst)}`
     + `&dates=${fmt(start)}/${fmt(eind)}`
     + `&details=${encodeURIComponent('Aangemaakt via Remy AI Hub')}`
     + `&reminder=10`;
-
   window.open(url, '_blank', 'noopener');
-  result.textContent = `✓ Google Calendar geopend voor ${tijd} — bevestig het event daar.`;
+  result.textContent = `✓ Google Calendar geopend voor ${tijd}`;
   document.getElementById('reminder-text').value = '';
   document.getElementById('reminder-time').value = '';
 });
 
+// ══════════════════════════════════════════════
+// DEX AI BLOKJES — direct laden, geen popup
+// ══════════════════════════════════════════════
+function showDexShimmers() {
+  ['dex-quote','dex-hack','dex-fact'].forEach(id => {
+    document.getElementById(id).innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
+  });
+}
+
+let dexAiLoading = false;
+async function fetchDexAI(force) {
+  if (dexAiLoading) return;
+  const cacheKey = 'remy_dex_ai_' + new Date().toDateString();
+  if (!force) {
+    try {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const p = JSON.parse(cached);
+        document.getElementById('dex-quote').textContent = p.quote;
+        document.getElementById('dex-hack').textContent  = p.hack;
+        document.getElementById('dex-fact').textContent  = p.fact;
+        return;
+      }
+    } catch {}
+  }
+  const key = getApiKey();
+  if (!key) {
+    document.getElementById('dex-quote').textContent = getRand(FALLBACK.quotes);
+    document.getElementById('dex-hack').textContent  = getRand(FALLBACK.hacks);
+    document.getElementById('dex-fact').textContent  = getRand(FALLBACK.facts);
+    return;
+  }
+  dexAiLoading = true;
+  showDexShimmers();
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 600,
+        messages: [{ role: 'user', content: buildPrompt() }]
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = data.content?.[0]?.text || '';
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    document.getElementById('dex-quote').textContent = parsed.quote;
+    document.getElementById('dex-hack').textContent  = parsed.hack;
+    document.getElementById('dex-fact').textContent  = parsed.fact;
+    localStorage.setItem(cacheKey, JSON.stringify({ quote: parsed.quote, hack: parsed.hack, fact: parsed.fact }));
+  } catch {
+    document.getElementById('dex-quote').textContent = getRand(FALLBACK.quotes);
+    document.getElementById('dex-hack').textContent  = getRand(FALLBACK.hacks);
+    document.getElementById('dex-fact').textContent  = getRand(FALLBACK.facts);
+  } finally {
+    dexAiLoading = false;
+  }
+}
+
+document.getElementById('dex-refresh').addEventListener('click', () => {
+  document.getElementById('dex-refresh').classList.add('spinning');
+  localStorage.removeItem('remy_dex_ai_' + new Date().toDateString());
+  fetchDexAI(true);
+  setTimeout(() => document.getElementById('dex-refresh').classList.remove('spinning'), 600);
+});
+
+// ══════════════════════════════════════════════
+// POPUP (via knop, NIET auto-open)
+// ══════════════════════════════════════════════
 function showShimmers() {
   ['popup-quote','popup-hack','popup-fact'].forEach(id => {
     document.getElementById(id).innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
@@ -1355,40 +1736,23 @@ function showShimmers() {
   document.getElementById('popup-greeting').textContent = `Even wachten ${REMY.naam}...`;
   document.getElementById('popup-subtext').textContent  = 'Claude genereert iets persoonlijks voor jou...';
 }
-
 function openPopup() {
   document.getElementById('popup-date').textContent = new Date().toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('popup-overlay').classList.add('show');
-  fetchAI();
-  fetchNews();
-  loadNotes();
+  fetchAI(); fetchNews(); loadNotes();
 }
-
-function closePopup() {
-  document.getElementById('popup-overlay').classList.remove('show');
-}
-
-document.getElementById('popup-overlay').addEventListener('click', function(e) {
-  if (e.target === this) closePopup();
-});
-
+function closePopup() { document.getElementById('popup-overlay').classList.remove('show'); }
+document.getElementById('popup-overlay').addEventListener('click', function(e) { if (e.target === this) closePopup(); });
 document.querySelector('.popup-refresh').addEventListener('click', function(e) {
-  e.stopPropagation();
-  aiLoading = false;
-  newsLoading = false;
-  fetchAI();
-  fetchNews();
+  e.stopPropagation(); aiLoading = false; newsLoading = false; fetchAI(); fetchNews();
 });
 
 // ══════════════════════════════════════════════
 // USAGE AUTO-OPEN
 // ══════════════════════════════════════════════
 document.querySelectorAll('.card[data-usage="true"]').forEach(card => {
-  card.addEventListener('click', function(e) {
-    // Kleine vertraging zodat de agent tab eerst opent
-    setTimeout(() => {
-      window.open('https://claude.ai/settings/usage', '_blank', 'noopener');
-    }, 300);
+  card.addEventListener('click', function() {
+    setTimeout(() => window.open('https://claude.ai/settings/usage','_blank','noopener'), 300);
   });
 });
 
@@ -1401,7 +1765,7 @@ function saveRecent(h) { let l=getRecent().filter(x=>x!==h); l.unshift(h); try{l
 function applyRecent() {
   const r = getRecent();
   document.querySelectorAll('.card').forEach(c => {
-    const isRecent = r.some(x => c.href && c.href.includes(x.replace(location.origin, '')));
+    const isRecent = r.some(x => c.href && c.href.includes(x.replace(location.origin,'')));
     c.classList.toggle('recent', isRecent);
   });
 }
@@ -1418,6 +1782,7 @@ document.addEventListener('keydown', e => {
   if (e.key==='Escape') {
     if (document.getElementById('apikey-modal').classList.contains('show')) { closeApiKeyModal(); return; }
     if (document.getElementById('popup-overlay').classList.contains('show')) { closePopup(); return; }
+    if (document.getElementById('pb-overlay').classList.contains('show')) { closePromptBuilder(); return; }
     if (typing) { active.blur(); filterCards(''); document.getElementById('search').value=''; }
     return;
   }
@@ -1642,10 +2007,12 @@ document.addEventListener('keydown', e => {
 // INIT
 // ══════════════════════════════════════════════
 window.addEventListener('load', () => {
+  renderTodos();
+  renderNotities();
   if (!getApiKey()) {
     openApiKeyModal();
   } else {
-    openPopup();
+    fetchDexAI(false); // Laad dex blokjes direct, geen popup
   }
 });
 </script>
