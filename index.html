@@ -734,6 +734,122 @@ header h1 {
 .pomo-reset:hover { background: rgba(255,255,255,0.08); color: var(--text); }
 .pomo-sessions { font-size: 0.68em; color: var(--muted); }
 
+
+/* ══ VASTE LASTEN MODAL ══ */
+#vl-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);
+  z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;
+}
+#vl-overlay.show { display:flex;animation:fadeIn 0.25s ease both; }
+#vl-modal {
+  background:#0d0e18;border:1px solid rgba(56,189,248,0.2);border-radius:22px;
+  padding:28px 24px 24px;max-width:860px;width:100%;
+  box-shadow:0 30px 80px rgba(0,0,0,0.7);margin:auto;
+  animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.vl-header { display:flex;align-items:center;gap:12px;margin-bottom:6px;flex-wrap:wrap; }
+.vl-title {
+  font-family:'Syne',sans-serif;font-size:1.2em;font-weight:800;
+  background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.vl-maand-nav { display:flex;align-items:center;gap:8px;margin-left:auto; }
+.vl-nav-btn {
+  background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:8px;
+  color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;
+  padding:5px 11px;cursor:pointer;transition:all 0.2s;
+}
+.vl-nav-btn:hover { background:rgba(255,255,255,0.1);color:var(--text); }
+.vl-maand-label { font-size:0.8em;color:var(--text);letter-spacing:0.06em;min-width:100px;text-align:center; }
+
+/* Samenvatting balk */
+.vl-summary {
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-bottom:20px;
+}
+.vl-sum-box {
+  padding:10px 14px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.03);
+}
+.vl-sum-label { font-size:0.58em;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:4px; }
+.vl-sum-val { font-family:'Syne',sans-serif;font-size:1.1em;font-weight:700; }
+.vl-sum-box.rood .vl-sum-val { color:#f87171; }
+.vl-sum-box.groen .vl-sum-val { color:#10b981; }
+.vl-sum-box.blauw .vl-sum-val { color:#38bdf8; }
+.vl-sum-box.geel .vl-sum-val { color:#fbbf24; }
+
+/* CSV import knop */
+.vl-import-row { display:flex;gap:8px;margin-bottom:16px;align-items:center;flex-wrap:wrap; }
+.vl-import-btn {
+  padding:8px 14px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.25);
+  border-radius:8px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.72em;
+  cursor:pointer;transition:all 0.2s;
+}
+.vl-import-btn:hover { background:rgba(16,185,129,0.18); }
+#vl-csv-input { display:none; }
+.vl-import-status { font-size:0.7em;color:var(--muted); }
+
+/* Categorie blokken */
+.vl-cat { margin-bottom:18px; }
+.vl-cat-header {
+  font-size:0.62em;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);
+  display:flex;align-items:center;gap:10px;margin-bottom:8px;
+}
+.vl-cat-header::after { content:'';flex:1;height:1px;background:var(--border); }
+.vl-cat-totaal { font-size:0.7em;color:var(--text); }
+
+/* Rijen */
+.vl-lijst { display:flex;flex-direction:column;gap:4px; }
+.vl-row {
+  display:grid;grid-template-columns:1fr auto auto auto;gap:8px;align-items:center;
+  padding:9px 12px;border-radius:8px;background:rgba(255,255,255,0.02);
+  border:1px solid rgba(255,255,255,0.05);transition:all 0.2s;
+}
+.vl-row.betaald { background:rgba(16,185,129,0.06);border-color:rgba(16,185,129,0.2); }
+.vl-row:hover { background:rgba(255,255,255,0.04); }
+.vl-row.betaald:hover { background:rgba(16,185,129,0.1); }
+.vl-naam { font-size:0.82em;color:var(--text); }
+.vl-row.betaald .vl-naam { color:rgba(16,185,129,0.9);text-decoration:line-through;text-decoration-color:rgba(16,185,129,0.4); }
+.vl-incasso { font-size:0.65em;color:var(--muted); }
+.vl-bedrag-wrap { display:flex;align-items:center;gap:6px; }
+.vl-bedrag-input {
+  width:72px;padding:4px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);
+  border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.78em;
+  text-align:right;outline:none;transition:border-color 0.2s;
+}
+.vl-bedrag-input:focus { border-color:rgba(56,189,248,0.4); }
+.vl-betaal-btn {
+  padding:5px 12px;border-radius:6px;font-family:'DM Mono',monospace;font-size:0.68em;
+  cursor:pointer;transition:all 0.2s;white-space:nowrap;border:1px solid;
+}
+.vl-betaal-btn.open { background:rgba(248,113,113,0.1);border-color:rgba(248,113,113,0.3);color:#f87171; }
+.vl-betaal-btn.open:hover { background:rgba(248,113,113,0.18); }
+.vl-betaal-btn.paid { background:rgba(16,185,129,0.1);border-color:rgba(16,185,129,0.3);color:#10b981; }
+.vl-betaal-btn.paid:hover { background:rgba(16,185,129,0.18); }
+
+/* Spaarrekeningen */
+.vl-spaar-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px; }
+.vl-spaar-box {
+  padding:12px 14px;border-radius:10px;background:rgba(167,139,250,0.05);
+  border:1px solid rgba(167,139,250,0.15);
+}
+.vl-spaar-naam { font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:rgba(167,139,250,0.8);margin-bottom:5px; }
+.vl-spaar-saldo { font-family:'Syne',sans-serif;font-size:1.15em;font-weight:700;color:rgba(167,139,250,0.95); }
+.vl-spaar-input {
+  width:100%;margin-top:6px;padding:5px 8px;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(167,139,250,0.2);border-radius:6px;color:var(--text);
+  font-family:'DM Mono',monospace;font-size:0.75em;outline:none;
+}
+.vl-spaar-input:focus { border-color:rgba(167,139,250,0.45); }
+.vl-spaar-btn {
+  width:100%;margin-top:5px;padding:5px;background:rgba(167,139,250,0.1);
+  border:1px solid rgba(167,139,250,0.2);border-radius:6px;color:rgba(167,139,250,0.9);
+  font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;
+}
+.vl-spaar-btn:hover { background:rgba(167,139,250,0.2); }
+.vl-close { display:block;width:100%;margin-top:16px;padding:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.78em;cursor:pointer;transition:all 0.2s; }
+.vl-close:hover { background:rgba(255,255,255,0.04);color:var(--text); }
+.vl-loading { text-align:center;padding:40px;color:var(--muted);font-size:0.82em; }
+@media(max-width:600px) { .vl-row { grid-template-columns:1fr auto; } .vl-incasso { display:none; } }
+
 </style>
 </head>
 <body>
@@ -799,6 +915,43 @@ header h1 {
     </div>
     <div class="werk-lijst" id="werk-lijst"></div>
     <button class="werk-close" onclick="closeWerk()">✕ Sluiten</button>
+  </div>
+</div>
+
+<!-- ══ VASTE LASTEN MODAL ══ -->
+<div id="vl-overlay">
+  <div id="vl-modal">
+    <div class="vl-header">
+      <div class="vl-title">💶 Vaste Lasten Tracker</div>
+      <div class="vl-maand-nav">
+        <button class="vl-nav-btn" onclick="vlPrevMaand()">◀</button>
+        <span class="vl-maand-label" id="vl-maand-label">laden...</span>
+        <button class="vl-nav-btn" onclick="vlNextMaand()">▶</button>
+      </div>
+    </div>
+
+    <div class="vl-summary" id="vl-summary">
+      <div class="vl-sum-box rood"><div class="vl-sum-label">Nog te betalen</div><div class="vl-sum-val" id="vl-nog">€0</div></div>
+      <div class="vl-sum-box groen"><div class="vl-sum-label">Al betaald</div><div class="vl-sum-val" id="vl-betaald">€0</div></div>
+      <div class="vl-sum-box blauw"><div class="vl-sum-label">Totaal maand</div><div class="vl-sum-val" id="vl-totaal">€0</div></div>
+      <div class="vl-sum-box geel"><div class="vl-sum-label">Inkomen</div><div class="vl-sum-val">€4.384</div></div>
+    </div>
+
+    <div class="vl-import-row">
+      <button class="vl-import-btn" onclick="document.getElementById('vl-csv-input').click()">📂 ING CSV importeren</button>
+      <input type="file" id="vl-csv-input" accept=".csv" onchange="importCSV(this)">
+      <span class="vl-import-status" id="vl-import-status"></span>
+    </div>
+
+    <div id="vl-content"><div class="vl-loading">Verbinden met Supabase...</div></div>
+
+    <!-- SPAARREKENINGEN -->
+    <div class="vl-cat">
+      <div class="vl-cat-header">💰 Spaarrekeningen</div>
+      <div class="vl-spaar-grid" id="vl-spaar-grid"><div class="vl-loading">laden...</div></div>
+    </div>
+
+    <button class="vl-close" onclick="closeVasteLasten()">✕ Sluiten</button>
   </div>
 </div>
 
@@ -883,6 +1036,7 @@ header h1 {
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="copyIncognito()" id="incognito-btn">🕵️ Incognito</span>
       <span class="hbtn" style="color:#fbbf24;background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.18);" onclick="openWerk()">💼 Werk</span>
+      <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
     </div>
   </header>
 
@@ -2108,6 +2262,270 @@ function resetPomo() {
 // Vraag notification permissie
 if (Notification && Notification.permission === 'default') {
   Notification.requestPermission();
+}
+
+
+// ══════════════════════════════════════════════
+// VASTE LASTEN — SUPABASE
+// ══════════════════════════════════════════════
+const SB_URL  = 'https://mdslvdrsggpksqrbtwci.supabase.co';
+const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kc2x2ZHJzZ2dwa3NxcmJ0d2NpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MjgxMDAsImV4cCI6MjA5MDAwNDEwMH0.xbZPoy5Ewx7-V9cmKqg32L3GuR0pxG80MFGABjOQ6Vw';
+const SB_HDR  = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+
+async function sbGet(table, params='') {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_HDR });
+  return r.json();
+}
+async function sbPost(table, body) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method:'POST', headers: SB_HDR, body: JSON.stringify(body) });
+  return r.json();
+}
+async function sbPatch(table, params, body) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { method:'PATCH', headers: {...SB_HDR, 'Prefer':'return=representation'}, body: JSON.stringify(body) });
+  return r.json();
+}
+async function sbUpsert(table, body) {
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method:'POST', headers: {...SB_HDR, 'Prefer':'resolution=merge-duplicates,return=representation'}, body: JSON.stringify(body) });
+  return r.json();
+}
+
+const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
+const CAT_LABELS = { wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig' };
+
+let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
+
+function openVasteLasten() {
+  const nu = new Date();
+  vlJaar  = nu.getFullYear();
+  vlMaand = nu.getMonth() + 1;
+  document.getElementById('vl-overlay').classList.add('show');
+  loadVasteLasten();
+}
+function closeVasteLasten() { document.getElementById('vl-overlay').classList.remove('show'); }
+document.getElementById('vl-overlay').addEventListener('click', function(e) { if(e.target===this) closeVasteLasten(); });
+
+function vlPrevMaand() { vlMaand--; if(vlMaand<1){vlMaand=12;vlJaar--;} loadVasteLasten(); }
+function vlNextMaand() { vlMaand++; if(vlMaand>12){vlMaand=1;vlJaar++;} loadVasteLasten(); }
+
+function euroFmt(n) { return '€' + parseFloat(n||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
+
+async function loadVasteLasten() {
+  document.getElementById('vl-maand-label').textContent = MAANDEN[vlMaand-1] + ' ' + vlJaar;
+  document.getElementById('vl-content').innerHTML = '<div class="vl-loading">Laden...</div>';
+
+  try {
+    // Haal lasten + betalingen parallel op
+    const [lasten, betalingen, spaar] = await Promise.all([
+      sbGet('vaste_lasten', 'actief=eq.true&order=volgorde.asc'),
+      sbGet('betalingen', `jaar=eq.${vlJaar}&maand=eq.${vlMaand}`),
+      sbGet('spaarrekeningen', 'order=naam.asc')
+    ]);
+
+    vlLasten    = Array.isArray(lasten)    ? lasten    : [];
+    vlBetalingen= Array.isArray(betalingen)? betalingen: [];
+    vlSpaar     = Array.isArray(spaar)     ? spaar     : [];
+
+    renderVasteLasten();
+    renderSpaar();
+  } catch(e) {
+    document.getElementById('vl-content').innerHTML = '<div class="vl-loading">❌ Verbinding mislukt — check Supabase setup</div>';
+    console.error(e);
+  }
+}
+
+function getBetaling(id) { return vlBetalingen.find(b => b.vaste_last_id === id); }
+
+function renderVasteLasten() {
+  const cats = {};
+  vlLasten.forEach(l => {
+    if (!cats[l.categorie]) cats[l.categorie] = [];
+    cats[l.categorie].push(l);
+  });
+
+  let totaal=0, betaaldTot=0, nogTot=0;
+  vlLasten.forEach(l => {
+    const b = getBetaling(l.id);
+    const bedrag = b?.bedrag_betaald ?? l.bedrag;
+    totaal += parseFloat(bedrag||0);
+    if (b?.betaald) betaaldTot += parseFloat(bedrag||0);
+    else nogTot += parseFloat(bedrag||0);
+  });
+
+  document.getElementById('vl-nog').textContent     = euroFmt(nogTot);
+  document.getElementById('vl-betaald').textContent = euroFmt(betaaldTot);
+  document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
+
+  const catOrder = ['wonen','abonnement','verzekering','auto','belasting','overig'];
+  let html = '';
+
+  catOrder.forEach(cat => {
+    if (!cats[cat]) return;
+    let catTotaal = 0;
+    cats[cat].forEach(l => { catTotaal += parseFloat((getBetaling(l.id)?.bedrag_betaald ?? l.bedrag)||0); });
+
+    html += `<div class="vl-cat">
+      <div class="vl-cat-header">${CAT_LABELS[cat]||cat} <span class="vl-cat-totaal">${euroFmt(catTotaal)}</span></div>
+      <div class="vl-lijst">`;
+
+    cats[cat].forEach(l => {
+      const bet = getBetaling(l.id);
+      const isPaid = bet?.betaald || false;
+      const bedrag = bet?.bedrag_betaald ?? l.bedrag;
+      html += `<div class="vl-row ${isPaid?'betaald':''}" id="vl-row-${l.id}">
+        <div>
+          <div class="vl-naam">${escHtml(l.naam)}</div>
+          ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
+        </div>
+        <div class="vl-bedrag-wrap">
+          <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
+            id="vl-inp-${l.id}" onchange="updateBedrag(${l.id}, this.value)">
+        </div>
+        <button class="vl-betaal-btn ${isPaid?'paid':'open'}" id="vl-btn-${l.id}"
+          onclick="toggleBetaald(${l.id})">
+          ${isPaid ? '✓ Betaald' : '○ Betalen'}
+        </button>
+      </div>`;
+    });
+
+    html += '</div></div>';
+  });
+
+  document.getElementById('vl-content').innerHTML = html;
+}
+
+async function toggleBetaald(id) {
+  const bet = getBetaling(id);
+  const last = vlLasten.find(l => l.id === id);
+  const huidigBedrag = parseFloat(document.getElementById('vl-inp-'+id)?.value || last?.bedrag || 0);
+  const nieuwBetaald = !(bet?.betaald || false);
+
+  // Optimistische UI update
+  const row = document.getElementById('vl-row-'+id);
+  const btn = document.getElementById('vl-btn-'+id);
+  if (row) row.classList.toggle('betaald', nieuwBetaald);
+  if (btn) { btn.className = 'vl-betaal-btn ' + (nieuwBetaald?'paid':'open'); btn.textContent = nieuwBetaald?'✓ Betaald':'○ Betalen'; }
+
+  // Upsert naar Supabase
+  await sbUpsert('betalingen', {
+    vaste_last_id: id,
+    jaar: vlJaar,
+    maand: vlMaand,
+    betaald: nieuwBetaald,
+    betaald_op: nieuwBetaald ? new Date().toISOString() : null,
+    bedrag_betaald: huidigBedrag
+  });
+
+  // Spaarrekening ophogen als het een spaarpot is
+  if (nieuwBetaald && last) {
+    const spaarMatch = vlSpaar.find(s =>
+      last.naam.toLowerCase().includes(s.naam.toLowerCase()) ||
+      s.naam.toLowerCase().includes(last.naam.toLowerCase())
+    );
+    if (spaarMatch) {
+      const nieuwSaldo = parseFloat(spaarMatch.saldo||0) + huidigBedrag;
+      await sbPatch('spaarrekeningen', `id=eq.${spaarMatch.id}`, { saldo: nieuwSaldo, updated_at: new Date().toISOString() });
+      spaarMatch.saldo = nieuwSaldo;
+      renderSpaar();
+    }
+  }
+
+  // Ververs betalingen lokaal
+  if (bet) { bet.betaald = nieuwBetaald; bet.bedrag_betaald = huidigBedrag; }
+  else { vlBetalingen.push({ vaste_last_id: id, jaar: vlJaar, maand: vlMaand, betaald: nieuwBetaald, bedrag_betaald: huidigBedrag }); }
+
+  // Update totalen
+  let totaal=0,betaaldTot=0,nogTot=0;
+  vlLasten.forEach(l => {
+    const b = getBetaling(l.id);
+    const bedrag = parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
+    totaal+=bedrag;
+    if(b?.betaald) betaaldTot+=bedrag; else nogTot+=bedrag;
+  });
+  document.getElementById('vl-nog').textContent     = euroFmt(nogTot);
+  document.getElementById('vl-betaald').textContent = euroFmt(betaaldTot);
+  document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
+}
+
+async function updateBedrag(id, val) {
+  const bet = getBetaling(id);
+  if (bet) {
+    bet.bedrag_betaald = parseFloat(val);
+    await sbUpsert('betalingen', {
+      vaste_last_id: id, jaar: vlJaar, maand: vlMaand,
+      betaald: bet.betaald||false, bedrag_betaald: parseFloat(val)
+    });
+  }
+}
+
+function renderSpaar() {
+  if (!vlSpaar.length) { document.getElementById('vl-spaar-grid').innerHTML = '<div class="vl-loading">Geen spaarrekeningen gevonden</div>'; return; }
+  document.getElementById('vl-spaar-grid').innerHTML = vlSpaar.map(s => `
+    <div class="vl-spaar-box">
+      <div class="vl-spaar-naam">${escHtml(s.naam)}</div>
+      <div class="vl-spaar-saldo" id="spaar-saldo-${s.id}">${euroFmt(s.saldo)}</div>
+      <input class="vl-spaar-input" type="number" step="0.01" placeholder="Bedrag toevoegen..." id="spaar-inp-${s.id}">
+      <button class="vl-spaar-btn" onclick="spaarToevoegen(${s.id})">+ Toevoegen</button>
+    </div>`).join('');
+}
+
+async function spaarToevoegen(id) {
+  const inp = document.getElementById('spaar-inp-'+id);
+  const val = parseFloat(inp?.value||0);
+  if (!val) return;
+  const spaar = vlSpaar.find(s=>s.id===id);
+  if (!spaar) return;
+  const nieuw = parseFloat(spaar.saldo||0) + val;
+  await sbPatch('spaarrekeningen', `id=eq.${id}`, { saldo: nieuw, updated_at: new Date().toISOString() });
+  spaar.saldo = nieuw;
+  document.getElementById('spaar-saldo-'+id).textContent = euroFmt(nieuw);
+  inp.value = '';
+}
+
+// ══ CSV IMPORT (ING formaat) ══
+function importCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('vl-import-status');
+  status.textContent = 'Inlezen...';
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const lines = e.target.result.split('\n').filter(l=>l.trim());
+    let matched = 0;
+
+    for (const line of lines.slice(1)) {
+      // ING CSV: Datum;Naam;Rekening;Tegenrekening;Code;Af Bij;Bedrag;Mutatiesoort;Mededelingen;Saldo;Tag
+      const cols = line.split(';').map(c=>c.replace(/^"|"$/g,'').trim());
+      if (cols.length < 7) continue;
+      const [datum, naam, , , , afbij, bedragRaw] = cols;
+      if (afbij !== 'Af') continue;
+
+      const bedrag = parseFloat(bedragRaw.replace(',','.'));
+      const naamLower = naam.toLowerCase();
+
+      // Match op naam
+      const match = vlLasten.find(l => {
+        const lNaam = l.naam.toLowerCase();
+        return naamLower.includes(lNaam.slice(0,6)) || lNaam.includes(naamLower.slice(0,6));
+      });
+
+      if (match) {
+        const bet = getBetaling(match.id);
+        if (!bet?.betaald) {
+          await sbUpsert('betalingen', {
+            vaste_last_id: match.id, jaar: vlJaar, maand: vlMaand,
+            betaald: true, betaald_op: new Date().toISOString(), bedrag_betaald: bedrag
+          });
+          matched++;
+        }
+      }
+    }
+
+    status.textContent = `✓ ${matched} posten automatisch gemarkeerd als betaald`;
+    input.value = '';
+    loadVasteLasten();
+  };
+  reader.readAsText(file, 'utf-8');
 }
 
 // ══════════════════════════════════════════════
