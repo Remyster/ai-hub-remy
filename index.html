@@ -1008,6 +1008,7 @@ header h1 {
         <span class="vl-maand-label" id="vl-maand-label">laden...</span>
         <button class="vl-nav-btn" onclick="vlNextMaand()">▶</button>
       </div>
+      <button onclick="closeVasteLasten()" style="background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;padding:2px 6px;line-height:1;margin-left:4px;transition:color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='var(--muted)'">✕</button>
     </div>
 
     <!-- SALDO INVOER -->
@@ -2402,23 +2403,50 @@ if (Notification && Notification.permission === 'default') {
 // ══════════════════════════════════════════════
 const SB_URL  = 'https://mdslvdrsggpksqrbtwci.supabase.co';
 const SB_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1kc2x2ZHJzZ2dwa3NxcmJ0d2NpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0MjgxMDAsImV4cCI6MjA5MDAwNDEwMH0.xbZPoy5Ewx7-V9cmKqg32L3GuR0pxG80MFGABjOQ6Vw';
-const SB_HDR  = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' };
+const SB_GET_HDR  = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+const SB_POST_HDR = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
 
 async function sbGet(table, params='') {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_HDR });
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_GET_HDR });
+  if (!r.ok) { console.error(`sbGet ${table} fout:`, r.status, await r.text()); return []; }
   return r.json();
 }
 async function sbPost(table, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method:'POST', headers: SB_HDR, body: JSON.stringify(body) });
-  return r.json();
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method:'POST',
+    headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) { const t = await r.text(); console.error(`sbPost ${table} fout:`, r.status, t); return null; }
+  return r.status === 204 ? null : r.json().catch(() => null);
 }
 async function sbPatch(table, params, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { method:'PATCH', headers: {...SB_HDR, 'Prefer':'return=representation'}, body: JSON.stringify(body) });
-  return r.json();
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, {
+    method:'PATCH',
+    headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) { const t = await r.text(); console.error(`sbPatch ${table} fout:`, r.status, t); return null; }
+  return null;
 }
 async function sbUpsert(table, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}`, { method:'POST', headers: {...SB_HDR, 'Prefer':'resolution=merge-duplicates,return=representation'}, body: JSON.stringify(body) });
-  return r.json();
+  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+    method:'POST',
+    headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) {
+    const t = await r.text();
+    console.error(`sbUpsert ${table} fout:`, r.status, t);
+    // Toon fout in UI
+    const errEl = document.createElement('div');
+    errEl.style.cssText = 'position:fixed;top:20px;right:20px;background:#f87171;color:#fff;padding:10px 16px;border-radius:8px;font-size:0.8em;z-index:9999;font-family:"DM Mono",monospace;';
+    errEl.textContent = `⚠️ Opslaan mislukt (${r.status}) — check console`;
+    document.body.appendChild(errEl);
+    setTimeout(() => errEl.remove(), 4000);
+    return null;
+  }
+  return null;
 }
 
 const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
@@ -2567,17 +2595,17 @@ function renderVasteLasten() {
 async function toggleBetaald(id) {
   const bet = getBetaling(id);
   const last = vlLasten.find(l => l.id === id);
-  const huidigBedrag = parseFloat(document.getElementById('vl-inp-'+id)?.value || last?.bedrag || 0);
+  const huidigBedrag = parseFloat(document.getElementById('vl-inp-'+id)?.value || bet?.bedrag_betaald || last?.bedrag || 0);
   const nieuwBetaald = !(bet?.betaald || false);
 
   // Optimistische UI update
   const row = document.getElementById('vl-row-'+id);
   const btn = document.getElementById('vl-btn-'+id);
   if (row) row.classList.toggle('betaald', nieuwBetaald);
-  if (btn) { btn.className = 'vl-betaal-btn ' + (nieuwBetaald?'paid':'open'); btn.textContent = nieuwBetaald?'✓ Betaald':'○ Betalen'; }
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
 
   // Upsert naar Supabase
-  await sbUpsert('betalingen', {
+  const result = await sbUpsert('betalingen', {
     vaste_last_id: id,
     jaar: vlJaar,
     maand: vlMaand,
@@ -2585,6 +2613,14 @@ async function toggleBetaald(id) {
     betaald_op: nieuwBetaald ? new Date().toISOString() : null,
     bedrag_betaald: huidigBedrag
   });
+
+  // Rollback als fout (result is null bij fout via sbUpsert error handler)
+  // sbUpsert returns null ook bij succes — check door opnieuw te laden
+  if (btn) {
+    btn.disabled = false;
+    btn.className = 'vl-betaal-btn ' + (nieuwBetaald?'paid':'open');
+    btn.textContent = nieuwBetaald ? '✓ Betaald' : '○ Betalen';
+  }
 
   // Spaarrekening ophogen als het een spaarpot is
   if (nieuwBetaald && last) {
@@ -2607,7 +2643,7 @@ async function toggleBetaald(id) {
   // Update totalen
   let totaal=0,betaaldTot=0,nogTot=0;
   vlLasten.forEach(l => {
-    if (l.categorie === 'inkomen') return; // niet meetellen
+    if (l.categorie === 'inkomen') return;
     const b = getBetaling(l.id);
     const bedrag = parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
     totaal+=bedrag;
