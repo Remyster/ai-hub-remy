@@ -975,9 +975,13 @@ header h1 {
       <div class="vl-sum-box rood"><div class="vl-sum-label">Nog te betalen</div><div class="vl-sum-val" id="vl-nog">€0</div></div>
       <div class="vl-sum-box groen"><div class="vl-sum-label">Al betaald</div><div class="vl-sum-val" id="vl-betaald">€0</div></div>
       <div class="vl-sum-box blauw"><div class="vl-sum-label">Totaal maand</div><div class="vl-sum-val" id="vl-totaal">€0</div></div>
-      <div class="vl-sum-box" style="--glow:#10b981;border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.05);">
-        <div class="vl-sum-label" style="color:#10b981;">Overblijft na lasten</div>
-        <div class="vl-sum-val" id="vl-over" style="color:#10b981;">€0</div>
+      <div class="vl-sum-box" style="border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.05);">
+        <div class="vl-sum-label" style="color:#10b981;">Inkomen</div>
+        <div class="vl-sum-val" id="vl-inkomen-totaal" style="color:#10b981;">€0</div>
+      </div>
+      <div class="vl-sum-box" style="border-color:rgba(56,189,248,0.2);background:rgba(56,189,248,0.04);">
+        <div class="vl-sum-label" id="vl-over-label" style="color:#38bdf8;">Overblijft</div>
+        <div class="vl-sum-val" id="vl-over" style="color:#38bdf8;">Vul saldo in ↑</div>
       </div>
     </div>
 
@@ -2333,7 +2337,7 @@ async function sbUpsert(table, body) {
 }
 
 const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
-const CAT_LABELS = { wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
+const CAT_LABELS = { inkomen:'💚 Inkomen', wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
 
 let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
 
@@ -2400,10 +2404,16 @@ function renderVasteLasten() {
   document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
   updateVlSaldo();
 
-  const catOrder = ['wonen','abonnement','verzekering','auto','belasting','overig','sparen'];
+  const catOrder = ['inkomen','wonen','abonnement','verzekering','auto','belasting','overig','sparen'];
 
   // Wisselende spaarpotten: oneven maand (jan,mrt,mei...) = Auto spaar, even = Huis spaar
   const isAutoMaand = vlMaand % 2 === 1; // maart=3=oneven → auto
+
+  // Bereken totaal inkomen voor summary
+  const inkomstenLasten = vlLasten.filter(l => l.categorie === 'inkomen');
+  const totaalInkomen = inkomstenLasten.reduce((s,l) => s + parseFloat(l.bedrag||0), 0);
+  const inkomstenEl = document.getElementById('vl-inkomen-totaal');
+  if (inkomstenEl) inkomstenEl.textContent = euroFmt(totaalInkomen);
   let html = '';
 
   catOrder.forEach(cat => {
@@ -2431,6 +2441,21 @@ function renderVasteLasten() {
       // Badge voor alternerende potten
       const alterBadge = (l.naam === 'Auto sparen' || l.naam === 'Huis sparen')
         ? `<span style="font-size:0.6em;color:#fbbf24;margin-left:6px;">om de maand</span>` : '';
+
+      // Inkomen: geen betalen knop, gewoon groen tonen
+      if (l.categorie === 'inkomen') {
+        html += `<div class="vl-row betaald" id="vl-row-${l.id}" style="border-color:rgba(16,185,129,0.25);background:rgba(16,185,129,0.05);">
+          <div>
+            <div class="vl-naam" style="color:#10b981;">${escHtml(l.naam)}</div>
+            ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
+          </div>
+          <div class="vl-bedrag-wrap">
+            <span style="font-family:'Syne',sans-serif;font-size:1em;font-weight:700;color:#10b981;">${euroFmt(l.bedrag)}</span>
+          </div>
+          <span style="font-size:0.7em;color:#10b981;padding:5px 10px;">✓ Inkomen</span>
+        </div>`;
+        return;
+      }
       html += `<div class="vl-row ${isPaid?'betaald':''}" id="vl-row-${l.id}">
         <div>
           <div class="vl-naam">${escHtml(l.naam)}${alterBadge}</div>
@@ -2652,23 +2677,28 @@ function saveVlSaldo() {
 
 function updateVlSaldo() {
   const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
-  const nogEl = document.getElementById('vl-nog');
-  const nog = parseFloat(nogEl?.textContent?.replace('€','').replace(',','.').replace('.','') || 0);
-  // Simpele berekening: saldo - nog te betalen
   const nogRaw = vlLasten.reduce((sum, l) => {
+    if (l.categorie === 'inkomen') return sum; // inkomen niet meetellen als uitgave
     const b = getBetaling(l.id);
     if (b?.betaald) return sum;
     return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
   }, 0);
   const over = saldo - nogRaw;
   const overEl = document.getElementById('vl-over');
-  if (overEl) {
-    overEl.textContent = euroFmt(over);
-    overEl.style.color = over >= 0 ? '#10b981' : '#f87171';
-    overEl.closest('.vl-sum-box').style.borderColor = over >= 0 ? 'rgba(16,185,129,0.25)' : 'rgba(248,113,113,0.25)';
-    overEl.closest('.vl-sum-box').style.background = over >= 0 ? 'rgba(16,185,129,0.05)' : 'rgba(248,113,113,0.05)';
-    overEl.previousElementSibling.style.color = over >= 0 ? '#10b981' : '#f87171';
+  const labelEl = document.getElementById('vl-over-label');
+  if (!overEl) return;
+  if (!saldo) {
+    overEl.textContent = 'Vul saldo in ↑';
+    overEl.style.color = '#38bdf8';
+    if (labelEl) labelEl.style.color = '#38bdf8';
+    return;
   }
+  overEl.textContent = euroFmt(over);
+  const kleur = over >= 0 ? '#10b981' : '#f87171';
+  overEl.style.color = kleur;
+  if (labelEl) labelEl.style.color = kleur;
+  overEl.closest('.vl-sum-box').style.borderColor = over >= 0 ? 'rgba(16,185,129,0.25)' : 'rgba(248,113,113,0.25)';
+  overEl.closest('.vl-sum-box').style.background = over >= 0 ? 'rgba(16,185,129,0.05)' : 'rgba(248,113,113,0.05)';
 }
 
 function loadVlSaldo() {
