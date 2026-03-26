@@ -2392,6 +2392,7 @@ function renderVasteLasten() {
 
   let totaal=0, betaaldTot=0, nogTot=0;
   vlLasten.forEach(l => {
+    if (l.categorie === 'inkomen') return; // niet meetellen in uitgaven
     const b = getBetaling(l.id);
     const bedrag = b?.bedrag_betaald ?? l.bedrag;
     totaal += parseFloat(bedrag||0);
@@ -2521,6 +2522,7 @@ async function toggleBetaald(id) {
   // Update totalen
   let totaal=0,betaaldTot=0,nogTot=0;
   vlLasten.forEach(l => {
+    if (l.categorie === 'inkomen') return; // niet meetellen
     const b = getBetaling(l.id);
     const bedrag = parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
     totaal+=bedrag;
