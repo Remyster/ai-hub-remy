@@ -2494,13 +2494,20 @@ async function toggleBetaald(id) {
 
 async function updateBedrag(id, val) {
   const bet = getBetaling(id);
+  const nieuwBedrag = parseFloat(val);
   if (bet) {
-    bet.bedrag_betaald = parseFloat(val);
-    await sbUpsert('betalingen', {
-      vaste_last_id: id, jaar: vlJaar, maand: vlMaand,
-      betaald: bet.betaald||false, bedrag_betaald: parseFloat(val)
-    });
+    bet.bedrag_betaald = nieuwBedrag;
+  } else {
+    // Nog geen betaling voor deze maand — maak hem aan (nog niet betaald, wel bedrag opgeslagen)
+    vlBetalingen.push({ vaste_last_id: id, jaar: vlJaar, maand: vlMaand, betaald: false, bedrag_betaald: nieuwBedrag });
   }
+  await sbUpsert('betalingen', {
+    vaste_last_id: id, jaar: vlJaar, maand: vlMaand,
+    betaald: bet?.betaald || false,
+    bedrag_betaald: nieuwBedrag
+  });
+  // Update overblijft berekening
+  updateVlSaldo();
 }
 
 // spaar mutaties cache per pot
