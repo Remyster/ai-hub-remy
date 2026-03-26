@@ -2639,10 +2639,13 @@ async function spaarMutatie(id, type) {
 
 
 // ══ REKENING SALDO BEREKENING ══
-const VL_SALDO_KEY = 'remy_vl_saldo';
+const VL_SALDO_KEY = 'remy_vl_saldo_' + new Date().toDateString();
 
 function saveVlSaldo() {
   const val = document.getElementById('vl-saldo-input')?.value;
+  // Ruim oude keys op
+  Object.keys(localStorage).filter(k => k.startsWith('remy_vl_saldo_') && k !== VL_SALDO_KEY)
+    .forEach(k => localStorage.removeItem(k));
   if (val) localStorage.setItem(VL_SALDO_KEY, val);
   updateVlSaldo();
 }
