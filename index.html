@@ -2333,7 +2333,7 @@ async function sbUpsert(table, body) {
 }
 
 const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
-const CAT_LABELS = { wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig' };
+const CAT_LABELS = { wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
 
 let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
 
@@ -2400,25 +2400,40 @@ function renderVasteLasten() {
   document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
   updateVlSaldo();
 
-  const catOrder = ['wonen','abonnement','verzekering','auto','belasting','overig'];
+  const catOrder = ['wonen','abonnement','verzekering','auto','belasting','overig','sparen'];
+
+  // Wisselende spaarpotten: oneven maand (jan,mrt,mei...) = Auto spaar, even = Huis spaar
+  const isAutoMaand = vlMaand % 2 === 1; // maart=3=oneven → auto
   let html = '';
 
   catOrder.forEach(cat => {
     if (!cats[cat]) return;
+
+    // Filter alternerende spaarpotten: toon alleen de juiste maand
+    const zichtbaar = cats[cat].filter(l => {
+      if (l.naam === 'Auto sparen')  return isAutoMaand;
+      if (l.naam === 'Huis sparen')  return !isAutoMaand;
+      return true;
+    });
+    if (!zichtbaar.length) return;
+
     let catTotaal = 0;
-    cats[cat].forEach(l => { catTotaal += parseFloat((getBetaling(l.id)?.bedrag_betaald ?? l.bedrag)||0); });
+    zichtbaar.forEach(l => { catTotaal += parseFloat((getBetaling(l.id)?.bedrag_betaald ?? l.bedrag)||0); });
 
     html += `<div class="vl-cat">
       <div class="vl-cat-header">${CAT_LABELS[cat]||cat} <span class="vl-cat-totaal">${euroFmt(catTotaal)}</span></div>
       <div class="vl-lijst">`;
 
-    cats[cat].forEach(l => {
+    zichtbaar.forEach(l => {
       const bet = getBetaling(l.id);
       const isPaid = bet?.betaald || false;
       const bedrag = bet?.bedrag_betaald ?? l.bedrag;
+      // Badge voor alternerende potten
+      const alterBadge = (l.naam === 'Auto sparen' || l.naam === 'Huis sparen')
+        ? `<span style="font-size:0.6em;color:#fbbf24;margin-left:6px;">om de maand</span>` : '';
       html += `<div class="vl-row ${isPaid?'betaald':''}" id="vl-row-${l.id}">
         <div>
-          <div class="vl-naam">${escHtml(l.naam)}</div>
+          <div class="vl-naam">${escHtml(l.naam)}${alterBadge}</div>
           ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
         </div>
         <div class="vl-bedrag-wrap">
