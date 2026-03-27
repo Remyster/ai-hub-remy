@@ -930,6 +930,14 @@ header h1 {
 .vl-cb.clr:hover { background: rgba(248,113,113,0.12); }
 .vl-cb.wide { grid-column: span 2; }
 
+
+#agenda-datum {
+  padding: 9px 10px; background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(16,185,129,0.2); border-radius: 8px;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.8em; outline: none; cursor: pointer;
+}
+#agenda-datum::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
+
 </style>
 </head>
 <body>
@@ -1255,6 +1263,7 @@ header h1 {
     <div class="todo-list" id="todo-list"></div>
     <div class="agenda-row">
       <input type="text" id="agenda-tekst" placeholder="Item in agenda zetten...">
+      <input type="date" id="agenda-datum">
       <input type="time" id="agenda-tijd">
       <button class="agenda-btn" id="agenda-btn">📅 Agenda →</button>
     </div>
@@ -1281,7 +1290,7 @@ header h1 {
       <span class="cal-arrow">▼</span>
     </button>
     <div class="cal-frame-wrap">
-      <iframe src="https://calendar.google.com/calendar/embed?showNav=1&showTitle=0&showPrint=0&showTabs=0&showCalendars=0&mode=WEEK&hl=nl" allowfullscreen></iframe>
+      <iframe src="https://calendar.google.com/calendar/embed?src=remyegberts%40gmail.com&src=d.uittenbogaard%40gmail.com&ctz=Europe%2FAmsterdam&showNav=1&showTitle=0&showPrint=0&showTabs=1&showCalendars=1&mode=WEEK&hl=nl" allowfullscreen></iframe>
     </div>
   </div>
 
@@ -1965,23 +1974,36 @@ document.getElementById('onthouden-input').addEventListener('keydown', e => { if
 // AGENDA → GOOGLE CALENDAR
 // ══════════════════════════════════════════════
 document.getElementById('agenda-btn').addEventListener('click', () => {
-  const tekst = document.getElementById('agenda-tekst').value.trim();
-  const tijd  = document.getElementById('agenda-tijd').value;
+  const tekst  = document.getElementById('agenda-tekst').value.trim();
+  const datum  = document.getElementById('agenda-datum').value;
+  const tijd   = document.getElementById('agenda-tijd').value;
   const result = document.getElementById('agenda-result');
   if (!tekst) { result.textContent = '⚠️ Typ wat je wil inplannen.'; return; }
   if (!tijd)  { result.textContent = '⚠️ Selecteer een tijd.'; return; }
-  const nu = new Date();
+
+  // Gebruik ingevoerde datum of vandaag als fallback
+  let baseDate;
+  if (datum) {
+    const [jaar, maand, dag] = datum.split('-').map(Number);
+    baseDate = new Date(jaar, maand - 1, dag);
+  } else {
+    baseDate = new Date();
+  }
   const [uur, min] = tijd.split(':');
-  const start = new Date(nu.getFullYear(), nu.getMonth(), nu.getDate(), parseInt(uur), parseInt(min));
+  const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), parseInt(uur), parseInt(min));
   const eind  = new Date(start.getTime() + 30 * 60000);
   const fmt = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+  const dagStr = datum
+    ? start.toLocaleDateString('nl-NL', { weekday:'short', day:'numeric', month:'short' })
+    : 'vandaag';
   const url = `https://calendar.google.com/calendar/render?action=TEMPLATE`
     + `&text=${encodeURIComponent('🔔 ' + tekst)}`
     + `&dates=${fmt(start)}/${fmt(eind)}`
     + `&details=${encodeURIComponent('Aangemaakt via Remy AI Hub')}`;
   window.open(url, '_blank', 'noopener');
-  result.textContent = `✓ Agenda geopend voor ${tijd}`;
+  result.textContent = `✓ Agenda geopend — ${dagStr} ${tijd}`;
   document.getElementById('agenda-tekst').value = '';
+  document.getElementById('agenda-datum').value = '';
   document.getElementById('agenda-tijd').value = '';
   setTimeout(() => result.textContent = '', 3000);
 });
