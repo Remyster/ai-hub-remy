@@ -2430,7 +2430,14 @@ async function sbPatch(table, params, body) {
   return null;
 }
 async function sbUpsert(table, body) {
-  const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
+  // Bepaal conflict kolommen per tabel
+  const conflictCols = {
+    'betalingen': 'vaste_last_id,jaar,maand',
+    'spaarrekeningen': 'naam',
+    'vaste_lasten': 'id'
+  };
+  const onConflict = conflictCols[table] || 'id';
+  const r = await fetch(`${SB_URL}/rest/v1/${table}?on_conflict=${onConflict}`, {
     method:'POST',
     headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
     body: JSON.stringify(body)
@@ -2438,7 +2445,6 @@ async function sbUpsert(table, body) {
   if (!r.ok) {
     const t = await r.text();
     console.error(`sbUpsert ${table} fout:`, r.status, t);
-    // Toon fout in UI
     const errEl = document.createElement('div');
     errEl.style.cssText = 'position:fixed;top:20px;right:20px;background:#f87171;color:#fff;padding:10px 16px;border-radius:8px;font-size:0.8em;z-index:9999;font-family:"DM Mono",monospace;';
     errEl.textContent = `⚠️ Opslaan mislukt (${r.status}) — check console`;
