@@ -442,21 +442,7 @@ header h1 {
 }
 .g-btn:hover { color: var(--text); }
 
-/* ══ SEARCH / FILTER ══ */
-.search-wrap {
-  position: relative; margin-bottom: 36px;
-  animation: fadeDown 0.6s 0.15s ease both; opacity: 0; animation-fill-mode: both;
-}
-.search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-52%); color: var(--muted); font-size: 1.2em; pointer-events: none; }
-#search {
-  width: 100%; padding: 14px 20px 14px 46px;
-  background: rgba(255,255,255,0.05); border: 1px solid var(--border);
-  border-radius: 12px; color: var(--text);
-  font-family: 'DM Mono', monospace; font-size: 0.9em; outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-#search::placeholder { color: var(--muted); }
-#search:focus { border-color: rgba(102,126,234,0.45); box-shadow: 0 0 0 3px rgba(102,126,234,0.08); }
+/* search hidden */
 
 /* ══ SECTIONS ══ */
 .section { margin-bottom: 24px; animation: fadeUp 0.5s ease both; opacity: 0; animation-fill-mode: both; }
@@ -938,6 +924,44 @@ header h1 {
 }
 #agenda-datum::-webkit-calendar-picker-indicator { filter: invert(0.5); cursor: pointer; }
 
+
+/* ══ AGENDA MODAL ══ */
+#agenda-overlay {
+  position:fixed;inset:0;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);
+  z-index:1000;display:none;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;
+}
+#agenda-overlay.show { display:flex;animation:fadeIn 0.25s ease both; }
+#agenda-modal {
+  background:#0d0e18;border:1px solid rgba(56,189,248,0.2);border-radius:22px;
+  padding:24px 22px 20px;max-width:900px;width:100%;
+  box-shadow:0 30px 80px rgba(0,0,0,0.7);margin:auto;
+  animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.agenda-modal-header {
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;
+}
+.agenda-modal-title {
+  font-family:'Syne',sans-serif;font-size:1.1em;font-weight:800;
+  background:linear-gradient(135deg,#38bdf8,#0ea5e9);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.agenda-modal-iframe { width:100%;height:480px;border:none;border-radius:12px;overflow:hidden;border:1px solid var(--border); }
+.agenda-add-row { display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap; }
+.agenda-add-row input {
+  flex:1;min-width:100px;padding:9px 12px;background:rgba(255,255,255,0.04);
+  border:1px solid rgba(56,189,248,0.2);border-radius:8px;color:var(--text);
+  font-family:'DM Mono',monospace;font-size:0.8em;outline:none;
+}
+.agenda-add-row input:focus { border-color:rgba(56,189,248,0.45); }
+.agenda-add-row input::placeholder { color:var(--muted); }
+.agenda-add-btn {
+  padding:9px 14px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);
+  border-radius:8px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;
+  white-space:nowrap;transition:all 0.2s;
+}
+.agenda-add-btn:hover { background:rgba(56,189,248,0.2); }
+#agenda-modal-result { font-size:0.72em;color:#10b981;margin-bottom:8px;min-height:16px; }
+
 </style>
 </head>
 <body>
@@ -1097,6 +1121,26 @@ header h1 {
   </div>
 </div>
 
+
+<!-- ══ AGENDA MODAL ══ -->
+<div id="agenda-overlay">
+  <div id="agenda-modal">
+    <div class="agenda-modal-header">
+      <div class="agenda-modal-title">📅 Google Agenda</div>
+      <button onclick="closeAgendaModal()" style="background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;padding:2px 6px;transition:color 0.2s;" onmouseover="this.style.color='#f87171'" onmouseout="this.style.color='var(--muted)'">✕</button>
+    </div>
+    <div class="agenda-add-row">
+      <input type="text" id="am-tekst" placeholder="Item in agenda zetten...">
+      <input type="date" id="am-datum">
+      <input type="time" id="am-tijd">
+      <button class="agenda-add-btn" onclick="agendaModalToevoegen()">📅 Toevoegen →</button>
+    </div>
+    <div id="agenda-modal-result"></div>
+    <iframe class="agenda-modal-iframe"
+      src="https://calendar.google.com/calendar/embed?src=remyegberts%40gmail.com&src=d.uittenbogaard%40gmail.com&ctz=Europe%2FAmsterdam&showNav=1&showTitle=0&showPrint=0&showTabs=1&showCalendars=1&mode=WEEK&hl=nl"
+      allowfullscreen></iframe>
+  </div>
+</div>
 <!-- ══ API KEY MODAL ══ -->
 <div id="apikey-modal">
   <div id="apikey-box">
@@ -1232,6 +1276,7 @@ header h1 {
       <div class="med-pill" data-med="saxenda" onclick="toggleMed(this)">
         <span class="med-check">○</span> Saxenda
       </div>
+      <button onclick="openAgendaModal()" style="margin-left:auto;padding:9px 14px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);border-radius:20px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(56,189,248,0.1)'">📅 Agenda</button>
     </div>
   </div>
 
@@ -1250,16 +1295,13 @@ header h1 {
     </div>
   </div>
   <div class="focus-wrap">
-    <span class="focus-label">🎯 Schrijf je doel</span>
+    <span class="focus-label">📝 Doel / onthouden</span>
     <div class="focus-inner">
-      <input type="text" id="focus-input" placeholder="Wat is je #1 doel voor vandaag?" autocomplete="off" spellcheck="false">
-      <button class="focus-save" id="focus-save">+ Doel</button>
+      <input type="text" id="focus-input" placeholder="Typ je doel of iets wat je wil onthouden..." autocomplete="off" spellcheck="false">
+      <button class="focus-save" id="focus-save">+ Toevoegen</button>
     </div>
-    <span class="focus-label" style="margin-top:10px;">🧠 Wat wil je onthouden</span>
-    <div class="focus-inner">
-      <input type="text" id="onthouden-input" placeholder="Iets wat je niet wil vergeten..." autocomplete="off" spellcheck="false">
-      <button class="onthouden-save" id="onthouden-save">+ Onthoud</button>
-    </div>
+    <!-- hidden input voor compatibility -->
+    <input type="hidden" id="onthouden-input">
     <div class="todo-list" id="todo-list"></div>
     <div class="agenda-row">
       <input type="text" id="agenda-tekst" placeholder="Item in agenda zetten...">
@@ -1308,11 +1350,8 @@ header h1 {
     <button type="submit" class="g-btn">&#x21b5;</button>
   </form>
 
-  <!-- FILTER -->
-  <div class="search-wrap">
-    <span class="search-icon">&#x2315;</span>
-    <input type="text" id="search" placeholder="Filter agents &amp; tools...   ( druk / )" autocomplete="off" spellcheck="false">
-  </div>
+  <!-- hidden search voor keyboard shortcut compat -->
+  <input type="hidden" id="search">
 
   <!-- MIJN AGENTS -->
   <section class="section" id="sec-agents">
@@ -1401,6 +1440,46 @@ header h1 {
   </section>
 
   <!-- TOOLS -->
+  <!-- AFFILIATE & STEKKERSLIM -->
+  <section class="section" id="sec-affiliate">
+    <div class="section-label">Affiliate &amp; Stekkerslim</div>
+    <div class="grid">
+      <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🔌 Vraagbaak Stekkerslim</h2><p>Project assistent</p>
+      </a>
+      <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🔌 Stekkerslim.nl</h2><p>Website</p>
+      </a>
+      <a href="https://github.com/Remyster/stekkerslim" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
+      </a>
+      <a href="https://my.daisycon.com/dashboard" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🌼 Daisycon</h2><p>Affiliate dashboard</p>
+      </a>
+      <a href="https://affiliate.bol.com/nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>📦 bol.com Affiliate</h2><p>Partner programma</p>
+      </a>
+      <a href="https://ui.awin.com/idp/en/awin/login/prelogin?redirect=%2Flogin%3FnetworkGroup%3Dawin" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🔗 Awin</h2><p>Affiliate netwerk</p>
+      </a>
+      <a href="https://www.amazon.nl/ref=nav_logo" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🛒 Amazon NL</h2><p>Affiliate shop</p>
+      </a>
+      <a href="https://search.google.com/search-console?resource_id=sc-domain%3Astekkerslim.nl" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>📊 Search Console</h2><p>Stekkerslim.nl SEO</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- TOOLS & PLATFORMS -->
   <section class="section" id="sec-tools">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
@@ -1451,73 +1530,6 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏠 Home Assistant</h2><p>Smarthome dashboard</p>
       </a>
-      <a href="https://www.stekkerslim.nl/" class="card project" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim</h2><p>Website</p>
-      </a>
-      <a href="https://github.com/Remyster/stekkerslim" class="card project" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
-      </a>
-    </div>
-  </section>
-
-
-  <!-- TRADING -->
-  <section class="section" id="sec-trading">
-    <div class="section-label">Trading</div>
-    <div class="grid">
-
-      <a href="https://www.tradingview.com/" class="card trade" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📈 TradingView</h2><p>Charts &amp; analyse</p>
-      </a>
-
-      <a href="https://www.bybit.eu/nl-EU/" class="card trade" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💹 Bybit</h2><p>Exchange &amp; orders</p>
-      </a>
-
-      <a href="https://claude.ai/chat/da0384c4-334d-46ec-adaf-bec379e44bc3" class="card trade" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🤖 Trade Coach</h2><p>Claude trading chat</p>
-      </a>
-
-    </div>
-  </section>
-
-  <!-- AFFILIATE -->
-  <section class="section" id="sec-affiliate">
-    <div class="section-label">Affiliate &amp; Stekkerslim</div>
-    <div class="grid">
-      <a href="https://my.daisycon.com/dashboard" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🌼 Daisycon</h2><p>Affiliate dashboard</p>
-      </a>
-      <a href="https://affiliate.bol.com/nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📦 bol.com Affiliate</h2><p>Partner programma</p>
-      </a>
-      <a href="https://ui.awin.com/idp/en/awin/login/prelogin?redirect=%2Flogin%3FnetworkGroup%3Dawin" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔗 Awin</h2><p>Affiliate netwerk</p>
-      </a>
-      <a href="https://www.amazon.nl/ref=nav_logo" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🛒 Amazon NL</h2><p>Affiliate shop</p>
-      </a>
-      <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim.nl</h2><p>Website</p>
-      </a>
-      <a href="https://github.com/Remyster/stekkerslim" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
-      </a>
-      <a href="https://search.google.com/search-console?resource_id=sc-domain%3Astekkerslim.nl" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📊 Search Console</h2><p>Stekkerslim.nl SEO</p>
-      </a>
     </div>
   </section>
 
@@ -1532,8 +1544,29 @@ header h1 {
     </div>
   </section>
 
+  <!-- TRADING -->
+  <section class="section" id="sec-trading">
+    <div class="section-label">Trading</div>
+    <div class="grid">
+      <a href="https://www.tradingview.com/" class="card trade" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>📈 TradingView</h2><p>Charts &amp; analyse</p>
+      </a>
+      <a href="https://www.bybit.eu/nl-EU/" class="card trade" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>💹 Bybit</h2><p>Exchange &amp; orders</p>
+      </a>
+      <a href="https://claude.ai/chat/da0384c4-334d-46ec-adaf-bec379e44bc3" class="card trade" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🤖 Trade Coach</h2><p>Claude trading chat</p>
+      </a>
+    </div>
+  </section>
+
+
+
   <div id="no-results">Geen resultaten voor "<span id="no-results-term"></span>"</div>
-  <p class="hint">Toets 1–8 om direct te openen &nbsp;·&nbsp; / om te zoeken &nbsp;·&nbsp; Esc om te sluiten</p>
+  <p class="hint">Toets 1–8 om direct te openen &nbsp;·&nbsp; Esc om te sluiten</p>
 
 </div>
 
@@ -1948,13 +1981,12 @@ function renderTodos() {
 }
 
 function addTodo(type) {
-  const id = type === 'doel' ? 'focus-input' : 'onthouden-input';
-  const val = document.getElementById(id).value.trim();
+  const val = document.getElementById('focus-input').value.trim();
   if (!val) return;
   const todos = getTodos();
-  todos.unshift({ type, text: val, ts: Date.now() });
+  todos.unshift({ type: 'doel', text: val, ts: Date.now() });
   saveTodos(todos);
-  document.getElementById(id).value = '';
+  document.getElementById('focus-input').value = '';
   renderTodos();
 }
 
@@ -1966,9 +1998,9 @@ function deleteTodo(i) {
 }
 
 document.getElementById('focus-save').addEventListener('click', () => addTodo('doel'));
-document.getElementById('onthouden-save').addEventListener('click', () => addTodo('onthoud'));
+// onthouden merged into focus
 document.getElementById('focus-input').addEventListener('keydown', e => { if(e.key==='Enter') addTodo('doel'); });
-document.getElementById('onthouden-input').addEventListener('keydown', e => { if(e.key==='Enter') addTodo('onthoud'); });
+// onthouden merged into focus
 
 // ══════════════════════════════════════════════
 // AGENDA → GOOGLE CALENDAR
@@ -2967,6 +2999,41 @@ function calcInput(val) {
 function formatCalcResult(n) {
   if (Number.isInteger(n)) return n.toLocaleString('nl-NL');
   return parseFloat(n.toFixed(8)).toLocaleString('nl-NL', { maximumFractionDigits: 6 });
+}
+
+
+// ══════════════════════════════════════════════
+// AGENDA MODAL
+// ══════════════════════════════════════════════
+function openAgendaModal() {
+  document.getElementById('agenda-overlay').classList.add('show');
+}
+function closeAgendaModal() {
+  document.getElementById('agenda-overlay').classList.remove('show');
+}
+document.getElementById('agenda-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAgendaModal();
+});
+
+function agendaModalToevoegen() {
+  const tekst = document.getElementById('am-tekst').value.trim();
+  const datum = document.getElementById('am-datum').value;
+  const tijd  = document.getElementById('am-tijd').value;
+  const result = document.getElementById('agenda-modal-result');
+  if (!tekst) { result.textContent = '⚠️ Typ wat je wil inplannen.'; return; }
+  if (!tijd)  { result.textContent = '⚠️ Selecteer een tijd.'; return; }
+  let baseDate = datum ? (() => { const [j,m,d] = datum.split('-').map(Number); return new Date(j,m-1,d); })() : new Date();
+  const [uur, min] = tijd.split(':');
+  const start = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate(), parseInt(uur), parseInt(min));
+  const eind  = new Date(start.getTime() + 30*60000);
+  const fmt = d => d.toISOString().replace(/[-:]/g,'').split('.')[0] + 'Z';
+  const dagStr = datum ? start.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}) : 'vandaag';
+  window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent('🔔 '+tekst)}&dates=${fmt(start)}/${fmt(eind)}&details=${encodeURIComponent('Via Remy AI Hub')}`, '_blank','noopener');
+  result.textContent = `✓ Agenda geopend — ${dagStr} ${tijd}`;
+  document.getElementById('am-tekst').value = '';
+  document.getElementById('am-datum').value = '';
+  document.getElementById('am-tijd').value  = '';
+  setTimeout(() => result.textContent = '', 3000);
 }
 
 // ══════════════════════════════════════════════
