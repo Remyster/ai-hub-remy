@@ -1298,7 +1298,17 @@ header h1 {
     <!-- hidden input voor compatibility -->
     <input type="hidden" id="onthouden-input">
     <div class="todo-list" id="todo-list"></div>
-
+    <div style="margin-top:10px;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+      <span style="font-size:0.62em;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);">📌 Notities</span>
+      <span id="notities-teller" style="font-size:0.62em;color:var(--muted);"></span>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:6px;">
+      <input type="text" id="notitie-input" placeholder="Notitie toevoegen..."
+        style="flex:1;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid rgba(167,139,250,0.2);border-radius:8px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.8em;outline:none;"
+        onkeydown="if(event.key==='Enter')addNotitie()">
+      <button onclick="addNotitie()" style="padding:9px 14px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.25);border-radius:8px;color:rgba(167,139,250,0.9);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;white-space:nowrap;">+ Notitie</button>
+    </div>
+    <div id="notities-lijst"></div>
     <div class="agenda-row">
       <input type="text" id="agenda-tekst" placeholder="Item in agenda zetten...">
       <input type="date" id="agenda-datum">
@@ -1899,6 +1909,7 @@ function deleteNotitie(i) {
   renderNotities();
 }
 
+document.getElementById('notitie-add').addEventListener('click', addNotitie);
 document.getElementById('notitie-input').addEventListener('keydown', e => { if(e.key==='Enter') addNotitie(); });
 
 // ══════════════════════════════════════════════
