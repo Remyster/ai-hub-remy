@@ -1643,110 +1643,42 @@ function buildPrompt() {
   const dag = new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
   const uur = new Date().getHours();
   const dagdeel = uur < 12 ? 'ochtend' : uur < 17 ? 'middag' : 'avond';
-  // Willekeurige seed om variatie te forceren
   const seed = Math.floor(Math.random() * 9999);
-  return `Je bent een persoonlijke dagelijkse maatje voor Remy Egberts (36). Direct, warm, eerlijk, mag schelden. Geen therapeut — gewoon zijn beste maatje die hem kent.
-
-WIE IS REMY (gebruik dit als context, verwijs NIET altijd naar alles):
-- Woont in Blokker, geregistreerd partnerschap met Danique (35, ziekte van Crohn)
-- Dochters: Olivia (7) en Zoey (2)
-- Huwelijk loopt zwaar — weinig intimiteit, weinig verbinding, bezig met AI therapie
-- Enige kostwinner, financiële druk, krappe maandmarges
-- Werkt bij PWN (drinkwaterbedrijf)
-- ADHD (Elvanse): concentratieproblemen, impulsiviteit, projecten starten & stoppen
-- Slikt Mysimba, spuit Saxenda — al jaren strijd met afvallen
-- Sport 3-5x per week bij Next Gym Life Zwaag, krachttraining
-- Bouwt BonusBuurt (passief inkomen) en Stekkerslim (affiliate)
-- Smarthome met Home Assistant, DIY, automatisering
-- Gamer op PC + beamer, luistert naar muziek die mensen schokt
-- Wil financiële vrijheid, droomt groot, trots op wat hij bouwt
-- Open boek, directe communicatie, humor, no-nonsense
-- Gebruikt AI intensief als coach/therapeut/maatje/bouwpartner
-- Randomseed: ${seed}
-
-BELANGRIJK VOOR DE "VOOR JOU" TEKST:
-- Wissel ELKE dag een ANDER onderwerp: kies WILLEKEURIG uit: (1) zijn trots als vader, (2) financiële vrijheid & dromen, (3) zijn lijf en de strijd daarmee, (4) eenzaamheid en veerkracht, (5) gamen en ontspanning, (6) zijn muziekgedrag, (7) technologie en bouwen, (8) werk en ambitie, (9) kleine overwinningen van alledag, (10) zijn humor en relativeringsvermogen
-- NOOIT twee keer dezelfde invalshoek — de seed bepaalt welke
-- Toon: mix van hard/direct + warm/steunend + soms scherp eerlijk
-- Mag grappig zijn, mag een schop onder de kont zijn, mag hem raken
-- Max 2-3 zinnen
-
-Dagdeel: ${dagdeel} op ${dag}
-
-Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{
-  "greeting": "begroeting passend bij ${dagdeel}, max 8 woorden, direct of grappig, afwisselend van toon",
-  "subtext": "één zin — eerlijk, raak of grappig — over wie hij is. Max 12 woorden.",
-  "quote": "persoonlijke tekst voor Remy — zie BELANGRIJK hierboven. Afwisselend onderwerp via seed ${seed}. Max 3 zinnen.",
-  "hack": "VOLLEDIG WILLEKEURIGE lifehack — NIETS met ADHD of medicatie. Kies random uit: koken & voeding, interieur & organisatie, geld & sparen, fitness & herstel, relaties & communicatie, werk & productiviteit, technologie & gadgets, DIY & klussen, slaap & energie, gaming & entertainment, muziek, reizen. Seed ${seed} bepaalt het gebied. Concreet en direct. Max 2 zinnen.",
-  "fact": "VOLLEDIG WILLEKEURIG verrassend of grappig feit — NOOIT over ADHD. Kies random uit: geschiedenis, biologie, ruimtevaart, economie, sport, eten & drinken, dieren, het menselijk lichaam, wiskunde, filosofie, taal, muziek, film, architectuur, wetenschap. Seed ${seed} bepaalt het gebied. Max 2 zinnen."
-}\`;
-}
-// ── LOADING FLAG — voorkomt dubbele calls ──
-let aiLoading = false;
-
-async function fetchAI() {
-  if (aiLoading) return;
-  aiLoading = true;
-
-  const key = getApiKey();
-  if (!key) { loadFallback('Geen API key — klik 🔑 om in te stellen'); aiLoading = false; return; }
-
-  showShimmers();
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        messages: [{ role: 'user', content: buildPrompt() }]
-      })
-    });
-
-    if (!res.ok) {
-      const errData = await res.json().catch(() => ({}));
-      throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'onbekend'}`);
-    }
-
-    const data = await res.json();
-    const raw = data.content?.[0]?.text || '';
-    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
-
-    document.getElementById('popup-greeting').textContent = parsed.greeting || `Yo ${REMY.naam} 👋`;
-    document.getElementById('popup-subtext').textContent  = parsed.subtext  || '';
-    const pq=document.getElementById('popup-quote'); if(pq) pq.textContent=parsed.quote;
-    const ph=document.getElementById('popup-hack'); if(ph) ph.textContent=parsed.hack;
-    const pf=document.getElementById('popup-fact'); if(pf) pf.textContent=parsed.fact;
-    const ail=document.getElementById('ai-label'); if(ail) ail.textContent='✨ Claude — vers gegenereerd';
-
-  } catch (err) {
-    console.warn('Claude API fout:', err);
-    const msg = err?.message || String(err);
-    let uitleg = '❌ ' + msg;
-    if (msg.includes('401')) uitleg = '🔑 Ongeldige API key — maak nieuwe op console.anthropic.com/settings/keys';
-    else if (msg.includes('429')) uitleg = '⏱️ Rate limit — even wachten, zo terug.';
-    else if (msg.includes('403')) uitleg = '🚫 Geen toegang — check je API key rechten.';
-    loadFallback(uitleg);
-  } finally {
-    aiLoading = false;
-  }
+  const p = [
+    'Je bent een persoonlijke dagelijkse maatje voor Remy Egberts (36). Direct, warm, eerlijk, mag schelden.',
+    '',
+    'WIE IS REMY:',
+    '- Woont in Blokker, partner Danique (35, Crohn), dochters Olivia (7) en Zoey (2)',
+    '- Huwelijk loopt zwaar, weinig intimiteit, bezig met AI therapie',
+    '- Enige kostwinner, financiele druk, krappe maandmarges',
+    '- Werkt bij PWN. ADHD (Elvanse), slikt Mysimba, spuit Saxenda',
+    '- Sport 3-5x per week Next Gym Life Zwaag, krachttraining, strijd met afvallen',
+    '- Bouwt BonusBuurt (passief inkomen) en Stekkerslim (affiliate)',
+    '- Smarthome Home Assistant, DIY, automatisering, gamer PC+beamer',
+    '- Luistert naar muziek die mensen schokt. Open boek, directe humor, no-nonsense',
+    '- Wil financiele vrijheid. Trots op wat hij bouwt. Droomt groot.',
+    '- Seed: ' + seed,
+    '',
+    'VOOR JOU tekst: kies WILLEKEURIG (via seed) een van deze 10 invalshoeken:',
+    '1=trots als vader, 2=financiele vrijheid & dromen, 3=zijn lijf & afvalstrijd,',
+    '4=eenzaamheid & veerkracht, 5=gaming & ontspanning, 6=zijn muziekgedrag,',
+    '7=technologie & bouwen, 8=werk & ambitie, 9=kleine dagelijkse overwinning, 10=humor & relativeringsvermogen',
+    'Toon: mix hard/direct + warm/steunend. Mag schelden. Mag grappig. Max 2-3 zinnen.',
+    '',
+    'Dagdeel: ' + dagdeel + ' op ' + dag,
+    '',
+    'Geef ALLEEN dit JSON, geen uitleg, geen backticks:',
+    '{',
+    '  "greeting": "begroeting passend bij ' + dagdeel + ', max 8 woorden, wisselende toon",',
+    '  "subtext": "eerlijke of grappige zin over wie hij is, max 12 woorden",',
+    '  "quote": "voor jou tekst, afwisselend onderwerp via seed ' + seed + ', max 3 zinnen",',
+    '  "hack": "WILLEKEURIGE lifehack, NOOIT over ADHD/medicatie, kies random gebied: koken, interieur, geld, fitness, relaties, werk, tech, DIY, slaap, gaming, muziek, reizen. Max 2 zinnen.",',
+    '  "fact": "WILLEKEURIG verrassend feit, NOOIT over ADHD, kies random: geschiedenis, biologie, ruimte, economie, sport, eten, dieren, lichaam, wiskunde, filosofie, taal, muziek, film, wetenschap. Max 2 zinnen."',
+    '}'
+  ].join('\n');
+  return p;
 }
 
-function loadFallback(label) {
-  document.getElementById('popup-greeting').textContent = `Yo ${REMY.naam} 👋`;
-  document.getElementById('popup-subtext').textContent  = 'Vader. Bouwer. Gamer. Goed bezig.';
-  document.getElementById('popup-quote').textContent    = getRand(FALLBACK.quotes);
-  document.getElementById('popup-hack').textContent     = getRand(FALLBACK.hacks);
-  document.getElementById('popup-fact').textContent     = getRand(FALLBACK.facts);
-  const ailf=document.getElementById('ai-label'); if(ailf) ailf.textContent=label||'Fallback content';
-}
 
 // ══════════════════════════════════════════════
 // NIEUWS FETCH
