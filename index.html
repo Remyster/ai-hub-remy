@@ -1544,6 +1544,9 @@ header h1 {
 </div>
 
 <script>
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fetchAI() { if(typeof fetchDexAI==='function') fetchDexAI(false); }
+
 // ══════════════════════════════════════════════
 // APP-AWARE LINKS (mobile → app, desktop → web)
 // ══════════════════════════════════════════════
