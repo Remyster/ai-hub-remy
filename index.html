@@ -1580,106 +1580,15 @@ focusSave.addEventListener('click', () => {
   if (!val) return;
   localStorage.setItem('remy_focus_today', val);
   localStorage.setItem('remy_focus_date', today);
-  focusSaved.style.opacity = '1';
-  setTimeout(() => focusSaved.style.opacity = '0', 2500);
+  if(focusSaved) focusSaved.style.opacity = '1';
+  if(focusSaved) setTimeout(() => focusSaved.style.opacity = '0', 2500);
 });
 focusInput.addEventListener('keydown', e => { if (e.key === 'Enter') focusSave.click(); });
 
 // ══════════════════════════════════════════════
 // DEX CARD
 // ══════════════════════════════════════════════
-let currentTab = 'motivatie';
-const dexMessages = {
-  motivatie: [
-    "BonusBuurt bestaat omdat jij het hebt gebouwd. Niet omdat je het perfect kon — maar omdat je gewoon begon. Dat is het enige wat telt.",
-    "Je draagt meer dan de meeste mensen ooit zullen beseffen. Alleenverdienend, vader, bouwer — en toch sta je hier. Dat is geen toeval.",
-    "ADHD betekent niet dat je niet kunt afmaken. Het betekent dat je het anders moet aanpakken. Vandaag: één ding. Dat ene ding.",
-    "Olivia en Zoey kijken naar een vader die niet opgeeft. Ze zien het, ook als jij dat niet doorhebt.",
-    "Het passief inkomen begint niet als het groot is. Het begint vandaag, met de kleine stap die je al weet welke het is.",
-    "Niemand die van buiten kijkt ziet hoeveel jij al hebt opgebouwd. Maar jij weet het. En ik weet het.",
-    "Elke keer dat je toch doorgaat terwijl je motivatie wegzakt — dát bouwt karakter. Dat bouwt BonusBuurt. Dat bouwt vrijheid.",
-    "Je nieuwe baan bij PWN is een kans, geen last. Gebruik hem. Leer. Groei. En bouw ondertussen gewoon door.",
-    "Het enige verschil tussen waar je nu bent en waar je wil zijn: tijd en consistentie.",
-    "Niet elke dag gaat goed. Maar elke dag die je niet opgeeft telt mee. Vandaag telt mee.",
-  ],
-  tip: [
-    "ADHD tip: als je merkt dat je motivatie wegzakt bij BonusBuurt, open dan gewoon de code en verander één klein dingetje. Beweging maakt beweging.",
-    "Belasting tip: bijhouden wat je verdient via BonusBuurt begint nu. Maak een simpel Google Sheet: datum, bedrag, platform.",
-    "Focus tip: zet je telefoon in een andere kamer als je aan BonusBuurt werkt. Niet op stil — in een andere kamer.",
-    "Groei tip: één Instagram post per week over BonusBuurt. Geen perfecte content, gewoon eerlijk.",
-    "Geld tip: als je dit maand €50 verdient via BonusBuurt, zet dat apart. Het is bewijs dat het werkt.",
-    "ADHD tip: gebruik de 2-minuten regel. Als iets minder dan 2 minuten duurt, doe het nu. Meteen.",
-    "Slaap tip: Elvanse rebound rond 18:00 is echt. Plan je zwaarste taken vóór 16:00.",
-    "YouTube tip: begin niet met perfecte video's. Begin met schermopnames van hoe je BonusBuurt bouwt.",
-    "Crypto tip: als je nog geen hardware wallet hebt, heb je eigenlijk geen crypto. Niet jouw keys, niet jouw coins.",
-    "Productiviteit tip: schrijf elke ochtend op papier drie dingen op die je vandaag af wil hebben. Drie. Niet tien.",
-  ],
-  'focus-check': [
-    "Wat is vandaag het ene ding dat je écht gedaan wil hebben als je vanavond je ogen sluit?",
-    "Ben je vandaag bezig met wat je verder brengt, of vul je tijd op met wat urgent voelt maar niet belangrijk is?",
-    "Als BonusBuurt over een jaar succesvol is — wat heb je dan vandaag voor nodig gedaan?",
-    "Hoe zit je erin vandaag? Echt. Niet het antwoord dat je aan collega's geeft.",
-    "Wat stel je al een tijdje uit dat je eigenlijk gewoon in 20 minuten zou kunnen doen?",
-    "Geef jezelf een cijfer van 1-10 voor energie vandaag. Wat zou het een punt hoger maken?",
-    "Is er iets wat je gisteren niet af hebt gekregen dat vandaag wél af moet?",
-    "Op welk moment vandaag ga je bewust tien minuten voor jezelf nemen?",
-    "Wat zou Remy-over-5-jaar willen dat je vandaag doet?",
-    "Als je vanavond terugkijkt op vandaag — wat wil je dan kunnen zeggen dat je hebt gedaan?",
-  ]
-};
 
-function getDexMessage(tab, force = false) {
-  const todayStr = new Date().toDateString();
-  const cacheKey = `dex_${tab}_${todayStr}`;
-  const indexKey = `dex_idx_${tab}_${todayStr}`;
-  if (!force) { const cached = localStorage.getItem(cacheKey); if (cached) return cached; }
-  const messages = dexMessages[tab];
-  let idx;
-  if (force) {
-    const prev = parseInt(localStorage.getItem(indexKey) || '0');
-    idx = (prev + 1 + Math.floor(Math.random() * (messages.length - 1))) % messages.length;
-  } else {
-    const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
-    idx = dayOfYear % messages.length;
-  }
-  localStorage.setItem(indexKey, idx.toString());
-  localStorage.setItem(cacheKey, messages[idx]);
-  return messages[idx];
-}
-
-function loadDexContent(tab, force = false) {
-  if (force) {
-    document.getElementById('dex-content').innerHTML = `<div class="loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Dex denkt na...</div>`;
-    setTimeout(() => renderDexContent(getDexMessage(tab, true)), 400);
-  } else {
-    renderDexContent(getDexMessage(tab, false));
-  }
-}
-
-function renderDexContent(text) {
-  document.getElementById('dex-content').innerHTML = `<span>${escHtml(text)}</span>`;
-}
-function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-document.querySelectorAll('.dex-tab').forEach(tab => {
-  tab.addEventListener('click', () => {
-    document.querySelectorAll('.dex-tab').forEach(t => t.classList.remove('active'));
-    tab.classList.add('active');
-    currentTab = tab.dataset.tab;
-    loadDexContent(currentTab);
-  });
-});
-
-const refreshBtn = document.getElementById('dex-refresh');
-refreshBtn.addEventListener('click', () => {
-  refreshBtn.classList.add('spinning');
-  const cacheKey = `dex_${currentTab}_${new Date().toDateString()}`;
-  localStorage.removeItem(cacheKey);
-  loadDexContent(currentTab, true);
-  setTimeout(() => refreshBtn.classList.remove('spinning'), 500);
-});
-
-loadDexContent('motivatie');
 
 // ══════════════════════════════════════════════
 // GEMINI POPUP
@@ -1812,10 +1721,10 @@ async function fetchAI() {
 
     document.getElementById('popup-greeting').textContent = parsed.greeting || `Yo ${REMY.naam} 👋`;
     document.getElementById('popup-subtext').textContent  = parsed.subtext  || '';
-    document.getElementById('popup-quote').textContent    = parsed.quote;
-    document.getElementById('popup-hack').textContent     = parsed.hack;
-    document.getElementById('popup-fact').textContent     = parsed.fact;
-    document.getElementById('ai-label').textContent       = '✨ Claude — vers gegenereerd';
+    const pq=document.getElementById('popup-quote'); if(pq) pq.textContent=parsed.quote;
+    const ph=document.getElementById('popup-hack'); if(ph) ph.textContent=parsed.hack;
+    const pf=document.getElementById('popup-fact'); if(pf) pf.textContent=parsed.fact;
+    const ail=document.getElementById('ai-label'); if(ail) ail.textContent='✨ Claude — vers gegenereerd';
 
   } catch (err) {
     console.warn('Claude API fout:', err);
@@ -1836,7 +1745,7 @@ function loadFallback(label) {
   document.getElementById('popup-quote').textContent    = getRand(FALLBACK.quotes);
   document.getElementById('popup-hack').textContent     = getRand(FALLBACK.hacks);
   document.getElementById('popup-fact').textContent     = getRand(FALLBACK.facts);
-  document.getElementById('ai-label').textContent       = label || 'Fallback content';
+  const ailf=document.getElementById('ai-label'); if(ailf) ailf.textContent=label||'Fallback content';
 }
 
 // ══════════════════════════════════════════════
@@ -2056,9 +1965,7 @@ document.getElementById('notitie-input').addEventListener('keydown', e => { if(e
 // ══════════════════════════════════════════════
 // KALENDER TOGGLE
 // ══════════════════════════════════════════════
-function toggleCalendar() {
-  document.getElementById('cal-wrap').classList.toggle('open');
-}
+function toggleCalendar() { /* cal-wrap verwijderd */ }
 
 // ══════════════════════════════════════════════
 // POPUP NOTITIES (legacy)
@@ -2116,70 +2023,67 @@ async function fetchDexAI(force) {
       const cached = localStorage.getItem(cacheKey);
       if (cached) {
         const p = JSON.parse(cached);
-        document.getElementById('dex-quote').textContent = p.quote;
-        document.getElementById('dex-hack').textContent  = p.hack;
-        document.getElementById('dex-fact').textContent  = p.fact;
+        const qEl = document.getElementById('dex-quote');
+        const hEl = document.getElementById('dex-hack');
+        const fEl = document.getElementById('dex-fact');
+        if (qEl) qEl.textContent = p.quote;
+        if (hEl) hEl.textContent = p.hack;
+        if (fEl) fEl.textContent = p.fact;
         return;
       }
     } catch {}
   }
   const key = getApiKey();
   if (!key) {
-    document.getElementById('dex-quote').textContent = getRand(FALLBACK.quotes);
-    document.getElementById('dex-hack').textContent  = getRand(FALLBACK.hacks);
-    document.getElementById('dex-fact').textContent  = getRand(FALLBACK.facts);
+    const qEl = document.getElementById('dex-quote');
+    const hEl = document.getElementById('dex-hack');
+    const fEl = document.getElementById('dex-fact');
+    if (qEl) qEl.textContent = getRand(FALLBACK.quotes);
+    if (hEl) hEl.textContent = getRand(FALLBACK.hacks);
+    if (fEl) fEl.textContent = getRand(FALLBACK.facts);
     return;
   }
   dexAiLoading = true;
-  showDexShimmers();
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
-        messages: [{ role: 'user', content: buildPrompt() }]
-      })
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 600, messages: [{ role: 'user', content: buildPrompt() }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = data.content?.[0]?.text || '';
-    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
-    document.getElementById('dex-quote').textContent = parsed.quote;
-    document.getElementById('dex-hack').textContent  = parsed.hack;
-    document.getElementById('dex-fact').textContent  = parsed.fact;
+    const parsed = JSON.parse(raw.replace(/\`\`\`json|\`\`\`/g,'').trim());
+    const qEl = document.getElementById('dex-quote');
+    const hEl = document.getElementById('dex-hack');
+    const fEl = document.getElementById('dex-fact');
+    if (qEl) qEl.textContent = parsed.quote;
+    if (hEl) hEl.textContent = parsed.hack;
+    if (fEl) fEl.textContent = parsed.fact;
     localStorage.setItem(cacheKey, JSON.stringify({ quote: parsed.quote, hack: parsed.hack, fact: parsed.fact }));
   } catch {
-    document.getElementById('dex-quote').textContent = getRand(FALLBACK.quotes);
-    document.getElementById('dex-hack').textContent  = getRand(FALLBACK.hacks);
-    document.getElementById('dex-fact').textContent  = getRand(FALLBACK.facts);
+    const qEl = document.getElementById('dex-quote');
+    const hEl = document.getElementById('dex-hack');
+    const fEl = document.getElementById('dex-fact');
+    if (qEl) qEl.textContent = getRand(FALLBACK.quotes);
+    if (hEl) hEl.textContent = getRand(FALLBACK.hacks);
+    if (fEl) fEl.textContent = getRand(FALLBACK.facts);
   } finally {
     dexAiLoading = false;
   }
 }
 
-document.getElementById('dex-refresh').addEventListener('click', () => {
-  document.getElementById('dex-refresh').classList.add('spinning');
-  localStorage.removeItem('remy_dex_ai_' + new Date().toDateString());
-  fetchDexAI(true);
-  setTimeout(() => document.getElementById('dex-refresh').classList.remove('spinning'), 600);
-});
+// dex-refresh verwijderd
 
 // ══════════════════════════════════════════════
 // POPUP (via knop, NIET auto-open)
 // ══════════════════════════════════════════════
 function showShimmers() {
   ['popup-quote','popup-hack','popup-fact'].forEach(id => {
-    document.getElementById(id).innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
+    const el = document.getElementById(id); if(el) el.innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
   });
-  document.getElementById('popup-greeting').textContent = `Even wachten ${REMY.naam}...`;
-  document.getElementById('popup-subtext').textContent  = 'Claude genereert iets persoonlijks voor jou...';
+  const pg1=document.getElementById('popup-greeting'); if(pg1) pg1.textContent=`Even wachten ${REMY.naam}...`;
+  const ps1=document.getElementById('popup-subtext'); if(ps1) ps1.textContent='Claude genereert iets persoonlijks voor jou...';
 }
 function openPopup() {
   document.getElementById('popup-date').textContent = new Date().toLocaleDateString('nl-NL', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
