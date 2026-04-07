@@ -2102,6 +2102,19 @@ searchEl.addEventListener('input',e=>filterCards(e.target.value));
 const KM_DAGEN_NL = ['zo','ma','di','wo','do','vr','za'];
 const KM_MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
 
+// Bestemmingen: { label, woonwerk (enkelvoudig), dienstreis (enkelvoudig) }
+// woonwerk wordt x2, dienstreis is 1 richting zoals opgegeven
+const KM_BESTEMMINGEN = [
+  { label: '— Kies bestemming —',   woonwerk: null, dienstreis: 0 },
+  { label: '🏢 Velserbroek (standaard)', woonwerk: 58,   dienstreis: 0 },
+  { label: '🏥 Heemskerk Waterweg',      woonwerk: 54,   dienstreis: 0 },
+  { label: '🌲 Kennemerduinen',          woonwerk: 58,   dienstreis: 10 },  // 58x2 woonwerk + (63-58)x2=10 dienstreis
+  { label: '🏙️ Hoorn ASR',              woonwerk: 6,    dienstreis: 0 },
+  { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
+  { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
+  { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
+];
+
 let kmJaar, kmMaand;
 let kmCache = {}; // { "jaar_maand": { dag: {heen,terug,extra} } }
 let werkLinksCache = [];
@@ -2130,12 +2143,12 @@ async function sbKmGet(jaar, maand) {
     return await r.json();
   } catch { return []; }
 }
-async function sbKmUpsert(jaar, maand, dag, heen, terug, extra) {
+async function sbKmUpsert(jaar, maand, dag, heen, terug, extra, dienstreis=0, bestemming_idx=0, gedeclareerd=false) {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/km_registratie?on_conflict=jaar,maand,dag`, {
       method: 'POST',
       headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ jaar, maand, dag, heen, terug, extra })
+      body: JSON.stringify({ jaar, maand, dag, heen, terug, extra: { ritten: extra, dienstreis, bestemming_idx, gedeclareerd } })
     });
     if (!r.ok) console.error('KM upsert fout:', r.status, await r.text());
   } catch(e) { console.error('KM upsert error:', e); }
@@ -2243,7 +2256,15 @@ async function loadKmMaand() {
   const rows = await sbKmGet(kmJaar, kmMaand);
   // Zet om naar { dag: {...} }
   const data = {};
-  rows.forEach(r => { data[r.dag] = { heen: r.heen, terug: r.terug, extra: r.extra||[] }; });
+  rows.forEach(r => {
+    const ex = r.extra || {};
+    // Support zowel oude structuur (array) als nieuwe (object met ritten/dienstreis/etc)
+    const ritten       = Array.isArray(ex) ? ex : (ex.ritten || []);
+    const dienstreis   = Array.isArray(ex) ? 0  : (ex.dienstreis || 0);
+    const bestemming_idx = Array.isArray(ex) ? 0 : (ex.bestemming_idx || 0);
+    const gedeclareerd = Array.isArray(ex) ? false : (ex.gedeclareerd || false);
+    data[r.dag] = { heen: r.heen, terug: r.terug, extra: ritten, dienstreis, bestemming_idx, gedeclareerd };
+  });
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   renderKmDagen();
 }
@@ -2258,68 +2279,130 @@ function renderKmDagen() {
   const aantalDagen = getDagenInMaand(kmJaar, kmMaand);
   const data = getKmCacheData();
 
+  // Dropdown opties HTML
+  const dropOpts = KM_BESTEMMINGEN.map((b,i) => `<option value="${i}">${escHtml(b.label)}</option>`).join('');
+
   let html = '';
   for (let dag = 1; dag <= aantalDagen; dag++) {
     const datum = new Date(kmJaar, kmMaand-1, dag);
     const dagNaam = KM_DAGEN_NL[datum.getDay()];
     const isWeekend = datum.getDay()===0 || datum.getDay()===6;
     const d = data[dag] || {};
-    const heen  = d.heen  != null ? d.heen  : '';
-    const terug = d.terug != null ? d.terug : '';
-    const extra = d.extra || [];
-    const extraHtml = extra.map((ex,ei) => `
-      <div style="display:flex;gap:5px;align-items:center;margin-top:5px;">
+    const heen       = d.heen       != null ? d.heen       : '';
+    const terug      = d.terug      != null ? d.terug      : '';
+    const dienstreis = d.dienstreis != null ? d.dienstreis : '';
+    const gedecl     = d.gedeclareerd ? true : false;
+    const extra      = d.extra || [];
+    const bestIdx    = d.bestemming_idx != null ? d.bestemming_idx : 0;
+
+    const dagBg     = isWeekend ? 'rgba(255,255,255,0.02)' : (gedecl ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.04)');
+    const dagBorder = isWeekend ? 'rgba(255,255,255,0.06)' : (gedecl ? 'rgba(16,185,129,0.25)' : 'rgba(251,191,36,0.1)');
+
+    const extraHtml = extra.map((ex,ei) =>
+      `<div style="display:flex;gap:5px;align-items:center;margin-top:5px;">
         <input type="text" placeholder="Omschrijving" value="${escHtml(ex.omschrijving||'')}"
           style="flex:2;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;"
           onchange="updateKmExtra(${dag},${ei},'omschrijving',this.value)">
         <input type="number" placeholder="km" min="0" step="0.1" value="${ex.km||''}"
-          style="width:65px;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;text-align:center;"
+          style="width:60px;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;text-align:center;"
           onchange="updateKmExtra(${dag},${ei},'km',parseFloat(this.value)||0)">
         <button onclick="deleteKmExtra(${dag},${ei})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85em;padding:0 3px;">✕</button>
-      </div>`).join('');
+      </div>`
+    ).join('');
 
     html += `
-      <div style="padding:10px 12px;background:${isWeekend?'rgba(255,255,255,0.02)':'rgba(255,255,255,0.04)'};border:1px solid ${isWeekend?'rgba(255,255,255,0.06)':'rgba(251,191,36,0.1)'};border-radius:10px;">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <div style="min-width:80px;">
+      <div style="padding:10px 12px;background:${dagBg};border:1px solid ${dagBorder};border-radius:10px;transition:border-color 0.2s;">
+        <!-- Rij 1: dag + dropdown + gedeclareerd -->
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${(heen||terug||dienstreis) ? '8px' : '0'};">
+          <div style="min-width:52px;">
             <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9em;color:${isWeekend?'var(--muted)':'var(--text)'};">${dag}</span>
-            <span style="font-size:0.68em;color:var(--muted);margin-left:5px;text-transform:uppercase;">${dagNaam}</span>
+            <span style="font-size:0.65em;color:var(--muted);margin-left:4px;text-transform:uppercase;">${dagNaam}</span>
           </div>
-          <div style="display:flex;gap:6px;align-items:center;flex:1;">
-            <input type="number" min="0" step="0.1" value="${heen}" placeholder="heen"
-              style="width:70px;padding:6px 8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.8em;outline:none;text-align:center;"
-              onchange="updateKmDag(${dag},'heen',parseFloat(this.value)||0)">
-            <span style="color:var(--muted);font-size:0.75em;">↔</span>
-            <input type="number" min="0" step="0.1" value="${terug}" placeholder="terug"
-              style="width:70px;padding:6px 8px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:7px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.8em;outline:none;text-align:center;"
-              onchange="updateKmDag(${dag},'terug',parseFloat(this.value)||0)">
-            <button onclick="addKmExtra(${dag})"
-              style="padding:6px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;white-space:nowrap;">+ Rit</button>
-          </div>
+          <select onchange="kmBestemmingGekozen(${dag},parseInt(this.value))"
+            style="flex:1;min-width:160px;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'var(--muted)'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;">
+            ${KM_BESTEMMINGEN.map((b,i) => `<option value="${i}"${i===bestIdx?' selected':''}>${escHtml(b.label)}</option>`).join('')}
+          </select>
+          <!-- Gedeclareerd vinkje -->
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Gedeclareerd">
+            <input type="checkbox" ${gedecl?'checked':''} onchange="toggleKmGedeclareerd(${dag},this.checked)"
+              style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;">
+            <span style="font-size:0.68em;color:${gedecl?'#10b981':'var(--muted)'};">${gedecl?'✅ gedecl.':'declareer'}</span>
+          </label>
         </div>
-        ${extraHtml ? `<div style="padding-left:90px;">${extraHtml}</div>` : ''}
+        <!-- Rij 2: km velden (alleen tonen als bestemming gekozen of al ingevuld) -->
+        ${(bestIdx > 0 || heen || terug || dienstreis) ? `
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-left:60px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <span style="font-size:0.6em;color:#10b981;text-transform:uppercase;letter-spacing:0.08em;">woonwerk</span>
+            <div style="display:flex;gap:4px;">
+              <input type="number" min="0" step="0.1" value="${heen}" placeholder="heen"
+                style="width:62px;padding:5px 7px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.78em;outline:none;text-align:center;"
+                onchange="updateKmDag(${dag},'heen',parseFloat(this.value)||0)">
+              <span style="color:var(--muted);font-size:0.75em;align-self:center;">↔</span>
+              <input type="number" min="0" step="0.1" value="${terug}" placeholder="terug"
+                style="width:62px;padding:5px 7px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.78em;outline:none;text-align:center;"
+                onchange="updateKmDag(${dag},'terug',parseFloat(this.value)||0)">
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+            <span style="font-size:0.6em;color:#f97316;text-transform:uppercase;letter-spacing:0.08em;">dienstreis</span>
+            <input type="number" min="0" step="0.1" value="${dienstreis}" placeholder="0"
+              style="width:70px;padding:5px 7px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:7px;color:#f97316;font-family:'DM Mono',monospace;font-size:0.78em;outline:none;text-align:center;"
+              onchange="updateKmDag(${dag},'dienstreis',parseFloat(this.value)||0)">
+          </div>
+          <button onclick="addKmExtra(${dag})"
+            style="padding:5px 9px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.7em;cursor:pointer;white-space:nowrap;align-self:flex-end;">+ Rit</button>
+        </div>` : ''}
+        ${extraHtml ? `<div style="padding-left:60px;margin-top:2px;">${extraHtml}</div>` : ''}
       </div>`;
   }
   container.innerHTML = html;
   updateKmTotaal();
 }
 
+async function kmBestemmingGekozen(dag, idx) {
+  const b = KM_BESTEMMINGEN[idx];
+  if (!b || b.woonwerk === null) return; // "kies bestemming" geselecteerd
+  const data = getKmCacheData();
+  if (!data[dag]) data[dag] = {extra:[]};
+  data[dag].bestemming_idx = idx;
+  data[dag].heen       = b.woonwerk;
+  data[dag].terug      = b.woonwerk;
+  data[dag].dienstreis = b.dienstreis;
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  updateKmTotaal();
+  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen, data[dag].terug, data[dag].extra||[], data[dag].dienstreis||0, idx, data[dag].gedeclareerd||false);
+  renderKmDagen();
+}
+
+async function toggleKmGedeclareerd(dag, checked) {
+  const data = getKmCacheData();
+  if (!data[dag]) data[dag] = {heen:0,terug:0,dienstreis:0,extra:[]};
+  data[dag].gedeclareerd = checked;
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  const d = data[dag];
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, checked);
+  renderKmDagen();
+}
+
 async function updateKmDag(dag, veld, val) {
   const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0, terug:0, extra:[]};
+  if (!data[dag]) data[dag] = {heen:0, terug:0, dienstreis:0, extra:[], bestemming_idx:0, gedeclareerd:false};
   data[dag][veld] = val;
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   updateKmTotaal();
-  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra||[]);
+  const d = data[dag];
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
 }
 
 async function addKmExtra(dag) {
   const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0, terug:0, extra:[]};
+  if (!data[dag]) data[dag] = {heen:0, terug:0, dienstreis:0, extra:[], bestemming_idx:0, gedeclareerd:false};
   if (!data[dag].extra) data[dag].extra = [];
   data[dag].extra.push({omschrijving:'', km:0});
   kmCache[`${kmJaar}_${kmMaand}`] = data;
-  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra);
+  const d = data[dag];
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
   renderKmDagen();
 }
 
@@ -2329,7 +2412,8 @@ async function updateKmExtra(dag, ei, veld, val) {
     data[dag].extra[ei][veld] = val;
     kmCache[`${kmJaar}_${kmMaand}`] = data;
     updateKmTotaal();
-    await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra);
+    const d = data[dag];
+    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
   }
 }
 
@@ -2338,19 +2422,23 @@ async function deleteKmExtra(dag, ei) {
   if (data[dag] && data[dag].extra) {
     data[dag].extra.splice(ei,1);
     kmCache[`${kmJaar}_${kmMaand}`] = data;
-    await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra);
+    const d = data[dag];
+    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
   }
   renderKmDagen();
 }
 
 function updateKmTotaal() {
   const data = getKmCacheData();
-  let totaal = 0;
+  let totWoonwerk = 0, totDienst = 0;
   Object.values(data).forEach(d => {
-    totaal += parseFloat(d.heen||0) + parseFloat(d.terug||0);
-    (d.extra||[]).forEach(ex => totaal += parseFloat(ex.km||0));
+    totWoonwerk += parseFloat(d.heen||0) + parseFloat(d.terug||0);
+    totDienst   += parseFloat(d.dienstreis||0);
+    (d.extra||[]).forEach(ex => totDienst += parseFloat(ex.km||0));
   });
-  document.getElementById('km-totaal-label').textContent = `Totaal: ${totaal.toFixed(1)} km`;
+  const totaal = totWoonwerk + totDienst;
+  document.getElementById('km-totaal-label').textContent =
+    `Totaal: ${totaal.toFixed(0)} km  |  woonwerk: ${totWoonwerk.toFixed(0)}  |  dienst: ${totDienst.toFixed(0)}`;
 }
 
 async function vulKmStandaard() {
