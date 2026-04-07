@@ -651,10 +651,10 @@ header h1 {
 #werk-modal {
   background: #0d0e18; border: 1px solid rgba(251,191,36,0.2);
   border-radius: 22px; padding: 28px 24px 22px;
-  max-width: 560px; width: 100%;
+  max-width: 680px; width: 100%;
   box-shadow: 0 30px 80px rgba(0,0,0,0.7);
   animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-  max-height: 88vh; overflow-y: auto;
+  max-height: 92vh; overflow-y: auto;
 }
 .werk-title {
   font-family: 'Syne', sans-serif; font-size: 1.15em; font-weight: 800;
@@ -1018,15 +1018,58 @@ header h1 {
 <!-- ══ WERK POPUP ══ -->
 <div id="werk-overlay">
   <div id="werk-modal">
-    <div class="werk-title">💼 Werk links</div>
-    <div class="werk-sub">Voeg je werk-websites toe — blijven opgeslagen in je browser.</div>
-    <div class="werk-add-row">
-      <input type="text" id="werk-naam" placeholder="Naam (bijv. PWN Intranet)">
-      <input type="text" id="werk-url" placeholder="https://...">
-      <button class="werk-add-btn" onclick="addWerkLink()">+ Toevoegen</button>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="werk-title" id="werk-modal-title">💼 Werk</div>
+      <button onclick="closeWerk()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;padding:0 4px;">✕</button>
     </div>
-    <div class="werk-lijst" id="werk-lijst"></div>
-    <button class="werk-close" onclick="closeWerk()">✕ Sluiten</button>
+
+    <!-- TABS -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+      <button id="werk-tab-links" onclick="switchWerkTab('links')" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🔗 Links</button>
+      <button id="werk-tab-km" onclick="switchWerkTab('km')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🚗 KM Registratie</button>
+    </div>
+
+    <!-- TAB: LINKS -->
+    <div id="werk-panel-links">
+      <div class="werk-add-row">
+        <input type="text" id="werk-naam" placeholder="Naam (bijv. PWN Intranet)">
+        <input type="text" id="werk-url" placeholder="https://...">
+        <button class="werk-add-btn" onclick="addWerkLink()">+ Toevoegen</button>
+      </div>
+      <div class="werk-lijst" id="werk-lijst"></div>
+    </div>
+
+    <!-- TAB: KM -->
+    <div id="werk-panel-km" style="display:none;">
+      <!-- Maand navigatie -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <button onclick="kmPrevMaand()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);cursor:pointer;font-size:1em;">◀</button>
+        <div style="text-align:center;">
+          <div id="km-maand-label" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05em;color:#fbbf24;"></div>
+          <div id="km-totaal-label" style="font-size:0.7em;color:var(--muted);margin-top:2px;"></div>
+        </div>
+        <button onclick="kmNextMaand()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);cursor:pointer;font-size:1em;">▶</button>
+      </div>
+      <!-- Standaard km -->
+      <div style="display:flex;gap:8px;margin-bottom:14px;padding:10px 14px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.15);border-radius:10px;align-items:center;flex-wrap:wrap;">
+        <span style="font-size:0.72em;color:var(--muted);flex:1;min-width:120px;">Standaard heen/terug (km)</span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <input type="number" id="km-default-heen" placeholder="Heen" min="0" step="0.1"
+            style="width:70px;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82em;outline:none;text-align:center;"
+            oninput="saveKmDefaults()">
+          <span style="color:var(--muted);font-size:0.8em;">↔</span>
+          <input type="number" id="km-default-terug" placeholder="Terug" min="0" step="0.1"
+            style="width:70px;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82em;outline:none;text-align:center;"
+            oninput="saveKmDefaults()">
+          <button onclick="vulKmStandaard()" title="Vul alle lege dagen met standaard km"
+            style="padding:7px 12px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:7px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;white-space:nowrap;">Vul alle lege</button>
+        </div>
+      </div>
+      <!-- Dagen lijst -->
+      <div id="km-dagen" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px;"></div>
+    </div>
+
+    <button class="werk-close" onclick="closeWerk()" style="margin-top:14px;">✕ Sluiten</button>
   </div>
 </div>
 
@@ -1244,28 +1287,7 @@ header h1 {
     </div>
   </div>
 
-  <!-- MEDICATIE TRACKER -->
-  <div class="meds-wrap">
-    <div class="meds-header">
-      <span class="focus-label" style="margin-bottom:0;">💊 Medicatie vandaag</span>
-      <button class="meds-reset" onclick="resetMeds()" title="Reset voor nieuwe dag">↺ reset</button>
-    </div>
-    <div class="meds-row" id="meds-row">
-      <div class="med-pill" data-med="elvanse" onclick="toggleMed(this)">
-        <span class="med-check">○</span> Elvanse
-      </div>
-      <div class="med-pill" data-med="mysimba-1" onclick="toggleMed(this)">
-        <span class="med-check">○</span> Mysimba ochtend
-      </div>
-      <div class="med-pill" data-med="mysimba-2" onclick="toggleMed(this)">
-        <span class="med-check">○</span> Mysimba middag
-      </div>
-      <div class="med-pill" data-med="saxenda" onclick="toggleMed(this)">
-        <span class="med-check">○</span> Saxenda
-      </div>
-      <button onclick="openAgendaModal()" style="margin-left:auto;padding:9px 14px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.25);border-radius:20px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(56,189,248,0.2)'" onmouseout="this.style.background='rgba(56,189,248,0.1)'">📅 Agenda</button>
-    </div>
-  </div>
+
 
   <!-- POMODORO MODAL (hidden) -->
   <div id="pomo-modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center;padding:20px;">
@@ -1551,6 +1573,14 @@ header h1 {
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fetchAI() { if(typeof fetchDexAI==='function') fetchDexAI(false); }
 
+function openBlogCheck() {
+  const sites = [
+    'https://grok.com/',
+    'https://gemini.google.com/app',
+    'https://www.perplexity.ai/'
+  ];
+  sites.forEach((url, i) => setTimeout(() => window.open(url, '_blank', 'noopener'), i * 150));
+}
 // ══════════════════════════════════════════════
 // APP-AWARE LINKS (mobile → app, desktop → web)
 // ══════════════════════════════════════════════
@@ -2066,95 +2096,286 @@ function filterCards(q) {
 searchEl.addEventListener('input',e=>filterCards(e.target.value));
 
 // ══════════════════════════════════════════════
-// WERK POPUP
 // ══════════════════════════════════════════════
-const WERK_KEY = 'remy_werk_links_v1';
-function getWerkLinks() { try { return JSON.parse(localStorage.getItem(WERK_KEY)||'[]'); } catch { return []; } }
-function saveWerkLinks(arr) { try { localStorage.setItem(WERK_KEY, JSON.stringify(arr)); } catch {} }
+// WERK POPUP — LINKS + KM REGISTRATIE (Supabase)
+// ══════════════════════════════════════════════
+const KM_DAGEN_NL = ['zo','ma','di','wo','do','vr','za'];
+const KM_MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
 
+let kmJaar, kmMaand;
+let kmCache = {}; // { "jaar_maand": { dag: {heen,terug,extra} } }
+let werkLinksCache = [];
+
+// ── Supabase helpers Werk/KM ──
+async function sbWerkGet() {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/werk_links?order=volgorde.asc`, { headers: SB_GET_HDR });
+    if (!r.ok) return [];
+    return await r.json();
+  } catch { return []; }
+}
+async function sbWerkPost(naam, url) {
+  const volgorde = werkLinksCache.length;
+  return sbPost('werk_links', { naam, url, volgorde });
+}
+async function sbWerkDelete(id) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/werk_links?id=eq.${id}`, { method:'DELETE', headers: SB_POST_HDR });
+  } catch {}
+}
+async function sbKmGet(jaar, maand) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/km_registratie?jaar=eq.${jaar}&maand=eq.${maand}`, { headers: SB_GET_HDR });
+    if (!r.ok) return [];
+    return await r.json();
+  } catch { return []; }
+}
+async function sbKmUpsert(jaar, maand, dag, heen, terug, extra) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/km_registratie?on_conflict=jaar,maand,dag`, {
+      method: 'POST',
+      headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ jaar, maand, dag, heen, terug, extra })
+    });
+    if (!r.ok) console.error('KM upsert fout:', r.status, await r.text());
+  } catch(e) { console.error('KM upsert error:', e); }
+}
+async function sbKmDefaultsGet() {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/km_defaults?id=eq.1`, { headers: SB_GET_HDR });
+    if (!r.ok) return {heen:0,terug:0};
+    const d = await r.json();
+    return d[0] || {heen:0,terug:0};
+  } catch { return {heen:0,terug:0}; }
+}
+async function sbKmDefaultsSave(heen, terug) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/km_defaults?on_conflict=id`, {
+      method: 'POST',
+      headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ id:1, heen, terug })
+    });
+    if (!r.ok) console.error('KM defaults fout:', r.status);
+  } catch {}
+}
+
+// ── Werk popup ──
 function openWerk() {
-  renderWerkLinks();
+  const nu = new Date();
+  kmJaar = nu.getFullYear();
+  kmMaand = nu.getMonth() + 1;
   document.getElementById('werk-overlay').classList.add('show');
+  loadWerkLinks();
+  loadKmDefaults();
+  loadKmMaand();
 }
 function closeWerk() { document.getElementById('werk-overlay').classList.remove('show'); }
 document.getElementById('werk-overlay').addEventListener('click', function(e) { if(e.target===this) closeWerk(); });
 
+function switchWerkTab(tab) {
+  document.getElementById('werk-panel-links').style.display = tab==='links' ? '' : 'none';
+  document.getElementById('werk-panel-km').style.display    = tab==='km'    ? '' : 'none';
+  const btnLinks = document.getElementById('werk-tab-links');
+  const btnKm    = document.getElementById('werk-tab-km');
+  const actief = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
+  const inactief = 'padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
+  btnLinks.style.cssText = tab==='links' ? actief : inactief;
+  btnKm.style.cssText    = tab==='km'    ? actief : inactief;
+}
+
+// ── Werk links ──
+async function loadWerkLinks() {
+  document.getElementById('werk-lijst').innerHTML = '<div class="werk-empty">Laden...</div>';
+  werkLinksCache = await sbWerkGet();
+  renderWerkLinks();
+}
 function renderWerkLinks() {
-  const links = getWerkLinks();
   const lijst = document.getElementById('werk-lijst');
-  if (!links.length) {
-    lijst.innerHTML = '<div class="werk-empty">Nog geen links toegevoegd.<br>Voeg je werk-websites toe hierboven.</div>';
+  if (!werkLinksCache.length) {
+    lijst.innerHTML = '<div class="werk-empty">Nog geen links. Voeg ze toe hierboven.</div>';
     return;
   }
-  lijst.innerHTML = links.map((l,i) => `
+  lijst.innerHTML = werkLinksCache.map((l) => `
     <div class="werk-item" style="display:flex;">
       <span class="werk-item-naam">${escHtml(l.naam)}</span>
       <span class="werk-item-url">${escHtml(l.url)}</span>
       <a href="${escHtml(l.url)}" target="_blank" rel="noopener" class="werk-item-open" onclick="event.stopPropagation()">↗</a>
-      <button class="werk-item-del" onclick="deleteWerkLink(${i})">✕</button>
+      <button class="werk-item-del" onclick="deleteWerkLink('${l.id}')">✕</button>
     </div>`).join('');
 }
-
-function addWerkLink() {
+async function addWerkLink() {
   const naam = document.getElementById('werk-naam').value.trim();
   let url    = document.getElementById('werk-url').value.trim();
   if (!naam || !url) return;
   if (!url.startsWith('http')) url = 'https://' + url;
-  const links = getWerkLinks();
-  links.push({ naam, url });
-  saveWerkLinks(links);
   document.getElementById('werk-naam').value = '';
   document.getElementById('werk-url').value  = '';
+  await sbWerkPost(naam, url);
+  werkLinksCache = await sbWerkGet();
   renderWerkLinks();
 }
-
-function deleteWerkLink(i) {
-  const links = getWerkLinks();
-  links.splice(i,1);
-  saveWerkLinks(links);
+async function deleteWerkLink(id) {
+  await sbWerkDelete(id);
+  werkLinksCache = await sbWerkGet();
   renderWerkLinks();
 }
-
 document.getElementById('werk-naam').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('werk-url').focus(); });
 document.getElementById('werk-url').addEventListener('keydown', e => { if(e.key==='Enter') addWerkLink(); });
 
-// ══════════════════════════════════════════════
-// MEDICATIE TRACKER
-// ══════════════════════════════════════════════
-const MEDS_KEY = 'remy_meds_' + new Date().toDateString();
+// ── KM registratie ──
+function kmPrevMaand() { kmMaand--; if(kmMaand<1){kmMaand=12;kmJaar--;} loadKmMaand(); }
+function kmNextMaand() { kmMaand++; if(kmMaand>12){kmMaand=1;kmJaar++;} loadKmMaand(); }
 
-function loadMeds() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(MEDS_KEY)||'{}');
-    document.querySelectorAll('.med-pill').forEach(pill => {
-      const med = pill.dataset.med;
-      if (saved[med]) {
-        pill.classList.add('taken');
-        pill.querySelector('.med-check').textContent = '✓';
-      }
-    });
-  } catch {}
+async function loadKmDefaults() {
+  const d = await sbKmDefaultsGet();
+  document.getElementById('km-default-heen').value  = d.heen||'';
+  document.getElementById('km-default-terug').value = d.terug||'';
+}
+async function saveKmDefaults() {
+  const heen  = parseFloat(document.getElementById('km-default-heen').value)||0;
+  const terug = parseFloat(document.getElementById('km-default-terug').value)||0;
+  await sbKmDefaultsSave(heen, terug);
 }
 
-function toggleMed(pill) {
-  const med = pill.dataset.med;
-  const isTaken = pill.classList.toggle('taken');
-  pill.querySelector('.med-check').textContent = isTaken ? '✓' : '○';
-  try {
-    const key = 'remy_meds_' + new Date().toDateString();
-    const saved = JSON.parse(localStorage.getItem(key)||'{}');
-    saved[med] = isTaken;
-    localStorage.setItem(key, JSON.stringify(saved));
-  } catch {}
+async function loadKmMaand() {
+  document.getElementById('km-maand-label').textContent = KM_MAANDEN[kmMaand-1] + ' ' + kmJaar;
+  document.getElementById('km-dagen').innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:0.8em;">Laden...</div>';
+  const rows = await sbKmGet(kmJaar, kmMaand);
+  // Zet om naar { dag: {...} }
+  const data = {};
+  rows.forEach(r => { data[r.dag] = { heen: r.heen, terug: r.terug, extra: r.extra||[] }; });
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  renderKmDagen();
 }
 
-function resetMeds() {
-  document.querySelectorAll('.med-pill').forEach(pill => {
-    pill.classList.remove('taken');
-    pill.querySelector('.med-check').textContent = '○';
+function getKmCacheData() { return kmCache[`${kmJaar}_${kmMaand}`] || {}; }
+
+function getDagenInMaand(jaar, maand) { return new Date(jaar, maand, 0).getDate(); }
+
+function renderKmDagen() {
+  document.getElementById('km-maand-label').textContent = KM_MAANDEN[kmMaand-1] + ' ' + kmJaar;
+  const container = document.getElementById('km-dagen');
+  const aantalDagen = getDagenInMaand(kmJaar, kmMaand);
+  const data = getKmCacheData();
+
+  let html = '';
+  for (let dag = 1; dag <= aantalDagen; dag++) {
+    const datum = new Date(kmJaar, kmMaand-1, dag);
+    const dagNaam = KM_DAGEN_NL[datum.getDay()];
+    const isWeekend = datum.getDay()===0 || datum.getDay()===6;
+    const d = data[dag] || {};
+    const heen  = d.heen  != null ? d.heen  : '';
+    const terug = d.terug != null ? d.terug : '';
+    const extra = d.extra || [];
+    const extraHtml = extra.map((ex,ei) => `
+      <div style="display:flex;gap:5px;align-items:center;margin-top:5px;">
+        <input type="text" placeholder="Omschrijving" value="${escHtml(ex.omschrijving||'')}"
+          style="flex:2;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;"
+          onchange="updateKmExtra(${dag},${ei},'omschrijving',this.value)">
+        <input type="number" placeholder="km" min="0" step="0.1" value="${ex.km||''}"
+          style="width:65px;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;text-align:center;"
+          onchange="updateKmExtra(${dag},${ei},'km',parseFloat(this.value)||0)">
+        <button onclick="deleteKmExtra(${dag},${ei})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85em;padding:0 3px;">✕</button>
+      </div>`).join('');
+
+    html += `
+      <div style="padding:10px 12px;background:${isWeekend?'rgba(255,255,255,0.02)':'rgba(255,255,255,0.04)'};border:1px solid ${isWeekend?'rgba(255,255,255,0.06)':'rgba(251,191,36,0.1)'};border-radius:10px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="min-width:80px;">
+            <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9em;color:${isWeekend?'var(--muted)':'var(--text)'};">${dag}</span>
+            <span style="font-size:0.68em;color:var(--muted);margin-left:5px;text-transform:uppercase;">${dagNaam}</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex:1;">
+            <input type="number" min="0" step="0.1" value="${heen}" placeholder="heen"
+              style="width:70px;padding:6px 8px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.8em;outline:none;text-align:center;"
+              onchange="updateKmDag(${dag},'heen',parseFloat(this.value)||0)">
+            <span style="color:var(--muted);font-size:0.75em;">↔</span>
+            <input type="number" min="0" step="0.1" value="${terug}" placeholder="terug"
+              style="width:70px;padding:6px 8px;background:rgba(56,189,248,0.06);border:1px solid rgba(56,189,248,0.2);border-radius:7px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.8em;outline:none;text-align:center;"
+              onchange="updateKmDag(${dag},'terug',parseFloat(this.value)||0)">
+            <button onclick="addKmExtra(${dag})"
+              style="padding:6px 10px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;white-space:nowrap;">+ Rit</button>
+          </div>
+        </div>
+        ${extraHtml ? `<div style="padding-left:90px;">${extraHtml}</div>` : ''}
+      </div>`;
+  }
+  container.innerHTML = html;
+  updateKmTotaal();
+}
+
+async function updateKmDag(dag, veld, val) {
+  const data = getKmCacheData();
+  if (!data[dag]) data[dag] = {heen:0, terug:0, extra:[]};
+  data[dag][veld] = val;
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  updateKmTotaal();
+  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra||[]);
+}
+
+async function addKmExtra(dag) {
+  const data = getKmCacheData();
+  if (!data[dag]) data[dag] = {heen:0, terug:0, extra:[]};
+  if (!data[dag].extra) data[dag].extra = [];
+  data[dag].extra.push({omschrijving:'', km:0});
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra);
+  renderKmDagen();
+}
+
+async function updateKmExtra(dag, ei, veld, val) {
+  const data = getKmCacheData();
+  if (data[dag] && data[dag].extra && data[dag].extra[ei]) {
+    data[dag].extra[ei][veld] = val;
+    kmCache[`${kmJaar}_${kmMaand}`] = data;
+    updateKmTotaal();
+    await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra);
+  }
+}
+
+async function deleteKmExtra(dag, ei) {
+  const data = getKmCacheData();
+  if (data[dag] && data[dag].extra) {
+    data[dag].extra.splice(ei,1);
+    kmCache[`${kmJaar}_${kmMaand}`] = data;
+    await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen||0, data[dag].terug||0, data[dag].extra);
+  }
+  renderKmDagen();
+}
+
+function updateKmTotaal() {
+  const data = getKmCacheData();
+  let totaal = 0;
+  Object.values(data).forEach(d => {
+    totaal += parseFloat(d.heen||0) + parseFloat(d.terug||0);
+    (d.extra||[]).forEach(ex => totaal += parseFloat(ex.km||0));
   });
-  localStorage.removeItem('remy_meds_' + new Date().toDateString());
+  document.getElementById('km-totaal-label').textContent = `Totaal: ${totaal.toFixed(1)} km`;
 }
+
+async function vulKmStandaard() {
+  const heen  = parseFloat(document.getElementById('km-default-heen').value)||0;
+  const terug = parseFloat(document.getElementById('km-default-terug').value)||0;
+  if (!heen && !terug) return;
+  await sbKmDefaultsSave(heen, terug);
+  const aantalDagen = getDagenInMaand(kmJaar, kmMaand);
+  const data = getKmCacheData();
+  const promises = [];
+  for (let dag = 1; dag <= aantalDagen; dag++) {
+    const datum = new Date(kmJaar, kmMaand-1, dag);
+    const isWeekend = datum.getDay()===0 || datum.getDay()===6;
+    if (!isWeekend && (!data[dag] || (!data[dag].heen && !data[dag].terug))) {
+      if (!data[dag]) data[dag] = {extra:[]};
+      data[dag].heen  = heen;
+      data[dag].terug = terug;
+      promises.push(sbKmUpsert(kmJaar, kmMaand, dag, heen, terug, data[dag].extra||[]));
+    }
+  }
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  await Promise.all(promises);
+  renderKmDagen();
+}
+
 
 // ══════════════════════════════════════════════
 // POMODORO TIMER
@@ -2197,13 +2418,13 @@ function togglePomo() {
           pomoIsBreak = true;
           pomoSeconds = 5 * 60;
           // Browser notification
-          if (Notification.permission === 'granted') {
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
             new Notification('🍅 Pomodoro klaar!', { body: 'Goed gedaan Remy — 5 min pauze.' });
           }
         } else {
           pomoIsBreak = false;
           pomoSeconds = 25 * 60;
-          if (Notification.permission === 'granted') {
+          if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
             new Notification('⏱️ Pauze voorbij!', { body: 'Tijd voor de volgende sessie.' });
           }
         }
@@ -2226,7 +2447,7 @@ function resetPomo() {
 }
 
 // Vraag notification permissie
-if (Notification && Notification.permission === 'default') {
+if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
   Notification.requestPermission();
 }
 
@@ -3014,7 +3235,7 @@ document.addEventListener('keydown', e => {
 window.addEventListener('load', () => {
   renderTodos();
 
-  loadMeds();
+
   updatePomoDisplay();
   // Geen popup, geen apikey modal — direct hub tonen
   // AI blokjes laden als key beschikbaar is
