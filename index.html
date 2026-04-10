@@ -3002,6 +3002,14 @@ function importCSV(input) {
   const file = input.files[0];
   if (!file) return;
   const status = document.getElementById('vl-import-status');
+
+  // Guard: vlLasten moet geladen zijn
+  if (!vlLasten || vlLasten.length === 0) {
+    status.textContent = '⚠ Laad eerst de Vaste Lasten (even wachten of F5)';
+    input.value = '';
+    return;
+  }
+
   status.textContent = 'Inlezen...';
 
   const reader = new FileReader();
