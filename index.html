@@ -1114,6 +1114,22 @@ header h1 {
       <span class="vl-import-status" id="vl-import-status"></span>
     </div>
 
+    <!-- CSV PREVIEW MODAL -->
+    <div id="csv-preview-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(8px);z-index:2000;align-items:center;justify-content:center;padding:20px;">
+      <div style="background:#0d0e18;border:1px solid rgba(255,255,255,0.1);border-radius:22px;padding:28px 24px 20px;max-width:660px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 30px 80px rgba(0,0,0,0.7);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1em;color:#fbbf24;">📂 ING CSV — Controleer matches</div>
+          <button onclick="document.getElementById('csv-preview-overlay').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
+        </div>
+        <div id="csv-preview-stats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;font-size:0.72em;"></div>
+        <div id="csv-preview-lijst" style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;"></div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+          <button onclick="document.getElementById('csv-preview-overlay').style.display='none'" style="padding:10px 18px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.8em;cursor:pointer;">Annuleren</button>
+          <button id="csv-bevestig-btn" onclick="csvBevestigImport()" style="padding:10px 20px;background:rgba(16,185,129,0.15);border:1px solid rgba(16,185,129,0.35);border-radius:10px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.8em;cursor:pointer;font-weight:700;">✓ Bevestig & sla op</button>
+        </div>
+      </div>
+    </div>
+
     <div id="vl-content"><div class="vl-loading">Verbinden met Supabase...</div></div>
 
     <!-- SPAARREKENINGEN -->
@@ -2979,6 +2995,9 @@ function loadVlSaldo() {
 }
 
 // ══ CSV IMPORT (ING formaat) ══
+// Tijdelijke opslag voor CSV import preview
+let csvImportData = [];
+
 function importCSV(input) {
   const file = input.files[0];
   if (!file) return;
@@ -2986,43 +3005,160 @@ function importCSV(input) {
   status.textContent = 'Inlezen...';
 
   const reader = new FileReader();
-  reader.onload = async (e) => {
-    const lines = e.target.result.split('\n').filter(l=>l.trim());
-    let matched = 0;
+  reader.onload = (e) => {
+    const lines = e.target.result.split('\n').filter(l => l.trim());
+    // ING CSV: Datum;Naam;Rekening;Tegenrekening;Code;Af Bij;Bedrag;Mutatiesoort;Mededelingen;Saldo;Tag
+    const gematcht = [];
+    const afwijkend = [];
+    const nietGematcht = [];
+    const alBetaald = [];
 
     for (const line of lines.slice(1)) {
-      // ING CSV: Datum;Naam;Rekening;Tegenrekening;Code;Af Bij;Bedrag;Mutatiesoort;Mededelingen;Saldo;Tag
-      const cols = line.split(';').map(c=>c.replace(/^"|"$/g,'').trim());
+      const cols = line.split(';').map(c => c.replace(/^"|"$/g, '').trim());
       if (cols.length < 7) continue;
       const [datum, naam, , , , afbij, bedragRaw] = cols;
       if (afbij !== 'Af') continue;
 
-      const bedrag = parseFloat(bedragRaw.replace(',','.'));
+      const bedrag = parseFloat(bedragRaw.replace(',', '.'));
       const naamLower = naam.toLowerCase();
 
-      // Match op naam
       const match = vlLasten.find(l => {
         const lNaam = l.naam.toLowerCase();
-        return naamLower.includes(lNaam.slice(0,6)) || lNaam.includes(naamLower.slice(0,6));
+        return naamLower.includes(lNaam.slice(0, 6)) || lNaam.includes(naamLower.slice(0, 6));
       });
 
-      if (match) {
+      if (!match) {
+        nietGematcht.push({ csvNaam: naam, bedrag, datum });
+      } else {
         const bet = getBetaling(match.id);
-        if (!bet?.betaald) {
-          await sbUpsert('betalingen', {
-            vaste_last_id: match.id, jaar: vlJaar, maand: vlMaand,
-            betaald: true, betaald_op: new Date().toISOString(), bedrag_betaald: bedrag
-          });
-          matched++;
+        if (bet?.betaald) {
+          alBetaald.push({ csvNaam: naam, hubNaam: match.naam, bedrag, datum });
+        } else {
+          const verwacht = parseFloat(match.bedrag || 0);
+          const afwijkt = Math.abs(bedrag - verwacht) > 0.05;
+          if (afwijkt) {
+            afwijkend.push({ csvNaam: naam, hubNaam: match.naam, bedragCSV: bedrag, bedragHub: verwacht, datum, lastId: match.id, geselecteerd: true });
+          } else {
+            gematcht.push({ csvNaam: naam, hubNaam: match.naam, bedrag, datum, lastId: match.id, geselecteerd: true });
+          }
         }
       }
     }
 
-    status.textContent = `✓ ${matched} posten automatisch gemarkeerd als betaald`;
+    // Sla op voor bevestiging
+    csvImportData = { gematcht, afwijkend, nietGematcht, alBetaald };
+    status.textContent = '';
     input.value = '';
-    loadVasteLasten();
+    toonCsvPreview();
   };
   reader.readAsText(file, 'utf-8');
+}
+
+function toonCsvPreview() {
+  const { gematcht, afwijkend, nietGematcht, alBetaald } = csvImportData;
+  const overlay = document.getElementById('csv-preview-overlay');
+  const stats = document.getElementById('csv-preview-stats');
+  const lijst = document.getElementById('csv-preview-lijst');
+
+  // Stats balk
+  stats.innerHTML = [
+    `<span style="padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981;">✓ ${gematcht.length} gematcht</span>`,
+    afwijkend.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;">⚠ ${afwijkend.length} afwijkend bedrag</span>` : '',
+    nietGematcht.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;">✕ ${nietGematcht.length} geen match</span>` : '',
+    alBetaald.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);">⏭ ${alBetaald.length} al betaald</span>` : '',
+  ].filter(Boolean).join('');
+
+  let html = '';
+
+  // Gematchte rijen
+  if (gematcht.length) {
+    html += `<div style="font-size:0.68em;color:#10b981;letter-spacing:0.1em;text-transform:uppercase;margin:8px 0 4px;">✓ Gematcht — worden gemarkeerd als betaald</div>`;
+    gematcht.forEach((r, i) => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.15);border-radius:8px;">
+        <input type="checkbox" checked onchange="csvImportData.gematcht[${i}].geselecteerd=this.checked"
+          style="width:14px;height:14px;accent-color:#10b981;cursor:pointer;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.82em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(r.csvNaam)}</div>
+          <div style="font-size:0.65em;color:var(--muted);">→ ${escHtml(r.hubNaam)} · ${r.datum}</div>
+        </div>
+        <span style="font-family:'Syne',sans-serif;font-weight:700;color:#10b981;font-size:0.9em;white-space:nowrap;">€${r.bedrag.toFixed(2)}</span>
+      </div>`;
+    });
+  }
+
+  // Afwijkende bedragen
+  if (afwijkend.length) {
+    html += `<div style="font-size:0.68em;color:#fbbf24;letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">⚠ Afwijkend bedrag — check even</div>`;
+    afwijkend.forEach((r, i) => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:8px;">
+        <input type="checkbox" checked onchange="csvImportData.afwijkend[${i}].geselecteerd=this.checked"
+          style="width:14px;height:14px;accent-color:#fbbf24;cursor:pointer;flex-shrink:0;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.82em;color:var(--text);">${escHtml(r.csvNaam)}</div>
+          <div style="font-size:0.65em;color:var(--muted);">→ ${escHtml(r.hubNaam)} · ${r.datum}</div>
+        </div>
+        <div style="text-align:right;white-space:nowrap;">
+          <div style="font-family:'Syne',sans-serif;font-weight:700;color:#fbbf24;font-size:0.9em;">€${r.bedragCSV.toFixed(2)}</div>
+          <div style="font-size:0.65em;color:var(--muted);">verwacht: €${r.bedragHub.toFixed(2)}</div>
+        </div>
+      </div>`;
+    });
+  }
+
+  // Niet gematcht
+  if (nietGematcht.length) {
+    html += `<div style="font-size:0.68em;color:#ef4444;letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">✕ Geen match gevonden in hub</div>`;
+    nietGematcht.forEach(r => {
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:8px;opacity:0.7;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.82em;color:var(--muted);">${escHtml(r.csvNaam)}</div>
+          <div style="font-size:0.65em;color:var(--muted);">${r.datum}</div>
+        </div>
+        <span style="font-family:'Syne',sans-serif;color:var(--muted);font-size:0.9em;">€${r.bedrag.toFixed(2)}</span>
+      </div>`;
+    });
+  }
+
+  // Al betaald (info)
+  if (alBetaald.length) {
+    html += `<div style="font-size:0.68em;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">⏭ Al betaald — worden overgeslagen</div>`;
+    alBetaald.forEach(r => {
+      html += `<div style="padding:7px 12px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;opacity:0.5;">
+        <span style="font-size:0.78em;color:var(--muted);">${escHtml(r.hubNaam)} — €${r.bedrag.toFixed(2)}</span>
+      </div>`;
+    });
+  }
+
+  lijst.innerHTML = html || '<div style="color:var(--muted);font-size:0.82em;text-align:center;padding:20px;">Geen relevante transacties gevonden in deze periode.</div>';
+
+  const aantalTeSlaanOp = gematcht.filter(r => r.geselecteerd).length + afwijkend.filter(r => r.geselecteerd).length;
+  document.getElementById('csv-bevestig-btn').textContent = `✓ Bevestig & sla ${aantalTeSlaanOp} op`;
+  overlay.style.display = 'flex';
+}
+
+async function csvBevestigImport() {
+  const btn = document.getElementById('csv-bevestig-btn');
+  btn.textContent = 'Opslaan...';
+  btn.disabled = true;
+
+  const { gematcht, afwijkend } = csvImportData;
+  let saved = 0;
+
+  for (const r of [...gematcht, ...afwijkend]) {
+    if (!r.geselecteerd) continue;
+    const bedrag = r.bedrag || r.bedragCSV;
+    await sbUpsert('betalingen', {
+      vaste_last_id: r.lastId, jaar: vlJaar, maand: vlMaand,
+      betaald: true, betaald_op: new Date().toISOString(), bedrag_betaald: bedrag
+    });
+    saved++;
+  }
+
+  document.getElementById('csv-preview-overlay').style.display = 'none';
+  document.getElementById('vl-import-status').textContent = `✓ ${saved} posten opgeslagen`;
+  btn.disabled = false;
+  csvImportData = [];
+  await loadVasteLasten();
 }
 
 
