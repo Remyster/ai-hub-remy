@@ -3022,9 +3022,82 @@ function importCSV(input) {
       const bedrag = parseFloat(bedragRaw.replace(',', '.'));
       const naamLower = naam.toLowerCase();
 
-      const match = vlLasten.find(l => {
+      // Transacties die nooit gematcht mogen worden (geen vaste last)
+      const negeerLijst = [
+        'thuisbezorgd', 'takeaway', 'deliveroo', 'new york pizza', 'dominos',
+        'q-park', 'parking', 'parkeer',
+        'driffle', 'steam', 'playstation',
+        'albert heijn', 'jumbo', 'lidl', 'aldi',
+        'amazon payments',  // Amazon aankopen, niet Prime abonnement
+      ];
+      if (negeerLijst.some(n => naamLower.includes(n))) {
+        nietGematcht.push({ csvNaam: naam, bedrag, datum, negeer: true });
+        continue;
+      }
+
+      // Speciale bedrag-gebaseerde matches (zelfde CSV naam, ander hub post op bedrag)
+      const bedragMatch = [
+        { csvFragment: 'asr uitvaartverzekering', bedrag: 7.22,  hubNaamFragment: 'uitvaartverzekering remy' },
+        { csvFragment: 'asr uitvaartverzekering', bedrag: 12.18, hubNaamFragment: 'uitvaartverzekering danique' },
+        { csvFragment: 'asr uitvaartverzekering', bedrag: 11.85, hubNaamFragment: 'z&o uitvaart' },
+        { csvFragment: 'paypal',                  bedrag: 20.00, hubNaamFragment: 'claude' },
+        { csvFragment: 'vandebron',               bedrag: 175.00, hubNaamFragment: 'energie' },
+        { csvFragment: 'nv pwn',                  bedrag: null,  hubNaamFragment: 'water' },
+        { csvFragment: 'belastingdienst',         bedrag: 57.00, hubNaamFragment: 'wegenbelasting' },
+      ];
+
+      // Probeer bedrag-match eerst
+      let match = null;
+      for (const bm of bedragMatch) {
+        if (naamLower.includes(bm.csvFragment) && (bm.bedrag === null || Math.abs(bedrag - bm.bedrag) < 0.10)) {
+          match = vlLasten.find(l => l.naam.toLowerCase().includes(bm.hubNaamFragment));
+          if (match) break;
+        }
+      }
+
+      // Dan generieke match
+      if (!match) match = vlLasten.find(l => {
         const lNaam = l.naam.toLowerCase();
-        return naamLower.includes(lNaam.slice(0, 6)) || lNaam.includes(naamLower.slice(0, 6));
+        // 1. Exacte match
+        if (naamLower === lNaam) return true;
+        // 2. Hub naam zit volledig in CSV naam
+        if (naamLower.includes(lNaam)) return true;
+        // 3. Elk woord van hubnaam (>3 letters) zit in CSV naam
+        const hubWoorden = lNaam.split(/\s+/).filter(w => w.length > 3);
+        if (hubWoorden.length > 0 && hubWoorden.every(w => naamLower.includes(w))) return true;
+        // 4. Aliassen
+        const aliassen = {
+          'intermaris':          ['huur'],
+          'ing bank':            ['betaling ing', 'ing auto'],
+          'auto en fiets':       ['autoverzekering', 'ominimo'],
+          'huis en meubels':     ['inboedel'],
+          'nn schade':           ['rechtbijstand'],
+          'stichting inzake':    ['rechtbijstand'],
+          'persoonlijke lening': ['betaling ing', 'ing auto'],
+          'enra':                ['fietsverzekering'],
+          'lightexpert':         ['energie'],
+          'hr rl egberts':       ['boodschappen'],
+          'd. uittenbogaard':    ['boodschappen'],
+          'hoornse gymnastiek':  ['olivia'],
+          'vodafone':            ['vodafone'],
+          'ziggo':               ['ziggo'],
+          'videoland':           ['videoland'],
+          'amazon eu sarl':      ['amazon prime'],
+          'hollandsnieuwe':      ['hollandsnieuwe'],
+          'gemeente hoorn':      ['gemeentelijke belastingen'],
+          'hoogheemraadschap':   ['hoogheemraadschap'],
+          'zilveren kruis':      ['zorgverzekering remy'],
+          'vgz zorgverzekeraar': ['zorgverzekering danique'],
+          'allianz':             ['inboedel'],
+          'stichting kinderopvang': ['kinderopvang'],
+          'noodpot':             ['noodpot'],
+        };
+        for (const [csvSleutel, hubSleutels] of Object.entries(aliassen)) {
+          if (naamLower.includes(csvSleutel)) {
+            if (hubSleutels.some(hs => lNaam.includes(hs))) return true;
+          }
+        }
+        return false;
       });
 
       if (!match) {
@@ -3064,7 +3137,7 @@ function toonCsvPreview() {
   stats.innerHTML = [
     `<span style="padding:4px 10px;border-radius:20px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);color:#10b981;">✓ ${gematcht.length} gematcht</span>`,
     afwijkend.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);color:#fbbf24;">⚠ ${afwijkend.length} afwijkend bedrag</span>` : '',
-    nietGematcht.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;">✕ ${nietGematcht.length} geen match</span>` : '',
+    echteGeen.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444;">✕ ${echteGeen.length} geen match</span>` : '',
     alBetaald.length ? `<span style="padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--muted);">⏭ ${alBetaald.length} al betaald</span>` : '',
   ].filter(Boolean).join('');
 
@@ -3106,9 +3179,10 @@ function toonCsvPreview() {
   }
 
   // Niet gematcht
-  if (nietGematcht.length) {
+  const echteGeen = nietGematcht.filter(r => !r.negeer);
+  if (echteGeen.length) {
     html += `<div style="font-size:0.68em;color:#ef4444;letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">✕ Geen match gevonden in hub</div>`;
-    nietGematcht.forEach(r => {
+    echteGeen.forEach(r => {
       html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:8px;opacity:0.7;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.82em;color:var(--muted);">${escHtml(r.csvNaam)}</div>
