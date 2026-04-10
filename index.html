@@ -3137,6 +3137,7 @@ function importCSV(input) {
 
 function toonCsvPreview() {
   const { gematcht, afwijkend, nietGematcht, alBetaald } = csvImportData;
+  const echteGeen = nietGematcht.filter(r => !r.negeer);
   const overlay = document.getElementById('csv-preview-overlay');
   const stats = document.getElementById('csv-preview-stats');
   const lijst = document.getElementById('csv-preview-lijst');
@@ -3187,7 +3188,6 @@ function toonCsvPreview() {
   }
 
   // Niet gematcht
-  const echteGeen = nietGematcht.filter(r => !r.negeer);
   if (echteGeen.length) {
     html += `<div style="font-size:0.68em;color:#ef4444;letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">✕ Geen match gevonden in hub</div>`;
     echteGeen.forEach(r => {
