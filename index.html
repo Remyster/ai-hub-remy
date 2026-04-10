@@ -2667,9 +2667,13 @@ function renderVasteLasten() {
     cats[l.categorie].push(l);
   });
 
+  const isAutoMaandCalc = vlMaand % 2 === 1;
   let totaal=0, betaaldTot=0, nogTot=0;
   vlLasten.forEach(l => {
-    if (l.categorie === 'inkomen') return; // niet meetellen in uitgaven
+    if (l.categorie === 'inkomen') return;
+    // Alternerende spaarpotten: tel alleen de actieve maand mee
+    if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return;
+    if (l.naam === 'Huis sparen' && isAutoMaandCalc) return;
     const b = getBetaling(l.id);
     const bedrag = b?.bedrag_betaald ?? l.bedrag;
     totaal += parseFloat(bedrag||0);
