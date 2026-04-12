@@ -1277,7 +1277,6 @@ header h1 {
     <h1>🧠 Remy AI Hub</h1>
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
-      <span class="hbtn hbtn-green" onclick="openPopup()">✨ Dagelijkse tip</span>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="copyIncognito()" id="incognito-btn" title="Kopieert URL → open Ctrl+Shift+N → plak">🕵️ Incognito <span style="font-size:0.8em;opacity:0.6;">(Ctrl+Shift+N)</span></span>
       <span class="hbtn" style="color:#fbbf24;background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.18);" onclick="openWerk()">💼 Werk</span>
@@ -1287,19 +1286,16 @@ header h1 {
 
   <!-- DEX CARD -->
 
-  <!-- AI BLOKJES — voor jou / lifehack / feit -->
-  <div class="dex-ai-blocks" id="dex-ai-blocks" style="margin-bottom:16px;animation:fadeDown 0.6s ease both;">
-    <div class="dex-ai-block quote-b">
-      <div class="dex-ai-block-label">💬 Voor jou</div>
-      <div id="dex-quote"><div class="shimmer"></div><div class="shimmer short"></div></div>
-    </div>
-    <div class="dex-ai-block hack-b">
-      <div class="dex-ai-block-label">⚡ Life Hack</div>
-      <div id="dex-hack"><div class="shimmer"></div><div class="shimmer short"></div></div>
-    </div>
-    <div class="dex-ai-block fact-b">
-      <div class="dex-ai-block-label">🧠 Wist je dat</div>
-      <div id="dex-fact"><div class="shimmer"></div><div class="shimmer short"></div></div>
+  <!-- VOOR JOU blokje -->
+  <div style="margin-bottom:16px;animation:fadeDown 0.6s ease both;">
+    <div class="dex-ai-block quote-b" style="display:flex;align-items:flex-start;gap:12px;">
+      <div style="flex:1;">
+        <div class="dex-ai-block-label">💬 Voor jou — <span id="dex-voojou-label" style="opacity:0.7;font-style:italic;"></span></div>
+        <div id="dex-voojou"><div class="shimmer"></div><div class="shimmer short"></div></div>
+      </div>
+      <button onclick="fetchVoorJou(true)" title="Andere boodschap"
+        style="background:none;border:none;color:var(--muted);font-size:1.1em;cursor:pointer;padding:2px 6px;transition:color 0.2s;flex-shrink:0;"
+        onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻</button>
     </div>
   </div>
 
@@ -1372,14 +1368,23 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏥 Dr. NeuroCut</h2><p>Medische specialist ADHD &amp; gewicht · Sonnet 4.6 Extended</p><span class="kbd">1</span>
       </a>
-      <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79" class="card agent" data-key="2" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔬 Nova R&amp;D</h2><p>PWN companion · Sonnet 4.6 Extended</p><span class="kbd">2</span>
-      </a>
-      <a href="https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏗️ Atlas Technical R&amp;D</h2><p>Technische research &amp; development · Sonnet 4.6 Extended</p>
-      </a>
+      <div class="card agent" data-key="2" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>🔬 R&amp;D Lab</h2><p style="margin-bottom:10px;">Research &amp; Development</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(16,185,129,0.22)'" onmouseout="this.style.background='rgba(16,185,129,0.12)'">
+            🔬 Nova R&amp;D
+          </a>
+          <a href="https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(16,185,129,0.22)'" onmouseout="this.style.background='rgba(16,185,129,0.12)'">
+            🏗️ Atlas
+          </a>
+        </div>
+        <span class="kbd">2</span>
+      </div>
       <a href="https://claude.ai/project/019c8aa7-933b-7514-b519-8362446b492b" class="card agent" data-key="3" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>❤️ Jan Mars</h2><p>Relatie therapeut · Sonnet 4.6 Extended</p><span class="kbd">3</span>
@@ -1398,25 +1403,35 @@ header h1 {
       </a>
       <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim Bouwen en Vragen</h2><p>Project assistent · Sonnet 4.6 Extended</p>
+        <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent · Sonnet 4.6 Extended</p>
       </a>
-      <a href="https://claude.ai/project/019cf80d-0f65-727b-bd9a-2ecd15301ca1" class="card agent" data-key="6" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏋️ Clyde Push Day</h2><p>Gym buddy · Haiku model</p><span class="kbd">6</span>
-      </a>
-      <a href="https://claude.ai/project/019bb342-d02a-77cd-afc8-d70b1e8a8b36" class="card agent" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏋️ Clyde Pull Day</h2><p>Gym buddy · Haiku model</p>
-      </a>
-      <a href="https://claude.ai/project/019cf80d-2a9a-7033-9bf4-749fda5dbebe" class="card agent" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🦵 Clyde Leg Day</h2><p>Gym buddy · Haiku model</p>
-      </a>
-      <a href="https://claude.ai/project/019cf80c-ead6-7290-85ae-55e43d3974ed" class="card agent" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🧘 Clyde Toning Day</h2><p>Gym buddy · Haiku model</p>
-      </a>
-
+      <div class="card agent" data-key="6" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>🏋️ Clyde</h2><p style="margin-bottom:10px;">Gym buddy · Haiku model</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <a href="https://claude.ai/project/019cf80d-0f65-727b-bd9a-2ecd15301ca1" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🏋️ Push
+          </a>
+          <a href="https://claude.ai/project/019bb342-d02a-77cd-afc8-d70b1e8a8b36" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🔄 Pull
+          </a>
+          <a href="https://claude.ai/project/019cf80d-2a9a-7033-9bf4-749fda5dbebe" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🦵 Legs
+          </a>
+          <a href="https://claude.ai/project/019cf80c-ead6-7290-85ae-55e43d3974ed" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🧘 Toning
+          </a>
+        </div>
+        <span class="kbd">6</span>
+      </div>
       <a href="https://claude.ai/project/019cd6d5-1caf-7138-9b61-1a4dbdc90a69" class="card agent" data-key="7" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>💰 DoopieVault</h2><p>Crypto Expert · Sonnet 4.6 Extended</p><span class="kbd">7</span>
@@ -1470,7 +1485,7 @@ header h1 {
     <div class="grid">
       <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim Bouwen en Vragen</h2><p>Project assistent</p>
+        <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent</p>
       </a>
       <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -1500,6 +1515,27 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>📊 Search Console</h2><p>Stekkerslim.nl SEO</p>
       </a>
+      <div class="card affiliate" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>📣 Marketing Agents</h2><p style="margin-bottom:10px;">Stekkerslim marketing</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+          <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 4px;background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.68em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(244,114,182,0.22)'" onmouseout="this.style.background='rgba(244,114,182,0.12)'">
+            ✍️ StekkerPen
+          </a>
+          <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 4px;background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.68em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(244,114,182,0.22)'" onmouseout="this.style.background='rgba(244,114,182,0.12)'">
+            📣 StekkerBoost
+          </a>
+          <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 4px;background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.68em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(244,114,182,0.22)'" onmouseout="this.style.background='rgba(244,114,182,0.12)'">
+            💬 StekkerDesk
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -1507,14 +1543,32 @@ header h1 {
   <section class="section" id="sec-tools">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
-      <a href="https://drive.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>☁️ Google Drive</h2><p>Bestanden &amp; docs</p>
-      </a>
-      <a href="https://photos.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📸 Google Photos</h2><p>Foto's &amp; albums</p>
-      </a>
+      <div class="card tool" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>🔵 Google</h2><p style="margin-bottom:10px;">Google diensten</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <a href="https://drive.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            ☁️ Drive
+          </a>
+          <a href="https://photos.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            📸 Photos
+          </a>
+          <a href="https://keep.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            📌 Keep
+          </a>
+          <a href="https://mail.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            📧 Gmail
+          </a>
+        </div>
+      </div>
       <a href="https://github.com/Remyster" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🐙 GitHub</h2><p>Repositories</p>
@@ -1526,14 +1580,6 @@ header h1 {
       <a href="#" class="card tool" onclick="openSmart('https://vault.bitwarden.com/','bitwarden://'); return false;">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🔐 Bitwarden</h2><p>Wachtwoorden</p>
-      </a>
-      <a href="#" class="card tool" onclick="openSmart('https://keep.google.com/','https://keep.google.com/'); return false;">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📌 Google Keep</h2><p>Snelle notities</p>
-      </a>
-      <a href="#" class="card tool" onclick="openSmart('https://mail.google.com/','googlegmail://'); return false;">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📧 Gmail</h2><p>Google mail</p>
       </a>
       <a href="https://www.twitch.tv/" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -1612,7 +1658,7 @@ header h1 {
 
 <script>
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fetchAI() { if(typeof fetchDexAI==='function') fetchDexAI(false); }
+function fetchAI() { fetchVoorJou(false); }
 
 function openBlogCheck() {
   const sites = [
@@ -1985,72 +2031,76 @@ document.getElementById('reminder-save').addEventListener('click', () => {
 // ══════════════════════════════════════════════
 // DEX AI BLOKJES — direct laden, geen popup
 // ══════════════════════════════════════════════
-function showDexShimmers() {
-  ['dex-quote','dex-hack','dex-fact'].forEach(id => {
-    document.getElementById(id).innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
-  });
-}
-
-let dexAiLoading = false;
-async function fetchDexAI(force) {
-  if (dexAiLoading) return;
-  const cacheKey = 'remy_dex_ai_' + new Date().toDateString();
+// VOOR JOU — persoonlijk dagblokje
+// ══════════════════════════════════════════════
+const VOOJOU_ONDERWERPEN = [
+  { label: 'vader', prompt: 'Schrijf een korte warme maar directe boodschap (2-3 zinnen) voor Remy als vader van Olivia (7) en Zoey (2). Geen clichés. Mag schelden. Varieer per seed.' },
+  { label: 'financiële vrijheid', prompt: 'Schrijf een motiverende boodschap (2-3 zinnen) over financiële vrijheid voor Remy. Hij bouwt BonusBuurt en Stekkerslim naast zijn baan bij PWN. Concreet en eerlijk.' },
+  { label: 'afvallen & lijf', prompt: 'Schrijf een eerlijke motiverende boodschap (2-3 zinnen) over Remys afvalstrijd. Hij slikt Mysimba, spuit Saxenda, traint 3-5x/week kracht. Direct, geen suikercoating.' },
+  { label: 'veerkracht', prompt: 'Schrijf een boodschap (2-3 zinnen) over veerkracht voor Remy. Hij doet alles alleen, huwelijk is zwaar, ADHD maakt het lastig. Eerlijk en steunend.' },
+  { label: 'gamer & rust', prompt: 'Schrijf een luchtige boodschap (2-3 zinnen) dat Remy rust en gaming verdient. PC+beamer setup. Grappig en relaxed.' },
+  { label: 'bouwen & tech', prompt: 'Schrijf een energieke boodschap (2-3 zinnen) over Remys passie voor bouwen en tech. Home Assistant, DIY, code. Hij is trots op wat hij maakt.' },
+  { label: 'werk & ambitie', prompt: 'Schrijf een boodschap (2-3 zinnen) over werk en ambitie voor Remy. Werkt bij PWN, wil meer. Direct en aanmoedigend.' },
+  { label: 'kleine overwinning', prompt: 'Schrijf een boodschap (2-3 zinnen) die een kleine overwinning viert voor Remy. Concreet en herkenbaar uit zijn leven. Humor mag.' },
+  { label: 'muziek & karakter', prompt: 'Schrijf een grappige boodschap (2-3 zinnen) over Remys muziekgedrag. Hij draait muziek waar mensen van schrikken. Zelfspot mag.' },
+  { label: 'ADHD & doorzetten', prompt: 'Schrijf een eerlijke boodschap (2-3 zinnen) over leven met ADHD voor Remy (Elvanse). Herkenbaar en motiverend, geen medisch advies.' },
+];
+const VOOJOU_FALLBACKS = [
+  'Je bent een kerel die dingen bouwt die werken. Houd dat vast.',
+  'Olivia en Zoey zien jou elke dag. Ze zien iemand die niet opgeeft.',
+  'BonusBuurt groeit niet vanzelf — maar jij weet dat al.',
+  'ADHD betekent niet dat je het niet kan. Het gaat gewoon anders.',
+  'Die training van vandaag telt. Ook als het zwaar voelt.',
+  'Stekkerslim.nl bestaat omdat jij iets bouwde vanuit niks.',
+  'Druk druk druk — maar ook trots trots trots.',
+];
+let voorJouLoading = false;
+async function fetchVoorJou(force) {
+  if (voorJouLoading) return;
+  const dagSeed = new Date().toDateString();
+  const refreshKey = 'vj_refresh_' + dagSeed;
+  let refreshCount = parseInt(localStorage.getItem(refreshKey) || '0');
+  if (force) { refreshCount++; localStorage.setItem(refreshKey, String(refreshCount)); }
+  const seed = (new Date().getDate() + new Date().getMonth() * 31 + refreshCount * 3) % VOOJOU_ONDERWERPEN.length;
+  const onderwerp = VOOJOU_ONDERWERPEN[seed];
+  const cacheKey = 'remy_voojou_' + dagSeed + '_' + seed;
+  const el = document.getElementById('dex-voojou');
+  const lblEl = document.getElementById('dex-voojou-label');
+  if (lblEl) lblEl.textContent = onderwerp.label;
   if (!force) {
     try {
       const cached = localStorage.getItem(cacheKey);
-      if (cached) {
-        const p = JSON.parse(cached);
-        const qEl = document.getElementById('dex-quote');
-        const hEl = document.getElementById('dex-hack');
-        const fEl = document.getElementById('dex-fact');
-        if (qEl) qEl.textContent = p.quote;
-        if (hEl) hEl.textContent = p.hack;
-        if (fEl) fEl.textContent = p.fact;
-        return;
-      }
+      if (cached) { if (el) el.textContent = cached; return; }
     } catch {}
   }
   const key = getApiKey();
   if (!key) {
-    const qEl = document.getElementById('dex-quote');
-    const hEl = document.getElementById('dex-hack');
-    const fEl = document.getElementById('dex-fact');
-    if (qEl) qEl.textContent = getRand(FALLBACK.quotes);
-    if (hEl) hEl.textContent = getRand(FALLBACK.hacks);
-    if (fEl) fEl.textContent = getRand(FALLBACK.facts);
+    if (el) el.textContent = VOOJOU_FALLBACKS[seed % VOOJOU_FALLBACKS.length];
     return;
   }
-  dexAiLoading = true;
+  if (el) el.innerHTML = '<div class="shimmer"></div><div class="shimmer short"></div>';
+  voorJouLoading = true;
+  const h = new Date().getHours();
+  const dagdeel = h < 12 ? 'ochtend' : h < 17 ? 'middag' : 'avond';
+  const varSeed = seed * 7 + refreshCount * 13;
+  const prompt = onderwerp.prompt + ' Het is ' + dagdeel + '. Variatie-seed: ' + varSeed + '. Geef ALLEEN de boodschap zelf, geen label, geen aanhalingstekens.';
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 600, messages: [{ role: 'user', content: buildPrompt() }] })
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 150, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const raw = data.content?.[0]?.text || '';
-    const parsed = JSON.parse(raw.replace(/\`\`\`json|\`\`\`/g,'').trim());
-    const qEl = document.getElementById('dex-quote');
-    const hEl = document.getElementById('dex-hack');
-    const fEl = document.getElementById('dex-fact');
-    if (qEl) qEl.textContent = parsed.quote;
-    if (hEl) hEl.textContent = parsed.hack;
-    if (fEl) fEl.textContent = parsed.fact;
-    localStorage.setItem(cacheKey, JSON.stringify({ quote: parsed.quote, hack: parsed.hack, fact: parsed.fact }));
+    const tekst = (data.content?.[0]?.text || '').trim();
+    if (el) el.textContent = tekst;
+    try { localStorage.setItem(cacheKey, tekst); } catch {}
   } catch {
-    const qEl = document.getElementById('dex-quote');
-    const hEl = document.getElementById('dex-hack');
-    const fEl = document.getElementById('dex-fact');
-    if (qEl) qEl.textContent = getRand(FALLBACK.quotes);
-    if (hEl) hEl.textContent = getRand(FALLBACK.hacks);
-    if (fEl) fEl.textContent = getRand(FALLBACK.facts);
+    if (el) el.textContent = VOOJOU_FALLBACKS[seed % VOOJOU_FALLBACKS.length];
   } finally {
-    dexAiLoading = false;
+    voorJouLoading = false;
   }
 }
-
-// dex-refresh verwijderd
 
 // ══════════════════════════════════════════════
 // POPUP (via knop, NIET auto-open)
@@ -3574,7 +3624,7 @@ window.addEventListener('load', () => {
   updatePomoDisplay();
   // Geen popup, geen apikey modal — direct hub tonen
   // AI blokjes laden als key beschikbaar is
-  if (getApiKey()) fetchDexAI(false);
+  fetchVoorJou(false);
 });
 </script>
 </body>
