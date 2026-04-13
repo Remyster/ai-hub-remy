@@ -2204,6 +2204,7 @@ const KM_BESTEMMINGEN = [
   { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
   { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
+  { label: '🏠 Thuiswerkdag', woonwerk: 0, dienstreis: 0, thuiswerk: true },
 ];
 
 let kmJaar, kmMaand;
@@ -2401,7 +2402,29 @@ function renderKmDagen() {
       </div>`
     ).join('');
 
-    html += `
+    // Bereken totale km voor compacte weergave
+    const isThuiswerk = KM_BESTEMMINGEN[bestIdx] && KM_BESTEMMINGEN[bestIdx].thuiswerk;
+    const totKmDag = (parseFloat(heen)||0) + (parseFloat(terug)||0) + (parseFloat(dienstreis)||0) + extra.reduce((s,r)=>s+(parseFloat(r.km)||0),0);
+    const bestLabel = bestIdx > 0 ? KM_BESTEMMINGEN[bestIdx].label : '';
+
+    if (gedecl) {
+      // ── INGEKLAPT: datum + label + km/vergoeding + vinkje ──
+      html += `
+      <div style="padding:7px 12px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.25);border-radius:10px;display:flex;align-items:center;gap:8px;transition:border-color 0.2s;">
+        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88em;color:var(--text);min-width:38px;">${dag} <span style="font-size:0.7em;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;">${dagNaam}</span></span>
+        <span style="font-size:0.72em;color:#fbbf24;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(bestLabel)}</span>
+        ${isThuiswerk
+          ? `<span style="font-size:0.72em;color:#10b981;white-space:nowrap;">€3,00</span>`
+          : `<span style="font-size:0.72em;color:#10b981;white-space:nowrap;">${totKmDag > 0 ? totKmDag.toFixed(0)+' km' : '—'}</span>`
+        }
+        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none;" title="Gedeclareerd">
+          <input type="checkbox" checked onchange="toggleKmGedeclareerd(${dag},this.checked)"
+            style="width:14px;height:14px;accent-color:#10b981;cursor:pointer;">
+          <span style="font-size:0.65em;color:#10b981;">✅</span>
+        </label>
+      </div>`;
+    } else {
+      html += `
       <div style="padding:10px 12px;background:${dagBg};border:1px solid ${dagBorder};border-radius:10px;transition:border-color 0.2s;">
         <!-- Rij 1: dag + dropdown + gedeclareerd -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${(heen||terug||dienstreis) ? '8px' : '0'};">
@@ -2417,11 +2440,14 @@ function renderKmDagen() {
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Gedeclareerd">
             <input type="checkbox" ${gedecl?'checked':''} onchange="toggleKmGedeclareerd(${dag},this.checked)"
               style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;">
-            <span style="font-size:0.68em;color:${gedecl?'#10b981':'var(--muted)'};">${gedecl?'✅ gedecl.':'declareer'}</span>
+            <span style="font-size:0.68em;color:var(--muted);">declareer</span>
           </label>
         </div>
-        <!-- Rij 2: km velden (alleen tonen als bestemming gekozen of al ingevuld) -->
-        ${(bestIdx > 0 || heen || terug || dienstreis) ? `
+        <!-- Rij 2: thuiswerk vergoeding OF km velden -->
+        ${isThuiswerk ? `
+        <div style="padding-left:60px;">
+          <span style="font-size:0.75em;color:#10b981;">🏠 €3,00 thuiswerkvergoeding — declareer via vinkje</span>
+        </div>` : (bestIdx > 0 || heen || terug || dienstreis) ? `
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-left:60px;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
             <span style="font-size:0.6em;color:#10b981;text-transform:uppercase;letter-spacing:0.08em;">woonwerk</span>
@@ -2446,6 +2472,7 @@ function renderKmDagen() {
         </div>` : ''}
         ${extraHtml ? `<div style="padding-left:60px;margin-top:2px;">${extraHtml}</div>` : ''}
       </div>`;
+    }
   }
   container.innerHTML = html;
   updateKmTotaal();
