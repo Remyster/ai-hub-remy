@@ -1027,6 +1027,7 @@ header h1 {
     <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
       <button id="werk-tab-links" onclick="switchWerkTab('links')" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🔗 Links</button>
       <button id="werk-tab-km" onclick="switchWerkTab('km')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🚗 KM Registratie</button>
+      <button id="werk-tab-agenda" onclick="switchWerkTab('agenda')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">📅 Agenda Import</button>
     </div>
 
     <!-- TAB: LINKS -->
@@ -1067,6 +1068,42 @@ header h1 {
       </div>
       <!-- Dagen lijst -->
       <div id="km-dagen" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px;"></div>
+    </div>
+
+    <!-- TAB: AGENDA IMPORT -->
+    <div id="werk-panel-agenda" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <p style="font-size:0.72em;color:var(--muted);margin-bottom:12px;line-height:1.6;">📸 Stuur een screenshot van je Outlook agenda. Claude leest de afspraken eruit en zet ze klaar voor Google Agenda <strong style="color:#38bdf8;">WERK</strong>.</p>
+        <!-- Upload zone -->
+        <label id="agenda-upload-label" for="agenda-screenshot-input"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;background:rgba(56,189,248,0.05);border:2px dashed rgba(56,189,248,0.25);border-radius:12px;cursor:pointer;transition:all 0.2s;"
+          onmouseover="this.style.borderColor='rgba(56,189,248,0.5)';this.style.background='rgba(56,189,248,0.08)'"
+          onmouseout="this.style.borderColor='rgba(56,189,248,0.25)';this.style.background='rgba(56,189,248,0.05)'">
+          <span style="font-size:1.8em;">📷</span>
+          <span style="font-size:0.75em;color:#38bdf8;">Klik om screenshot te uploaden</span>
+          <span style="font-size:0.65em;color:var(--muted);">JPG, PNG — max 5MB</span>
+        </label>
+        <input type="file" id="agenda-screenshot-input" accept="image/*" style="display:none;" onchange="agendaImportScreenshot(this)">
+        <!-- Preview -->
+        <div id="agenda-preview-wrap" style="display:none;margin-top:10px;position:relative;">
+          <img id="agenda-preview-img" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
+          <button onclick="agendaResetImport()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border:none;color:#fff;border-radius:6px;padding:3px 8px;font-size:0.7em;cursor:pointer;">✕ Nieuw</button>
+        </div>
+        <!-- Analyse knop -->
+        <button id="agenda-analyse-btn" onclick="agendaAnalyseer()" style="display:none;width:100%;margin-top:10px;padding:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:10px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.8em;cursor:pointer;transition:all 0.2s;">
+          🔍 Analyseer agenda
+        </button>
+        <!-- Status -->
+        <div id="agenda-import-status" style="font-size:0.72em;color:var(--muted);margin-top:8px;min-height:18px;text-align:center;"></div>
+      </div>
+      <!-- Resultaten -->
+      <div id="agenda-import-results" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:0.72em;color:var(--muted);">Gevonden afspraken — klik om toe te voegen aan <strong style="color:#38bdf8;">WERK</strong> agenda</span>
+          <button onclick="agendaResetImport()" style="background:none;border:none;color:var(--muted);font-size:0.7em;cursor:pointer;text-decoration:underline;">↺ Nieuw</button>
+        </div>
+        <div id="agenda-afspraken-lijst" style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;padding-right:4px;"></div>
+      </div>
     </div>
 
     <button class="werk-close" onclick="closeWerk()" style="margin-top:14px;">✕ Sluiten</button>
@@ -2278,14 +2315,198 @@ function closeWerk() { document.getElementById('werk-overlay').classList.remove(
 document.getElementById('werk-overlay').addEventListener('click', function(e) { if(e.target===this) closeWerk(); });
 
 function switchWerkTab(tab) {
-  document.getElementById('werk-panel-links').style.display = tab==='links' ? '' : 'none';
-  document.getElementById('werk-panel-km').style.display    = tab==='km'    ? '' : 'none';
-  const btnLinks = document.getElementById('werk-tab-links');
-  const btnKm    = document.getElementById('werk-tab-km');
-  const actief = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
+  document.getElementById('werk-panel-links').style.display  = tab==='links'  ? '' : 'none';
+  document.getElementById('werk-panel-km').style.display     = tab==='km'     ? '' : 'none';
+  document.getElementById('werk-panel-agenda').style.display = tab==='agenda' ? '' : 'none';
+  const btnLinks  = document.getElementById('werk-tab-links');
+  const btnKm     = document.getElementById('werk-tab-km');
+  const btnAgenda = document.getElementById('werk-tab-agenda');
+  const actief   = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
   const inactief = 'padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
-  btnLinks.style.cssText = tab==='links' ? actief : inactief;
-  btnKm.style.cssText    = tab==='km'    ? actief : inactief;
+  btnLinks.style.cssText  = tab==='links'  ? actief : inactief;
+  btnKm.style.cssText     = tab==='km'     ? actief : inactief;
+  btnAgenda.style.cssText = tab==='agenda' ? actief : inactief;
+}
+
+
+// ══════════════════════════════════════════════
+// AGENDA IMPORT — Outlook screenshot → Google Calendar WERK
+// ══════════════════════════════════════════════
+const WERK_CAL_ID = 'b0s4m442j2i2sstcs1iuoga8ps@group.calendar.google.com';
+const AGENDA_TOEGEVOEGD_KEY = 'remy_agenda_toegevoegd_v1';
+
+let agendaScreenshotB64 = null;
+let agendaScreenshotType = 'image/png';
+
+function agendaGetToegevoegd() {
+  try { return JSON.parse(localStorage.getItem(AGENDA_TOEGEVOEGD_KEY) || '{}'); } catch { return {}; }
+}
+function agendaMarkToegevoegd(key) {
+  const d = agendaGetToegevoegd(); d[key] = Date.now();
+  try { localStorage.setItem(AGENDA_TOEGEVOEGD_KEY, JSON.stringify(d)); } catch {}
+}
+
+function agendaImportScreenshot(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) {
+    document.getElementById('agenda-import-status').textContent = '⚠️ Bestand te groot (max 5MB)';
+    return;
+  }
+  agendaScreenshotType = file.type || 'image/png';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    agendaScreenshotB64 = dataUrl.split(',')[1];
+    // Toon preview
+    document.getElementById('agenda-preview-img').src = dataUrl;
+    document.getElementById('agenda-preview-wrap').style.display = '';
+    document.getElementById('agenda-upload-label').style.display = 'none';
+    document.getElementById('agenda-analyse-btn').style.display = '';
+    document.getElementById('agenda-import-status').textContent = '✓ Screenshot geladen — klik Analyseer';
+  };
+  reader.readAsDataURL(file);
+}
+
+function agendaResetImport() {
+  agendaScreenshotB64 = null;
+  document.getElementById('agenda-preview-wrap').style.display = 'none';
+  document.getElementById('agenda-upload-label').style.display = '';
+  document.getElementById('agenda-analyse-btn').style.display = 'none';
+  document.getElementById('agenda-import-results').style.display = 'none';
+  document.getElementById('agenda-import-status').textContent = '';
+  document.getElementById('agenda-screenshot-input').value = '';
+}
+
+async function agendaAnalyseer() {
+  if (!agendaScreenshotB64) return;
+  const key = getApiKey();
+  if (!key) {
+    document.getElementById('agenda-import-status').textContent = '⚠️ Stel eerst je Claude API key in (🔑 knop)';
+    return;
+  }
+  const btn = document.getElementById('agenda-analyse-btn');
+  btn.textContent = '⏳ Bezig met analyseren...';
+  btn.disabled = true;
+  document.getElementById('agenda-import-status').textContent = 'Claude leest je agenda...';
+
+  const prompt = `Dit is een screenshot van een Outlook agenda. Lees alle afspraken eruit.
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{
+  "afspraken": [
+    {
+      "titel": "naam van de afspraak",
+      "datum": "YYYY-MM-DD",
+      "start": "HH:MM",
+      "eind": "HH:MM",
+      "locatie": "locatie of leeg",
+      "omschrijving": "extra info of leeg"
+    }
+  ]
+}
+
+Regels:
+- Als je de datum niet zeker weet maar wel de dag van de week, gebruik dan de eerstvolgende datum voor die dag vanaf vandaag (${new Date().toISOString().split('T')[0]})
+- Als er geen eindtijd is, voeg 1 uur toe aan de starttijd
+- Negeer lege tijdslots
+- Datum altijd in YYYY-MM-DD formaat
+- Tijd altijd in HH:MM (24-uurs) formaat`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: agendaScreenshotType, data: agendaScreenshotB64 } },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(raw);
+    agendaToonAfspraken(parsed.afspraken || []);
+    document.getElementById('agenda-import-status').textContent = '';
+  } catch(err) {
+    document.getElementById('agenda-import-status').textContent = '❌ Fout: ' + err.message;
+    btn.textContent = '🔍 Analyseer agenda';
+    btn.disabled = false;
+  }
+}
+
+function agendaToonAfspraken(afspraken) {
+  if (!afspraken.length) {
+    document.getElementById('agenda-import-status').textContent = '⚠️ Geen afspraken gevonden in de screenshot';
+    document.getElementById('agenda-analyse-btn').textContent = '🔍 Analyseer agenda';
+    document.getElementById('agenda-analyse-btn').disabled = false;
+    return;
+  }
+  const toegevoegd = agendaGetToegevoegd();
+  const lijst = document.getElementById('agenda-afspraken-lijst');
+  lijst.innerHTML = afspraken.map((a, i) => {
+    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
+    const isToegevoegd = !!toegevoegd[key];
+    const calUrl = agendaBouwCalUrl(a);
+    return `<div id="agenda-item-${i}" style="padding:10px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.07)' : 'rgba(255,255,255,0.04)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.3)' : 'rgba(56,189,248,0.15)'};border-radius:10px;transition:all 0.2s;">
+      <div style="display:flex;align-items:flex-start;gap:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.8em;color:var(--text);font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.titel)}</div>
+          <div style="font-size:0.68em;color:var(--muted);">📅 ${a.datum} &nbsp;⏰ ${a.start}–${a.eind}${a.locatie ? ' &nbsp;📍 ' + escHtml(a.locatie) : ''}</div>
+          ${a.omschrijving ? `<div style="font-size:0.65em;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.omschrijving)}</div>` : ''}
+        </div>
+        <a href="${calUrl}" target="_blank" rel="noopener"
+          onclick="agendaMarkToegevoegd('${key}'); setTimeout(()=>agendaMarkeerItem(${i},'${key}'),500);"
+          style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.1)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.35)' : 'rgba(56,189,248,0.3)'};border-radius:8px;color:${isToegevoegd ? '#10b981' : '#38bdf8'};text-decoration:none;font-size:0.68em;white-space:nowrap;flex-shrink:0;transition:all 0.2s;">
+          ${isToegevoegd ? '✅ Toegevoegd' : '+ WERK agenda'}
+        </a>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('agenda-import-results').style.display = '';
+  document.getElementById('agenda-analyse-btn').style.display = 'none';
+}
+
+function agendaMarkeerItem(i, key) {
+  const item = document.getElementById('agenda-item-' + i);
+  if (!item) return;
+  item.style.background = 'rgba(16,185,129,0.07)';
+  item.style.borderColor = 'rgba(16,185,129,0.3)';
+  const btn = item.querySelector('a');
+  if (btn) {
+    btn.textContent = '✅ Toegevoegd';
+    btn.style.color = '#10b981';
+    btn.style.borderColor = 'rgba(16,185,129,0.35)';
+    btn.style.background = 'rgba(16,185,129,0.15)';
+  }
+}
+
+function agendaBouwCalUrl(a) {
+  const fmt = (datum, tijd) => {
+    const [y,m,d] = datum.split('-');
+    const [h,min] = tijd.split(':');
+    return `${y}${m}${d}T${h}${min}00`;
+  };
+  const start = fmt(a.datum, a.start);
+  const eind  = fmt(a.datum, a.eind);
+  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent(a.titel)
+    + '&dates=' + start + '/' + eind
+    + (a.locatie    ? '&location='    + encodeURIComponent(a.locatie)    : '')
+    + (a.omschrijving ? '&details='   + encodeURIComponent(a.omschrijving) : '')
+    + '&src=' + encodeURIComponent(WERK_CAL_ID);
 }
 
 // ── Werk links ──
