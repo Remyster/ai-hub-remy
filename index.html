@@ -1098,9 +1098,12 @@ header h1 {
       </div>
       <!-- Resultaten -->
       <div id="agenda-import-results" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-          <span style="font-size:0.72em;color:var(--muted);">Gevonden afspraken — klik om toe te voegen aan <strong style="color:#38bdf8;">WERK</strong> agenda</span>
-          <button onclick="agendaResetImport()" style="background:none;border:none;color:var(--muted);font-size:0.7em;cursor:pointer;text-decoration:underline;">↺ Nieuw</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
+          <span style="font-size:0.72em;color:var(--muted);">Gevonden afspraken — <strong style="color:#38bdf8;">WERK</strong> agenda</span>
+          <div style="display:flex;gap:6px;">
+            <button id="agenda-bulk-btn" onclick="agendaBulkToevoegen()" style="padding:5px 12px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);border-radius:7px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;white-space:nowrap;">⚡ Alle toevoegen</button>
+            <button onclick="agendaResetImport()" style="background:none;border:none;color:var(--muted);font-size:0.7em;cursor:pointer;text-decoration:underline;">↺ Nieuw</button>
+          </div>
         </div>
         <div id="agenda-afspraken-lijst" style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;padding-right:4px;"></div>
       </div>
@@ -2390,7 +2393,8 @@ async function agendaAnalyseer() {
   btn.disabled = true;
   document.getElementById('agenda-import-status').textContent = 'Claude leest je agenda...';
 
-  const prompt = `Dit is een screenshot van een Outlook agenda. Lees alle afspraken eruit.
+  const vandaag = new Date().toISOString().split('T')[0];
+  const prompt = `Dit is een screenshot van een Outlook agenda. Lees ALLE afspraken eruit, inclusief hele-dag events.
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 {
@@ -2400,18 +2404,27 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
       "datum": "YYYY-MM-DD",
       "start": "HH:MM",
       "eind": "HH:MM",
+      "hele_dag": false,
       "locatie": "locatie of leeg",
       "omschrijving": "extra info of leeg"
     }
   ]
 }
 
-Regels:
-- Als je de datum niet zeker weet maar wel de dag van de week, gebruik dan de eerstvolgende datum voor die dag vanaf vandaag (${new Date().toISOString().split('T')[0]})
-- Als er geen eindtijd is, voeg 1 uur toe aan de starttijd
-- Negeer lege tijdslots
-- Datum altijd in YYYY-MM-DD formaat
-- Tijd altijd in HH:MM (24-uurs) formaat`;
+BELANGRIJKE REGELS:
+1. HELE-DAG EVENTS: De gekleurde balken BOVENAAN elke dag (boven de tijdsloten) zijn hele-dag events. Zet hele_dag op true, start op "00:00", eind op "23:59".
+   Voorbeelden van hele-dag events: "Velserbroek", "Heemskerk Daarna Velserbroek", "LWS Andijk Remy mee lopen Tim"
+   Dit zijn locatie-aanwijzingen of dagplanningen, GEEN vergaderingen met tijdstip.
+
+2. GEWONE AFSPRAKEN: Afspraken die op een tijdstip staan in het rooster (zoals 9:00, 10:00 etc) zijn normale afspraken. Lees de tijden af van de tijdas links.
+
+3. DATUM: Als je de datum ziet in de kolom-header (bv "13 Maandag", "14 Dinsdag"), gebruik die exacte datum. Vandaag is ${vandaag}.
+
+4. EINDTIJD: Als er geen eindtijd zichtbaar is maar wel een starttijd, schat de duur op basis van de blok-hoogte (elk uur = 1 blok). Minimaal 30 min.
+
+5. LOCATIE: Staat vaak als tweede regel in het afspraak-blok. Zet het in het locatie veld.
+
+6. Datum altijd YYYY-MM-DD, tijd altijd HH:MM (24-uurs), negeer lege tijdslots.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -2456,27 +2469,66 @@ function agendaToonAfspraken(afspraken) {
   }
   const toegevoegd = agendaGetToegevoegd();
   const lijst = document.getElementById('agenda-afspraken-lijst');
+  // Sla afspraken op voor bulk functie
+  window._agendaAfspraken = afspraken;
+
   lijst.innerHTML = afspraken.map((a, i) => {
     const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
     const isToegevoegd = !!toegevoegd[key];
     const calUrl = agendaBouwCalUrl(a);
+    const tijdTekst = a.hele_dag
+      ? '<span style="background:rgba(167,139,250,0.2);color:#a78bfa;padding:1px 6px;border-radius:4px;font-size:0.85em;">hele dag</span>'
+      : `⏰ ${a.start}–${a.eind}`;
     return `<div id="agenda-item-${i}" style="padding:10px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.07)' : 'rgba(255,255,255,0.04)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.3)' : 'rgba(56,189,248,0.15)'};border-radius:10px;transition:all 0.2s;">
       <div style="display:flex;align-items:flex-start;gap:10px;">
         <div style="flex:1;min-width:0;">
           <div style="font-size:0.8em;color:var(--text);font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.titel)}</div>
-          <div style="font-size:0.68em;color:var(--muted);">📅 ${a.datum} &nbsp;⏰ ${a.start}–${a.eind}${a.locatie ? ' &nbsp;📍 ' + escHtml(a.locatie) : ''}</div>
+          <div style="font-size:0.68em;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            📅 ${a.datum} &nbsp;${tijdTekst}${a.locatie ? ' &nbsp;📍 ' + escHtml(a.locatie) : ''}
+          </div>
           ${a.omschrijving ? `<div style="font-size:0.65em;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.omschrijving)}</div>` : ''}
         </div>
         <a href="${calUrl}" target="_blank" rel="noopener"
           onclick="agendaMarkToegevoegd('${key}'); setTimeout(()=>agendaMarkeerItem(${i},'${key}'),500);"
           style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.1)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.35)' : 'rgba(56,189,248,0.3)'};border-radius:8px;color:${isToegevoegd ? '#10b981' : '#38bdf8'};text-decoration:none;font-size:0.68em;white-space:nowrap;flex-shrink:0;transition:all 0.2s;">
-          ${isToegevoegd ? '✅ Toegevoegd' : '+ WERK agenda'}
+          ${isToegevoegd ? '✅' : '+ WERK'}
         </a>
       </div>
     </div>`;
   }).join('');
   document.getElementById('agenda-import-results').style.display = '';
   document.getElementById('agenda-analyse-btn').style.display = 'none';
+}
+
+function agendaBulkToevoegen() {
+  const afspraken = window._agendaAfspraken || [];
+  if (!afspraken.length) return;
+  const toegevoegd = agendaGetToegevoegd();
+  // Open alleen de nog niet-toegevoegde afspraken
+  const nieuw = afspraken.filter(a => {
+    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
+    return !toegevoegd[key];
+  });
+  if (!nieuw.length) {
+    document.getElementById('agenda-import-status').textContent = '✓ Alle afspraken al toegevoegd';
+    return;
+  }
+  // Open met kleine vertraging zodat browser niet blokkeert
+  nieuw.forEach((a, i) => {
+    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
+    setTimeout(() => {
+      window.open(agendaBouwCalUrl(a), '_blank', 'noopener');
+      agendaMarkToegevoegd(key);
+    }, i * 400);
+  });
+  // Na alles: markeer alle items groen
+  setTimeout(() => {
+    afspraken.forEach((a, i) => {
+      const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
+      agendaMarkeerItem(i, key);
+    });
+    document.getElementById('agenda-import-status').textContent = `✓ ${nieuw.length} afspraken geopend in Google Calendar`;
+  }, nieuw.length * 400 + 200);
 }
 
 function agendaMarkeerItem(i, key) {
@@ -2494,6 +2546,23 @@ function agendaMarkeerItem(i, key) {
 }
 
 function agendaBouwCalUrl(a) {
+  let datumStr, eindStr;
+  if (a.hele_dag) {
+    // Hele-dag event: datum formaat YYYYMMDD/YYYYMMDD+1dag
+    const [y,m,d] = a.datum.split('-');
+    const volgende = new Date(parseInt(y), parseInt(m)-1, parseInt(d)+1);
+    const vY = volgende.getFullYear();
+    const vM = String(volgende.getMonth()+1).padStart(2,'0');
+    const vD = String(volgende.getDate()).padStart(2,'0');
+    datumStr = `${y}${m}${d}`;
+    eindStr  = `${vY}${vM}${vD}`;
+    return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+      + '&text=' + encodeURIComponent(a.titel)
+      + '&dates=' + datumStr + '/' + eindStr
+      + (a.locatie      ? '&location=' + encodeURIComponent(a.locatie)      : '')
+      + (a.omschrijving ? '&details='  + encodeURIComponent(a.omschrijving) : '')
+      + '&src=' + encodeURIComponent(WERK_CAL_ID);
+  }
   const fmt = (datum, tijd) => {
     const [y,m,d] = datum.split('-');
     const [h,min] = tijd.split(':');
@@ -2504,8 +2573,8 @@ function agendaBouwCalUrl(a) {
   return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
     + '&text=' + encodeURIComponent(a.titel)
     + '&dates=' + start + '/' + eind
-    + (a.locatie    ? '&location='    + encodeURIComponent(a.locatie)    : '')
-    + (a.omschrijving ? '&details='   + encodeURIComponent(a.omschrijving) : '')
+    + (a.locatie      ? '&location=' + encodeURIComponent(a.locatie)      : '')
+    + (a.omschrijving ? '&details='  + encodeURIComponent(a.omschrijving) : '')
     + '&src=' + encodeURIComponent(WERK_CAL_ID);
 }
 
