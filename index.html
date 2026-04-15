@@ -1408,7 +1408,7 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏥 Dr. NeuroCut</h2><p>Medische specialist ADHD &amp; gewicht · Sonnet 4.6 Extended</p><span class="kbd">1</span>
       </a>
-      <div class="card agent" data-key="2" style="cursor:default;">
+      <div class="card agent" data-key="2" style="cursor:default;" data-combined="true">
         <div class="dot"></div>
         <h2>🔬 R&amp;D Lab</h2><p style="margin-bottom:10px;">Research &amp; Development</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -1445,7 +1445,7 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent · Sonnet 4.6 Extended</p>
       </a>
-      <div class="card agent" data-key="6" style="cursor:default;">
+      <div class="card agent" data-key="6" style="cursor:default;" data-combined="true">
         <div class="dot"></div>
         <h2>🏋️ Clyde</h2><p style="margin-bottom:10px;">Gym buddy · Haiku model</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -1555,7 +1555,7 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>📊 Search Console</h2><p>Stekkerslim.nl SEO</p>
       </a>
-      <div class="card affiliate" style="cursor:default;">
+      <div class="card affiliate" style="cursor:default;" data-combined="true">
         <div class="dot"></div>
         <h2>📣 Marketing Agents</h2><p style="margin-bottom:10px;">Stekkerslim marketing</p>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
@@ -1583,7 +1583,7 @@ header h1 {
   <section class="section" id="sec-tools">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
-      <div class="card tool" style="cursor:default;">
+      <div class="card tool" style="cursor:default;" data-combined="true">
         <div class="dot"></div>
         <h2>🔵 Google</h2><p style="margin-bottom:10px;">Google diensten</p>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
@@ -2167,9 +2167,17 @@ document.querySelector('.popup-refresh').addEventListener('click', function(e) {
 // USAGE AUTO-OPEN
 // ══════════════════════════════════════════════
 document.querySelectorAll('.card[data-usage="true"]').forEach(card => {
-  card.addEventListener('click', function() {
+  // Skip gecombineerde cards (Clyde, R&D Lab, Google, Marketing) — die hebben inner links
+  if (card.dataset.combined) return;
+  card.addEventListener('click', function(e) {
+    // Klik op inner <a> tag: niet de usage popup openen
+    if (e.target.closest('a')) return;
     setTimeout(() => window.open('https://claude.ai/settings/usage','_blank','noopener'), 300);
   });
+});
+// Inner links in gecombineerde cards: stop propagation zodat parent niet triggered
+document.querySelectorAll('[data-combined="true"] a').forEach(a => {
+  a.addEventListener('click', e => e.stopPropagation());
 });
 
 // ══════════════════════════════════════════════
@@ -3360,8 +3368,12 @@ function saveVlSaldo() {
 
 function updateVlSaldo() {
   const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
+  const isAutoMaand = vlMaand % 2 === 1;
   const nogRaw = vlLasten.reduce((sum, l) => {
-    if (l.categorie === 'inkomen') return sum; // inkomen niet meetellen als uitgave
+    if (l.categorie === 'inkomen') return sum;
+    // Alternerende spaarpotten: skip de inactieve
+    if (l.naam === 'Auto sparen' && !isAutoMaand) return sum;
+    if (l.naam === 'Huis sparen' &&  isAutoMaand) return sum;
     const b = getBetaling(l.id);
     if (b?.betaald) return sum;
     return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
