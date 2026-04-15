@@ -2183,11 +2183,11 @@ function saveRecent(h) { let l=getRecent().filter(x=>x!==h); l.unshift(h); try{l
 function applyRecent() {
   const r = getRecent();
   document.querySelectorAll('.card').forEach(c => {
-    const isRecent = r.some(x => c.href && c.href.includes(x.replace(location.origin,'')));
+    const isRecent = r.some(x => x && c.href && c.href.includes(x.replace(location.origin,'')));
     c.classList.toggle('recent', isRecent);
   });
 }
-document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => saveRecent(c.getAttribute('href'))));
+document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => { const h = c.getAttribute('href'); if (h && h !== '#') saveRecent(h); }));
 applyRecent();
 
 // ══════════════════════════════════════════════
@@ -2249,7 +2249,7 @@ const KM_BESTEMMINGEN = [
   { label: '🏠 Thuiswerkdag', woonwerk: 0, dienstreis: 0, thuiswerk: true },
 ];
 
-let kmJaar, kmMaand;
+var kmJaar, kmMaand;
 let kmCache = {}; // { "jaar_maand": { dag: {heen,terug,extra} } }
 let werkLinksCache = [];
 
@@ -3010,7 +3010,7 @@ async function sbUpsert(table, body) {
 const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
 const CAT_LABELS = { inkomen:'💚 Inkomen', wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
 
-let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
+var vlJaar, vlMaand; let vlLasten=[], vlBetalingen=[], vlSpaar=[];
 
 function openVasteLasten() {
   const nu = new Date();
