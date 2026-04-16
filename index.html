@@ -2467,7 +2467,6 @@ function agendaBulkToevoegen() {
   const afspraken = window._agendaAfspraken || [];
   if (!afspraken.length) return;
   const toegevoegd = agendaGetToegevoegd();
-  // Open alleen de nog niet-toegevoegde afspraken
   const nieuw = afspraken.filter(a => {
     const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
     return !toegevoegd[key];
@@ -2476,22 +2475,19 @@ function agendaBulkToevoegen() {
     document.getElementById('agenda-import-status').textContent = '✓ Alle afspraken al toegevoegd';
     return;
   }
-  // Open met kleine vertraging zodat browser niet blokkeert
-  nieuw.forEach((a, i) => {
+  // Open ALLE vensters direct in dezelfde click handler — geen setTimeout
+  // Browser staat meerdere window.open toe als ze synchroon vanuit user gesture komen
+  nieuw.forEach(a => {
     const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-    setTimeout(() => {
-      window.open(agendaBouwCalUrl(a), '_blank', 'noopener');
-      agendaMarkToegevoegd(key);
-    }, i * 400);
+    window.open(agendaBouwCalUrl(a), '_blank');
+    agendaMarkToegevoegd(key);
   });
-  // Na alles: markeer alle items groen
-  setTimeout(() => {
-    afspraken.forEach((a, i) => {
-      const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-      agendaMarkeerItem(i, key);
-    });
-    document.getElementById('agenda-import-status').textContent = `✓ ${nieuw.length} afspraken geopend in Google Calendar`;
-  }, nieuw.length * 400 + 200);
+  // Markeer alles groen
+  afspraken.forEach((a, i) => {
+    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
+    agendaMarkeerItem(i, key);
+  });
+  document.getElementById('agenda-import-status').textContent = '✓ ' + nieuw.length + ' afspraken geopend — bevestig elke tab in Google Calendar';
 }
 
 function agendaMarkeerItem(i, key) {
