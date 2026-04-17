@@ -2292,6 +2292,8 @@ function switchWerkTab(tab) {
   btnLinks.style.cssText  = tab==='links'  ? actief : inactief;
   btnKm.style.cssText     = tab==='km'     ? actief : inactief;
   btnAgenda.style.cssText = tab==='agenda' ? actief : inactief;
+  // Altijd resetten als agenda tab geopend wordt
+  if (tab === 'agenda') agendaResetImport();
 }
 
 
@@ -2305,7 +2307,14 @@ let agendaScreenshotB64 = null;
 let agendaScreenshotType = 'image/png';
 
 function agendaGetToegevoegd() {
-  try { return JSON.parse(localStorage.getItem(AGENDA_TOEGEVOEGD_KEY) || '{}'); } catch { return {}; }
+  try {
+    const d = JSON.parse(localStorage.getItem(AGENDA_TOEGEVOEGD_KEY) || '{}');
+    // Ruim entries ouder dan 7 dagen op
+    const week = 7 * 24 * 60 * 60 * 1000;
+    const nu = Date.now();
+    Object.keys(d).forEach(k => { if (nu - d[k] > week) delete d[k]; });
+    return d;
+  } catch { return {}; }
 }
 function agendaMarkToegevoegd(key) {
   const d = agendaGetToegevoegd(); d[key] = Date.now();
@@ -2336,12 +2345,22 @@ function agendaImportScreenshot(input) {
 
 function agendaResetImport() {
   agendaScreenshotB64 = null;
-  document.getElementById('agenda-preview-wrap').style.display = 'none';
-  document.getElementById('agenda-upload-label').style.display = '';
-  document.getElementById('agenda-analyse-btn').style.display = 'none';
-  document.getElementById('agenda-import-results').style.display = 'none';
-  document.getElementById('agenda-import-status').textContent = '';
-  document.getElementById('agenda-screenshot-input').value = '';
+  window._agendaAfspraken = [];
+  const previewWrap = document.getElementById('agenda-preview-wrap');
+  const uploadLabel = document.getElementById('agenda-upload-label');
+  const analyseBtn  = document.getElementById('agenda-analyse-btn');
+  const results     = document.getElementById('agenda-import-results');
+  const status      = document.getElementById('agenda-import-status');
+  const input       = document.getElementById('agenda-screenshot-input');
+  const lijst       = document.getElementById('agenda-afspraken-lijst');
+  if (previewWrap) previewWrap.style.display = 'none';
+  if (uploadLabel) uploadLabel.style.display = '';
+  if (analyseBtn)  { analyseBtn.style.display = 'none'; analyseBtn.textContent = '🔍 Analyseer agenda'; analyseBtn.disabled = false; }
+  if (results)     results.style.display = 'none';
+  if (status)      status.textContent = '';
+  if (input)       input.value = '';
+  if (lijst)       lijst.innerHTML = '';
+  voorJouLoading = false;
 }
 
 async function agendaAnalyseer() {
