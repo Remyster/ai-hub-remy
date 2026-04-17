@@ -2490,11 +2490,11 @@ function agendaToonAfspraken(afspraken) {
           </div>
           ${a.omschrijving ? `<div style="font-size:0.65em;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.omschrijving)}</div>` : ''}
         </div>
-        <a href="${calUrl}" target="_blank" rel="noopener"
-          onclick="agendaMarkToegevoegd('${key}'); setTimeout(()=>agendaMarkeerItem(${i},'${key}'),500);"
-          style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.1)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.35)' : 'rgba(56,189,248,0.3)'};border-radius:8px;color:${isToegevoegd ? '#10b981' : '#38bdf8'};text-decoration:none;font-size:0.68em;white-space:nowrap;flex-shrink:0;transition:all 0.2s;">
+        <button
+          onclick="agendaOpenEnMarkeer('${key}', '${calUrl}', ${i})"
+          style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.1)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.35)' : 'rgba(56,189,248,0.3)'};border-radius:8px;color:${isToegevoegd ? '#10b981' : '#38bdf8'};font-family:'DM Mono',monospace;font-size:0.68em;white-space:nowrap;flex-shrink:0;cursor:pointer;transition:all 0.2s;">
           ${isToegevoegd ? '✅' : '+ WERK'}
-        </a>
+        </button>
       </div>
     </div>`;
   }).join('');
@@ -2514,19 +2514,27 @@ function agendaBulkToevoegen() {
     document.getElementById('agenda-import-status').textContent = '✓ Alle afspraken al toegevoegd';
     return;
   }
-  // Open ALLE vensters direct in dezelfde click handler — geen setTimeout
-  // Browser staat meerdere window.open toe als ze synchroon vanuit user gesture komen
+  // Gebruik hidden <a> click trick — omzeilt popup blocker
+  // Elke link krijgt een tijdelijke <a> die direct wordt aangeklikt
   nieuw.forEach(a => {
     const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-    window.open(agendaBouwCalUrl(a), '_blank');
+    const link = document.createElement('a');
+    link.href = agendaBouwCalUrl(a);
+    link.target = '_blank';
+    link.rel = 'noopener';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    // Markeer pas toegevoegd NA het klikken van de link
     agendaMarkToegevoegd(key);
   });
-  // Markeer alles groen
+  // Markeer visueel groen
   afspraken.forEach((a, i) => {
     const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
     agendaMarkeerItem(i, key);
   });
-  document.getElementById('agenda-import-status').textContent = '✓ ' + nieuw.length + ' afspraken geopend — bevestig elke tab in Google Calendar';
+  document.getElementById('agenda-import-status').textContent = '✓ ' + nieuw.length + ' tabs geopend — bevestig elk in Google Calendar';
 }
 
 function agendaMarkeerItem(i, key) {
@@ -2534,13 +2542,27 @@ function agendaMarkeerItem(i, key) {
   if (!item) return;
   item.style.background = 'rgba(16,185,129,0.07)';
   item.style.borderColor = 'rgba(16,185,129,0.3)';
-  const btn = item.querySelector('a');
+  const btn = item.querySelector('button');
   if (btn) {
-    btn.textContent = '✅ Toegevoegd';
+    btn.textContent = '✅';
     btn.style.color = '#10b981';
     btn.style.borderColor = 'rgba(16,185,129,0.35)';
     btn.style.background = 'rgba(16,185,129,0.15)';
   }
+}
+
+function agendaOpenEnMarkeer(key, url, idx) {
+  // Hidden <a> click — werkt door popup blocker heen
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noopener';
+  link.style.display = 'none';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  agendaMarkToegevoegd(key);
+  agendaMarkeerItem(idx, key);
 }
 
 function agendaBouwCalUrl(a) {
