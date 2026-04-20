@@ -1073,7 +1073,7 @@ header h1 {
     <!-- TAB: AGENDA IMPORT -->
     <div id="werk-panel-agenda" style="display:none;">
       <div style="margin-bottom:14px;">
-        <p style="font-size:0.72em;color:var(--muted);margin-bottom:12px;line-height:1.6;">📸 Stuur een screenshot van je Outlook agenda. Claude leest de afspraken eruit en zet ze klaar voor Google Agenda <strong style="color:#38bdf8;">WERK</strong>.</p>
+        <p style="font-size:0.72em;color:var(--muted);margin-bottom:12px;line-height:1.6;">📸 Stuur een screenshot van je Outlook agenda. Claude leest de afspraken uit en maakt een <strong style="color:#10b981;">.ics bestand</strong> dat je in één keer kan importeren in Google Calendar <strong style="color:#38bdf8;">WERK</strong>.</p>
         <!-- Upload zone -->
         <label id="agenda-upload-label" for="agenda-screenshot-input"
           style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;background:rgba(56,189,248,0.05);border:2px dashed rgba(56,189,248,0.25);border-radius:12px;cursor:pointer;transition:all 0.2s;"
@@ -1101,7 +1101,7 @@ header h1 {
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
           <span style="font-size:0.72em;color:var(--muted);">Gevonden afspraken — <strong style="color:#38bdf8;">WERK</strong> agenda</span>
           <div style="display:flex;gap:6px;">
-            <button id="agenda-bulk-btn" onclick="agendaBulkToevoegen()" style="padding:5px 12px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);border-radius:7px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;white-space:nowrap;">⚡ Alle toevoegen</button>
+            <button id="agenda-ics-btn" onclick="agendaDownloadIcs()" style="padding:5px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;white-space:nowrap;">📥 Download .ics</button>
             <button onclick="agendaResetImport()" style="background:none;border:none;color:var(--muted);font-size:0.7em;cursor:pointer;text-decoration:underline;">↺ Nieuw</button>
           </div>
         </div>
@@ -2502,39 +2502,78 @@ function agendaToonAfspraken(afspraken) {
   document.getElementById('agenda-analyse-btn').style.display = 'none';
 }
 
-function agendaBulkToevoegen() {
+function agendaDownloadIcs() {
   const afspraken = window._agendaAfspraken || [];
-  if (!afspraken.length) return;
-  const toegevoegd = agendaGetToegevoegd();
-  const nieuw = afspraken.filter(a => {
-    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-    return !toegevoegd[key];
-  });
-  if (!nieuw.length) {
-    document.getElementById('agenda-import-status').textContent = '✓ Alle afspraken al toegevoegd';
+  if (!afspraken.length) {
+    document.getElementById('agenda-import-status').textContent = '⚠️ Geen afspraken om te downloaden';
     return;
   }
-  // Gebruik hidden <a> click trick — omzeilt popup blocker
-  // Elke link krijgt een tijdelijke <a> die direct wordt aangeklikt
-  nieuw.forEach(a => {
-    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-    const link = document.createElement('a');
-    link.href = agendaBouwCalUrl(a);
-    link.target = '_blank';
-    link.rel = 'noopener';
-    link.style.display = 'none';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    // Markeer pas toegevoegd NA het klikken van de link
-    agendaMarkToegevoegd(key);
-  });
-  // Markeer visueel groen
+
+  // ICS escape helper
+  const icsEsc = s => String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+
+  // Bouw ICS content
+  const now = new Date();
+  const dtstamp = now.getUTCFullYear()
+    + String(now.getUTCMonth()+1).padStart(2,'0')
+    + String(now.getUTCDate()).padStart(2,'0')
+    + 'T'
+    + String(now.getUTCHours()).padStart(2,'0')
+    + String(now.getUTCMinutes()).padStart(2,'0')
+    + String(now.getUTCSeconds()).padStart(2,'0')
+    + 'Z';
+
+  let ics = 'BEGIN:VCALENDAR\r\n';
+  ics += 'VERSION:2.0\r\n';
+  ics += 'PRODID:-//Remy AI Hub//Agenda Import//NL\r\n';
+  ics += 'CALSCALE:GREGORIAN\r\n';
+  ics += 'METHOD:PUBLISH\r\n';
+
   afspraken.forEach((a, i) => {
-    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-    agendaMarkeerItem(i, key);
+    const uid = 'remy-hub-' + dtstamp + '-' + i + '@ai-hub';
+    ics += 'BEGIN:VEVENT\r\n';
+    ics += 'UID:' + uid + '\r\n';
+    ics += 'DTSTAMP:' + dtstamp + '\r\n';
+
+    if (a.hele_dag) {
+      // All-day event: DTSTART en DTEND zijn datum (YYYYMMDD), DTEND is dag erna
+      const [y,m,d] = a.datum.split('-');
+      const volgende = new Date(parseInt(y), parseInt(m)-1, parseInt(d)+1);
+      const eindY = volgende.getFullYear();
+      const eindM = String(volgende.getMonth()+1).padStart(2,'0');
+      const eindD = String(volgende.getDate()).padStart(2,'0');
+      ics += 'DTSTART;VALUE=DATE:' + y + m + d + '\r\n';
+      ics += 'DTEND;VALUE=DATE:' + eindY + eindM + eindD + '\r\n';
+    } else {
+      // Normale afspraak: lokale tijd met Europe/Amsterdam
+      const [y,m,d] = a.datum.split('-');
+      const [sh,sm] = a.start.split(':');
+      const [eh,em] = a.eind.split(':');
+      ics += 'DTSTART;TZID=Europe/Amsterdam:' + y + m + d + 'T' + sh + sm + '00\r\n';
+      ics += 'DTEND;TZID=Europe/Amsterdam:' + y + m + d + 'T' + eh + em + '00\r\n';
+    }
+
+    ics += 'SUMMARY:' + icsEsc(a.titel) + '\r\n';
+    if (a.locatie)      ics += 'LOCATION:' + icsEsc(a.locatie) + '\r\n';
+    if (a.omschrijving) ics += 'DESCRIPTION:' + icsEsc(a.omschrijving) + '\r\n';
+    ics += 'END:VEVENT\r\n';
   });
-  document.getElementById('agenda-import-status').textContent = '✓ ' + nieuw.length + ' tabs geopend — bevestig elk in Google Calendar';
+
+  ics += 'END:VCALENDAR\r\n';
+
+  // Download trigger
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  const datumNu = new Date().toISOString().split('T')[0];
+  link.href = url;
+  link.download = 'werk-agenda-' + datumNu + '.ics';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+  document.getElementById('agenda-import-status').innerHTML = '✓ <strong>' + afspraken.length + ' afspraken</strong> gedownload — open het bestand of importeer in <a href="https://calendar.google.com/calendar/u/0/r/settings/export" target="_blank" style="color:#10b981;">Google Calendar WERK</a>';
 }
 
 function agendaMarkeerItem(i, key) {
