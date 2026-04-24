@@ -2827,15 +2827,28 @@ function renderKmDagen() {
   updateKmTotaal();
 }
 
-async function kmBestemmingGekozen(dag, idx) {
+async async function kmBestemmingGekozen(dag, idx) {
   const b = KM_BESTEMMINGEN[idx];
   if (!b || b.woonwerk === null) return; // "kies bestemming" geselecteerd
   const data = getKmCacheData();
   if (!data[dag]) data[dag] = {extra:[]};
+
+  // Handmatig invoeren: vraag km via prompt
+  if (b.handmatig) {
+    const enkelRit = prompt('Aantal km ENKELE reis (heen):', data[dag].heen || '');
+    if (enkelRit === null) return; // geannuleerd
+    const kmHeen = parseFloat(enkelRit);
+    if (isNaN(kmHeen) || kmHeen < 0) { alert('Ongeldig getal'); return; }
+    data[dag].heen = kmHeen;
+    data[dag].terug = kmHeen;
+    data[dag].dienstreis = 0;
+  } else {
+    data[dag].heen       = b.woonwerk;
+    data[dag].terug      = b.woonwerk;
+    data[dag].dienstreis = b.dienstreis;
+  }
+
   data[dag].bestemming_idx = idx;
-  data[dag].heen       = b.woonwerk;
-  data[dag].terug      = b.woonwerk;
-  data[dag].dienstreis = b.dienstreis;
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   updateKmTotaal();
   await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen, data[dag].terug, data[dag].extra||[], data[dag].dienstreis||0, idx, data[dag].gedeclareerd||false);
