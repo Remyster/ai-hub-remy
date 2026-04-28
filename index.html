@@ -2207,6 +2207,8 @@ const KM_BESTEMMINGEN = [
   { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
   { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
+  { label: '🌳 Tetterodeweg 27 Overveen', woonwerk: 58, dienstreis: 6 },  // 58 woonwerk + (61-58)x2=6 dienstreis
+  { label: '✏️ Handmatig invoeren', woonwerk: 0, dienstreis: 0, handmatig: true },
   { label: '🏠 Thuiswerkdag', woonwerk: 0, dienstreis: 0, thuiswerk: true },
 ];
 
@@ -2827,7 +2829,7 @@ function renderKmDagen() {
   updateKmTotaal();
 }
 
-async async function kmBestemmingGekozen(dag, idx) {
+async function kmBestemmingGekozen(dag, idx) {
   const b = KM_BESTEMMINGEN[idx];
   if (!b || b.woonwerk === null) return; // "kies bestemming" geselecteerd
   const data = getKmCacheData();
