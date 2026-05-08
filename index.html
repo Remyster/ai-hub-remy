@@ -2207,6 +2207,7 @@ const KM_BESTEMMINGEN = [
   { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
   { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
+  { label: '🔄 Velserbroek → Andijk LWS', woonwerk: 58, dienstreis: 39 },  // 58 woonwerk + 39 dienstreis = 155 km totaal
   { label: '🌳 Tetterodeweg 27 Overveen', woonwerk: 58, dienstreis: 6 },  // 58 woonwerk + (61-58)x2=6 dienstreis
   { label: '✏️ Handmatig invoeren', woonwerk: 0, dienstreis: 0, handmatig: true },
   { label: '🏠 Thuiswerkdag', woonwerk: 0, dienstreis: 0, thuiswerk: true },
@@ -2784,7 +2785,7 @@ function renderKmDagen() {
             <span style="font-size:0.65em;color:var(--muted);margin-left:4px;text-transform:uppercase;">${dagNaam}</span>
           </div>
           <select onchange="kmBestemmingGekozen(${dag},parseInt(this.value))"
-            style="flex:1;min-width:160px;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'var(--muted)'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;">
+            style="flex:1;min-width:160px;padding:6px 8px;background:#1a1a2e;border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'#888'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;">
             ${KM_BESTEMMINGEN.map((b,i) => `<option value="${i}"${i===bestIdx?' selected':''}>${escHtml(b.label)}</option>`).join('')}
           </select>
           <!-- Gedeclareerd vinkje -->
