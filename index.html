@@ -3,6 +3,13 @@
 <head>
 <title>Remy AI Hub</title>
 <meta charset="UTF-8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0a0b1e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="AI Hub">
+  <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#07080f">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧠</text></svg>">
@@ -1027,7 +1034,6 @@ header h1 {
     <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
       <button id="werk-tab-links" onclick="switchWerkTab('links')" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🔗 Links</button>
       <button id="werk-tab-km" onclick="switchWerkTab('km')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🚗 KM Registratie</button>
-      <button id="werk-tab-agenda" onclick="switchWerkTab('agenda')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">📅 Agenda Import</button>
     </div>
 
     <!-- TAB: LINKS -->
@@ -1068,45 +1074,6 @@ header h1 {
       </div>
       <!-- Dagen lijst -->
       <div id="km-dagen" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px;"></div>
-    </div>
-
-    <!-- TAB: AGENDA IMPORT -->
-    <div id="werk-panel-agenda" style="display:none;">
-      <div style="margin-bottom:14px;">
-        <p style="font-size:0.72em;color:var(--muted);margin-bottom:12px;line-height:1.6;">📸 Stuur een screenshot van je Outlook agenda. Claude leest de afspraken uit en maakt een <strong style="color:#10b981;">.ics bestand</strong> dat je in één keer kan importeren in Google Calendar <strong style="color:#38bdf8;">WERK</strong>.</p>
-        <!-- Upload zone -->
-        <label id="agenda-upload-label" for="agenda-screenshot-input"
-          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:24px;background:rgba(56,189,248,0.05);border:2px dashed rgba(56,189,248,0.25);border-radius:12px;cursor:pointer;transition:all 0.2s;"
-          onmouseover="this.style.borderColor='rgba(56,189,248,0.5)';this.style.background='rgba(56,189,248,0.08)'"
-          onmouseout="this.style.borderColor='rgba(56,189,248,0.25)';this.style.background='rgba(56,189,248,0.05)'">
-          <span style="font-size:1.8em;">📷</span>
-          <span style="font-size:0.75em;color:#38bdf8;">Klik om screenshot te uploaden</span>
-          <span style="font-size:0.65em;color:var(--muted);">JPG, PNG — max 5MB</span>
-        </label>
-        <input type="file" id="agenda-screenshot-input" accept="image/*" style="display:none;" onchange="agendaImportScreenshot(this)">
-        <!-- Preview -->
-        <div id="agenda-preview-wrap" style="display:none;margin-top:10px;position:relative;">
-          <img id="agenda-preview-img" style="width:100%;max-height:180px;object-fit:cover;border-radius:8px;border:1px solid var(--border);">
-          <button onclick="agendaResetImport()" style="position:absolute;top:6px;right:6px;background:rgba(0,0,0,0.7);border:none;color:#fff;border-radius:6px;padding:3px 8px;font-size:0.7em;cursor:pointer;">✕ Nieuw</button>
-        </div>
-        <!-- Analyse knop -->
-        <button id="agenda-analyse-btn" onclick="agendaAnalyseer()" style="display:none;width:100%;margin-top:10px;padding:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:10px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.8em;cursor:pointer;transition:all 0.2s;">
-          🔍 Analyseer agenda
-        </button>
-        <!-- Status -->
-        <div id="agenda-import-status" style="font-size:0.72em;color:var(--muted);margin-top:8px;min-height:18px;text-align:center;"></div>
-      </div>
-      <!-- Resultaten -->
-      <div id="agenda-import-results" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;">
-          <span style="font-size:0.72em;color:var(--muted);">Gevonden afspraken — <strong style="color:#38bdf8;">WERK</strong> agenda</span>
-          <div style="display:flex;gap:6px;">
-            <button id="agenda-ics-btn" onclick="agendaDownloadIcs()" style="padding:5px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.3);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;white-space:nowrap;">📥 Download .ics</button>
-            <button onclick="agendaResetImport()" style="background:none;border:none;color:var(--muted);font-size:0.7em;cursor:pointer;text-decoration:underline;">↺ Nieuw</button>
-          </div>
-        </div>
-        <div id="agenda-afspraken-lijst" style="display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow-y:auto;padding-right:4px;"></div>
-      </div>
     </div>
 
     <button class="werk-close" onclick="closeWerk()" style="margin-top:14px;">✕ Sluiten</button>
@@ -1408,25 +1375,26 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏥 Dr. NeuroCut</h2><p>Medische specialist ADHD &amp; gewicht · Sonnet 4.6 Extended</p><span class="kbd">1</span>
       </a>
-      <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79" class="card agent" data-key="2" data-usage="true" target="_blank" rel="noopener noreferrer">
+      <div class="card agent" data-key="2" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>🔬 R&amp;D Lab</h2><p style="margin-bottom:10px;">Research &amp; Development</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(16,185,129,0.22)'" onmouseout="this.style.background='rgba(16,185,129,0.12)'">
+            🔬 Nova R&amp;D
+          </a>
+          <a href="https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 6px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(16,185,129,0.22)'" onmouseout="this.style.background='rgba(16,185,129,0.12)'">
+            🏗️ Atlas
+          </a>
+        </div>
+        <span class="kbd">2</span>
+      </div>
+      <a href="https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6" class="card agent" data-key="3" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔬 Nova R&amp;D</h2><p>PWN companion · Sonnet 4.6 Extended</p><span class="kbd">2</span>
-      </a>
-      <a href="https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏗️ Atlas Technical R&amp;D</h2><p>Technische research · Sonnet 4.6 Extended</p>
-      </a>
-      <a href="https://claude.ai/project/019c8aa7-933b-7514-b519-8362446b492b" class="card agent" data-key="3" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>❤️ Jan Mars</h2><p>Relatie therapeut · Sonnet 4.6 Extended</p><span class="kbd">3</span>
-      </a>
-      <a href="https://claude.ai/project/019c8a99-57fe-718e-98ba-20d52329ad36" class="card agent" data-key="4" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💪 Alex</h2><p>Voedingscoach · Haiku model</p><span class="kbd">4</span>
-      </a>
-      <a href="https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6" class="card agent" data-key="5" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💻 Voltex Coder</h2><p>HA / Excel / Coding · Sonnet 4.6 Extended</p><span class="kbd">5</span>
+        <h2>💻 Voltex Coder</h2><p>HA / Excel / Coding · Sonnet 4.6 Extended</p><span class="kbd">3</span>
       </a>
       <a href="https://claude.ai/project/019d8198-c3d7-7004-a846-5221dd83acb1" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -1436,22 +1404,33 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent · Sonnet 4.6 Extended</p>
       </a>
-      <a href="https://claude.ai/project/019cf80d-0f65-727b-bd9a-2ecd15301ca1" class="card agent" data-key="6" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏋️ Push Day</h2><p>Clyde · Haiku model</p><span class="kbd">6</span>
-      </a>
-      <a href="https://claude.ai/project/019bb342-d02a-77cd-afc8-d70b1e8a8b36" class="card agent" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔄 Pull Day</h2><p>Clyde · Haiku model</p>
-      </a>
-      <a href="https://claude.ai/project/019cf80d-2a9a-7033-9bf4-749fda5dbebe" class="card agent" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🦵 Leg Day</h2><p>Clyde · Haiku model</p>
-      </a>
-      <a href="https://claude.ai/project/019cf80c-ead6-7290-85ae-55e43d3974ed" class="card agent" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🧘 Toning Day</h2><p>Clyde · Haiku model</p>
-      </a>
+      <div class="card agent" data-key="6" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>🏋️ Clyde</h2><p style="margin-bottom:10px;">Gym buddy · Haiku model</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <a href="https://claude.ai/project/019cf80d-0f65-727b-bd9a-2ecd15301ca1" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🏋️ Push
+          </a>
+          <a href="https://claude.ai/project/019bb342-d02a-77cd-afc8-d70b1e8a8b36" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🔄 Pull
+          </a>
+          <a href="https://claude.ai/project/019cf80d-2a9a-7033-9bf4-749fda5dbebe" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🦵 Legs
+          </a>
+          <a href="https://claude.ai/project/019cf80c-ead6-7290-85ae-55e43d3974ed" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(102,126,234,0.12);border:1px solid rgba(102,126,234,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(102,126,234,0.22)'" onmouseout="this.style.background='rgba(102,126,234,0.12)'">
+            🧘 Toning
+          </a>
+        </div>
+        <span class="kbd">6</span>
+      </div>
       <a href="https://claude.ai/project/019cd6d5-1caf-7138-9b61-1a4dbdc90a69" class="card agent" data-key="7" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>💰 DoopieVault</h2><p>Crypto Expert · Sonnet 4.6 Extended</p><span class="kbd">7</span>
@@ -1491,10 +1470,7 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>📓 NotebookLM</h2><p>AI notities &amp; research</p>
       </a>
-      <a href="#" onclick="event.preventDefault(); window.location.href='aicheck://';" class="card general" style="border-color:rgba(167,139,250,0.3);background:rgba(167,139,250,0.05);">
-        <div class="dot" style="background:#a78bfa;"></div>
-        <h2>🔍 Blog Check</h2><p>Grok · Gemini · Perplexity</p>
-      </a>
+
     </div>
   </section>
 
@@ -1535,18 +1511,28 @@ header h1 {
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>📊 Search Console</h2><p>Stekkerslim.nl SEO</p>
       </a>
-      <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>✍️ StekkerPen</h2><p>Blog &amp; Pinterest schrijver</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📣 StekkerBoost</h2><p>Facebook Ads &amp; campagnes</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💬 StekkerDesk</h2><p>Bezoekersvragen &amp; support</p>
-      </a>
+      <div class="card affiliate" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>📣 Marketing Agents</h2><p style="margin-bottom:10px;">Stekkerslim marketing</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+          <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 4px;background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.68em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(244,114,182,0.22)'" onmouseout="this.style.background='rgba(244,114,182,0.12)'">
+            ✍️ StekkerPen
+          </a>
+          <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 4px;background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.68em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(244,114,182,0.22)'" onmouseout="this.style.background='rgba(244,114,182,0.12)'">
+            📣 StekkerBoost
+          </a>
+          <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" target="_blank" rel="noopener noreferrer" data-usage="true"
+            style="display:block;padding:7px 4px;background:rgba(244,114,182,0.12);border:1px solid rgba(244,114,182,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.68em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(244,114,182,0.22)'" onmouseout="this.style.background='rgba(244,114,182,0.12)'">
+            💬 StekkerDesk
+          </a>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1554,22 +1540,32 @@ header h1 {
   <section class="section" id="sec-tools">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
-      <a href="https://drive.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>☁️ Google Drive</h2><p>Bestanden &amp; docs</p>
-      </a>
-      <a href="https://photos.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📸 Google Photos</h2><p>Foto's &amp; albums</p>
-      </a>
-      <a href="https://keep.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📌 Google Keep</h2><p>Snelle notities</p>
-      </a>
-      <a href="https://mail.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📧 Gmail</h2><p>Google mail</p>
-      </a>
+      <div class="card tool" style="cursor:default;">
+        <div class="dot"></div>
+        <h2>🔵 Google</h2><p style="margin-bottom:10px;">Google diensten</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <a href="https://drive.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            ☁️ Drive
+          </a>
+          <a href="https://photos.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            📸 Photos
+          </a>
+          <a href="https://keep.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            📌 Keep
+          </a>
+          <a href="https://mail.google.com/" target="_blank" rel="noopener noreferrer"
+            style="display:block;padding:7px 6px;background:rgba(66,133,244,0.12);border:1px solid rgba(66,133,244,0.25);border-radius:8px;color:var(--text);text-decoration:none;font-size:0.72em;text-align:center;transition:background 0.2s;"
+            onmouseover="this.style.background='rgba(66,133,244,0.22)'" onmouseout="this.style.background='rgba(66,133,244,0.12)'">
+            📧 Gmail
+          </a>
+        </div>
+      </div>
       <a href="https://github.com/Remyster" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🐙 GitHub</h2><p>Repositories</p>
@@ -1593,40 +1589,9 @@ header h1 {
   <section class="section" id="sec-projects">
     <div class="section-label">Mijn Projecten</div>
     <div class="grid">
-      <a href="https://www.bonusbuurt.nl/" class="card project" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏘️ BonusBuurt</h2><p>Passief inkomen website</p>
-      </a>
       <a href="https://ha.ha-remy.uk/home/overview" class="card project" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🏠 Home Assistant</h2><p>Smarthome dashboard</p>
-      </a>
-    </div>
-  </section>
-
-  <!-- MARKETING -->
-  <section class="section" id="sec-marketing">
-    <div class="section-label">Marketing</div>
-    <div class="grid">
-      <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="card marketing" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>✍️ StekkerPen</h2><p>Blog &amp; Pinterest schrijver</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="card marketing" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📣 StekkerBoost</h2><p>Facebook Ads &amp; campagnes</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="card marketing" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💬 StekkerDesk</h2><p>Bezoekersvragen &amp; support</p>
-      </a>
-      <a href="https://gathering.tweakers.net/forum/list_topics/138" class="card marketing" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>⚡ Tweakers Energie</h2><p>Forum energierekening</p>
-      </a>
-      <a href="https://nl.pinterest.com/search/pins/?q=energiebesparingstips&rs=typed" class="card marketing" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📌 Pinterest Energie</h2><p>Energiebesparingstips</p>
       </a>
     </div>
   </section>
@@ -2128,12 +2093,10 @@ document.querySelector('.popup-refresh').addEventListener('click', function(e) {
 // USAGE AUTO-OPEN
 // ══════════════════════════════════════════════
 document.querySelectorAll('.card[data-usage="true"]').forEach(card => {
-  card.addEventListener('click', function(e) {
-    if (e.target.closest('a') || card.dataset.combined) return;
+  card.addEventListener('click', function() {
     setTimeout(() => window.open('https://claude.ai/settings/usage','_blank','noopener'), 300);
   });
 });
-// Inner links in gecombineerde cards: propagation gestopt via onclick in HTML
 
 // ══════════════════════════════════════════════
 // LAST USED
@@ -2144,11 +2107,11 @@ function saveRecent(h) { let l=getRecent().filter(x=>x!==h); l.unshift(h); try{l
 function applyRecent() {
   const r = getRecent();
   document.querySelectorAll('.card').forEach(c => {
-    const isRecent = r.some(x => x && c.href && c.href.includes(x.replace(location.origin,'')));
+    const isRecent = r.some(x => c.href && c.href.includes(x.replace(location.origin,'')));
     c.classList.toggle('recent', isRecent);
   });
 }
-document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => { const h = c.getAttribute('href'); if (h && h !== '#') saveRecent(h); }));
+document.querySelectorAll('.card').forEach(c => c.addEventListener('click', () => saveRecent(c.getAttribute('href'))));
 applyRecent();
 
 // ══════════════════════════════════════════════
@@ -2207,13 +2170,9 @@ const KM_BESTEMMINGEN = [
   { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
   { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
-  { label: '🔄 Velserbroek → Andijk LWS', woonwerk: 58, dienstreis: 39 },  // 58 woonwerk + 39 dienstreis = 155 km totaal
-  { label: '🌳 Tetterodeweg 27 Overveen', woonwerk: 58, dienstreis: 6 },  // 58 woonwerk + (61-58)x2=6 dienstreis
-  { label: '✏️ Handmatig invoeren', woonwerk: 0, dienstreis: 0, handmatig: true },
-  { label: '🏠 Thuiswerkdag', woonwerk: 0, dienstreis: 0, thuiswerk: true },
 ];
 
-var kmJaar, kmMaand;
+let kmJaar, kmMaand;
 let kmCache = {}; // { "jaar_maand": { dag: {heen,terug,extra} } }
 let werkLinksCache = [];
 
@@ -2284,360 +2243,14 @@ function closeWerk() { document.getElementById('werk-overlay').classList.remove(
 document.getElementById('werk-overlay').addEventListener('click', function(e) { if(e.target===this) closeWerk(); });
 
 function switchWerkTab(tab) {
-  document.getElementById('werk-panel-links').style.display  = tab==='links'  ? '' : 'none';
-  document.getElementById('werk-panel-km').style.display     = tab==='km'     ? '' : 'none';
-  document.getElementById('werk-panel-agenda').style.display = tab==='agenda' ? '' : 'none';
-  const btnLinks  = document.getElementById('werk-tab-links');
-  const btnKm     = document.getElementById('werk-tab-km');
-  const btnAgenda = document.getElementById('werk-tab-agenda');
-  const actief   = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
+  document.getElementById('werk-panel-links').style.display = tab==='links' ? '' : 'none';
+  document.getElementById('werk-panel-km').style.display    = tab==='km'    ? '' : 'none';
+  const btnLinks = document.getElementById('werk-tab-links');
+  const btnKm    = document.getElementById('werk-tab-km');
+  const actief = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
   const inactief = 'padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
-  btnLinks.style.cssText  = tab==='links'  ? actief : inactief;
-  btnKm.style.cssText     = tab==='km'     ? actief : inactief;
-  btnAgenda.style.cssText = tab==='agenda' ? actief : inactief;
-  // Altijd resetten als agenda tab geopend wordt
-  if (tab === 'agenda') agendaResetImport();
-}
-
-
-// ══════════════════════════════════════════════
-// AGENDA IMPORT — Outlook screenshot → Google Calendar WERK
-// ══════════════════════════════════════════════
-const WERK_CAL_ID = 'b0s4m442j2i2sstcs1iuoga8ps@group.calendar.google.com';
-const AGENDA_TOEGEVOEGD_KEY = 'remy_agenda_toegevoegd_v1';
-
-let agendaScreenshotB64 = null;
-let agendaScreenshotType = 'image/png';
-
-function agendaGetToegevoegd() {
-  try {
-    const d = JSON.parse(localStorage.getItem(AGENDA_TOEGEVOEGD_KEY) || '{}');
-    // Ruim entries ouder dan 7 dagen op
-    const week = 7 * 24 * 60 * 60 * 1000;
-    const nu = Date.now();
-    Object.keys(d).forEach(k => { if (nu - d[k] > week) delete d[k]; });
-    return d;
-  } catch { return {}; }
-}
-function agendaMarkToegevoegd(key) {
-  const d = agendaGetToegevoegd(); d[key] = Date.now();
-  try { localStorage.setItem(AGENDA_TOEGEVOEGD_KEY, JSON.stringify(d)); } catch {}
-}
-
-function agendaImportScreenshot(input) {
-  const file = input.files[0];
-  if (!file) return;
-  if (file.size > 5 * 1024 * 1024) {
-    document.getElementById('agenda-import-status').textContent = '⚠️ Bestand te groot (max 5MB)';
-    return;
-  }
-  agendaScreenshotType = file.type || 'image/png';
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    agendaScreenshotB64 = dataUrl.split(',')[1];
-    // Toon preview
-    document.getElementById('agenda-preview-img').src = dataUrl;
-    document.getElementById('agenda-preview-wrap').style.display = '';
-    document.getElementById('agenda-upload-label').style.display = 'none';
-    document.getElementById('agenda-analyse-btn').style.display = '';
-    document.getElementById('agenda-import-status').textContent = '✓ Screenshot geladen — klik Analyseer';
-  };
-  reader.readAsDataURL(file);
-}
-
-function agendaResetImport() {
-  agendaScreenshotB64 = null;
-  window._agendaAfspraken = [];
-  const previewWrap = document.getElementById('agenda-preview-wrap');
-  const uploadLabel = document.getElementById('agenda-upload-label');
-  const analyseBtn  = document.getElementById('agenda-analyse-btn');
-  const results     = document.getElementById('agenda-import-results');
-  const status      = document.getElementById('agenda-import-status');
-  const input       = document.getElementById('agenda-screenshot-input');
-  const lijst       = document.getElementById('agenda-afspraken-lijst');
-  if (previewWrap) previewWrap.style.display = 'none';
-  if (uploadLabel) uploadLabel.style.display = '';
-  if (analyseBtn)  { analyseBtn.style.display = 'none'; analyseBtn.textContent = '🔍 Analyseer agenda'; analyseBtn.disabled = false; }
-  if (results)     results.style.display = 'none';
-  if (status)      status.textContent = '';
-  if (input)       input.value = '';
-  if (lijst)       lijst.innerHTML = '';
-  voorJouLoading = false;
-}
-
-async function agendaAnalyseer() {
-  if (!agendaScreenshotB64) return;
-  const key = getApiKey();
-  if (!key) {
-    document.getElementById('agenda-import-status').textContent = '⚠️ Stel eerst je Claude API key in (🔑 knop)';
-    return;
-  }
-  const btn = document.getElementById('agenda-analyse-btn');
-  btn.textContent = '⏳ Bezig met analyseren...';
-  btn.disabled = true;
-  document.getElementById('agenda-import-status').textContent = 'Claude leest je agenda...';
-
-  const vandaag = new Date().toISOString().split('T')[0];
-  const prompt = `Dit is een screenshot van een Outlook agenda. Lees ALLE afspraken eruit, inclusief hele-dag events.
-
-Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{
-  "afspraken": [
-    {
-      "titel": "naam van de afspraak",
-      "datum": "YYYY-MM-DD",
-      "start": "HH:MM",
-      "eind": "HH:MM",
-      "hele_dag": false,
-      "locatie": "locatie of leeg",
-      "omschrijving": "extra info of leeg"
-    }
-  ]
-}
-
-BELANGRIJKE REGELS:
-1. HELE-DAG EVENTS: De gekleurde balken BOVENAAN elke dag (boven de tijdsloten) zijn hele-dag events. Zet hele_dag op true, start op "00:00", eind op "23:59".
-   Voorbeelden van hele-dag events: "Velserbroek", "Heemskerk Daarna Velserbroek", "LWS Andijk Remy mee lopen Tim"
-   Dit zijn locatie-aanwijzingen of dagplanningen, GEEN vergaderingen met tijdstip.
-
-2. GEWONE AFSPRAKEN: Afspraken die op een tijdstip staan in het rooster (zoals 9:00, 10:00 etc) zijn normale afspraken. Lees de tijden af van de tijdas links.
-
-3. DATUM: Als je de datum ziet in de kolom-header (bv "13 Maandag", "14 Dinsdag"), gebruik die exacte datum. Vandaag is ${vandaag}.
-
-4. EINDTIJD: Als er geen eindtijd zichtbaar is maar wel een starttijd, schat de duur op basis van de blok-hoogte (elk uur = 1 blok). Minimaal 30 min.
-
-5. LOCATIE: Staat vaak als tweede regel in het afspraak-blok. Zet het in het locatie veld.
-
-6. Datum altijd YYYY-MM-DD, tijd altijd HH:MM (24-uurs), negeer lege tijdslots.`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2500,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image', source: { type: 'base64', media_type: agendaScreenshotType, data: agendaScreenshotB64 } },
-            { type: 'text', text: prompt }
-          ]
-        }]
-      })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    let raw = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
-    // Saneer via charCodeAt - geen unicode regex
-    raw = raw.split('').map(function(c) {
-      var code = c.charCodeAt(0);
-      if (code === 0x2018 || code === 0x2019) return "'";
-      if (code === 0x201C || code === 0x201D) return '"';
-      if (code === 0x2013 || code === 0x2014) return '-';
-      if (code < 0x20 && code !== 0x09 && code !== 0x0A && code !== 0x0D) return ' ';
-      return c;
-    }).join('')
-    let parsed;
-    try {
-      parsed = JSON.parse(raw);
-    } catch(jsonErr) {
-      // Tweede poging: extraheer JSON via regex als model extra tekst toevoegde
-      const match = raw.match(/\{[\s\S]*\}/);
-      if (match) {
-        parsed = JSON.parse(match[0]);
-      } else {
-        throw new Error('JSON parsing mislukt: ' + jsonErr.message);
-      }
-    }
-    agendaToonAfspraken(parsed.afspraken || []);
-    document.getElementById('agenda-import-status').textContent = '';
-  } catch(err) {
-    document.getElementById('agenda-import-status').textContent = '❌ Fout: ' + err.message;
-    btn.textContent = '🔍 Analyseer agenda';
-    btn.disabled = false;
-  }
-}
-
-function agendaToonAfspraken(afspraken) {
-  if (!afspraken.length) {
-    document.getElementById('agenda-import-status').textContent = '⚠️ Geen afspraken gevonden in de screenshot';
-    document.getElementById('agenda-analyse-btn').textContent = '🔍 Analyseer agenda';
-    document.getElementById('agenda-analyse-btn').disabled = false;
-    return;
-  }
-  const toegevoegd = agendaGetToegevoegd();
-  const lijst = document.getElementById('agenda-afspraken-lijst');
-  // Sla afspraken op voor bulk functie
-  window._agendaAfspraken = afspraken;
-
-  lijst.innerHTML = afspraken.map((a, i) => {
-    const key = a.datum + '_' + a.start + '_' + a.titel.substring(0,20);
-    const isToegevoegd = !!toegevoegd[key];
-    const calUrl = agendaBouwCalUrl(a);
-    const tijdTekst = a.hele_dag
-      ? '<span style="background:rgba(167,139,250,0.2);color:#a78bfa;padding:1px 6px;border-radius:4px;font-size:0.85em;">hele dag</span>'
-      : `⏰ ${a.start}–${a.eind}`;
-    return `<div id="agenda-item-${i}" style="padding:10px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.07)' : 'rgba(255,255,255,0.04)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.3)' : 'rgba(56,189,248,0.15)'};border-radius:10px;transition:all 0.2s;">
-      <div style="display:flex;align-items:flex-start;gap:10px;">
-        <div style="flex:1;min-width:0;">
-          <div style="font-size:0.8em;color:var(--text);font-weight:600;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.titel)}</div>
-          <div style="font-size:0.68em;color:var(--muted);display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
-            📅 ${a.datum} &nbsp;${tijdTekst}${a.locatie ? ' &nbsp;📍 ' + escHtml(a.locatie) : ''}
-          </div>
-          ${a.omschrijving ? `<div style="font-size:0.65em;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(a.omschrijving)}</div>` : ''}
-        </div>
-        <button
-          onclick="agendaOpenEnMarkeer('${key}', '${calUrl}', ${i})"
-          style="display:inline-flex;align-items:center;gap:5px;padding:7px 12px;background:${isToegevoegd ? 'rgba(16,185,129,0.15)' : 'rgba(56,189,248,0.1)'};border:1px solid ${isToegevoegd ? 'rgba(16,185,129,0.35)' : 'rgba(56,189,248,0.3)'};border-radius:8px;color:${isToegevoegd ? '#10b981' : '#38bdf8'};font-family:'DM Mono',monospace;font-size:0.68em;white-space:nowrap;flex-shrink:0;cursor:pointer;transition:all 0.2s;">
-          ${isToegevoegd ? '✅' : '+ WERK'}
-        </button>
-      </div>
-    </div>`;
-  }).join('');
-  document.getElementById('agenda-import-results').style.display = '';
-  document.getElementById('agenda-analyse-btn').style.display = 'none';
-}
-
-function agendaDownloadIcs() {
-  const afspraken = window._agendaAfspraken || [];
-  if (!afspraken.length) {
-    document.getElementById('agenda-import-status').textContent = '⚠️ Geen afspraken om te downloaden';
-    return;
-  }
-
-  // ICS escape helper
-  const icsEsc = s => String(s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
-
-  // Bouw ICS content
-  const now = new Date();
-  const dtstamp = now.getUTCFullYear()
-    + String(now.getUTCMonth()+1).padStart(2,'0')
-    + String(now.getUTCDate()).padStart(2,'0')
-    + 'T'
-    + String(now.getUTCHours()).padStart(2,'0')
-    + String(now.getUTCMinutes()).padStart(2,'0')
-    + String(now.getUTCSeconds()).padStart(2,'0')
-    + 'Z';
-
-  let ics = 'BEGIN:VCALENDAR\r\n';
-  ics += 'VERSION:2.0\r\n';
-  ics += 'PRODID:-//Remy AI Hub//Agenda Import//NL\r\n';
-  ics += 'CALSCALE:GREGORIAN\r\n';
-  ics += 'METHOD:PUBLISH\r\n';
-
-  afspraken.forEach((a, i) => {
-    const uid = 'remy-hub-' + dtstamp + '-' + i + '@ai-hub';
-    ics += 'BEGIN:VEVENT\r\n';
-    ics += 'UID:' + uid + '\r\n';
-    ics += 'DTSTAMP:' + dtstamp + '\r\n';
-
-    if (a.hele_dag) {
-      // All-day event: DTSTART en DTEND zijn datum (YYYYMMDD), DTEND is dag erna
-      const [y,m,d] = a.datum.split('-');
-      const volgende = new Date(parseInt(y), parseInt(m)-1, parseInt(d)+1);
-      const eindY = volgende.getFullYear();
-      const eindM = String(volgende.getMonth()+1).padStart(2,'0');
-      const eindD = String(volgende.getDate()).padStart(2,'0');
-      ics += 'DTSTART;VALUE=DATE:' + y + m + d + '\r\n';
-      ics += 'DTEND;VALUE=DATE:' + eindY + eindM + eindD + '\r\n';
-    } else {
-      // Normale afspraak: lokale tijd met Europe/Amsterdam
-      const [y,m,d] = a.datum.split('-');
-      const [sh,sm] = a.start.split(':');
-      const [eh,em] = a.eind.split(':');
-      ics += 'DTSTART;TZID=Europe/Amsterdam:' + y + m + d + 'T' + sh + sm + '00\r\n';
-      ics += 'DTEND;TZID=Europe/Amsterdam:' + y + m + d + 'T' + eh + em + '00\r\n';
-    }
-
-    ics += 'SUMMARY:' + icsEsc(a.titel) + '\r\n';
-    if (a.locatie)      ics += 'LOCATION:' + icsEsc(a.locatie) + '\r\n';
-    if (a.omschrijving) ics += 'DESCRIPTION:' + icsEsc(a.omschrijving) + '\r\n';
-    ics += 'END:VEVENT\r\n';
-  });
-
-  ics += 'END:VCALENDAR\r\n';
-
-  // Download trigger
-  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  const datumNu = new Date().toISOString().split('T')[0];
-  link.href = url;
-  link.download = 'werk-agenda-' + datumNu + '.ics';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-  document.getElementById('agenda-import-status').innerHTML = '✓ <strong>' + afspraken.length + ' afspraken</strong> gedownload — open het bestand of importeer in <a href="https://calendar.google.com/calendar/u/0/r/settings/export" target="_blank" style="color:#10b981;">Google Calendar WERK</a>';
-}
-
-function agendaMarkeerItem(i, key) {
-  const item = document.getElementById('agenda-item-' + i);
-  if (!item) return;
-  item.style.background = 'rgba(16,185,129,0.07)';
-  item.style.borderColor = 'rgba(16,185,129,0.3)';
-  const btn = item.querySelector('button');
-  if (btn) {
-    btn.textContent = '✅';
-    btn.style.color = '#10b981';
-    btn.style.borderColor = 'rgba(16,185,129,0.35)';
-    btn.style.background = 'rgba(16,185,129,0.15)';
-  }
-}
-
-function agendaOpenEnMarkeer(key, url, idx) {
-  // Hidden <a> click — werkt door popup blocker heen
-  const link = document.createElement('a');
-  link.href = url;
-  link.target = '_blank';
-  link.rel = 'noopener';
-  link.style.display = 'none';
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  agendaMarkToegevoegd(key);
-  agendaMarkeerItem(idx, key);
-}
-
-function agendaBouwCalUrl(a) {
-  let datumStr, eindStr;
-  if (a.hele_dag) {
-    // Hele-dag event: datum formaat YYYYMMDD/YYYYMMDD+1dag
-    const [y,m,d] = a.datum.split('-');
-    const volgende = new Date(parseInt(y), parseInt(m)-1, parseInt(d)+1);
-    const vY = volgende.getFullYear();
-    const vM = String(volgende.getMonth()+1).padStart(2,'0');
-    const vD = String(volgende.getDate()).padStart(2,'0');
-    datumStr = `${y}${m}${d}`;
-    eindStr  = `${vY}${vM}${vD}`;
-    return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
-      + '&text=' + encodeURIComponent(a.titel)
-      + '&dates=' + datumStr + '/' + eindStr
-      + (a.locatie      ? '&location=' + encodeURIComponent(a.locatie)      : '')
-      + (a.omschrijving ? '&details='  + encodeURIComponent(a.omschrijving) : '')
-      + '&src=' + encodeURIComponent(WERK_CAL_ID);
-  }
-  const fmt = (datum, tijd) => {
-    const [y,m,d] = datum.split('-');
-    const [h,min] = tijd.split(':');
-    return `${y}${m}${d}T${h}${min}00`;
-  };
-  const start = fmt(a.datum, a.start);
-  const eind  = fmt(a.datum, a.eind);
-  return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
-    + '&text=' + encodeURIComponent(a.titel)
-    + '&dates=' + start + '/' + eind
-    + (a.locatie      ? '&location=' + encodeURIComponent(a.locatie)      : '')
-    + (a.omschrijving ? '&details='  + encodeURIComponent(a.omschrijving) : '')
-    + '&src=' + encodeURIComponent(WERK_CAL_ID);
+  btnLinks.style.cssText = tab==='links' ? actief : inactief;
+  btnKm.style.cssText    = tab==='km'    ? actief : inactief;
 }
 
 // ── Werk links ──
@@ -2754,29 +2367,7 @@ function renderKmDagen() {
       </div>`
     ).join('');
 
-    // Bereken totale km voor compacte weergave
-    const isThuiswerk = KM_BESTEMMINGEN[bestIdx] && KM_BESTEMMINGEN[bestIdx].thuiswerk;
-    const totKmDag = (parseFloat(heen)||0) + (parseFloat(terug)||0) + (parseFloat(dienstreis)||0) + extra.reduce((s,r)=>s+(parseFloat(r.km)||0),0);
-    const bestLabel = bestIdx > 0 ? KM_BESTEMMINGEN[bestIdx].label : '';
-
-    if (gedecl) {
-      // ── INGEKLAPT: datum + label + km/vergoeding + vinkje ──
-      html += `
-      <div style="padding:7px 12px;background:rgba(16,185,129,0.05);border:1px solid rgba(16,185,129,0.25);border-radius:10px;display:flex;align-items:center;gap:8px;transition:border-color 0.2s;">
-        <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.88em;color:var(--text);min-width:38px;">${dag} <span style="font-size:0.7em;color:var(--muted);font-family:'DM Mono',monospace;text-transform:uppercase;">${dagNaam}</span></span>
-        <span style="font-size:0.72em;color:#fbbf24;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(bestLabel)}</span>
-        ${isThuiswerk
-          ? `<span style="font-size:0.72em;color:#10b981;white-space:nowrap;">€3,00</span>`
-          : `<span style="font-size:0.72em;color:#10b981;white-space:nowrap;">${totKmDag > 0 ? totKmDag.toFixed(0)+' km' : '—'}</span>`
-        }
-        <label style="display:flex;align-items:center;gap:4px;cursor:pointer;user-select:none;" title="Gedeclareerd">
-          <input type="checkbox" checked onchange="toggleKmGedeclareerd(${dag},this.checked)"
-            style="width:14px;height:14px;accent-color:#10b981;cursor:pointer;">
-          <span style="font-size:0.65em;color:#10b981;">✅</span>
-        </label>
-      </div>`;
-    } else {
-      html += `
+    html += `
       <div style="padding:10px 12px;background:${dagBg};border:1px solid ${dagBorder};border-radius:10px;transition:border-color 0.2s;">
         <!-- Rij 1: dag + dropdown + gedeclareerd -->
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${(heen||terug||dienstreis) ? '8px' : '0'};">
@@ -2785,21 +2376,18 @@ function renderKmDagen() {
             <span style="font-size:0.65em;color:var(--muted);margin-left:4px;text-transform:uppercase;">${dagNaam}</span>
           </div>
           <select onchange="kmBestemmingGekozen(${dag},parseInt(this.value))"
-            style="flex:1;min-width:160px;padding:6px 8px;background:#1a1a2e;border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'#888'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;">
+            style="flex:1;min-width:160px;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'var(--muted)'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;">
             ${KM_BESTEMMINGEN.map((b,i) => `<option value="${i}"${i===bestIdx?' selected':''}>${escHtml(b.label)}</option>`).join('')}
           </select>
           <!-- Gedeclareerd vinkje -->
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Gedeclareerd">
             <input type="checkbox" ${gedecl?'checked':''} onchange="toggleKmGedeclareerd(${dag},this.checked)"
               style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;">
-            <span style="font-size:0.68em;color:var(--muted);">declareer</span>
+            <span style="font-size:0.68em;color:${gedecl?'#10b981':'var(--muted)'};">${gedecl?'✅ gedecl.':'declareer'}</span>
           </label>
         </div>
-        <!-- Rij 2: thuiswerk vergoeding OF km velden -->
-        ${isThuiswerk ? `
-        <div style="padding-left:60px;">
-          <span style="font-size:0.75em;color:#10b981;">🏠 €3,00 thuiswerkvergoeding — declareer via vinkje</span>
-        </div>` : (bestIdx > 0 || heen || terug || dienstreis) ? `
+        <!-- Rij 2: km velden (alleen tonen als bestemming gekozen of al ingevuld) -->
+        ${(bestIdx > 0 || heen || terug || dienstreis) ? `
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-left:60px;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
             <span style="font-size:0.6em;color:#10b981;text-transform:uppercase;letter-spacing:0.08em;">woonwerk</span>
@@ -2824,7 +2412,6 @@ function renderKmDagen() {
         </div>` : ''}
         ${extraHtml ? `<div style="padding-left:60px;margin-top:2px;">${extraHtml}</div>` : ''}
       </div>`;
-    }
   }
   container.innerHTML = html;
   updateKmTotaal();
@@ -2835,23 +2422,10 @@ async function kmBestemmingGekozen(dag, idx) {
   if (!b || b.woonwerk === null) return; // "kies bestemming" geselecteerd
   const data = getKmCacheData();
   if (!data[dag]) data[dag] = {extra:[]};
-
-  // Handmatig invoeren: vraag km via prompt
-  if (b.handmatig) {
-    const enkelRit = prompt('Aantal km ENKELE reis (heen):', data[dag].heen || '');
-    if (enkelRit === null) return; // geannuleerd
-    const kmHeen = parseFloat(enkelRit);
-    if (isNaN(kmHeen) || kmHeen < 0) { alert('Ongeldig getal'); return; }
-    data[dag].heen = kmHeen;
-    data[dag].terug = kmHeen;
-    data[dag].dienstreis = 0;
-  } else {
-    data[dag].heen       = b.woonwerk;
-    data[dag].terug      = b.woonwerk;
-    data[dag].dienstreis = b.dienstreis;
-  }
-
   data[dag].bestemming_idx = idx;
+  data[dag].heen       = b.woonwerk;
+  data[dag].terug      = b.woonwerk;
+  data[dag].dienstreis = b.dienstreis;
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   updateKmTotaal();
   await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen, data[dag].terug, data[dag].extra||[], data[dag].dienstreis||0, idx, data[dag].gedeclareerd||false);
@@ -3083,7 +2657,7 @@ async function sbUpsert(table, body) {
 const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
 const CAT_LABELS = { inkomen:'💚 Inkomen', wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
 
-var vlJaar, vlMaand; let vlLasten=[], vlBetalingen=[], vlSpaar=[];
+let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
 
 function openVasteLasten() {
   const nu = new Date();
@@ -3435,12 +3009,8 @@ function saveVlSaldo() {
 
 function updateVlSaldo() {
   const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
-  const isAutoMaand = vlMaand % 2 === 1;
   const nogRaw = vlLasten.reduce((sum, l) => {
-    if (l.categorie === 'inkomen') return sum;
-    // Alternerende spaarpotten: skip de inactieve
-    if (l.naam === 'Auto sparen' && !isAutoMaand) return sum;
-    if (l.naam === 'Huis sparen' &&  isAutoMaand) return sum;
+    if (l.categorie === 'inkomen') return sum; // inkomen niet meetellen als uitgave
     const b = getBetaling(l.id);
     if (b?.betaald) return sum;
     return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
