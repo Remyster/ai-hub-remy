@@ -1034,6 +1034,7 @@ header h1 {
     <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
       <button id="werk-tab-links" onclick="switchWerkTab('links')" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🔗 Links</button>
       <button id="werk-tab-km" onclick="switchWerkTab('km')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🚗 KM Registratie</button>
+      <button id="werk-tab-agenda" onclick="switchWerkTab('agenda')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">📅 Agenda Import</button>
     </div>
 
     <!-- TAB: LINKS -->
@@ -1074,6 +1075,42 @@ header h1 {
       </div>
       <!-- Dagen lijst -->
       <div id="km-dagen" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px;"></div>
+    </div>
+
+    <!-- TAB: AGENDA IMPORT -->
+    <div id="werk-panel-agenda" style="display:none;">
+      <div style="font-size:0.72em;color:var(--muted);margin-bottom:12px;">Maak een screenshot van je werkagenda en upload hem hieronder. Claude haalt de afspraken eruit en maakt een .ics bestand aan.</div>
+
+      <!-- Upload area -->
+      <label for="agenda-screenshot-input" id="agenda-drop-zone"
+        style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed rgba(56,189,248,0.3);border-radius:12px;padding:24px;cursor:pointer;background:rgba(56,189,248,0.03);transition:all 0.2s;margin-bottom:12px;"
+        ondragover="event.preventDefault();this.style.borderColor='rgba(56,189,248,0.7)'"
+        ondragleave="this.style.borderColor='rgba(56,189,248,0.3)'"
+        ondrop="agendaHandleDrop(event)">
+        <span style="font-size:1.8em;">📸</span>
+        <span style="font-size:0.78em;color:var(--muted);">Klik of sleep screenshot hiernaartoe</span>
+        <input type="file" id="agenda-screenshot-input" accept="image/*" style="display:none;" onchange="agendaHandleFile(this.files[0])">
+      </label>
+
+      <!-- Preview -->
+      <img id="agenda-preview" style="display:none;width:100%;max-height:140px;object-fit:contain;border-radius:8px;border:1px solid var(--border);margin-bottom:10px;">
+
+      <!-- Status / output -->
+      <div id="agenda-status" style="font-size:0.75em;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="agendaAnalyseer()" id="agenda-analyseer-btn"
+          style="padding:9px 16px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:9px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">
+          🤖 Analyseer met Claude
+        </button>
+        <button onclick="agendaDownload()" id="agenda-download-btn" style="display:none;padding:9px 16px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:9px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;">
+          ⬇️ Download .ics
+        </button>
+        <a href="https://calendar.google.com/calendar/r/settings/export" target="_blank" id="agenda-gcal-btn" style="display:none;padding:9px 16px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:9px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;text-decoration:none;">
+          📅 Open Google Agenda Import
+        </a>
+      </div>
     </div>
 
     <button class="werk-close" onclick="closeWerk()" style="margin-top:14px;">✕ Sluiten</button>
@@ -2204,14 +2241,17 @@ function closeWerk() { document.getElementById('werk-overlay').classList.remove(
 document.getElementById('werk-overlay').addEventListener('click', function(e) { if(e.target===this) closeWerk(); });
 
 function switchWerkTab(tab) {
-  document.getElementById('werk-panel-links').style.display = tab==='links' ? '' : 'none';
-  document.getElementById('werk-panel-km').style.display    = tab==='km'    ? '' : 'none';
-  const btnLinks = document.getElementById('werk-tab-links');
-  const btnKm    = document.getElementById('werk-tab-km');
-  const actief = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
+  document.getElementById('werk-panel-links').style.display  = tab==='links'  ? '' : 'none';
+  document.getElementById('werk-panel-km').style.display     = tab==='km'     ? '' : 'none';
+  document.getElementById('werk-panel-agenda').style.display = tab==='agenda' ? '' : 'none';
+  const btnLinks  = document.getElementById('werk-tab-links');
+  const btnKm     = document.getElementById('werk-tab-km');
+  const btnAgenda = document.getElementById('werk-tab-agenda');
+  const actief   = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
   const inactief = 'padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
-  btnLinks.style.cssText = tab==='links' ? actief : inactief;
-  btnKm.style.cssText    = tab==='km'    ? actief : inactief;
+  btnLinks.style.cssText  = tab==='links'  ? actief : inactief;
+  btnKm.style.cssText     = tab==='km'     ? actief : inactief;
+  btnAgenda.style.cssText = tab==='agenda' ? actief : inactief;
 }
 
 // ── Werk links ──
@@ -3553,6 +3593,110 @@ window.addEventListener('load', () => {
   // AI blokjes laden als key beschikbaar is
   fetchVoorJou(false);
 });
+
+// ══════════════════════════════════════════════
+// AGENDA IMPORT (screenshot → .ics via Claude)
+// ══════════════════════════════════════════════
+let agendaImageBase64 = null;
+let agendaImageType   = null;
+let agendaIcsData     = null;
+
+function agendaHandleDrop(e) {
+  e.preventDefault();
+  document.getElementById('agenda-drop-zone').style.borderColor = 'rgba(56,189,248,0.3)';
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) agendaHandleFile(file);
+}
+
+function agendaHandleFile(file) {
+  if (!file) return;
+  agendaImageType = file.type;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    agendaImageBase64 = dataUrl.split(',')[1];
+    const preview = document.getElementById('agenda-preview');
+    preview.src = dataUrl;
+    preview.style.display = 'block';
+    document.getElementById('agenda-status').textContent = '✓ Afbeelding geladen — klik op Analyseer';
+    document.getElementById('agenda-download-btn').style.display = 'none';
+    document.getElementById('agenda-gcal-btn').style.display = 'none';
+    agendaIcsData = null;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function agendaAnalyseer() {
+  if (!agendaImageBase64) {
+    document.getElementById('agenda-status').textContent = '⚠️ Upload eerst een screenshot';
+    return;
+  }
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    document.getElementById('agenda-status').textContent = '⚠️ Geen API key — stel in via ⚙️';
+    return;
+  }
+  const btn = document.getElementById('agenda-analyseer-btn');
+  btn.textContent = '⏳ Claude analyseert...';
+  btn.disabled = true;
+  document.getElementById('agenda-status').textContent = 'Afspraken worden herkend...';
+  document.getElementById('agenda-download-btn').style.display = 'none';
+  document.getElementById('agenda-gcal-btn').style.display = 'none';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: agendaImageType, data: agendaImageBase64 }
+            },
+            {
+              type: 'text',
+              text: 'Dit is een screenshot van een werkagenda. Haal alle afspraken eruit en geef ze terug als ALLEEN een geldig .ics bestand (RFC 5545). Gebruik het huidige jaar als het jaar niet zichtbaar is. Gebruik DTSTART en DTEND in formaat YYYYMMDDTHHMMSS. Geen uitleg, geen markdown, alleen de raw ICS tekst beginnend met BEGIN:VCALENDAR.'
+            }
+          ]
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error?.message || resp.status);
+
+    const icsText = data.content?.[0]?.text || '';
+    if (!icsText.includes('BEGIN:VCALENDAR')) throw new Error('Geen geldige ICS ontvangen');
+
+    agendaIcsData = icsText.trim();
+    const count = (agendaIcsData.match(/BEGIN:VEVENT/g) || []).length;
+    document.getElementById('agenda-status').textContent = '✅ ' + count + ' afspraken gevonden!';
+    document.getElementById('agenda-download-btn').style.display = '';
+    document.getElementById('agenda-gcal-btn').style.display = '';
+  } catch(err) {
+    document.getElementById('agenda-status').textContent = '❌ Fout: ' + err.message;
+  } finally {
+    btn.textContent = '🤖 Analyseer met Claude';
+    btn.disabled = false;
+  }
+}
+
+function agendaDownload() {
+  if (!agendaIcsData) return;
+  const blob = new Blob([agendaIcsData], { type: 'text/calendar;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = 'werkagenda-import.ics';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+
 </script>
 </body>
 </html>
