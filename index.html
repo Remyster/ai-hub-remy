@@ -3627,6 +3627,48 @@ function agendaHandleFile(file) {
   reader.readAsDataURL(file);
 }
 
+function sanitizeIcs(raw) {
+  var txt = raw;
+  // Remove markdown fences
+  txt = txt.split('```').join('');
+  txt = txt.trim();
+  // Find ICS block
+  var s = txt.indexOf('BEGIN:VCALENDAR');
+  var e = txt.lastIndexOf('END:VCALENDAR');
+  if (s === -1 || e === -1) return null;
+  txt = txt.slice(s, e + 13);
+  // Normalize to CRLF
+  txt = txt.split('\r\n').join('\n').split('\r').join('\n');
+  var lineArr = txt.split('\n');
+  var out = [];
+  var inEvent = false, hasUid = false, hasDtstamp = false, uid = 0;
+  var now = new Date();
+  var stamp = now.toISOString().replace(/-/g,'').replace(/:/g,'').replace(/\..*/,'') + 'Z';
+  for (var i = 0; i < lineArr.length; i++) {
+    var ln = lineArr[i].trimEnd();
+    if (!ln) continue;
+    if (ln === 'BEGIN:VEVENT') { inEvent=true; hasUid=false; hasDtstamp=false; out.push(ln); continue; }
+    if (ln === 'END:VEVENT') {
+      if (!hasUid)     out.push('UID:hub-' + (++uid) + '-' + stamp + '@remyster.github.io');
+      if (!hasDtstamp) out.push('DTSTAMP:' + stamp);
+      out.push(ln); inEvent=false; continue;
+    }
+    if (inEvent) {
+      if (ln.startsWith('UID:'))     hasUid=true;
+      if (ln.startsWith('DTSTAMP:')) hasDtstamp=true;
+      // Fix dashed dates: 2026-05-11T09:00:00 -> 20260511T090000
+      ln = ln.replace(/(DTSTART|DTEND|DTSTAMP)(;[^:]*)?:(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/,
+        function(m,p,z,y,mo,d,h,mi,s){ return (p+(z||''))+':'+y+mo+d+'T'+h+mi+s; });
+    }
+    out.push(ln);
+  }
+  var result = out.join('\r\n');
+  if (result.indexOf('PRODID:') === -1)  result = result.replace('BEGIN:VCALENDAR', 'BEGIN:VCALENDAR\r\nPRODID:-//Remy AI Hub//NL');
+  if (result.indexOf('VERSION:') === -1) result = result.replace('BEGIN:VCALENDAR', 'BEGIN:VCALENDAR\r\nVERSION:2.0');
+  return result;
+}
+
+
 async function agendaAnalyseer() {
   if (!agendaImageBase64) {
     document.getElementById('agenda-status').textContent = '⚠️ Upload eerst een screenshot';
@@ -3650,32 +3692,38 @@ async function agendaAnalyseer() {
       headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2000,
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: { type: 'base64', media_type: agendaImageType, data: agendaImageBase64 }
-            },
-            {
-              type: 'text',
-              text: 'Dit is een screenshot van een werkagenda. Haal alle afspraken eruit en geef ze terug als ALLEEN een geldig .ics bestand (RFC 5545). Gebruik het huidige jaar als het jaar niet zichtbaar is. Gebruik DTSTART en DTEND in formaat YYYYMMDDTHHMMSS. Geen uitleg, geen markdown, alleen de raw ICS tekst beginnend met BEGIN:VCALENDAR.'
-            }
-          ]
-        }]
+        max_tokens: 3000,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: agendaImageType, data: agendaImageBase64 } },
+              { type: 'text', text: `Analyseer deze werkagenda screenshot en geef ALLEEN een geldig iCalendar (.ics) bestand terug.
+
+STRIKTE REGELS:
+- Begin EXACT met: BEGIN:VCALENDAR
+- Eindig EXACT met: END:VCALENDAR
+- Elke afspraak heeft: BEGIN:VEVENT, SUMMARY, DTSTART, DTEND, END:VEVENT
+- Datum formaat: YYYYMMDDTHHMMSS (geen koppeltekens, geen dubbele punten in datum)
+- Voorbeeld: DTSTART:20260512T090000
+- Geen markdown, geen uitleg, geen tekst buiten de ICS blok
+- Huidig jaar is ${new Date().getFullYear()} als het jaar niet zichtbaar is` }
+            ]
+          }
+        ]
       })
     });
 
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || resp.status);
 
-    const icsText = data.content?.[0]?.text || '';
-    if (!icsText.includes('BEGIN:VCALENDAR')) throw new Error('Geen geldige ICS ontvangen');
+    const raw = data.content?.[0]?.text || '';
+    const icsClean = sanitizeIcs(raw);
+    if (!icsClean) throw new Error('Claude kon geen geldige afspraken herkennen');
 
-    agendaIcsData = icsText.trim();
+    agendaIcsData = icsClean;
     const count = (agendaIcsData.match(/BEGIN:VEVENT/g) || []).length;
-    document.getElementById('agenda-status').textContent = '✅ ' + count + ' afspraken gevonden!';
+    document.getElementById('agenda-status').textContent = '✅ ' + count + ' afspraak' + (count !== 1 ? 'en' : '') + ' klaar voor import!';
     document.getElementById('agenda-download-btn').style.display = '';
     document.getElementById('agenda-gcal-btn').style.display = '';
   } catch(err) {
