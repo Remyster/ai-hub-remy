@@ -2168,6 +2168,7 @@ const KM_BESTEMMINGEN = [
   { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
   { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
+  { label: '🔄 Velserbroek → Andijk',         woonwerk: 58, dienstreis: 39 }, // 58x2 woonwerk + 39 dienstreis = 155km
 ];
 
 let kmJaar, kmMaand;
@@ -2377,8 +2378,8 @@ function renderKmDagen() {
             <span style="font-size:0.65em;color:var(--muted);margin-left:4px;text-transform:uppercase;">${dagNaam}</span>
           </div>
           <select onchange="kmBestemmingGekozen(${dag},parseInt(this.value))"
-            style="flex:1;min-width:160px;padding:6px 8px;background:rgba(255,255,255,0.05);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'var(--muted)'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;">
-            ${KM_BESTEMMINGEN.map((b,i) => `<option value="${i}"${i===bestIdx?' selected':''}>${escHtml(b.label)}</option>`).join('')}
+            style="flex:1;min-width:160px;padding:6px 8px;background:#1e1f3a;border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'#9ca3af'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;color-scheme:dark;">
+            ${KM_BESTEMMINGEN.map((b,i) => `<option value="${i}"${i===bestIdx?' selected':''} style="background:#1e1f3a;color:#e2e8f0;">${escHtml(b.label)}</option>`).join('')}
           </select>
           <!-- Gedeclareerd vinkje -->
           <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Gedeclareerd">
@@ -3646,7 +3647,7 @@ async function agendaAnalyseer() {
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 2000,
