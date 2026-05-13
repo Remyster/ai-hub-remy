@@ -1072,10 +1072,10 @@ header h1 {
             </div>
 
             <div style="padding:8px 10px;background:rgba(56,189,248,0.06);border-left:3px solid #38bdf8;border-radius:0 6px 6px 0;">
-              <span style="color:#38bdf8;font-weight:700;">📌 Voorbeeld: Velserbroek → Heemskerk → Andijk → thuis</span><br>
+              <span style="color:#38bdf8;font-weight:700;">📌 Voorbeeld: Thuis → Andijk → Heemskerk → Andijk → Thuis</span><br>
               Totale rit = <strong style="color:#e2e8f0;">188 km</strong><br>
-              Woonwerk deel = 116 km (standaard Velserbroek v/t)<br>
-              Dienstreis = 188 − 116 = <strong style="color:#f97316;">72 km declareren</strong>
+              Woonwerk deel = 42 km (Andijk heen + terug = 21×2)<br>
+              Dienstreis = 188 − 42 = <strong style="color:#f97316;">146 km declareren</strong>
             </div>
 
             <div style="padding:8px 10px;background:rgba(167,139,250,0.06);border-left:3px solid #a78bfa;border-radius:0 6px 6px 0;">
@@ -2208,6 +2208,7 @@ const KM_BESTEMMINGEN = [
   { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
   { label: '🔄 Velserbroek → Andijk',         woonwerk: 58, dienstreis: 39 }, // 58x2 woonwerk + 39 dienstreis = 155km
+  { label: '🌿 Castricum De Hoep',            woonwerk: 47, dienstreis: 0  },
 ];
 
 let kmJaar, kmMaand;
