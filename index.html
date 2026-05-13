@@ -992,6 +992,8 @@ header h1 {
       <button class="pb-pill" data-platform="perplexity">🔍 Perplexity</button>
       <button class="pb-pill" data-platform="chatgpt">💬 ChatGPT</button>
       <button class="pb-pill" data-platform="copilot">🪟 Copilot</button>
+      <button class="pb-pill" data-platform="grok">𝕏 Grok</button>
+      <button class="pb-pill" data-platform="multi" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.4);color:#a78bfa;">🔀 Multi</button>
     </div>
 
     <span class="pb-label">⚡ Type</span>
@@ -1018,6 +1020,15 @@ header h1 {
     </div>
 
     <div class="pb-error" id="pb-error"></div>
+    <!-- Multi-platform output -->
+    <div id="pb-multi-wrap" style="display:none;margin-top:16px;">
+      <div id="pb-multi-tabs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;"></div>
+      <div id="pb-multi-content" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:0.8em;line-height:1.6;white-space:pre-wrap;max-height:260px;overflow-y:auto;color:var(--text);"></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="pb-copy" onclick="copyMultiPrompt()">📋 Kopieer geselecteerde</button>
+        <button class="pb-copy" onclick="copyAllMultiPrompts()" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.3);color:#a78bfa;">📋 Kopieer allemaal</button>
+      </div>
+    </div>
     <button class="pb-close-btn" onclick="closePromptBuilder()">✕ Sluiten</button>
   </div>
 </div>
@@ -3517,6 +3528,16 @@ const PB_PLATFORMS = {
 - Concrete taakbeschrijving met gewenst eindresultaat
 - Korte, directe instructies
 - Specificeer of je web-zoekresultaten wil of document-analyse`
+  },
+  grok: {
+    naam: 'Grok (xAI)',
+    instructie: `Je optimaliseert prompts voor Grok van xAI. Grok heeft toegang tot realtime X/Twitter data en is bekend om directheid en humor. Grok werkt het beste met:
+- Directe, no-nonsense instructies
+- Realtime informatie vragen (nieuwste tweets, trends, nieuws)
+- Sarkastische of humoristische toon indien gewenst
+- X/Twitter context en social media analyse
+- Controversiële of ongefiltreerde vragen
+- Korte, punchige output-instructies`
   }
 };
 
@@ -3546,11 +3567,49 @@ document.getElementById('pb-overlay').addEventListener('click', function(e) {
 });
 
 // Platform pills
+let pbMultiMode = false;
+let pbMultiSelected = new Set(['claude']);
+let pbMultiResults = {};
+let pbMultiActive = null;
+
 document.querySelectorAll('.pb-pill').forEach(btn => {
   btn.addEventListener('click', () => {
-    document.querySelectorAll('.pb-pill').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    pbPlatform = btn.dataset.platform;
+    const p = btn.dataset.platform;
+    if (p === 'multi') {
+      pbMultiMode = !pbMultiMode;
+      btn.classList.toggle('active', pbMultiMode);
+      btn.style.background = pbMultiMode ? 'rgba(167,139,250,0.35)' : 'rgba(167,139,250,0.15)';
+      if (pbMultiMode) {
+        // Zet huidige selectie als multi-start
+        pbMultiSelected = new Set([pbPlatform === 'multi' ? 'claude' : pbPlatform]);
+        document.querySelectorAll('.pb-pill').forEach(b => {
+          if (b.dataset.platform !== 'multi') {
+            b.classList.toggle('active', pbMultiSelected.has(b.dataset.platform));
+          }
+        });
+      } else {
+        // Terug naar single mode
+        document.querySelectorAll('.pb-pill').forEach(b => b.classList.remove('active'));
+        document.querySelector('.pb-pill[data-platform="claude"]').classList.add('active');
+        pbPlatform = 'claude';
+        btn.style.background = 'rgba(167,139,250,0.15)';
+        document.getElementById('pb-multi-wrap').style.display = 'none';
+        document.getElementById('pb-output-wrap').style.display = 'none';
+      }
+      return;
+    }
+    if (pbMultiMode) {
+      // Toggle in multi-mode
+      if (pbMultiSelected.has(p)) {
+        if (pbMultiSelected.size > 1) { pbMultiSelected.delete(p); btn.classList.remove('active'); }
+      } else {
+        pbMultiSelected.add(p); btn.classList.add('active');
+      }
+    } else {
+      document.querySelectorAll('.pb-pill').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      pbPlatform = p;
+    }
   });
 });
 
@@ -3567,6 +3626,7 @@ async function generatePrompt() {
   if (pbLoading) return;
   const ruwIdee = document.getElementById('pb-input').value.trim();
   if (!ruwIdee) { document.getElementById('pb-input').focus(); return; }
+  if (pbMultiMode) { await generateMultiPrompt(ruwIdee); return; }
 
   const key = getApiKey();
   if (!key) { openApiKeyModal(); return; }
@@ -3822,6 +3882,97 @@ function agendaDownload() {
   a.download = 'werkagenda-import.ics';
   a.click();
   URL.revokeObjectURL(url);
+}
+
+
+
+// ── Multi-platform prompt generator ──────────────────
+async function generateMultiPrompt(ruwIdee) {
+  const geselecteerd = [...pbMultiSelected].filter(p => PB_PLATFORMS[p]);
+  if (geselecteerd.length === 0) return;
+  const apiKey = getApiKey();
+  if (!apiKey) { showPbError('Geen API key — stel in via ⚙️'); return; }
+
+  pbLoading = true;
+  pbMultiResults = {};
+  const btn = document.getElementById('pb-gen-btn');
+  btn.textContent = '⏳ Genereren...';
+  btn.disabled = true;
+  document.getElementById('pb-output-wrap').style.display = 'none';
+  document.getElementById('pb-multi-wrap').style.display = 'none';
+  document.getElementById('pb-error').style.display = 'none';
+
+  const typeOmschrijving = PB_TYPES[pbType] || PB_TYPES.tekst;
+
+  for (const platformKey of geselecteerd) {
+    const platform = PB_PLATFORMS[platformKey];
+    btn.textContent = `⏳ ${platform.naam}...`;
+    try {
+      const systeemPrompt = `Je bent een expert prompt engineer. Schrijf een perfecte, direct bruikbare prompt geoptimaliseerd voor ${platform.naam}. Type taak: ${typeOmschrijving}
+
+${platform.instructie}
+
+Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens eromheen.`;
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 800,
+          system: systeemPrompt,
+          messages: [{ role: 'user', content: `Ruw idee: ${ruwIdee}` }]
+        })
+      });
+      const data = await resp.json();
+      if (!resp.ok) throw new Error(data.error?.message || resp.status);
+      pbMultiResults[platformKey] = data.content?.[0]?.text || '';
+    } catch(e) {
+      pbMultiResults[platformKey] = '❌ Fout: ' + e.message;
+    }
+  }
+
+  // Render tabs
+  const tabsEl    = document.getElementById('pb-multi-tabs');
+  const contentEl = document.getElementById('pb-multi-content');
+  tabsEl.innerHTML = '';
+  geselecteerd.forEach(p => {
+    const tab = document.createElement('button');
+    tab.textContent = PB_PLATFORMS[p].naam;
+    tab.style.cssText = 'padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"DM Mono",monospace;font-size:0.72em;cursor:pointer;transition:all 0.2s;';
+    tab.onclick = () => {
+      tabsEl.querySelectorAll('button').forEach(b => { b.style.background='transparent'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)'; });
+      tab.style.background = 'rgba(167,139,250,0.15)'; tab.style.color = '#a78bfa'; tab.style.borderColor = 'rgba(167,139,250,0.4)';
+      contentEl.textContent = pbMultiResults[p] || '';
+      pbMultiActive = p;
+    };
+    tabsEl.appendChild(tab);
+  });
+  // Activate first tab
+  pbMultiActive = geselecteerd[0];
+  tabsEl.querySelector('button').click();
+  document.getElementById('pb-multi-wrap').style.display = '';
+  pbLoading = false;
+  btn.textContent = '✦ Genereer prompt';
+  btn.disabled = false;
+}
+
+function copyMultiPrompt() {
+  if (pbMultiActive && pbMultiResults[pbMultiActive]) {
+    navigator.clipboard.writeText(pbMultiResults[pbMultiActive]).then(() => {
+      const btn = event.target;
+      btn.textContent = '✓ Gekopieerd!';
+      setTimeout(() => btn.textContent = '📋 Kopieer geselecteerde', 1500);
+    });
+  }
+}
+
+function copyAllMultiPrompts() {
+  const all = Object.entries(pbMultiResults)
+    .map(([k, v]) => '=== ' + (PB_PLATFORMS[k]?.naam || k) + ' ===\n' + v)
+    .join('\n\n');
+  navigator.clipboard.writeText(all).then(() => {
+    const btn = event.target;
+    btn.textContent = '✓ Alles gekopieerd!';
+    setTimeout(() => btn.textContent = '📋 Kopieer allemaal', 1500);
+  });
 }
 
 
