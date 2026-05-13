@@ -2239,12 +2239,12 @@ async function sbKmGet(jaar, maand) {
     return await r.json();
   } catch { return []; }
 }
-async function sbKmUpsert(jaar, maand, dag, heen, terug, extra, dienstreis=0, bestemming_idx=0, gedeclareerd=false) {
+async function sbKmUpsert(jaar, maand, dag, heen, terug, extra, dienstreis=0, bestemming_idx=0, gedeclareerd=false, is_dienstreis=false, is_afwijkend=false) {
   try {
     const r = await fetch(`${SB_URL}/rest/v1/km_registratie?on_conflict=jaar,maand,dag`, {
       method: 'POST',
       headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ jaar, maand, dag, heen, terug, extra: { ritten: extra, dienstreis, bestemming_idx, gedeclareerd } })
+      body: JSON.stringify({ jaar, maand, dag, heen, terug, extra: { ritten: extra, dienstreis, is_dienstreis, is_afwijkend, bestemming_idx, gedeclareerd } })
     });
     if (!r.ok) console.error('KM upsert fout:', r.status, await r.text());
   } catch(e) { console.error('KM upsert error:', e); }
@@ -2360,9 +2360,11 @@ async function loadKmMaand() {
     // Support zowel oude structuur (array) als nieuwe (object met ritten/dienstreis/etc)
     const ritten       = Array.isArray(ex) ? ex : (ex.ritten || []);
     const dienstreis   = Array.isArray(ex) ? 0  : (ex.dienstreis || 0);
+    const is_dienstreis = Array.isArray(ex) ? false : (ex.is_dienstreis || false);
+    const is_afwijkend  = Array.isArray(ex) ? false : (ex.is_afwijkend  || false);
     const bestemming_idx = Array.isArray(ex) ? 0 : (ex.bestemming_idx || 0);
     const gedeclareerd = Array.isArray(ex) ? false : (ex.gedeclareerd || false);
-    data[r.dag] = { heen: r.heen, terug: r.terug, extra: ritten, dienstreis, bestemming_idx, gedeclareerd };
+    data[r.dag] = { heen: r.heen, terug: r.terug, extra: ritten, dienstreis, is_dienstreis, is_afwijkend, bestemming_idx, gedeclareerd };
   });
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   renderKmDagen();
@@ -2390,7 +2392,8 @@ function renderKmDagen() {
     const heen       = d.heen       != null ? d.heen       : '';
     const terug      = d.terug      != null ? d.terug      : '';
     const dienstreis = d.dienstreis != null ? d.dienstreis : '';
-    const gedecl     = d.gedeclareerd ? true : false;
+    const gedecl            = d.gedeclareerd ? true : false;
+    const is_dienstreis_vlag = d.is_dienstreis ? true : false;
     const extra      = d.extra || [];
     const bestIdx    = d.bestemming_idx != null ? d.bestemming_idx : 0;
 
@@ -2427,6 +2430,12 @@ function renderKmDagen() {
               style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;">
             <span style="font-size:0.68em;color:${gedecl?'#10b981':'var(--muted)'};">${gedecl?'✅ gedecl.':'declareer'}</span>
           </label>
+          <!-- Dienstreis toggle -->
+          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Dienstreis">
+            <input type="checkbox" ${is_dienstreis_vlag?'checked':''} onchange="toggleKmDienstreis(${dag},this.checked)"
+              style="width:15px;height:15px;accent-color:#f97316;cursor:pointer;">
+            <span style="font-size:0.68em;color:${is_dienstreis_vlag?'#f97316':'var(--muted)'};">${is_dienstreis_vlag?'🚗 dienstreis':'dienstreis'}</span>
+          </label>
         </div>
         <!-- Rij 2: km velden (alleen tonen als bestemming gekozen of al ingevuld) -->
         ${(bestIdx > 0 || heen || terug || dienstreis) ? `
@@ -2462,6 +2471,15 @@ function renderKmDagen() {
 async function kmBestemmingGekozen(dag, idx) {
   const b = KM_BESTEMMINGEN[idx];
   if (!b || b.woonwerk === null) return; // "kies bestemming" geselecteerd
+  if (b.label && b.label.includes('Vrije rit')) {
+    const data = getKmCacheData();
+    if (!data[dag]) data[dag] = {heen:0,terug:0,dienstreis:0,extra:[],bestemming_idx:0,gedeclareerd:false};
+    data[dag].bestemming_idx = idx;
+    kmCache[`${kmJaar}_${kmMaand}`] = data;
+    await sbKmUpsert(kmJaar, kmMaand, dag, 0, 0, data[dag].extra||[], 0, idx, data[dag].gedeclareerd||false);
+    renderKmDagen();
+    return;
+  }
   const data = getKmCacheData();
   if (!data[dag]) data[dag] = {extra:[]};
   data[dag].bestemming_idx = idx;
@@ -2484,14 +2502,35 @@ async function toggleKmGedeclareerd(dag, checked) {
   renderKmDagen();
 }
 
+async function toggleKmDienstreis(dag, checked) {
+  const data = getKmCacheData();
+  if (!data[dag]) data[dag] = {heen:0,terug:0,dienstreis:0,is_dienstreis:false,is_afwijkend:false,extra:[],bestemming_idx:0,gedeclareerd:false};
+  data[dag].is_dienstreis = checked;
+  kmCache[`${kmJaar}_${kmMaand}`] = data;
+  const d = data[dag];
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, checked, d.is_afwijkend||false);
+  renderKmDagen();
+}
+
 async function updateKmDag(dag, veld, val) {
   const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0, terug:0, dienstreis:0, extra:[], bestemming_idx:0, gedeclareerd:false};
+  if (!data[dag]) data[dag] = {heen:0, terug:0, dienstreis:0, is_afwijkend:false, extra:[], bestemming_idx:0, gedeclareerd:false};
   data[dag][veld] = val;
+  if (veld === 'heen' || veld === 'terug') {
+    const h = data[dag].heen || 0;
+    const t = data[dag].terug || 0;
+    const STD = 58;
+    data[dag].is_afwijkend = (h > 0 && h < STD);
+    const totaal = h + t;
+    if (totaal > STD * 2) {
+      data[dag].dienstreis = Math.round((totaal - STD * 2) * 10) / 10;
+    }
+  }
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   updateKmTotaal();
   const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false, d.is_afwijkend||false);
+  if (veld === 'heen' || veld === 'terug') renderKmDagen();
 }
 
 async function addKmExtra(dag) {
