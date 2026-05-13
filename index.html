@@ -1049,6 +1049,45 @@ header h1 {
 
     <!-- TAB: KM -->
     <div id="werk-panel-km" style="display:none;">
+
+      <!-- KM Uitleg -->
+      <details style="margin-bottom:14px;background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;overflow:hidden;">
+        <summary style="padding:10px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;color:#fbbf24;list-style:none;display:flex;align-items:center;gap:8px;">
+          <span>ℹ️</span> <span>Hoe werkt de km-berekening?</span>
+          <span style="margin-left:auto;font-size:0.85em;color:var(--muted);">klik om uit te klappen</span>
+        </summary>
+        <div style="padding:0 14px 12px;font-family:'DM Mono',monospace;font-size:0.71em;line-height:1.7;color:var(--muted);border-top:1px solid rgba(251,191,36,0.1);margin-top:0;">
+          <div style="margin-top:10px;display:grid;gap:8px;">
+
+            <div style="padding:8px 10px;background:rgba(16,185,129,0.06);border-left:3px solid #10b981;border-radius:0 6px 6px 0;">
+              <span style="color:#10b981;font-weight:700;">🏢 Woonwerk (standaard)</span><br>
+              Standplaats = Velserbroek · <strong style="color:#e2e8f0;">58 km heen + 58 km terug = 116 km</strong><br>
+              Dit is je basis. Alles wat je op of onder de 58 km rijdt valt onder <em>woonwerk</em>.
+            </div>
+
+            <div style="padding:8px 10px;background:rgba(249,115,22,0.06);border-left:3px solid #f97316;border-radius:0 6px 6px 0;">
+              <span style="color:#f97316;font-weight:700;">🚗 Dienstreis (boven 116 km)</span><br>
+              Rijd je meer dan 116 km totaal? → het <em>meerdere</em> is dienstreis.<br>
+              <strong style="color:#e2e8f0;">Formule: totaal km − 116 = dienstreis km</strong>
+            </div>
+
+            <div style="padding:8px 10px;background:rgba(56,189,248,0.06);border-left:3px solid #38bdf8;border-radius:0 6px 6px 0;">
+              <span style="color:#38bdf8;font-weight:700;">📌 Voorbeeld: Velserbroek → Heemskerk → Andijk → thuis</span><br>
+              Totale rit = <strong style="color:#e2e8f0;">188 km</strong><br>
+              Woonwerk deel = 116 km (standaard Velserbroek v/t)<br>
+              Dienstreis = 188 − 116 = <strong style="color:#f97316;">72 km declareren</strong>
+            </div>
+
+            <div style="padding:8px 10px;background:rgba(167,139,250,0.06);border-left:3px solid #a78bfa;border-radius:0 6px 6px 0;">
+              <span style="color:#a78bfa;font-weight:700;">📋 Afwijkend (andere locatie, minder dan 58 km)</span><br>
+              Rijd je naar een locatie dichterbij dan Velserbroek? (bijv. Hoorn ASR = 6 km)<br>
+              Vul dan gewoon de werkelijke km in · geen dienstreis van toepassing.
+            </div>
+
+          </div>
+        </div>
+      </details>
+
       <!-- Maand navigatie -->
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <button onclick="kmPrevMaand()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);cursor:pointer;font-size:1em;">◀</button>
@@ -2430,7 +2469,7 @@ async function kmBestemmingGekozen(dag, idx) {
   data[dag].dienstreis = b.dienstreis;
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   updateKmTotaal();
-  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen, data[dag].terug, data[dag].extra||[], data[dag].dienstreis||0, idx, data[dag].gedeclareerd||false);
+  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen, data[dag].terug, data[dag].extra||[], data[dag].dienstreis||0, idx, data[dag].gedeclareerd||false, data[dag].is_dienstreis||false);
   renderKmDagen();
 }
 
@@ -2451,7 +2490,7 @@ async function updateKmDag(dag, veld, val) {
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   updateKmTotaal();
   const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
 }
 
 async function addKmExtra(dag) {
@@ -2461,7 +2500,7 @@ async function addKmExtra(dag) {
   data[dag].extra.push({omschrijving:'', km:0});
   kmCache[`${kmJaar}_${kmMaand}`] = data;
   const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
+  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
   renderKmDagen();
 }
 
@@ -2472,7 +2511,7 @@ async function updateKmExtra(dag, ei, veld, val) {
     kmCache[`${kmJaar}_${kmMaand}`] = data;
     updateKmTotaal();
     const d = data[dag];
-    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
+    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
   }
 }
 
@@ -2482,7 +2521,7 @@ async function deleteKmExtra(dag, ei) {
     data[dag].extra.splice(ei,1);
     kmCache[`${kmJaar}_${kmMaand}`] = data;
     const d = data[dag];
-    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false);
+    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
   }
   renderKmDagen();
 }
