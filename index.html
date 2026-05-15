@@ -2220,6 +2220,7 @@ const KM_BESTEMMINGEN = [
   { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
   { label: '🔄 Velserbroek → Andijk',         woonwerk: 58, dienstreis: 39 }, // 58x2 woonwerk + 39 dienstreis = 155km
   { label: '🌿 Castricum De Hoep',            woonwerk: 47, dienstreis: 0  },
+  { label: '✏️ Vrije rit (handmatig)',         woonwerk: 0,  dienstreis: 0  },
 ];
 
 let kmJaar, kmMaand;
@@ -2405,11 +2406,20 @@ function renderKmDagen() {
     const dienstreis = d.dienstreis != null ? d.dienstreis : '';
     const gedecl            = d.gedeclareerd ? true : false;
     const is_dienstreis_vlag = d.is_dienstreis ? true : false;
+    const is_afwijkend_vlag  = d.is_afwijkend  ? true : false;
     const extra      = d.extra || [];
     const bestIdx    = d.bestemming_idx != null ? d.bestemming_idx : 0;
 
-    const dagBg     = isWeekend ? 'rgba(255,255,255,0.02)' : (gedecl ? 'rgba(16,185,129,0.05)' : 'rgba(255,255,255,0.04)');
-    const dagBorder = isWeekend ? 'rgba(255,255,255,0.06)' : (gedecl ? 'rgba(16,185,129,0.25)' : 'rgba(251,191,36,0.1)');
+    const dagBg = isWeekend ? 'rgba(255,255,255,0.02)'
+      : is_dienstreis_vlag ? 'rgba(249,115,22,0.08)'
+      : is_afwijkend_vlag  ? 'rgba(56,189,248,0.08)'
+      : gedecl             ? 'rgba(16,185,129,0.05)'
+      : 'rgba(255,255,255,0.04)';
+    const dagBorder = isWeekend ? 'rgba(255,255,255,0.06)'
+      : is_dienstreis_vlag ? 'rgba(249,115,22,0.5)'
+      : is_afwijkend_vlag  ? 'rgba(56,189,248,0.5)'
+      : gedecl             ? 'rgba(16,185,129,0.25)'
+      : 'rgba(251,191,36,0.1)';
 
     const extraHtml = extra.map((ex,ei) =>
       `<div style="display:flex;gap:5px;align-items:center;margin-top:5px;">
