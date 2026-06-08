@@ -2211,6 +2211,7 @@ const KM_MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Au
 // woonwerk wordt x2, dienstreis is 1 richting zoals opgegeven
 const KM_BESTEMMINGEN = [
   { label: '— Kies bestemming —',   woonwerk: null, dienstreis: 0 },
+  { label: '🏠 Thuiswerken',             woonwerk: 0,    dienstreis: 0 },
   { label: '🏢 Velserbroek (standaard)', woonwerk: 58,   dienstreis: 0 },
   { label: '🏥 Heemskerk Waterweg',      woonwerk: 54,   dienstreis: 0 },
   { label: '🌲 Kennemerduinen',          woonwerk: 58,   dienstreis: 10 },  // 58x2 woonwerk + (63-58)x2=10 dienstreis
@@ -3111,8 +3112,11 @@ function saveVlSaldo() {
 
 function updateVlSaldo() {
   const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
+  const isAutoMaandCalc = vlMaand % 2 === 1;
   const nogRaw = vlLasten.reduce((sum, l) => {
     if (l.categorie === 'inkomen') return sum; // inkomen niet meetellen als uitgave
+    if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return sum;
+    if (l.naam === 'Huis sparen' && isAutoMaandCalc) return sum;
     const b = getBetaling(l.id);
     if (b?.betaald) return sum;
     return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
