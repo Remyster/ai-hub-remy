@@ -2854,10 +2854,13 @@ function renderVasteLasten() {
     if (!zichtbaar.length) return;
 
     let catTotaal = 0;
-    zichtbaar.forEach(l => { catTotaal += parseFloat((getBetaling(l.id)?.bedrag_betaald ?? l.bedrag)||0); });
+    zichtbaar.forEach(l => {
+      const inp = document.getElementById('vl-inp-'+l.id);
+      catTotaal += parseFloat(inp?.value ?? getBetaling(l.id)?.bedrag_betaald ?? l.bedrag ?? 0);
+    });
 
     html += `<div class="vl-cat">
-      <div class="vl-cat-header">${CAT_LABELS[cat]||cat} <span class="vl-cat-totaal">${euroFmt(catTotaal)}</span></div>
+      <div class="vl-cat-header">${CAT_LABELS[cat]||cat} <span class="vl-cat-totaal" id="vl-cat-totaal-${cat}">${euroFmt(catTotaal)}</span></div>
       <div class="vl-lijst">`;
 
     zichtbaar.forEach(l => {
@@ -2889,7 +2892,7 @@ function renderVasteLasten() {
         </div>
         <div class="vl-bedrag-wrap">
           <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
-            id="vl-inp-${l.id}" onchange="updateBedrag(${l.id}, this.value)">
+            id="vl-inp-${l.id}" oninput="updateTotalsLive()" onchange="updateBedrag(${l.id}, this.value)">
         </div>
         <button class="vl-betaal-btn ${isPaid?'paid':'open'}" id="vl-btn-${l.id}"
           onclick="toggleBetaald(${l.id})">
@@ -3107,6 +3110,50 @@ function saveVlSaldo() {
   Object.keys(localStorage).filter(k => k.startsWith('remy_vl_saldo_') && k !== VL_SALDO_KEY)
     .forEach(k => localStorage.removeItem(k));
   if (val) localStorage.setItem(VL_SALDO_KEY, val);
+  updateVlSaldo();
+}
+
+function updateTotalsLive() {
+  const isAutoMaandCalc = vlMaand % 2 === 1;
+  let totaal = 0, betaaldTot = 0, nogTot = 0;
+
+  vlLasten.forEach(l => {
+    if (l.categorie === 'inkomen') return;
+    if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return;
+    if (l.naam === 'Huis sparen' && isAutoMaandCalc) return;
+    const inp = document.getElementById('vl-inp-' + l.id);
+    const b = getBetaling(l.id);
+    const bedrag = parseFloat(inp?.value ?? b?.bedrag_betaald ?? l.bedrag ?? 0);
+    totaal += bedrag;
+    if (b?.betaald) betaaldTot += bedrag;
+    else nogTot += bedrag;
+  });
+
+  document.getElementById('vl-nog').textContent     = euroFmt(nogTot);
+  document.getElementById('vl-betaald').textContent = euroFmt(betaaldTot);
+  document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
+
+  // Update sectietotalen live
+  const isAutoMaand = vlMaand % 2 === 1;
+  const cats = {};
+  vlLasten.forEach(l => { if (!cats[l.categorie]) cats[l.categorie] = []; cats[l.categorie].push(l); });
+  ['inkomen','wonen','abonnement','verzekering','auto','belasting','overig','sparen'].forEach(cat => {
+    const el = document.getElementById('vl-cat-totaal-' + cat);
+    if (!el || !cats[cat]) return;
+    const zichtbaar = cats[cat].filter(l => {
+      if (l.naam === 'Auto sparen') return isAutoMaand;
+      if (l.naam === 'Huis sparen') return !isAutoMaand;
+      return true;
+    });
+    let ct = 0;
+    zichtbaar.forEach(l => {
+      const inp = document.getElementById('vl-inp-' + l.id);
+      const b = getBetaling(l.id);
+      ct += parseFloat(inp?.value ?? b?.bedrag_betaald ?? l.bedrag ?? 0);
+    });
+    el.textContent = euroFmt(ct);
+  });
+
   updateVlSaldo();
 }
 
