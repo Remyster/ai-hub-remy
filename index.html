@@ -3273,7 +3273,7 @@ function wpExportIcs() {
       lines.push('BEGIN:VALARM');
       lines.push('ACTION:DISPLAY');
       lines.push(`DESCRIPTION:${titel}`);
-      lines.push('TRIGGER:-PT10M');
+      lines.push('TRIGGER:-PT1H');
       lines.push('END:VALARM');
     } else {
       lines.push(`DTSTART;VALUE=DATE:${wpIcsAllDay(it.datum)}`);
