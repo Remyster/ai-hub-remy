@@ -3175,7 +3175,7 @@ function wpExportIcs() {
 }
 
 const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
-const CAT_LABELS = { inkomen:'💚 Inkomen', wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
+const CAT_LABELS = { inkomen:'💚 Inkomen', onvoorzien:'⚠️ Onvoorzien', wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
 
 let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
 
@@ -3247,7 +3247,7 @@ function renderVasteLasten() {
   document.getElementById('vl-totaal').textContent  = euroFmt(totaal);
   updateVlSaldo();
 
-  const catOrder = ['inkomen','wonen','abonnement','verzekering','auto','belasting','overig','sparen'];
+  const catOrder = ['inkomen','onvoorzien','wonen','abonnement','verzekering','auto','belasting','overig','sparen'];
 
   // Wisselende spaarpotten: oneven maand (jan,mrt,mei...) = Auto spaar, even = Huis spaar
   const isAutoMaand = vlMaand % 2 === 1; // maart=3=oneven → auto
@@ -3554,7 +3554,7 @@ function updateTotalsLive() {
   const isAutoMaand = vlMaand % 2 === 1;
   const cats = {};
   vlLasten.forEach(l => { if (!cats[l.categorie]) cats[l.categorie] = []; cats[l.categorie].push(l); });
-  ['inkomen','wonen','abonnement','verzekering','auto','belasting','overig','sparen'].forEach(cat => {
+  ['inkomen','onvoorzien','wonen','abonnement','verzekering','auto','belasting','overig','sparen'].forEach(cat => {
     const el = document.getElementById('vl-cat-totaal-' + cat);
     if (!el || !cats[cat]) return;
     const zichtbaar = cats[cat].filter(l => {
@@ -4274,9 +4274,6 @@ function sanitizeIcs(raw) {
       // Fix dashed dates: 2026-05-11T09:00:00 -> 20260511T090000
       ln = ln.replace(/(DTSTART|DTEND|DTSTAMP)(;[^:]*)?:(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/,
         function(m,p,z,y,mo,d,h,mi,s){ return (p+(z||''))+':'+y+mo+d+'T'+h+mi+s; });
-      // Fix dashed all-day dates: DTSTART;VALUE=DATE:2026-06-29 -> 20260629 (geen tijd-component)
-      ln = ln.replace(/(DTSTART|DTEND)(;VALUE=DATE)?:(\d{4})-(\d{2})-(\d{2})$/,
-        function(m,p,z,y,mo,d){ return (p+(z||';VALUE=DATE'))+':'+y+mo+d; });
     }
     out.push(ln);
   }
@@ -4322,16 +4319,8 @@ STRIKTE REGELS:
 - Begin EXACT met: BEGIN:VCALENDAR
 - Eindig EXACT met: END:VCALENDAR
 - Elke afspraak heeft: BEGIN:VEVENT, SUMMARY, DTSTART, DTEND, END:VEVENT
-- Datum formaat voor afspraken MET tijd: YYYYMMDDTHHMMSS (geen koppeltekens, geen dubbele punten in datum)
-- Voorbeeld met tijd: DTSTART:20260512T090000
-
-HELE-DAG ITEMS (BELANGRIJK — vaak fout herkend):
-- Items die als BALK BOVENAAN de dag staan, ZONDER zichtbaar tijdstip — zoals locatienamen (bv. "Velserbroek", "Heemskerk", "Andijk LWS", "Castricum", "Thuis"), vakantie- of feestdagbalken — zijn HELE-DAG afspraken, GEEN tijd-items.
-- Voor hele-dag afspraken gebruik je ALLEEN: DTSTART;VALUE=DATE:YYYYMMDD en DTEND;VALUE=DATE:YYYYMMDD (geen T, geen uren). DTEND is de dag NA de laatste dag (exclusief, standaard ICS-gedrag).
-- Voorbeeld hele-dag (1 dag): DTSTART;VALUE=DATE:20260629 / DTEND;VALUE=DATE:20260630
-- VERZIN NOOIT een starttijd of eindtijd voor een item zonder zichtbaar tijdstip. Als je geen tijd ziet staan, is het een hele-dag item — punt.
-- Items MET een zichtbaar tijdsblok (bv. "Focusblok" tussen 08:00-13:00, "Sporten" om 07:00) blijven gewoon timed events met DTSTART/DTEND inclusief tijd.
-
+- Datum formaat: YYYYMMDDTHHMMSS (geen koppeltekens, geen dubbele punten in datum)
+- Voorbeeld: DTSTART:20260512T090000
 - Geen markdown, geen uitleg, geen tekst buiten de ICS blok
 - Huidig jaar is ${new Date().getFullYear()} als het jaar niet zichtbaar is` }
             ]
