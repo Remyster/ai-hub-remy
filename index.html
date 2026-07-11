@@ -1847,8 +1847,8 @@ const SSP_PIPELINES = {
       },
       {
         label: 'Stap 3 van 8 — Gemini: Site & SEO-check',
-        aiLabel: 'Gemini Groeiafdeling',
-        url: 'https://gemini.google.com/u/0/gem/c2b213f954f9',
+        aiLabel: 'Gemini Site Guardian',
+        url: 'https://gemini.google.com/u/0/gem/53bd2e7c05e5',
         hasPrev: true,
         prevLabel: 'Perplexity',
         prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 3 VAN 8 \u2014 GEMINI: SITE-OVERLAP, CONTENT GAP EN SEO-BRIEFING\n\nROL\nJe bent Gemini, de StekkerSlim Site, SEO & Content-Gap Checker.\n\nWEBSITE\nhttps://stekkerslim.nl\n\nDOEL\nBepaal welk gevalideerd blogide\u00e9 de beste keuze is voor StekkerSlim.\nVoorkom overlap, keyword cannibalisatie en een blog die beter als update van een bestaande pagina kan worden uitgevoerd.\n\nCONTROLEER PER IDEE\n1. Bestaat dit onderwerp al geheel of gedeeltelijk op StekkerSlim?\n2. Welke bestaande StekkerSlim-URL's kunnen concurreren met de nieuwe blog?\n3. Is er keyword cannibalisatie? Zo ja: hoe voorkom je die?\n4. Wat moet de unieke invalshoek van dit artikel worden?\n5. Is het beste besluit: nieuwe blog / bestaande pagina updaten / stop?\n6. Welke 3 tot 6 interne links moeten in de blog komen?\n7. Welke bestaande pagina's moeten later teruglinken naar de nieuwe blog?\n8. Wat zijn de beste SEO-title, meta description, H1 en H2/H3-structuur?\n9. Welke FAQ-vragen ontbreken op StekkerSlim?\n10. Welk structured-data type past eventueel: Article / FAQPage / Product / Review / geen?\n\nGEBRUIK PER IDEE EXACT DIT FORMAT\nID:\nTitel:\nBestaande concurrerende StekkerSlim-URL's:\nCannibalisatierisico: laag / middel / hoog\nBesluit: NIEUWE BLOG / BESTAANDE PAGINA UPDATEN / STOP\nUnieke invalshoek:\nSEO-title:\nMeta description:\nH1:\nH2/H3-structuur:\nInterne links in de nieuwe blog:\nBestaande pagina's die moeten teruglinken:\nFAQ's:\nSchema-advies:\nSEO-score: /10\nHandmatige controle voor Remy:\n\nEINDIG VERPLICHT MET\nWINNAAR VOOR PUBLICATIE\nGekozen onderwerp:\nWaarom:\nDefinitieve SEO-briefing voor Claude:"
@@ -1978,6 +1978,10 @@ let sspStepIdx  = 0;
 function sspKey(pipeline, stepIdx) {
   return 'ssp_' + pipeline + '_' + stepIdx;
 }
+function sspDecode(text) {
+  if (!text) return '';
+  try { return decodeURIComponent(text.replace(/\+/g, ' ')); } catch(e) { return text; }
+}
 function sspStatus(msg, color) {
   color = color || '#10b981';
   const el = document.getElementById('ssp-status');
@@ -1989,7 +1993,7 @@ function sspGetPrompt(pipeline, stepIdx) {
   const step  = steps[stepIdx];
   let prompt  = step.prompt;
   if (step.hasPrev) {
-    const prev = localStorage.getItem(sspKey(pipeline, stepIdx - 1)) || '';
+    const prev = sspDecode(localStorage.getItem(sspKey(pipeline, stepIdx - 1)) || '');
     const label = step.prevLabel || 'vorige AI';
     if (prev) {
       prompt += '\n\nINPUT VORIGE STAP (' + label + '):\n' + prev;
@@ -2004,7 +2008,7 @@ function sspRender() {
   const pipeline = SSP_PIPELINES[sspPipeline];
   const steps    = pipeline.steps;
   const step     = steps[sspStepIdx];
-  const saved    = localStorage.getItem(sspKey(sspPipeline, sspStepIdx)) || '';
+  const saved    = sspDecode(localStorage.getItem(sspKey(sspPipeline, sspStepIdx)) || '');
 
   // step label
   const lbl = document.getElementById('ssp-step-label');
