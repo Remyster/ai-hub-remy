@@ -2080,9 +2080,27 @@ function sspNextStep() {
 function sspCopyPrompt() {
   const el = document.getElementById('ssp-prompt');
   if (!el) return;
-  navigator.clipboard.writeText(el.value).then(() => sspStatus('\u2713 Prompt gekopieerd!')).catch(() => {
-    el.select(); document.execCommand('copy'); sspStatus('\u2713 Gekopieerd (fallback)');
-  });
+  const text = el.value;
+  // Tijdelijk textarea buiten beeld — meest betrouwbare copy-methode cross-platform
+  // Vermijdt URL-encoding bugs in navigator.clipboard.writeText op Android/iOS
+  const tmp = document.createElement('textarea');
+  tmp.value = text;
+  tmp.style.cssText = 'position:fixed;top:0;left:0;width:2em;height:2em;opacity:0;border:none;outline:none;resize:none;font-size:16px;';
+  document.body.appendChild(tmp);
+  tmp.focus();
+  tmp.select();
+  tmp.setSelectionRange(0, 99999);
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(tmp);
+  if (ok) {
+    sspStatus('\u2713 Prompt gekopieerd! Ga naar de AI en plak.');
+  } else {
+    // Laatste fallback: clipboard API
+    navigator.clipboard.writeText(text)
+      .then(() => sspStatus('\u2713 Prompt gekopieerd!'))
+      .catch(() => sspStatus('\u26A0 Lang drukken op de tekst \u2192 Alles selecteren \u2192 Kopi\u00ebren', '#fbbf24'));
+  }
 }
 function sspOpenAI() {
   const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
