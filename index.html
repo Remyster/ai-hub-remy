@@ -1779,6 +1779,133 @@ header h1 {
 
 </div>
 
+
+<!-- STEKKERSLIM GUARDIAN MODAL -->
+<div id="ssg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);z-index:1400;align-items:center;justify-content:center;padding:18px;">
+  <div id="ssg-modal" style="width:min(1180px,100%);max-height:92vh;overflow:auto;background:#0d0e18;border:1px solid rgba(167,139,250,0.18);border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.72);">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.2em;color:#a78bfa;">StekkerSlim Site Guardian</div>
+        <div style="font-size:0.72em;color:var(--muted);margin-top:4px;">Aparte Supabase-projectkoppeling voor blogs, audits en workflow.</div>
+      </div>
+      <button onclick="closeStekkerSlimGuardian()" style="background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;">✕</button>
+    </div>
+    <div id="ssg-auth-box" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px;">
+      <div style="padding:14px;border:1px solid rgba(56,189,248,0.18);border-radius:14px;background:rgba(56,189,248,0.04);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:8px;">Login nieuwe StekkerSlim database</div>
+        <input id="ssg-email" type="email" placeholder="jouw@email.nl" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <input id="ssg-password" type="password" placeholder="Wachtwoord" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="ssgSignUp()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Account maken</button>
+          <button onclick="ssgSignIn()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Inloggen</button>
+          <button onclick="ssgSignOut()" style="padding:9px 12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.32);border-radius:9px;color:#ef4444;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Uitloggen</button>
+        </div>
+        <div id="ssg-auth-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Nog niet ingelogd.</div>
+      </div>
+      <div style="padding:14px;border:1px solid rgba(251,191,36,0.18);border-radius:14px;background:rgba(251,191,36,0.04);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#fbbf24;margin-bottom:8px;">Nieuwe audit starten</div>
+        <select id="ssg-workflow-type" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+          <option value="blog">Blog Validator</option>
+          <option value="site_guardian">Site Guardian</option>
+          <option value="seo_growth">SEO Growth</option>
+        </select>
+        <input id="ssg-title" type="text" placeholder="Projecttitel" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <input id="ssg-keyword" type="text" placeholder="Focus keyword" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <input id="ssg-url" type="text" placeholder="https://www.stekkerslim.nl/..." style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <textarea id="ssg-description" rows="4" placeholder="Plak hier blogtekst, HTML of notities" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button onclick="ssgCreateProject()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Project opslaan</button>
+          <button onclick="ssgLoadProjects()" style="padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;color:var(--text);cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Verversen</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start;">
+      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#a78bfa;margin-bottom:10px;">Projecten</div>
+        <div id="ssg-projects" style="display:flex;flex-direction:column;gap:8px;"><div style="font-size:0.75em;color:var(--muted);">Nog geen data geladen.</div></div>
+      </div>
+      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:10px;">Prompt Builder</div>
+        <div id="ssg-selected-project" style="font-size:0.75em;color:var(--muted);margin-bottom:10px;">Geen project gekozen.</div>
+        <select id="ssg-step" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+          <option value="1">Stap 1 · Intake & scope</option>
+          <option value="2">Stap 2 · Feiten, prijzen, claims</option>
+          <option value="3">Stap 3 · SEO & structuur</option>
+          <option value="4">Stap 4 · Affiliate & links</option>
+          <option value="5">Stap 5 · Consistentie sitebreed</option>
+          <option value="6">Stap 6 · Verbeterde versie</option>
+          <option value="7">Stap 7 · Eindoordeel & score</option>
+          <option value="8">Stap 8 · Final HTML/tekst</option>
+        </select>
+        <textarea id="ssg-prompt" rows="12" placeholder="Hier verschijnt de prompt" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
+        <textarea id="ssg-output" rows="10" placeholder="Plak hier de output van Grok / Perplexity / Gemini" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="ssgBuildPrompt()" style="padding:9px 12px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:9px;color:#38bdf8;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Bouw prompt</button>
+          <button onclick="ssgCopyPrompt()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Kopieer prompt</button>
+          <button onclick="ssgOpenAi()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Open AI</button>
+          <button onclick="ssgSaveStepOutput()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Opslaan output</button>
+        </div>
+        <div id="ssg-step-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Klaar om te starten.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+const SS_SBURL = 'https://dezyzzkuqkpljhprcbrg.supabase.co';
+const SS_SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlenl6emt1cWtwbGpocHJjYnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3Njc0MjAsImV4cCI6MjA5OTM0MzQyMH0.nMs_87N7EtuGInrenKaiOlYGl5Ky6Y1ekFipSfeiBcU';
+let ssgSession = null, ssgCurrentProject = null, ssgProjects = [];
+const SSG_AI_LINKS = {1:'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',2:'https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8',3:'https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx12jSSSd5vlLQnOuwg',4:'https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4',5:'https://gemini.google.com/u/0/gem/53bd2e7c05e5',6:'https://gemini.google.com/u/0/gem/c2b213f954f9',7:'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',8:'https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447'};
+function ssgHeaders(json=true){const h={apikey:SS_SBKEY,Authorization:`Bearer ${ssgSession?.access_token || SS_SBKEY}`}; if(json) h['Content-Type']='application/json'; return h;}
+function ssgSlugify(s=''){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80)||('project-'+Date.now());}
+function ssgEsc(s=''){const d=document.createElement('div'); d.textContent=s; return d.innerHTML;}
+function ssgSetStatus(msg,ok=false){const el=document.getElementById('ssg-auth-status'); if(el){el.style.color=ok?'#10b981':'var(--muted)'; el.textContent=msg;}}
+function ssgStepStatus(msg,color='var(--muted)'){const el=document.getElementById('ssg-step-status'); if(el){el.style.color=color; el.textContent=msg;}}
+function ssgSaveSession(data){ if(data?.session){ssgSession=data.session;} else if(data?.access_token){ssgSession={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user};} if(ssgSession){localStorage.setItem('ssg_session',JSON.stringify(ssgSession)); ssgSetStatus(`Ingelogd als ${ssgSession.user?.email || 'gebruiker'}.`,true);} }
+function ssgRestoreSession(){try{const raw=localStorage.getItem('ssg_session'); if(raw){ssgSession=JSON.parse(raw); ssgSetStatus(`Sessie actief voor ${ssgSession.user?.email || 'gebruiker'}.`,true);}}catch(e){}}
+function openStekkerSlimGuardian(){ const el=document.getElementById('ssg-overlay'); if(el){ el.style.display='flex'; ssgRestoreSession(); ssgLoadProjects(); } }
+function closeStekkerSlimGuardian(){ const el=document.getElementById('ssg-overlay'); if(el) el.style.display='none'; }
+async function ssgAuth(path,body){const r=await fetch(`${SS_SBURL}/auth/v1/${path}`,{method:'POST',headers:{apikey:SS_SBKEY,'Content-Type':'application/json'},body:JSON.stringify(body)}); const t=await r.text(); let data={}; try{data=JSON.parse(t||'{}')}catch(e){} if(!r.ok) throw new Error(data.msg||data.error_description||data.error||`HTTP ${r.status}`); return data;}
+async function ssgSignUp(){const email=document.getElementById('ssg-email').value.trim(); const password=document.getElementById('ssg-password').value; if(!email||!password) return ssgSetStatus('Vul e-mail en wachtwoord in.'); try{const data=await ssgAuth('signup',{email,password}); ssgSaveSession(data); ssgSetStatus('Account aangemaakt. Mogelijk daarna nog inloggen nodig.',true);}catch(e){ssgSetStatus('Fout: '+e.message);}}
+async function ssgSignIn(){const email=document.getElementById('ssg-email').value.trim(); const password=document.getElementById('ssg-password').value; if(!email||!password) return ssgSetStatus('Vul e-mail en wachtwoord in.'); try{const data=await ssgAuth('token?grant_type=password',{email,password}); ssgSaveSession(data); await ssgLoadProjects();}catch(e){ssgSetStatus('Fout: '+e.message);}}
+function ssgSignOut(){ssgSession=null; localStorage.removeItem('ssg_session'); ssgSetStatus('Uitgelogd.'); const el=document.getElementById('ssg-projects'); if(el) el.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Uitgelogd.</div>';}
+async function ssgFetch(path,opts={}){const r=await fetch(`${SS_SBURL}/rest/v1/${path}`,{...opts,headers:{...ssgHeaders(!(opts.method==='GET'||!opts.method)),...(opts.headers||{})}}); const t=await r.text(); if(!r.ok) throw new Error(t||`HTTP ${r.status}`); if(!t) return null; try{return JSON.parse(t)}catch(e){return t;}}
+async function ssgCreateProject(){if(!ssgSession?.access_token) return ssgSetStatus('Log eerst in.'); const title=document.getElementById('ssg-title').value.trim(); const workflow_type=document.getElementById('ssg-workflow-type').value; const focus_keyword=document.getElementById('ssg-keyword').value.trim(); const target_url=document.getElementById('ssg-url').value.trim(); const description=document.getElementById('ssg-description').value.trim(); if(!title) return ssgStepStatus('Projecttitel ontbreekt.','#f87171'); const body={title,slug:ssgSlugify(title),workflow_type,status:'draft',focus_keyword,target_url,description}; try{await ssgFetch('ss_projects',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(body)}); ssgStepStatus('Project opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
+async function ssgLoadProjects(){const wrap=document.getElementById('ssg-projects'); if(!wrap) return; if(!ssgSession?.access_token){wrap.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Log in om projecten te zien.</div>'; return;} try{const rows=await ssgFetch('ss_projects?select=*&order=updated_at.desc'); ssgProjects=Array.isArray(rows)?rows:[]; if(!ssgProjects.length){wrap.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Nog geen projecten. Maak hierboven je eerste audit aan.</div>'; return;} wrap.innerHTML=ssgProjects.map(p=>`<div onclick="ssgSelectProject('${p.id}')" style="padding:12px;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.03);cursor:pointer;"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;"><div style="font-weight:700;color:var(--text);">${ssgEsc(p.title||'Zonder titel')}</div><div style="font-size:0.68em;color:#a78bfa;text-transform:uppercase;">${ssgEsc(p.status||'draft')}</div></div><div style="font-size:0.72em;color:var(--muted);margin-top:5px;">${ssgEsc(p.workflow_type||'')}</div><div style="font-size:0.72em;color:var(--muted);margin-top:5px;">${ssgEsc(p.focus_keyword||'geen keyword')} · ${ssgEsc(p.target_url||'geen URL')}</div></div>`).join('');}catch(e){wrap.innerHTML=`<div style="font-size:0.75em;color:#f87171;">Laden mislukt: ${ssgEsc(e.message)}</div>`;}}
+function ssgSelectProject(id){ssgCurrentProject=ssgProjects.find(p=>String(p.id)===String(id))||null; const el=document.getElementById('ssg-selected-project'); if(el) el.textContent=ssgCurrentProject?`${ssgCurrentProject.title} · ${ssgCurrentProject.workflow_type}`:'Geen project gekozen.'; ssgBuildPrompt();}
+function ssgBuildPrompt(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const prevKey=`ssg_prev_${ssgCurrentProject.id}_${step-1}`; const prev=step>1?(localStorage.getItem(prevKey)||''):''; const labels={1:'intake en scope',2:'feiten, prijzen en claims',3:'SEO en structuur',4:'affiliate links en commerciële juistheid',5:'consistentie met andere StekkerSlim-pagina's',6:'verbeterde versie',7:'eindoordeel en score',8:'finale HTML of tekst'}; const prompt=`Project: StekkerSlim Site Guardian
+
+Workflow: ${ssgCurrentProject.workflow_type}
+Stap: ${step} - ${labels[step]||''}
+Titel: ${ssgCurrentProject.title}
+Focus keyword: ${ssgCurrentProject.focus_keyword||'-'}
+URL: ${ssgCurrentProject.target_url||'-'}
+
+Bronmateriaal / notities / blogtekst:
+${ssgCurrentProject.description||'-'}
+
+Taken:
+- Werk alleen aan stap ${step}.
+- Wees streng, concreet en actueel.
+- Controleer waar relevant feiten, prijzen, data, claims, affiliate-insteek, interne links en SEO.
+- Geef duidelijke bullets en uitvoerbare verbeterpunten.
+- Als iets niet zeker te verifiëren is, zeg dat expliciet.
+
+Outputformat:
+1. Bevindingen
+2. Risico's
+3. Concrete verbeterpunten
+4. Aangepaste tekst of sectie voor deze stap
+
+Vorige stap output:
+${prev||'(geen vorige output opgeslagen)'}
+`; document.getElementById('ssg-prompt').value=prompt; ssgStepStatus('Prompt opgebouwd.','#38bdf8');}
+async function ssgCopyPrompt(){const el=document.getElementById('ssg-prompt'); if(!el||!el.value.trim()) return ssgStepStatus('Eerst prompt bouwen.','#f87171'); await navigator.clipboard.writeText(el.value); ssgStepStatus('Prompt gekopieerd.','#10b981');}
+function ssgOpenAi(){const step=parseInt(document.getElementById('ssg-step').value,10); window.open(SSG_AI_LINKS[step]||'https://www.perplexity.ai','_blank','noopener'); ssgStepStatus('AI-project geopend.','#a78bfa');}
+async function ssgSaveStepOutput(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const output=document.getElementById('ssg-output').value.trim(); const prompt=document.getElementById('ssg-prompt').value.trim(); if(!output) return ssgStepStatus('Geen output om op te slaan.','#f87171'); const ai_provider=step===2||step===4||step===8?'grok':(step===5||step===6?'gemini':'perplexity'); const step_title=document.getElementById('ssg-step').selectedOptions[0].textContent; const body={project_id:ssgCurrentProject.id,user_id:ssgSession.user?.id||ssgSession.user?.sub,step_order:step,step_key:`step_${step}`,step_title,ai_provider,prompt_text:prompt,output_text:output,status:'done',completed_at:new Date().toISOString()}; try{await ssgFetch('ss_pipeline_steps?on_conflict=project_id,step_order',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)}); localStorage.setItem(`ssg_prev_${ssgCurrentProject.id}_${step}`,output); const patch={status:step>=8?'final':step>=6?'review':'in_progress'}; if(step>=8){patch.final_content=output; patch.final_content_type=ssgCurrentProject.workflow_type==='blog'?'html':'text'; patch.finalised_at=new Date().toISOString();} await ssgFetch(`ss_projects?id=eq.${ssgCurrentProject.id}`,{method:'PATCH',body:JSON.stringify(patch)}); ssgStepStatus('Stapoutput opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
+</script>
+
 <script>
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function fetchAI() { fetchVoorJou(false); }
@@ -4465,134 +4592,5 @@ function copyAllMultiPrompts() {
 
 
 </script>
-
-<script>
-const SS_SBURL = 'https://dezyzzkuqkpljhprcbrg.supabase.co';
-const SS_SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlenl6emt1cWtwbGpocHJjYnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3Njc0MjAsImV4cCI6MjA5OTM0MzQyMH0.nMs_87N7EtuGInrenKaiOlYGl5Ky6Y1ekFipSfeiBcU';
-let ssgSession = null;
-let ssgCurrentProject = null;
-let ssgProjects = [];
-const SSG_AI_LINKS = {1:'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',2:'https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8',3:'https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx12jSSSd5vlLQnOuwg',4:'https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4',5:'https://gemini.google.com/u/0/gem/53bd2e7c05e5',6:'https://gemini.google.com/u/0/gem/c2b213f954f9',7:'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',8:'https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447'};
-function ssgHeaders(json=true){const h={apikey:SS_SBKEY,Authorization:`Bearer ${ssgSession?.access_token || SS_SBKEY}`}; if(json) h['Content-Type']='application/json'; return h;}
-function ssgSlugify(s=''){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80)||('project-'+Date.now());}
-function ssgEsc(s=''){const d=document.createElement('div'); d.textContent=s; return d.innerHTML;}
-function openStekkerSlimGuardian(){document.getElementById('ssg-overlay').style.display='flex'; ssgRestoreSession(); ssgLoadProjects();}
-function closeStekkerSlimGuardian(){document.getElementById('ssg-overlay').style.display='none';}
-async function ssgAuth(path,body){const r=await fetch(`${SS_SBURL}/auth/v1/${path}`,{method:'POST',headers:{apikey:SS_SBKEY,'Content-Type':'application/json'},body:JSON.stringify(body)}); const t=await r.text(); let data={}; try{data=JSON.parse(t||'{}')}catch{} if(!r.ok) throw new Error(data.msg||data.error_description||data.error||`HTTP ${r.status}`); return data;}
-function ssgSetStatus(msg,ok=false){const el=document.getElementById('ssg-auth-status'); if(el){el.style.color=ok?'#10b981':'var(--muted)'; el.textContent=msg;}}
-function ssgStepStatus(msg,color='var(--muted)'){const el=document.getElementById('ssg-step-status'); if(el){el.style.color=color; el.textContent=msg;}}
-function ssgSaveSession(data){if(data?.session){ssgSession=data.session; localStorage.setItem('ssg_session',JSON.stringify(data.session)); ssgSetStatus(`Ingelogd als ${data.user?.email || data.session.user?.email || 'gebruiker'}.`,true);} else if(data?.access_token){ssgSession={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user}; localStorage.setItem('ssg_session',JSON.stringify(ssgSession)); ssgSetStatus(`Ingelogd als ${data.user?.email || 'gebruiker'}.`,true);}}
-function ssgRestoreSession(){try{const raw=localStorage.getItem('ssg_session'); if(raw){ssgSession=JSON.parse(raw); ssgSetStatus(`Sessie actief voor ${ssgSession.user?.email || 'gebruiker'}.`,true);}}catch{}}
-async function ssgSignUp(){const email=document.getElementById('ssg-email').value.trim(); const password=document.getElementById('ssg-password').value; if(!email||!password) return ssgSetStatus('Vul e-mail en wachtwoord in.'); try{const data=await ssgAuth('signup',{email,password}); ssgSaveSession(data); ssgSetStatus('Account aangemaakt. Log nu in als nodig.',true);}catch(e){ssgSetStatus('Fout: '+e.message);}}
-async function ssgSignIn(){const email=document.getElementById('ssg-email').value.trim(); const password=document.getElementById('ssg-password').value; if(!email||!password) return ssgSetStatus('Vul e-mail en wachtwoord in.'); try{const data=await ssgAuth('token?grant_type=password',{email,password}); ssgSaveSession(data); await ssgLoadProjects();}catch(e){ssgSetStatus('Fout: '+e.message);}}
-function ssgSignOut(){ssgSession=null; localStorage.removeItem('ssg_session'); ssgSetStatus('Uitgelogd.'); document.getElementById('ssg-projects').innerHTML='<div style="font-size:0.75em;color:var(--muted);">Uitgelogd.</div>';}
-async function ssgFetch(path,opts={}){const r=await fetch(`${SS_SBURL}/rest/v1/${path}`,{...opts,headers:{...ssgHeaders(!(opts.method==='GET'||!opts.method)),...(opts.headers||{})}}); const t=await r.text(); if(!r.ok) throw new Error(t||`HTTP ${r.status}`); if(!t) return null; try{return JSON.parse(t)}catch{return t;}}
-async function ssgCreateProject(){if(!ssgSession?.access_token) return ssgSetStatus('Log eerst in.'); const title=document.getElementById('ssg-title').value.trim(); const workflow_type=document.getElementById('ssg-workflow-type').value; const focus_keyword=document.getElementById('ssg-keyword').value.trim(); const target_url=document.getElementById('ssg-url').value.trim(); const description=document.getElementById('ssg-description').value.trim(); if(!title) return ssgStepStatus('Projecttitel ontbreekt.','#f87171'); const body={title,slug:ssgSlugify(title),workflow_type,status:'draft',focus_keyword,target_url,description}; try{await ssgFetch('ss_projects',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(body)}); ssgStepStatus('Project opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
-async function ssgLoadProjects(){if(!ssgSession?.access_token){document.getElementById('ssg-projects').innerHTML='<div style="font-size:0.75em;color:var(--muted);">Log in om projecten te zien.</div>'; return;} try{const rows=await ssgFetch('ss_projects?select=*&order=updated_at.desc'); ssgProjects=Array.isArray(rows)?rows:[]; const wrap=document.getElementById('ssg-projects'); if(!ssgProjects.length){wrap.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Nog geen projecten. Maak hierboven je eerste audit aan.</div>'; return;} wrap.innerHTML=ssgProjects.map(p=>`<div onclick="ssgSelectProject('${p.id}')" style="padding:12px;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.03);cursor:pointer;"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;"><div style="font-weight:700;color:var(--text);">${ssgEsc(p.title||'Zonder titel')}</div><div style="font-size:0.68em;color:#a78bfa;text-transform:uppercase;">${ssgEsc(p.status||'draft')}</div></div><div style="font-size:0.72em;color:var(--muted);margin-top:5px;">${ssgEsc(p.workflow_type||'')}</div><div style="font-size:0.72em;color:var(--muted);margin-top:5px;">${ssgEsc(p.focus_keyword||'geen keyword')} · ${ssgEsc(p.target_url||'geen URL')}</div></div>`).join('');}catch(e){document.getElementById('ssg-projects').innerHTML=`<div style="font-size:0.75em;color:#f87171;">Laden mislukt: ${ssgEsc(e.message)}</div>`;}}
-function ssgSelectProject(id){ssgCurrentProject=ssgProjects.find(p=>p.id===id)||null; document.getElementById('ssg-selected-project').textContent=ssgCurrentProject?`${ssgCurrentProject.title} · ${ssgCurrentProject.workflow_type}`:'Geen project gekozen.'; ssgBuildPrompt();}
-function ssgBuildPrompt(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const prevKey=`ssg_prev_${ssgCurrentProject.id}_${step-1}`; const prev=step>1?(localStorage.getItem(prevKey)||''):''; const labels={1:'intake en scope',2:'feiten, prijzen en claims',3:'SEO en structuur',4:'affiliate links en commerciële juistheid',5:'consistentie met andere StekkerSlim-pagina's',6:'verbeterde versie',7:'eindoordeel en score',8:'finale HTML of tekst'}; const prompt=`Project: StekkerSlim Site Guardian
-
-Workflow: ${ssgCurrentProject.workflow_type}
-Stap: ${step} - ${labels[step] || ''}
-Titel: ${ssgCurrentProject.title}
-Focus keyword: ${ssgCurrentProject.focus_keyword || '-'}
-URL: ${ssgCurrentProject.target_url || '-'}
-
-Bronmateriaal / notities / blogtekst:
-${ssgCurrentProject.description || '-'}
-
-Taken:
-- Werk alleen aan stap ${step}.
-- Wees streng, concreet en actueel.
-- Controleer waar relevant feiten, prijzen, data, claims, affiliate-insteek, interne links en SEO.
-- Geef duidelijke bullets en uitvoerbare verbeterpunten.
-- Als iets niet zeker te verifiëren is, zeg dat expliciet.
-
-Outputformat:
-1. Bevindingen
-2. Risico's
-3. Concrete verbeterpunten
-4. Aangepaste tekst of sectie voor deze stap
-
-Vorige stap output:
-${prev || '(geen vorige output opgeslagen)'}
-`; document.getElementById('ssg-prompt').value=prompt; ssgStepStatus('Prompt opgebouwd.','#38bdf8');}
-async function ssgCopyPrompt(){const el=document.getElementById('ssg-prompt'); if(!el.value.trim()) return ssgStepStatus('Eerst prompt bouwen.','#f87171'); await navigator.clipboard.writeText(el.value); ssgStepStatus('Prompt gekopieerd.','#10b981');}
-function ssgOpenAi(){const step=parseInt(document.getElementById('ssg-step').value,10); const url=SSG_AI_LINKS[step]||'https://www.perplexity.ai'; window.open(url,'_blank','noopener'); ssgStepStatus('AI-project geopend.','#a78bfa');}
-async function ssgSaveStepOutput(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const output=document.getElementById('ssg-output').value.trim(); const prompt=document.getElementById('ssg-prompt').value.trim(); if(!output) return ssgStepStatus('Geen output om op te slaan.','#f87171'); const ai_provider=step===2||step===4||step===8?'grok':(step===5||step===6?'gemini':'perplexity'); const step_title=document.getElementById('ssg-step').selectedOptions[0].textContent; const step_key=`step_${step}`; const body={project_id:ssgCurrentProject.id,user_id:ssgSession.user?.id || ssgSession.user?.sub,step_order:step,step_key,step_title,ai_provider,prompt_text:prompt,output_text:output,status:'done',completed_at:new Date().toISOString()}; try{await ssgFetch('ss_pipeline_steps?on_conflict=project_id,step_order',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)}); localStorage.setItem(`ssg_prev_${ssgCurrentProject.id}_${step}`,output); let patch={status:step>=8?'final':step>=6?'review':'in_progress'}; if(step>=8){patch.final_content=output; patch.final_content_type=ssgCurrentProject.workflow_type==='blog'?'html':'text'; patch.finalised_at=new Date().toISOString();} await ssgFetch(`ss_projects?id=eq.${ssgCurrentProject.id}`,{method:'PATCH',body:JSON.stringify(patch)}); ssgStepStatus('Stapoutput opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
-</script>
-
-
-<!-- STEKKERSLIM GUARDIAN MODAL -->
-<div id="ssg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);z-index:1400;align-items:center;justify-content:center;padding:18px;">
-  <div id="ssg-modal" style="width:min(1180px,100%);max-height:92vh;overflow:auto;background:#0d0e18;border:1px solid rgba(167,139,250,0.18);border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.72);">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
-      <div>
-        <div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.2em;color:#a78bfa;">StekkerSlim Site Guardian</div>
-        <div style="font-size:0.72em;color:var(--muted);margin-top:4px;">Aparte Supabase-projectkoppeling voor blogs, audits en workflow.</div>
-      </div>
-      <button onclick="closeStekkerSlimGuardian()" style="background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;">✕</button>
-    </div>
-    <div id="ssg-auth-box" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px;">
-      <div style="padding:14px;border:1px solid rgba(56,189,248,0.18);border-radius:14px;background:rgba(56,189,248,0.04);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:8px;">Login nieuwe StekkerSlim database</div>
-        <input id="ssg-email" type="email" placeholder="jouw@email.nl" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <input id="ssg-password" type="password" placeholder="Wachtwoord" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="ssgSignUp()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Account maken</button>
-          <button onclick="ssgSignIn()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Inloggen</button>
-          <button onclick="ssgSignOut()" style="padding:9px 12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.32);border-radius:9px;color:#ef4444;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Uitloggen</button>
-        </div>
-        <div id="ssg-auth-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Nog niet ingelogd.</div>
-      </div>
-      <div style="padding:14px;border:1px solid rgba(251,191,36,0.18);border-radius:14px;background:rgba(251,191,36,0.04);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#fbbf24;margin-bottom:8px;">Nieuwe audit starten</div>
-        <select id="ssg-workflow-type" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-          <option value="blog">Blog Validator</option>
-          <option value="site_guardian">Site Guardian</option>
-          <option value="seo_growth">SEO Growth</option>
-        </select>
-        <input id="ssg-title" type="text" placeholder="Projecttitel" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <input id="ssg-keyword" type="text" placeholder="Focus keyword" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <input id="ssg-url" type="text" placeholder="https://www.stekkerslim.nl/..." style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <textarea id="ssg-description" rows="4" placeholder="Plak hier blogtekst, HTML of notities" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-          <button onclick="ssgCreateProject()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Project opslaan</button>
-          <button onclick="ssgLoadProjects()" style="padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;color:var(--text);cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Verversen</button>
-        </div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start;">
-      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#a78bfa;margin-bottom:10px;">Projecten</div>
-        <div id="ssg-projects" style="display:flex;flex-direction:column;gap:8px;"><div style="font-size:0.75em;color:var(--muted);">Nog geen data geladen.</div></div>
-      </div>
-      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:10px;">Prompt Builder</div>
-        <div id="ssg-selected-project" style="font-size:0.75em;color:var(--muted);margin-bottom:10px;">Geen project gekozen.</div>
-        <select id="ssg-step" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-          <option value="1">Stap 1 · Intake & scope</option>
-          <option value="2">Stap 2 · Feiten, prijzen, claims</option>
-          <option value="3">Stap 3 · SEO & structuur</option>
-          <option value="4">Stap 4 · Affiliate & links</option>
-          <option value="5">Stap 5 · Consistentie sitebreed</option>
-          <option value="6">Stap 6 · Verbeterde versie</option>
-          <option value="7">Stap 7 · Eindoordeel & score</option>
-          <option value="8">Stap 8 · Final HTML/tekst</option>
-        </select>
-        <textarea id="ssg-prompt" rows="12" placeholder="Hier verschijnt de prompt" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
-        <textarea id="ssg-output" rows="10" placeholder="Plak hier de output van Grok / Perplexity / Gemini" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="ssgBuildPrompt()" style="padding:9px 12px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:9px;color:#38bdf8;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Bouw prompt</button>
-          <button onclick="ssgCopyPrompt()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Kopieer prompt</button>
-          <button onclick="ssgOpenAi()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Open AI</button>
-          <button onclick="ssgSaveStepOutput()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Opslaan output</button>
-        </div>
-        <div id="ssg-step-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Klaar om te starten.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
 </body>
 </html>
