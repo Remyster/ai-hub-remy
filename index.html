@@ -4522,5 +4522,77 @@ function ssgOpenAi(){const step=parseInt(document.getElementById('ssg-step').val
 async function ssgSaveStepOutput(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const output=document.getElementById('ssg-output').value.trim(); const prompt=document.getElementById('ssg-prompt').value.trim(); if(!output) return ssgStepStatus('Geen output om op te slaan.','#f87171'); const ai_provider=step===2||step===4||step===8?'grok':(step===5||step===6?'gemini':'perplexity'); const step_title=document.getElementById('ssg-step').selectedOptions[0].textContent; const step_key=`step_${step}`; const body={project_id:ssgCurrentProject.id,user_id:ssgSession.user?.id || ssgSession.user?.sub,step_order:step,step_key,step_title,ai_provider,prompt_text:prompt,output_text:output,status:'done',completed_at:new Date().toISOString()}; try{await ssgFetch('ss_pipeline_steps?on_conflict=project_id,step_order',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)}); localStorage.setItem(`ssg_prev_${ssgCurrentProject.id}_${step}`,output); let patch={status:step>=8?'final':step>=6?'review':'in_progress'}; if(step>=8){patch.final_content=output; patch.final_content_type=ssgCurrentProject.workflow_type==='blog'?'html':'text'; patch.finalised_at=new Date().toISOString();} await ssgFetch(`ss_projects?id=eq.${ssgCurrentProject.id}`,{method:'PATCH',body:JSON.stringify(patch)}); ssgStepStatus('Stapoutput opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
 </script>
 
+
+<!-- STEKKERSLIM GUARDIAN MODAL -->
+<div id="ssg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);z-index:1400;align-items:center;justify-content:center;padding:18px;">
+  <div id="ssg-modal" style="width:min(1180px,100%);max-height:92vh;overflow:auto;background:#0d0e18;border:1px solid rgba(167,139,250,0.18);border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.72);">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.2em;color:#a78bfa;">StekkerSlim Site Guardian</div>
+        <div style="font-size:0.72em;color:var(--muted);margin-top:4px;">Aparte Supabase-projectkoppeling voor blogs, audits en workflow.</div>
+      </div>
+      <button onclick="closeStekkerSlimGuardian()" style="background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;">✕</button>
+    </div>
+    <div id="ssg-auth-box" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px;">
+      <div style="padding:14px;border:1px solid rgba(56,189,248,0.18);border-radius:14px;background:rgba(56,189,248,0.04);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:8px;">Login nieuwe StekkerSlim database</div>
+        <input id="ssg-email" type="email" placeholder="jouw@email.nl" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <input id="ssg-password" type="password" placeholder="Wachtwoord" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="ssgSignUp()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Account maken</button>
+          <button onclick="ssgSignIn()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Inloggen</button>
+          <button onclick="ssgSignOut()" style="padding:9px 12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.32);border-radius:9px;color:#ef4444;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Uitloggen</button>
+        </div>
+        <div id="ssg-auth-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Nog niet ingelogd.</div>
+      </div>
+      <div style="padding:14px;border:1px solid rgba(251,191,36,0.18);border-radius:14px;background:rgba(251,191,36,0.04);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#fbbf24;margin-bottom:8px;">Nieuwe audit starten</div>
+        <select id="ssg-workflow-type" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+          <option value="blog">Blog Validator</option>
+          <option value="site_guardian">Site Guardian</option>
+          <option value="seo_growth">SEO Growth</option>
+        </select>
+        <input id="ssg-title" type="text" placeholder="Projecttitel" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <input id="ssg-keyword" type="text" placeholder="Focus keyword" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <input id="ssg-url" type="text" placeholder="https://www.stekkerslim.nl/..." style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+        <textarea id="ssg-description" rows="4" placeholder="Plak hier blogtekst, HTML of notities" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+          <button onclick="ssgCreateProject()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Project opslaan</button>
+          <button onclick="ssgLoadProjects()" style="padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;color:var(--text);cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Verversen</button>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start;">
+      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#a78bfa;margin-bottom:10px;">Projecten</div>
+        <div id="ssg-projects" style="display:flex;flex-direction:column;gap:8px;"><div style="font-size:0.75em;color:var(--muted);">Nog geen data geladen.</div></div>
+      </div>
+      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
+        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:10px;">Prompt Builder</div>
+        <div id="ssg-selected-project" style="font-size:0.75em;color:var(--muted);margin-bottom:10px;">Geen project gekozen.</div>
+        <select id="ssg-step" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
+          <option value="1">Stap 1 · Intake & scope</option>
+          <option value="2">Stap 2 · Feiten, prijzen, claims</option>
+          <option value="3">Stap 3 · SEO & structuur</option>
+          <option value="4">Stap 4 · Affiliate & links</option>
+          <option value="5">Stap 5 · Consistentie sitebreed</option>
+          <option value="6">Stap 6 · Verbeterde versie</option>
+          <option value="7">Stap 7 · Eindoordeel & score</option>
+          <option value="8">Stap 8 · Final HTML/tekst</option>
+        </select>
+        <textarea id="ssg-prompt" rows="12" placeholder="Hier verschijnt de prompt" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
+        <textarea id="ssg-output" rows="10" placeholder="Plak hier de output van Grok / Perplexity / Gemini" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button onclick="ssgBuildPrompt()" style="padding:9px 12px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:9px;color:#38bdf8;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Bouw prompt</button>
+          <button onclick="ssgCopyPrompt()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Kopieer prompt</button>
+          <button onclick="ssgOpenAi()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Open AI</button>
+          <button onclick="ssgSaveStepOutput()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Opslaan output</button>
+        </div>
+        <div id="ssg-step-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Klaar om te starten.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
