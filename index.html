@@ -1715,7 +1715,7 @@ header h1 {
   <section class="section" id="sec-stekkerslim-guardian">
     <div class="section-label">StekkerSlim Site Guardian</div>
     <div class="grid">
-      <a href="javascript:void(0)" class="card affiliate" onclick="openStekkerSlimGuardian()">
+      <a href="#" class="card affiliate" onclick="openStekkerSlimGuardian(); return false;">
         <div class="dot"></div>
         <h2>🧠 Site Guardian Hub</h2><p>Blog validator · site audits · workflow</p>
       </a>
@@ -1780,130 +1780,347 @@ header h1 {
 </div>
 
 
-<!-- STEKKERSLIM GUARDIAN MODAL -->
-<div id="ssg-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(10px);z-index:1400;align-items:center;justify-content:center;padding:18px;">
-  <div id="ssg-modal" style="width:min(1180px,100%);max-height:92vh;overflow:auto;background:#0d0e18;border:1px solid rgba(167,139,250,0.18);border-radius:22px;padding:22px;box-shadow:0 30px 80px rgba(0,0,0,0.72);">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;">
-      <div>
-        <div style="font-family:Syne,sans-serif;font-weight:800;font-size:1.2em;color:#a78bfa;">StekkerSlim Site Guardian</div>
-        <div style="font-size:0.72em;color:var(--muted);margin-top:4px;">Aparte Supabase-projectkoppeling voor blogs, audits en workflow.</div>
-      </div>
-      <button onclick="closeStekkerSlimGuardian()" style="background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;">✕</button>
+<!-- STEKKERSLIM PIPELINE WIZARD -->
+<div id="ssp-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.94);backdrop-filter:blur(14px);z-index:1400;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+  <div style="width:100%;max-width:660px;margin:0 auto;padding:16px 14px 40px;box-sizing:border-box;min-height:100vh;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05em;background:linear-gradient(135deg,#fbbf24,#f59e0b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">⚡ StekkerSlim Pipeline</div>
+      <button onclick="closeSSP()" style="background:none;border:none;color:#666;font-size:1.5em;cursor:pointer;padding:2px 8px;line-height:1;">✕</button>
     </div>
-    <div id="ssg-auth-box" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-bottom:14px;">
-      <div style="padding:14px;border:1px solid rgba(56,189,248,0.18);border-radius:14px;background:rgba(56,189,248,0.04);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:8px;">Login nieuwe StekkerSlim database</div>
-        <input id="ssg-email" type="email" placeholder="jouw@email.nl" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <input id="ssg-password" type="password" placeholder="Wachtwoord" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="ssgSignUp()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Account maken</button>
-          <button onclick="ssgSignIn()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Inloggen</button>
-          <button onclick="ssgSignOut()" style="padding:9px 12px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.32);border-radius:9px;color:#ef4444;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Uitloggen</button>
-        </div>
-        <div id="ssg-auth-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Nog niet ingelogd.</div>
-      </div>
-      <div style="padding:14px;border:1px solid rgba(251,191,36,0.18);border-radius:14px;background:rgba(251,191,36,0.04);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#fbbf24;margin-bottom:8px;">Nieuwe audit starten</div>
-        <select id="ssg-workflow-type" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-          <option value="blog">Blog Validator</option>
-          <option value="site_guardian">Site Guardian</option>
-          <option value="seo_growth">SEO Growth</option>
-        </select>
-        <input id="ssg-title" type="text" placeholder="Projecttitel" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <input id="ssg-keyword" type="text" placeholder="Focus keyword" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <input id="ssg-url" type="text" placeholder="https://www.stekkerslim.nl/..." style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-        <textarea id="ssg-description" rows="4" placeholder="Plak hier blogtekst, HTML of notities" style="width:100%;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-          <button onclick="ssgCreateProject()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Project opslaan</button>
-          <button onclick="ssgLoadProjects()" style="padding:9px 12px;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:9px;color:var(--text);cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Verversen</button>
-        </div>
-      </div>
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button id="ssp-tab-blog" onclick="sspSetPipeline('blog')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid rgba(251,191,36,0.45);background:rgba(251,191,36,0.14);color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">📝 Blog</button>
+      <button id="ssp-tab-site" onclick="sspSetPipeline('site')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">🛡 Site Check</button>
+      <button id="ssp-tab-seo" onclick="sspSetPipeline('seo')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">📈 SEO Growth</button>
     </div>
-    <div style="display:grid;grid-template-columns:1.1fr 1fr;gap:14px;align-items:start;">
-      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#a78bfa;margin-bottom:10px;">Projecten</div>
-        <div id="ssg-projects" style="display:flex;flex-direction:column;gap:8px;"><div style="font-size:0.75em;color:var(--muted);">Nog geen data geladen.</div></div>
-      </div>
-      <div style="padding:14px;border:1px solid rgba(255,255,255,0.08);border-radius:14px;background:rgba(255,255,255,0.03);">
-        <div style="font-family:'DM Mono',monospace;font-size:0.74em;color:#38bdf8;margin-bottom:10px;">Prompt Builder</div>
-        <div id="ssg-selected-project" style="font-size:0.75em;color:var(--muted);margin-bottom:10px;">Geen project gekozen.</div>
-        <select id="ssg-step" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);">
-          <option value="1">Stap 1 · Intake & scope</option>
-          <option value="2">Stap 2 · Feiten, prijzen, claims</option>
-          <option value="3">Stap 3 · SEO & structuur</option>
-          <option value="4">Stap 4 · Affiliate & links</option>
-          <option value="5">Stap 5 · Consistentie sitebreed</option>
-          <option value="6">Stap 6 · Verbeterde versie</option>
-          <option value="7">Stap 7 · Eindoordeel & score</option>
-          <option value="8">Stap 8 · Final HTML/tekst</option>
-        </select>
-        <textarea id="ssg-prompt" rows="12" placeholder="Hier verschijnt de prompt" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
-        <textarea id="ssg-output" rows="10" placeholder="Plak hier de output van Grok / Perplexity / Gemini" style="width:100%;margin-bottom:8px;padding:10px 12px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--text);resize:vertical;"></textarea>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-          <button onclick="ssgBuildPrompt()" style="padding:9px 12px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:9px;color:#38bdf8;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Bouw prompt</button>
-          <button onclick="ssgCopyPrompt()" style="padding:9px 12px;background:rgba(16,185,129,0.12);border:1px solid rgba(16,185,129,0.32);border-radius:9px;color:#10b981;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Kopieer prompt</button>
-          <button onclick="ssgOpenAi()" style="padding:9px 12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:9px;color:#a78bfa;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Open AI</button>
-          <button onclick="ssgSaveStepOutput()" style="padding:9px 12px;background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.32);border-radius:9px;color:#fbbf24;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;">Opslaan output</button>
-        </div>
-        <div id="ssg-step-status" style="margin-top:10px;font-size:0.72em;color:var(--muted);">Klaar om te starten.</div>
-      </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <button onclick="sspPrevStep()" style="padding:9px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--muted);cursor:pointer;font-size:1em;">&#8592;</button>
+      <div id="ssp-step-label" style="flex:1;text-align:center;font-family:'DM Mono',monospace;font-size:0.7em;color:#a78bfa;line-height:1.4;"></div>
+      <button onclick="sspNextStep()" style="padding:9px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--muted);cursor:pointer;font-size:1em;">&#8594;</button>
     </div>
+    <div id="ssp-dots" style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;"></div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Prompt — kopieer en plak in de AI</div>
+      <textarea id="ssp-prompt" readonly style="width:100%;height:200px;background:rgba(255,255,255,0.03);border:1px solid rgba(167,139,250,0.22);border-radius:11px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <button onclick="sspCopyPrompt()" style="flex:2;padding:12px;background:rgba(16,185,129,0.14);border:1px solid rgba(16,185,129,0.36);border-radius:11px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.76em;cursor:pointer;font-weight:700;">&#128203; Kopieer prompt</button>
+      <button id="ssp-ai-btn" onclick="sspOpenAI()" style="flex:2;padding:12px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.32);border-radius:11px;color:#a78bfa;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;">&#128279; Open AI</button>
+    </div>
+    <div style="margin-bottom:10px;">
+      <div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Antwoord van AI <span id="ssp-saved-badge" style="color:#10b981;font-size:0.9em;"></span></div>
+      <textarea id="ssp-output" placeholder="Plak hier het volledige antwoord van de AI..." style="width:100%;height:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.22);border-radius:11px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+      <button onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>
+      <button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>
+      <button onclick="sspDelete()" style="flex:1;min-width:90px;padding:11px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.22);border-radius:10px;color:#f87171;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;">&#128465; Verwijderen</button>
+    </div>
+    <div id="ssp-status" style="font-size:0.7em;color:#10b981;text-align:center;min-height:18px;"></div>
   </div>
 </div>
-
 
 <script>
 const SS_SBURL = 'https://dezyzzkuqkpljhprcbrg.supabase.co';
 const SS_SBKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlenl6emt1cWtwbGpocHJjYnJnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM3Njc0MjAsImV4cCI6MjA5OTM0MzQyMH0.nMs_87N7EtuGInrenKaiOlYGl5Ky6Y1ekFipSfeiBcU';
-let ssgSession = null, ssgCurrentProject = null, ssgProjects = [];
-const SSG_AI_LINKS = {1:'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',2:'https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8',3:'https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx12jSSSd5vlLQnOuwg',4:'https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4',5:'https://gemini.google.com/u/0/gem/53bd2e7c05e5',6:'https://gemini.google.com/u/0/gem/c2b213f954f9',7:'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',8:'https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447'};
-function ssgHeaders(json=true){const h={apikey:SS_SBKEY,Authorization:`Bearer ${ssgSession?.access_token || SS_SBKEY}`}; if(json) h['Content-Type']='application/json'; return h;}
-function ssgSlugify(s=''){return s.toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80)||('project-'+Date.now());}
-function ssgEsc(s=''){const d=document.createElement('div'); d.textContent=s; return d.innerHTML;}
-function ssgSetStatus(msg,ok=false){const el=document.getElementById('ssg-auth-status'); if(el){el.style.color=ok?'#10b981':'var(--muted)'; el.textContent=msg;}}
-function ssgStepStatus(msg,color='var(--muted)'){const el=document.getElementById('ssg-step-status'); if(el){el.style.color=color; el.textContent=msg;}}
-function ssgSaveSession(data){ if(data?.session){ssgSession=data.session;} else if(data?.access_token){ssgSession={access_token:data.access_token,refresh_token:data.refresh_token,user:data.user};} if(ssgSession){localStorage.setItem('ssg_session',JSON.stringify(ssgSession)); ssgSetStatus(`Ingelogd als ${ssgSession.user?.email || 'gebruiker'}.`,true);} }
-function ssgRestoreSession(){try{const raw=localStorage.getItem('ssg_session'); if(raw){ssgSession=JSON.parse(raw); ssgSetStatus(`Sessie actief voor ${ssgSession.user?.email || 'gebruiker'}.`,true);}}catch(e){}}
-function openStekkerSlimGuardian(){ const el=document.getElementById('ssg-overlay'); if(el){ el.style.display='flex'; ssgRestoreSession(); ssgLoadProjects(); } }
-function closeStekkerSlimGuardian(){ const el=document.getElementById('ssg-overlay'); if(el) el.style.display='none'; }
-async function ssgAuth(path,body){const r=await fetch(`${SS_SBURL}/auth/v1/${path}`,{method:'POST',headers:{apikey:SS_SBKEY,'Content-Type':'application/json'},body:JSON.stringify(body)}); const t=await r.text(); let data={}; try{data=JSON.parse(t||'{}')}catch(e){} if(!r.ok) throw new Error(data.msg||data.error_description||data.error||`HTTP ${r.status}`); return data;}
-async function ssgSignUp(){const email=document.getElementById('ssg-email').value.trim(); const password=document.getElementById('ssg-password').value; if(!email||!password) return ssgSetStatus('Vul e-mail en wachtwoord in.'); try{const data=await ssgAuth('signup',{email,password}); ssgSaveSession(data); ssgSetStatus('Account aangemaakt. Mogelijk daarna nog inloggen nodig.',true);}catch(e){ssgSetStatus('Fout: '+e.message);}}
-async function ssgSignIn(){const email=document.getElementById('ssg-email').value.trim(); const password=document.getElementById('ssg-password').value; if(!email||!password) return ssgSetStatus('Vul e-mail en wachtwoord in.'); try{const data=await ssgAuth('token?grant_type=password',{email,password}); ssgSaveSession(data); await ssgLoadProjects();}catch(e){ssgSetStatus('Fout: '+e.message);}}
-function ssgSignOut(){ssgSession=null; localStorage.removeItem('ssg_session'); ssgSetStatus('Uitgelogd.'); const el=document.getElementById('ssg-projects'); if(el) el.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Uitgelogd.</div>';}
-async function ssgFetch(path,opts={}){const r=await fetch(`${SS_SBURL}/rest/v1/${path}`,{...opts,headers:{...ssgHeaders(!(opts.method==='GET'||!opts.method)),...(opts.headers||{})}}); const t=await r.text(); if(!r.ok) throw new Error(t||`HTTP ${r.status}`); if(!t) return null; try{return JSON.parse(t)}catch(e){return t;}}
-async function ssgCreateProject(){if(!ssgSession?.access_token) return ssgSetStatus('Log eerst in.'); const title=document.getElementById('ssg-title').value.trim(); const workflow_type=document.getElementById('ssg-workflow-type').value; const focus_keyword=document.getElementById('ssg-keyword').value.trim(); const target_url=document.getElementById('ssg-url').value.trim(); const description=document.getElementById('ssg-description').value.trim(); if(!title) return ssgStepStatus('Projecttitel ontbreekt.','#f87171'); const body={title,slug:ssgSlugify(title),workflow_type,status:'draft',focus_keyword,target_url,description}; try{await ssgFetch('ss_projects',{method:'POST',headers:{Prefer:'return=representation'},body:JSON.stringify(body)}); ssgStepStatus('Project opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
-async function ssgLoadProjects(){const wrap=document.getElementById('ssg-projects'); if(!wrap) return; if(!ssgSession?.access_token){wrap.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Log in om projecten te zien.</div>'; return;} try{const rows=await ssgFetch('ss_projects?select=*&order=updated_at.desc'); ssgProjects=Array.isArray(rows)?rows:[]; if(!ssgProjects.length){wrap.innerHTML='<div style="font-size:0.75em;color:var(--muted);">Nog geen projecten. Maak hierboven je eerste audit aan.</div>'; return;} wrap.innerHTML=ssgProjects.map(p=>`<div onclick="ssgSelectProject('${p.id}')" style="padding:12px;border:1px solid rgba(255,255,255,0.08);border-radius:12px;background:rgba(255,255,255,0.03);cursor:pointer;"><div style="display:flex;justify-content:space-between;gap:8px;align-items:center;"><div style="font-weight:700;color:var(--text);">${ssgEsc(p.title||'Zonder titel')}</div><div style="font-size:0.68em;color:#a78bfa;text-transform:uppercase;">${ssgEsc(p.status||'draft')}</div></div><div style="font-size:0.72em;color:var(--muted);margin-top:5px;">${ssgEsc(p.workflow_type||'')}</div><div style="font-size:0.72em;color:var(--muted);margin-top:5px;">${ssgEsc(p.focus_keyword||'geen keyword')} · ${ssgEsc(p.target_url||'geen URL')}</div></div>`).join('');}catch(e){wrap.innerHTML=`<div style="font-size:0.75em;color:#f87171;">Laden mislukt: ${ssgEsc(e.message)}</div>`;}}
-function ssgSelectProject(id){ssgCurrentProject=ssgProjects.find(p=>String(p.id)===String(id))||null; const el=document.getElementById('ssg-selected-project'); if(el) el.textContent=ssgCurrentProject?`${ssgCurrentProject.title} · ${ssgCurrentProject.workflow_type}`:'Geen project gekozen.'; ssgBuildPrompt();}
-function ssgBuildPrompt(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const prevKey=`ssg_prev_${ssgCurrentProject.id}_${step-1}`; const prev=step>1?(localStorage.getItem(prevKey)||''):''; const labels={1:'intake en scope',2:'feiten, prijzen en claims',3:'SEO en structuur',4:'affiliate links en commerciële juistheid',5:'consistentie met andere StekkerSlim-pagina\u2019s',6:'verbeterde versie',7:'eindoordeel en score',8:'finale HTML of tekst'}; const prompt=`Project: StekkerSlim Site Guardian
 
-Workflow: ${ssgCurrentProject.workflow_type}
-Stap: ${step} - ${labels[step]||''}
-Titel: ${ssgCurrentProject.title}
-Focus keyword: ${ssgCurrentProject.focus_keyword||'-'}
-URL: ${ssgCurrentProject.target_url||'-'}
+// ═══════════════════════════════════════════════════
+// PIPELINE DATA
+// ═══════════════════════════════════════════════════
+const SSP_PIPELINES = {
+  blog: {
+    label: 'Blog Pipeline',
+    steps: [
+      {
+        label: 'Stap 1 van 8 — Grok: Blogideeën',
+        aiLabel: 'Grok SEO & Growth',
+        url: 'https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447',
+        hasPrev: false,
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 1 VAN 8 \u2014 GROK: BLOGIDE\u00cbEN MAKEN\n\nROL\nJe bent Grok, de StekkerSlim Trend, Content & Blog Idea Scout.\n\nDOEL\nBedenk blogide\u00ebn voor StekkerSlim.nl die:\n- Nederlandse bezoekers echt helpen.\n- Kans hebben op organisch verkeer.\n- Passen bij StekkerSlim.\n- Waar passend een eerlijke affiliate- of productkoppeling kunnen hebben.\n- Praktisch, actueel en technisch betrouwbaar zijn.\n\nFOCUSONDERWERPEN\n- Plug-in thuisbatterijen\n- Saldering en de afbouw vanaf 2027\n- Dynamische energiecontracten\n- HomeWizard\n- Slimme stekkers\n- Home Assistant\n- Energiebesparing thuis\n- Energiemeting en P1-meters\n- Slim schakelen van apparaten\n\nOPDRACHT\nBedenk exact 15 blogide\u00ebn.\n\nGEBRUIK PER IDEE EXACT DIT FORMAT\nID:\nSEO-titel:\nPrimaire zoekvraag:\nZoekintentie: informatie / vergelijking / aankoop / probleemoplossing\nDoelgroep:\nWaarom dit nu relevant is:\nUnieke StekkerSlim-invalshoek:\nVerkeerskans: /10\nCommerci\u00eble waarde: /10\nAffiliatekan: /10\nRisico of aandachtspunt:\nMogelijke interne links op StekkerSlim:\nSocial hook voor TikTok, Short of Reel:\n\nEINDIG VERPLICHT MET\nTOP 5 RANGLIJST\n1. Titel + korte reden\n2. Titel + korte reden\n3. Titel + korte reden\n4. Titel + korte reden\n5. Titel + korte reden\n\nREGELS\n- Geen vage, algemene of generieke AI-ide\u00ebn.\n- Geen clickbait.\n- Verzin geen actuele cijfers, prijzen, wetten, regels of productdetails.\n- Selecteer alleen onderwerpen die praktisch zijn voor Nederlandse huishoudens.\n- Geef nog geen blog, outline of sociale posts; alleen ide\u00ebn volgens het verplichte format."
+      },
+      {
+        label: 'Stap 2 van 8 — Perplexity: Valideren',
+        aiLabel: 'Perplexity Auditor',
+        url: 'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',
+        hasPrev: true,
+        prevLabel: 'Grok',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 2 VAN 8 \u2014 PERPLEXITY: IDE\u00cbEN VALIDEREN OP ACTUALITEIT EN FEITEN\n\nROL\nJe bent Perplexity, de StekkerSlim Research & Factcheck Lead.\n\nDOEL\nOnderzoek en beoordeel kritisch de 5 beste blogide\u00ebn uit de vorige stap.\nGebruik recente, betrouwbare en bij voorkeur primaire Nederlandse bronnen.\n\nWAT JE MOET DOEN\nOnderzoek uitsluitend de TOP 5 uit de vorige stap.\n\nCONTROLEER PER IDEE\n1. Is dit onderwerp nu actueel en relevant in Nederland?\n2. Welke feiten, prijzen, regels, productclaims of berekeningen moeten v\u00f3\u00f3r publicatie worden gecontroleerd?\n3. Welke officiele of primaire bronnen zijn bruikbaar?\n4. Welke actuele ontwikkelingen, datums of wijzigingen zijn belangrijk?\n5. Welke praktische vragen stellen Nederlandse gebruikers waarschijnlijk?\n6. Welke invalshoek maakt dit aantoonbaar beter dan standaard content?\n7. Risico op snelle veroudering: laag / middel / hoog.\n8. Eindstatus: GO / AANPASSEN / STOP.\n\nGEBRUIK PER IDEE EXACT DIT FORMAT\nID:\nTitel:\nActualiteitsscore: /10\nBetrouwbaarheidsscore: /10\nVerkeerskans: /10\nCommerci\u00eble relevantie: /10\nStatus: GO / AANPASSEN / STOP\nGecontroleerde feiten en aandachtspunten:\nVerplichte bronnen voor de uiteindelijke blog:\nAanbevolen unieke invalshoek:\nRisico op veroudering:\nBronnen met URL:\n\nEINDIG VERPLICHT MET\nDEFINITIEVE TOP 3\n1. Titel \u2014 waarom nu publiceren\n2. Titel \u2014 waarom nu publiceren\n3. Titel \u2014 waarom nu publiceren\n\nREGELS\n- Iedere feitelijke conclusie krijgt minimaal \u00e9\u00e9n bron-URL.\n- Geen aannames.\n- Schrijf \"NIET BEVESTIGD\" wanneer actuele informatie niet betrouwbaar kan worden geverifieerd.\n- Neem Grok's beoordeling niet blind over; beoordeel zelfstandig en kritisch.\n- Geef nog geen blog of outline."
+      },
+      {
+        label: 'Stap 3 van 8 — Gemini: Site & SEO-check',
+        aiLabel: 'Gemini Groeiafdeling',
+        url: 'https://gemini.google.com/u/0/gem/c2b213f954f9',
+        hasPrev: true,
+        prevLabel: 'Perplexity',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 3 VAN 8 \u2014 GEMINI: SITE-OVERLAP, CONTENT GAP EN SEO-BRIEFING\n\nROL\nJe bent Gemini, de StekkerSlim Site, SEO & Content-Gap Checker.\n\nWEBSITE\nhttps://stekkerslim.nl\n\nDOEL\nBepaal welk gevalideerd blogide\u00e9 de beste keuze is voor StekkerSlim.\nVoorkom overlap, keyword cannibalisatie en een blog die beter als update van een bestaande pagina kan worden uitgevoerd.\n\nCONTROLEER PER IDEE\n1. Bestaat dit onderwerp al geheel of gedeeltelijk op StekkerSlim?\n2. Welke bestaande StekkerSlim-URL's kunnen concurreren met de nieuwe blog?\n3. Is er keyword cannibalisatie? Zo ja: hoe voorkom je die?\n4. Wat moet de unieke invalshoek van dit artikel worden?\n5. Is het beste besluit: nieuwe blog / bestaande pagina updaten / stop?\n6. Welke 3 tot 6 interne links moeten in de blog komen?\n7. Welke bestaande pagina's moeten later teruglinken naar de nieuwe blog?\n8. Wat zijn de beste SEO-title, meta description, H1 en H2/H3-structuur?\n9. Welke FAQ-vragen ontbreken op StekkerSlim?\n10. Welk structured-data type past eventueel: Article / FAQPage / Product / Review / geen?\n\nGEBRUIK PER IDEE EXACT DIT FORMAT\nID:\nTitel:\nBestaande concurrerende StekkerSlim-URL's:\nCannibalisatierisico: laag / middel / hoog\nBesluit: NIEUWE BLOG / BESTAANDE PAGINA UPDATEN / STOP\nUnieke invalshoek:\nSEO-title:\nMeta description:\nH1:\nH2/H3-structuur:\nInterne links in de nieuwe blog:\nBestaande pagina's die moeten teruglinken:\nFAQ's:\nSchema-advies:\nSEO-score: /10\nHandmatige controle voor Remy:\n\nEINDIG VERPLICHT MET\nWINNAAR VOOR PUBLICATIE\nGekozen onderwerp:\nWaarom:\nDefinitieve SEO-briefing voor Claude:"
+      },
+      {
+        label: 'Stap 4 van 8 — Claude: Blogoutline',
+        aiLabel: 'Claude StekkerSlim Bouwen',
+        url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9',
+        hasPrev: true,
+        prevLabel: 'Gemini',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 4 VAN 8 \u2014 CLAUDE: DEFINITIEVE BLOGOUTLINE\n\nROL\nJe bent Claude, hoofdschrijver van StekkerSlim.nl.\n\nDOEL\nMaak een complete, betrouwbare en SEO-kloppende outline voor de winnende blog.\n\nGEBRUIK\n- Alleen het winnende onderwerp uit de vorige stap.\n- Alleen feitelijke claims die aantoonbaar door Perplexity zijn bevestigd.\n- De SEO-structuur, interne links en waarschuwingen van Gemini.\n- Een nuchtere, technische, duidelijke StekkerSlim-stijl.\n\nLEVER EXACT\n1. Definitieve title tag, maximaal 60 tekens\n2. Meta description, maximaal 155 tekens\n3. H1\n4. Doelgroep\n5. Primaire zoekintentie\n6. Artikelbelofte in 2 zinnen\n7. Complete H2/H3-structuur\n8. Per sectie: doel, kernpunten, verplichte feitchecks en voorgestelde eigen Remy-asset\n9. Eeen praktisch rekenvoorbeeld, stappenplan of beslisboom\n10. Interne links met exacte ankertekst en URL\n11. FAQ met 4 tot 6 vragen en antwoorden\n12. Nuchtere CTA\n13. Lijst met feiten die vlak voor publicatie opnieuw gecontroleerd moeten worden\n\nREGELS\n- Schrijf nog geen volledige blog.\n- Verzin geen prijzen, details, besparingen, productspecificaties of regels.\n- Gebruik geen generieke AI-taal.\n- Maak het praktisch voor Nederlandse bezoekers.\n- Zet bij ieder voorstel voor een eigen foto een van deze placeholders:\n  <!-- ASSET: P1-in-meter.jpg -->\n  <!-- ASSET: app-screenshot.jpg -->\n  <!-- ASSET: doos-display.jpg -->\n  of: <!-- ASSET: REMY NOG KIEZEN -->"
+      },
+      {
+        label: 'Stap 5 van 8 — Grok: Outline review',
+        aiLabel: 'Grok Blog Checker',
+        url: 'https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8',
+        hasPrev: true,
+        prevLabel: 'Claude',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 5 VAN 8 \u2014 GROK: OUTLINE-REVIEW VOOR LEESBAARHEID EN PRAKTISCHE WAARDE\n\nROL\nJe bent Grok, StekkerSlim User Value & Content Reviewer.\n\nDOEL\nControleer of deze outline aantrekkelijk, concreet, praktisch en niet-generiek genoeg is voor een echte StekkerSlim-bezoeker.\n\nCONTROLEER\n1. Is de titel aantrekkelijk zonder clickbait?\n2. Is de structuur logisch en niet saai?\n3. Mist de lezer een belangrijke praktijkvraag?\n4. Is er genoeg unieke StekkerSlim-waarde?\n5. Welke secties zijn zwak, generiek of onnodig?\n6. Is het rekenvoorbeeld, stappenplan of de beslisboom nuttig?\n7. Welke 3 social hooks kunnen later veilig uit deze blog worden gehaald?\n\nLEVER EXACT\nScore aantrekkingskracht: /10\nScore praktische waarde: /10\nScore kans op uitlezen: /10\nSterkste onderdelen:\nMaximaal 7 concrete verbeteringen:\n3 veilige social hooks:\nStatus: GO / AANPASSEN / STOP\n\nREGELS\n- Geen volledige herschrijving.\n- Geen nieuwe feiten of claims verzinnen.\n- Geef alleen concrete verbeteringen."
+      },
+      {
+        label: 'Stap 6 van 8 — Perplexity: Feitencheck',
+        aiLabel: 'Perplexity Auditor',
+        url: 'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',
+        hasPrev: true,
+        prevLabel: 'Grok',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 6 VAN 8 \u2014 PERPLEXITY: FEITENCONTROLE VAN DE OUTLINE\n\nROL\nJe bent Perplexity, StekkerSlim Final Research Reviewer.\n\nDOEL\nControleer deze blogoutline en Grok-review op feitelijke veiligheid, actualiteit en noodzakelijke bronnen.\n\nWAT JE MOET DOEN\n1. Benoem claims die mogelijk onveilig, verouderd of onvoldoende onderbouwd zijn.\n2. Benoem bedragen, datums, regels, besparingen, specificaties of productclaims die een actuele bron nodig hebben.\n3. Geef minimaal een actuele bron-URL bij iedere feitelijke correctie.\n4. Geef veilige vervangformuleringen als een claim te stellig is.\n5. Beoordeel of de blog veilig geschreven kan worden.\n\nLEVER EXACT\nFeitelijke betrouwbaarheid: /10\nVerplichte bronchecks voor publicatie:\nClaims die niet zonder bron mogen:\nExacte veilige formuleringen:\nOntbrekende bronnen:\nStatus: GO / AANPASSEN / STOP\n\nREGELS\n- Geen volledige herschrijving.\n- Geen aannames.\n- Als iets niet hard kan worden bevestigd: schrijf \"NIET BEVESTIGD\".\n- Gebruik uitsluitend recente en betrouwbare bronnen waar mogelijk."
+      },
+      {
+        label: 'Stap 7 van 8 — Gemini: SEO-eindcheck',
+        aiLabel: 'Gemini Site Guardian',
+        url: 'https://gemini.google.com/u/0/gem/53bd2e7c05e5',
+        hasPrev: true,
+        prevLabel: 'Perplexity',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 7 VAN 8 \u2014 GEMINI: LAATSTE SEO- EN INTERNE-LINKCONTROLE\n\nROL\nJe bent Gemini, StekkerSlim SEO Final Reviewer.\n\nDOEL\nControleer of deze blogoutline en de feitelijke waarschuwingen SEO-technisch goed zijn voordat Claude de blog schrijft.\n\nCONTROLEER\n1. Sluit de gekozen titel, H1 en structuur aan op de zoekintentie?\n2. Is er mogelijk overlap of cannibalisatie met StekkerSlim-content?\n3. Zijn de interne links logisch, relevant en natuurlijk?\n4. Ontbreken belangrijke FAQ's, snippetkansen of headings?\n5. Is structured data zinvol en welk type past?\n6. Zijn er SEO-risico's door formuleringen die Perplexity als onzeker markeert?\n\nLEVER EXACT\nSEO-score: /10\nInterne-linkscore: /10\nCannibalisatierisico: laag / middel / hoog\nMaximaal 7 exacte SEO-verbeteringen:\nDefinitieve title:\nDefinitieve meta description:\nDefinitieve H1:\nDefinitieve interne links:\nSchema-advies:\nStatus: GO / AANPASSEN / STOP\n\nREGELS\n- Geen volledige herschrijving.\n- Geef geen algemeen advies.\n- Corrigeer alleen met concrete titel, heading, URL of ankertekst.\n- Neem de waarschuwingen van Perplexity verplicht mee."
+      },
+      {
+        label: 'Stap 8 van 8 — Claude: Definitieve HTML',
+        aiLabel: 'Claude StekkerSlim Bouwen',
+        url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9',
+        hasPrev: true,
+        prevLabel: 'Gemini',
+        prompt: "PROJECT: STEKKERSLIM BLOG PIPELINE\nSTAP 8 VAN 8 \u2014 CLAUDE: DEFINITIEVE BLOG IN HTML\n\nROL\nJe bent Claude, eindredacteur en hoofdschrijver van StekkerSlim.nl.\n\nDOEL\nSchrijf de definitieve, direct plaatsbare StekkerSlim-blog in volledige HTML.\n\nVERWERK VERPLICHT\n- De outline en inhoudelijke keuzes uit de vorige stappen.\n- Alle feitelijke waarschuwingen en veilige formuleringen van Perplexity.\n- De definitieve SEO-keuzes, interne links en schema-aanbevelingen van Gemini.\n- Alleen de nuttige UX- en aantrekkingskrachtverbeteringen van Grok.\n\nVEREISTEN VOOR DE HTML\n- Lever een volledig direct plaatsbaar HTML-blok.\n- Schrijf duidelijk Nederlands: nuchter, technisch en praktisch.\n- Gebruik korte alinea's, tussenkoppen, bullets waar nuttig en echte beslisinformatie.\n- Gebruik geen ongecontroleerde prijzen, besparingen, specificaties of regelgeving.\n- Voeg interne links toe met natuurlijke ankertekst.\n- Voeg een FAQ-sectie toe.\n- Voeg actuele bronverwijzingen toe waar nodig.\n- Voeg een transparante affiliate-disclaimer toe als affiliatelinks voorkomen.\n- Voeg placeholders voor Remy-assets toe:\n  <!-- ASSET: P1-in-meter.jpg -->\n  <!-- ASSET: app-screenshot.jpg -->\n  <!-- ASSET: doos-display.jpg -->\n  <!-- ASSET: REMY NOG KIEZEN -->\n\nBEGIN VERPLICHT MET\nCHANGELOG\n- Verwerkt:\n- Niet verwerkt:\n- Laatste handmatige controles voor publicatie:\n\nDAARNET DEFINITIEVE HTML\n\nREGELS\n- Als een feit niet bevestigd is, gebruik het niet als feit in de tekst.\n- Zet onzekere informatie alleen neer als voorzichtige, transparante formulering.\n- Geen generieke AI-zinnen.\n- Geen keyword stuffing."
+      }
+    ]
+  },
+  site: {
+    label: 'Site Guardian Pipeline',
+    steps: [
+      {
+        label: 'Stap 1 van 4 — Gemini: Technische audit',
+        aiLabel: 'Gemini Site Guardian',
+        url: 'https://gemini.google.com/u/0/gem/53bd2e7c05e5',
+        hasPrev: false,
+        prompt: "PROJECT: STEKKERSLIM SITE GUARDIAN\nSTAP 1 VAN 4 \u2014 GEMINI: TECHNISCHE & SEO AUDIT\n\nROL\nJe bent Gemini, de StekkerSlim Site Guardian.\n\nWEBSITE\nhttps://stekkerslim.nl\n\nDOEL\nVoer een volledige technische en SEO-audit uit van StekkerSlim.nl.\n\nCONTROLEER\n1. Welke pagina's hebben SEO-problemen (titel, meta, H1, structured data)?\n2. Welke pagina's zijn mogelijk niet indexeerbaar of hebben technische fouten?\n3. Welke interne links ontbreken of zijn incorrect?\n4. Welke content is verouderd of mist een actualiteitsdatum?\n5. Welke affiliate-pagina's kunnen verbeterd worden qua conversie?\n6. Welke pagina's ontbreken helemaal op basis van de StekkerSlim-niche?\n7. Welke Core Web Vitals-aandachtspunten zijn zichtbaar?\n\nLEVER EXACT\nPer gevonden issue:\n  Pagina-URL:\n  Type issue: SEO / technisch / content / intern linkprofiel\n  Ernst: kritiek / middel / laag\n  Beschrijving:\n  Aanbevolen actie:\n\nEINDIG MET\nTOP 5 PRIORITEITEN (meeste impact voor StekkerSlim)\n\nREGELS\n- Noem alleen concrete URL's en echte issues.\n- Geen algemeen SEO-advies.\n- Geef aan wat je niet kunt controleren en wat Remy handmatig moet doen."
+      },
+      {
+        label: 'Stap 2 van 4 — Perplexity: Feitencheck',
+        aiLabel: 'Perplexity Auditor',
+        url: 'https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A',
+        hasPrev: true,
+        prevLabel: 'Gemini',
+        prompt: "PROJECT: STEKKERSLIM SITE GUARDIAN\nSTAP 2 VAN 4 \u2014 PERPLEXITY: FEITEN, PRIJZEN EN REGELGEVING\n\nROL\nJe bent Perplexity, de StekkerSlim Research Reviewer.\n\nDOEL\nControleer de gevonden issues op feitelijke juistheid en actualiteit.\n\nWAT JE CONTROLEERT\n1. Welke prijs- of productclaims op StekkerSlim zijn verouderd of incorrect?\n2. Welke regelgeving (saldering, subsidies, netcongestie) is gewijzigd?\n3. Welke technische specs van genoemde producten zijn verouderd?\n4. Welke affiliate-claims kloppen niet meer met de huidige markt?\n5. Welke bronnen moeten worden bijgewerkt of toegevoegd?\n\nLEVER PER GEVONDEN PUNT\nURL:\nClaim of inhoud:\nStatus: CORRECT / VEROUDERD / NIET BEVESTIGD\nActuele situatie:\nBron met URL:\nAanbeveling:\n\nEINDIG MET\nUrgentielijst (wat moet als eerste worden aangepast)"
+      },
+      {
+        label: 'Stap 3 van 4 — Grok: UX & conversie',
+        aiLabel: 'Grok Site Checker',
+        url: 'https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4',
+        hasPrev: true,
+        prevLabel: 'Perplexity',
+        prompt: "PROJECT: STEKKERSLIM SITE GUARDIAN\nSTAP 3 VAN 4 \u2014 GROK: UX, CONTENT EN CONVERSIE\n\nROL\nJe bent Grok, de StekkerSlim UX & Conversie Reviewer.\n\nDOEL\nBeoordeel StekkerSlim.nl vanuit het perspectief van de Nederlandse bezoeker.\n\nCONTROLEER\n1. Welke pagina's zijn onduidelijk, te lang of verwarrend voor een nieuwe bezoeker?\n2. Welke CTA's zijn zwak of ontbreken?\n3. Welke pagina's missen vertrouwenssignalen (reviews, bronnen, data)?\n4. Welke content is te generiek of te weinig onderscheidend van concurrenten?\n5. Welke pagina's scoren waarschijnlijk slecht op mobiel qua leesbaarheid?\n6. Welke affiliate-koppeling is te opdringerig of juist te verborgen?\n\nLEVER PER PAGINA\nURL:\nUX-score: /10\nSterkste punt:\nZwakste punt:\nTop 3 concrete verbeteringen:\n\nEINDIG MET\nTop 5 pagina's die het meeste conversiewinst opleveren als ze verbeterd worden"
+      },
+      {
+        label: 'Stap 4 van 4 — Claude: Actielijst & fixes',
+        aiLabel: 'Claude StekkerSlim Bouwen',
+        url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9',
+        hasPrev: true,
+        prevLabel: 'Grok',
+        prompt: "PROJECT: STEKKERSLIM SITE GUARDIAN\nSTAP 4 VAN 4 \u2014 CLAUDE: DEFINITIEVE ACTIELIJST + VERVANGENDE HTML\n\nROL\nJe bent Claude, eindredacteur en technisch schrijver van StekkerSlim.nl.\n\nDOEL\nMaak een definitieve, direct uitvoerbare actielijst op basis van alle reviews.\n\nLEVER\n1. Gesorteerde actielijst (kritiek → middel → laag) met per item:\n   - Pagina-URL\n   - Actie\n   - Tijdsinschatting\n   - Verwacht effect\n\n2. Voor de top 3 kritieke issues: directe vervangende HTML-snippet of tekst\n\n3. Changelog voor Remy:\n   - Wat is gecontroleerd\n   - Wat moet nog handmatig worden gedaan\n   - Aanbevolen volgorde van uitvoering\n\nREGELS\n- Geen algemene aanbevelingen.\n- Alleen concrete acties met URL en uitvoerbare stap.\n- Gebruik alleen wat door Perplexity is bevestigd als feit."
+      }
+    ]
+  },
+  seo: {
+    label: 'SEO & Growth Pipeline',
+    steps: [
+      {
+        label: 'Stap 1 van 4 — Grok: Groeikansen',
+        aiLabel: 'Grok SEO & Growth',
+        url: 'https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447',
+        hasPrev: false,
+        prompt: "PROJECT: STEKKERSLIM SEO & GROWTH\nSTAP 1 VAN 4 \u2014 GROK: GROEIKANSEN\n\nROL\nJe bent Grok, de StekkerSlim SEO & Growth Scout.\n\nWEBSITE\nhttps://stekkerslim.nl\n\nDOEL\nVind 10 concrete groeikansen voor meer verkeer, conversie of zichtbaarheid van StekkerSlim.nl.\n\nFOCUS\n- Zoekwoorden met realistisch potentieel voor StekkerSlim\n- Trending onderwerpen in de energie/domotica-niche in Nederland\n- Affiliate-kansen die nog niet of nauwelijks worden benut\n- Content gaps ten opzichte van concurrenten\n- Quick wins die weinig tijd kosten maar snel scoren\n\nGEBRUIK PER KANS EXACT DIT FORMAT\nID:\nTitel:\nType: verkeer / conversie / zichtbaarheid / affiliate\nBeschrijving:\nVerkeerspotentieel: /10\nCommercieel potentieel: /10\nUitvoerbaarheid (tijd/kosten): /10\nSocial hook:\n\nEINDIG MET\nTOP 5 KANSEN (beste ROI voor Remy)\n1. Kans + hook\n2. Kans + hook\n3. Kans + hook\n4. Kans + hook\n5. Kans + hook\n\nREGELS\n- Geen vage groeiadviezen.\n- Geen verzin-cijfers voor zoekvolumes.\n- Alleen kansen die passen bij StekkerSlim's bestaande niche en toon."
+      },
+      {
+        label: 'Stap 2 van 4 — Perplexity: Valideren',
+        aiLabel: 'Perplexity Groeiafdeling',
+        url: 'https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg',
+        hasPrev: true,
+        prevLabel: 'Grok',
+        prompt: "PROJECT: STEKKERSLIM SEO & GROWTH\nSTAP 2 VAN 4 \u2014 PERPLEXITY: VALIDEREN EN RANGSCHIKKEN\n\nROL\nJe bent Perplexity, de StekkerSlim Research & Validatielead.\n\nDOEL\nValideer de TOP 5 groeikansen van Grok op basis van actuele data en bronnen.\n\nCONTROLEER PER KANS\n1. Is dit zoekwoord of onderwerp actueel en relevant in Nederland?\n2. Wat zijn realistische zoekvolumes of trends (gebruik bronnen)?\n3. Welke concurrenten scoren hier al op en met welke content?\n4. Klopt de affiliate-invalshoek met de huidige markt?\n5. Welke risico's zijn er (snelle veroudering, regelwijziging, concurrentie)?\n6. Status: GO / AANPASSEN / STOP\n\nGEBRUIK PER KANS EXACT DIT FORMAT\nID:\nTitel:\nActualiteitsscore: /10\nConcurrentiepositie: sterk / middel / zwak\nValidatie:\nBronnen met URL:\nRisico:\nStatus: GO / AANPASSEN / STOP\n\nEINDIG MET\nDEFINITIEVE TOP 3 VOOR UITWERKING"
+      },
+      {
+        label: 'Stap 3 van 4 — Gemini: Gaps & prioriteiten',
+        aiLabel: 'Gemini Groeiafdeling',
+        url: 'https://gemini.google.com/u/0/gem/c2b213f954f9',
+        hasPrev: true,
+        prevLabel: 'Perplexity',
+        prompt: "PROJECT: STEKKERSLIM SEO & GROWTH\nSTAP 3 VAN 4 \u2014 GEMINI: CONTENT GAPS EN PRIORITEITEN\n\nROL\nJe bent Gemini, de StekkerSlim Content Gap & Prioriteit Reviewer.\n\nWEBSITE\nhttps://stekkerslim.nl\n\nDOEL\nBepaal welke van de gevalideerde groeikansen het meeste effect heeft en hoe die te implementeren.\n\nCONTROLEER\n1. Welke kansen sluiten aan op bestaande sterke pagina's van StekkerSlim?\n2. Welke kansen vullen een echte content gap die concurrenten ook nog niet hebben?\n3. Welke interne links kunnen het nieuwe groeionderwerp versterken?\n4. Wat is de aanbevolen contentvorm: blog / pagina / FAQ / video-script / social?\n5. Welke kans levert de beste combinatie van verkeer + conversie + snelheid?\n\nLEVER EXACT\nPer kans:\n  Content gap aanwezig: ja / nee\n  Aansluitende StekkerSlim-URL's:\n  Aanbevolen contentvorm:\n  Interne links die moeten verwijzen:\n  Prioriteitsscore: /10\n\nEINDIG MET\nWINNAAR MET 7-DAGENPLAN\nKans:\nActie dag 1-2:\nActie dag 3-4:\nActie dag 5-6:\nActie dag 7:"
+      },
+      {
+        label: 'Stap 4 van 4 — Claude: Actieplan',
+        aiLabel: 'Claude StekkerSlim Bouwen',
+        url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9',
+        hasPrev: true,
+        prevLabel: 'Gemini',
+        prompt: "PROJECT: STEKKERSLIM SEO & GROWTH\nSTAP 4 VAN 4 \u2014 CLAUDE: TOP 3 + 7-DAGENPLAN\n\nROL\nJe bent Claude, strategisch adviseur en schrijver van StekkerSlim.nl.\n\nDOEL\nMaak een definitief, direct uitvoerbaar groeiplan op basis van alle vorige stappen.\n\nLEVER\n1. TOP 3 BEST COURSE OF ACTION\n   Per actie:\n   - Wat precies\n   - Waarom (onderbouwing vanuit Perplexity + Gemini)\n   - Verwacht resultaat\n   - Benodigde tijd\n\n2. 7-DAGENPLAN\n   Per dag: concrete taak, tool of platform, verwacht resultaat\n\n3. QUICK WIN\n   Eeen actie die vandaag nog kan worden uitgevoerd en direct effect heeft\n\n4. LANGETERMIJNKANS\n   Eeen kans die nu wordt ingezet maar pas over 2-3 maanden effect heeft\n\nREGELS\n- Geen algemene groeiadviezen.\n- Alleen concrete, uitvoerbare acties die passen bij Remy's beschikbare tijd.\n- Gebruik alleen wat door Perplexity is bevestigd als feit."
+      }
+    ]
+  }
+};
 
-Bronmateriaal / notities / blogtekst:
-${ssgCurrentProject.description||'-'}
+// ═══════════════════════════════════════════════════
+// PIPELINE STATE
+// ═══════════════════════════════════════════════════
+let sspPipeline = 'blog';
+let sspStepIdx  = 0;
 
-Taken:
-- Werk alleen aan stap ${step}.
-- Wees streng, concreet en actueel.
-- Controleer waar relevant feiten, prijzen, data, claims, affiliate-insteek, interne links en SEO.
-- Geef duidelijke bullets en uitvoerbare verbeterpunten.
-- Als iets niet zeker te verifiëren is, zeg dat expliciet.
+function sspKey(pipeline, stepIdx) {
+  return 'ssp_' + pipeline + '_' + stepIdx;
+}
+function sspStatus(msg, color) {
+  color = color || '#10b981';
+  const el = document.getElementById('ssp-status');
+  if (el) { el.style.color = color; el.textContent = msg; setTimeout(() => { if (el) el.textContent = ''; }, 2800); }
+}
 
-Outputformat:
-1. Bevindingen
-2. Risico's
-3. Concrete verbeterpunten
-4. Aangepaste tekst of sectie voor deze stap
+function sspGetPrompt(pipeline, stepIdx) {
+  const steps = SSP_PIPELINES[pipeline].steps;
+  const step  = steps[stepIdx];
+  let prompt  = step.prompt;
+  if (step.hasPrev) {
+    const prev = localStorage.getItem(sspKey(pipeline, stepIdx - 1)) || '';
+    const label = step.prevLabel || 'vorige AI';
+    if (prev) {
+      prompt += '\n\nINPUT VORIGE STAP (' + label + '):\n' + prev;
+    } else {
+      prompt += '\n\nINPUT VORIGE STAP:\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN ' + label.toUpperCase() + ']';
+    }
+  }
+  return prompt;
+}
 
-Vorige stap output:
-${prev||'(geen vorige output opgeslagen)'}
-`; document.getElementById('ssg-prompt').value=prompt; ssgStepStatus('Prompt opgebouwd.','#38bdf8');}
-async function ssgCopyPrompt(){const el=document.getElementById('ssg-prompt'); if(!el||!el.value.trim()) return ssgStepStatus('Eerst prompt bouwen.','#f87171'); await navigator.clipboard.writeText(el.value); ssgStepStatus('Prompt gekopieerd.','#10b981');}
-function ssgOpenAi(){const step=parseInt(document.getElementById('ssg-step').value,10); window.open(SSG_AI_LINKS[step]||'https://www.perplexity.ai','_blank','noopener'); ssgStepStatus('AI-project geopend.','#a78bfa');}
-async function ssgSaveStepOutput(){if(!ssgCurrentProject) return ssgStepStatus('Kies eerst een project.','#f87171'); const step=parseInt(document.getElementById('ssg-step').value,10); const output=document.getElementById('ssg-output').value.trim(); const prompt=document.getElementById('ssg-prompt').value.trim(); if(!output) return ssgStepStatus('Geen output om op te slaan.','#f87171'); const ai_provider=step===2||step===4||step===8?'grok':(step===5||step===6?'gemini':'perplexity'); const step_title=document.getElementById('ssg-step').selectedOptions[0].textContent; const body={project_id:ssgCurrentProject.id,user_id:ssgSession.user?.id||ssgSession.user?.sub,step_order:step,step_key:`step_${step}`,step_title,ai_provider,prompt_text:prompt,output_text:output,status:'done',completed_at:new Date().toISOString()}; try{await ssgFetch('ss_pipeline_steps?on_conflict=project_id,step_order',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},body:JSON.stringify(body)}); localStorage.setItem(`ssg_prev_${ssgCurrentProject.id}_${step}`,output); const patch={status:step>=8?'final':step>=6?'review':'in_progress'}; if(step>=8){patch.final_content=output; patch.final_content_type=ssgCurrentProject.workflow_type==='blog'?'html':'text'; patch.finalised_at=new Date().toISOString();} await ssgFetch(`ss_projects?id=eq.${ssgCurrentProject.id}`,{method:'PATCH',body:JSON.stringify(patch)}); ssgStepStatus('Stapoutput opgeslagen.','#10b981'); await ssgLoadProjects();}catch(e){ssgStepStatus('Opslaan mislukt: '+e.message,'#f87171');}}
+function sspRender() {
+  const pipeline = SSP_PIPELINES[sspPipeline];
+  const steps    = pipeline.steps;
+  const step     = steps[sspStepIdx];
+  const saved    = localStorage.getItem(sspKey(sspPipeline, sspStepIdx)) || '';
+
+  // step label
+  const lbl = document.getElementById('ssp-step-label');
+  if (lbl) lbl.textContent = step.label;
+
+  // AI button label
+  const aiBtn = document.getElementById('ssp-ai-btn');
+  if (aiBtn) aiBtn.textContent = '\uD83D\uDD17 ' + step.aiLabel;
+
+  // prompt
+  const promptEl = document.getElementById('ssp-prompt');
+  if (promptEl) promptEl.value = sspGetPrompt(sspPipeline, sspStepIdx);
+
+  // output
+  const outEl = document.getElementById('ssp-output');
+  if (outEl) outEl.value = saved;
+
+  // saved badge
+  const badge = document.getElementById('ssp-saved-badge');
+  if (badge) badge.textContent = saved ? '\u2713 opgeslagen' : '';
+
+  // dots
+  const dotsEl = document.getElementById('ssp-dots');
+  if (dotsEl) {
+    dotsEl.innerHTML = steps.map((_, i) => {
+      const done = !!localStorage.getItem(sspKey(sspPipeline, i));
+      const active = i === sspStepIdx;
+      const col = done ? '#10b981' : (active ? '#a78bfa' : 'rgba(255,255,255,0.15)');
+      const size = active ? '10px' : '8px';
+      return '<div style="width:' + size + ';height:' + size + ';border-radius:50%;background:' + col + ';transition:all 0.2s;cursor:pointer;" onclick="sspGoTo(' + i + ')" title="Stap ' + (i + 1) + '"></div>';
+    }).join('');
+  }
+
+  // tabs
+  ['blog', 'site', 'seo'].forEach(p => {
+    const tab = document.getElementById('ssp-tab-' + p);
+    if (!tab) return;
+    const active = p === sspPipeline;
+    const colors = { blog: '#fbbf24', site: '#a78bfa', seo: '#38bdf8' };
+    const col = colors[p];
+    if (active) {
+      tab.style.borderColor = 'rgba(' + (p === 'blog' ? '251,191,36' : p === 'site' ? '167,139,250' : '56,189,248') + ',0.45)';
+      tab.style.background  = 'rgba(' + (p === 'blog' ? '251,191,36' : p === 'site' ? '167,139,250' : '56,189,248') + ',0.14)';
+      tab.style.color = col;
+    } else {
+      tab.style.borderColor = 'var(--border)';
+      tab.style.background  = 'rgba(255,255,255,0.04)';
+      tab.style.color = 'var(--muted)';
+    }
+  });
+}
+
+function sspSetPipeline(p) {
+  sspPipeline = p;
+  sspStepIdx  = 0;
+  sspRender();
+}
+function sspGoTo(i) {
+  sspStepIdx = i;
+  sspRender();
+}
+function sspPrevStep() {
+  if (sspStepIdx > 0) { sspStepIdx--; sspRender(); }
+}
+function sspNextStep() {
+  const steps = SSP_PIPELINES[sspPipeline].steps;
+  if (sspStepIdx < steps.length - 1) { sspStepIdx++; sspRender(); }
+}
+function sspCopyPrompt() {
+  const el = document.getElementById('ssp-prompt');
+  if (!el) return;
+  navigator.clipboard.writeText(el.value).then(() => sspStatus('\u2713 Prompt gekopieerd!')).catch(() => {
+    el.select(); document.execCommand('copy'); sspStatus('\u2713 Gekopieerd (fallback)');
+  });
+}
+function sspOpenAI() {
+  const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
+  window.open(step.url, '_blank', 'noopener');
+  sspStatus('\u2713 ' + step.aiLabel + ' geopend.', '#a78bfa');
+}
+function sspSave() {
+  const outEl = document.getElementById('ssp-output');
+  if (!outEl || !outEl.value.trim()) { sspStatus('\u26A0 Plak eerst een antwoord.', '#f87171'); return; }
+  localStorage.setItem(sspKey(sspPipeline, sspStepIdx), outEl.value.trim());
+  sspRender();
+  sspStatus('\u2713 Opgeslagen! De volgende stap heeft dit antwoord automatisch erin.');
+}
+function sspShare() {
+  const outEl = document.getElementById('ssp-output');
+  const text = outEl ? outEl.value.trim() : '';
+  if (!text) { sspStatus('\u26A0 Niets om te delen.', '#f87171'); return; }
+  if (navigator.share) {
+    navigator.share({ text: text }).catch(() => {});
+  } else {
+    navigator.clipboard.writeText(text).then(() => sspStatus('\u2713 Gekopieerd naar klembord.')).catch(() => {});
+  }
+}
+function sspDelete() {
+  localStorage.removeItem(sspKey(sspPipeline, sspStepIdx));
+  const outEl = document.getElementById('ssp-output');
+  if (outEl) outEl.value = '';
+  sspRender();
+  sspStatus('Verwijderd.', '#f87171');
+}
+
+function openStekkerSlimGuardian() {
+  const el = document.getElementById('ssp-overlay');
+  if (el) { el.style.display = 'block'; sspRender(); }
+}
+function closeSSP() {
+  const el = document.getElementById('ssp-overlay');
+  if (el) el.style.display = 'none';
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeSSP();
+});
 </script>
 
 <script>
