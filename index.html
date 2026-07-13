@@ -2021,12 +2021,18 @@ function sspShare() {
 }
 function sspDownloadHtml() {
   const outEl=document.getElementById('ssp-output'); if(!outEl||!outEl.value.trim()) { sspStatus('\u26A0 Sla eerst het Claude-antwoord op.','#f87171'); return; }
-  const html=outEl.value.trim();
+  // Strip markdown code fences als Claude die per ongeluk meegeeft (```html...``` of ```...```)
+  let html=outEl.value.trim();
+  html=html.replace(/^```(?:html)?\n?/i,'').replace(/\n?```\s*$/,'').trim();
+  // Voeg basis HTML-structuur toe als Claude alleen een fragment geeft (geen <!DOCTYPE>)
+  if (!html.toLowerCase().startsWith('<!doctype') && !html.toLowerCase().startsWith('<html')) {
+    html = '<!DOCTYPE html>\n<html lang="nl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>\n<body>\n' + html + '\n</body>\n</html>';
+  }
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='stekkerslim-blog-final.html';
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  sspStatus('\u2713 HTML-bestand gedownload! Hernoem het naar de juiste slug en push naar GitHub.','#a78bfa');
+  sspStatus('\u2713 .html bestand gedownload \u2014 hernoem naar de juiste slug en push naar GitHub.','#a78bfa');
 }
 function sspCopyForDrive() {
   const outEl=document.getElementById('ssp-output'); if(!outEl||!outEl.value.trim()) { sspStatus('\u26A0 Sla eerst op.','#f87171'); return; }
