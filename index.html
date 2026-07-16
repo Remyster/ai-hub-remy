@@ -1133,6 +1133,7 @@ header h1 {
       <button class="pb-type" data-type="analyse">🔬 Analyse</button>
       <button class="pb-type" data-type="roleplay">🎭 Roleplay</button>
     </div>
+    <div id="pb-type-hint" style="font-size:0.68em;color:#cc785c;background:rgba(204,120,92,0.07);border:1px solid rgba(204,120,92,0.18);border-radius:8px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
 
     <span class="pb-label">💡 Jouw idee (hoe ruwer hoe beter)</span>
     <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af..."></textarea>
@@ -4409,11 +4410,23 @@ document.querySelectorAll('.pb-pill').forEach(btn => {
 });
 
 // Type pills
+const PB_TYPE_HINTS = {
+  tekst:    '📝 Tekst — voor schrijven, samenvatten, uitleggen, e-mails, blogposts, sociale posts, vertalingen en alles met woorden.',
+  beeld:    '🎨 Beeld — voor AI-beeldgeneratie (Stable Diffusion, Midjourney, Imagen). De prompt builder voegt automatisch stijl, compositie, belichting en technische parameters toe.',
+  code:     '💻 Code — voor code schrijven, debuggen of uitleggen. Geef de taal, wat het moet doen en eventuele edge cases — de builder structureert het als een heldere technische opdracht.',
+  analyse:  '🔬 Analyse — voor data interpreteren, situaties beoordelen, vergelijken, voor- en nadelen afwegen of conclusies trekken uit tekst of cijfers.',
+  roleplay: '🎭 Roleplay — voor een persona, karakter of expert-rol. De AI speelt een specifieke rol; de builder definieert de persona, stijl, grenzen en context voor je.'
+};
 document.querySelectorAll('.pb-type').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.pb-type').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     pbType = btn.dataset.type;
+    const hint = document.getElementById('pb-type-hint');
+    if (hint && PB_TYPE_HINTS[pbType]) {
+      hint.textContent = PB_TYPE_HINTS[pbType];
+      hint.style.display = 'block';
+    }
   });
 });
 
