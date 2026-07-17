@@ -17,19 +17,25 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #07080f;
-  --surface: rgba(255,255,255,0.04);
-  --border: rgba(255,255,255,0.08);
-  --text: #e8eaf0;
-  --muted: rgba(255,255,255,0.35);
+  --bg: #0d1017;
+  --bg-grad: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(99,102,241,0.06), transparent);
+  --surface: rgba(255,255,255,0.03);
+  --surface-hover: rgba(255,255,255,0.055);
+  --border: rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.12);
+  --text: #e6e8ee;
+  --muted: rgba(230,232,238,0.42);
+  --accent: #818cf8;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   background: var(--bg);
+  background-image: var(--bg-grad);
+  background-attachment: fixed;
   font-family: 'DM Mono', monospace;
   color: var(--text);
   min-height: 100vh;
-  padding: 40px 24px 60px;
+  padding: 32px 24px 60px;
   overflow-x: hidden;
 }
 body::before {
@@ -1146,8 +1152,14 @@ header h1 {
       <div class="pb-actions">
         <button class="pb-copy" onclick="copyPrompt()">📋 Kopieer prompt</button>
         <button class="pb-again" onclick="generatePrompt()">↻ Andere versie</button>
+        <button class="pb-copy" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.28);color:#38bdf8;" onclick="pblibSaveCurrentPrompt()">💾 Bewaar</button>
       </div>
     </div>
+
+    <details id="pb-lib" style="margin-top:14px;">
+      <summary style="font-size:0.68em;color:var(--muted);cursor:pointer;letter-spacing:0.06em;padding:4px 0;" onclick="setTimeout(pblibRender, 50)">💾 Opgeslagen prompts (<span id="pb-lib-count">0</span>)</summary>
+      <div id="pb-lib-list" style="margin-top:8px;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;"></div>
+    </details>
 
     <div class="pb-error" id="pb-error"></div>
     <!-- Multi-platform output -->
@@ -1557,6 +1569,7 @@ header h1 {
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
       <span class="hbtn" style="color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#ef4444;background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.18);" onclick="document.getElementById('pomo-modal-overlay').style.display='flex'">⏱️ Timer</span>
+      <span class="hbtn hbtn-muted" onclick="openCmdPalette()" title="Zoek alles (Ctrl+K)">🔍 Zoek <span style="font-size:0.8em;opacity:0.6;">(Ctrl+K)</span></span>
     </div>
   </header>
 
@@ -1660,104 +1673,85 @@ header h1 {
     </div>
   </section>
 
-  <!-- TOOLS -->
-  <!-- AFFILIATE & STEKKERSLIM -->
-  <section class="section" id="sec-affiliate">
-    <div class="section-label">Affiliate &amp; Stekkerslim</div>
+  <!-- STEKKERSLIM (alles bij elkaar) -->
+  <section class="section" id="sec-stekkerslim">
+    <div class="section-label">⚡ StekkerSlim</div>
     <div class="grid">
-      <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent</p>
-      </a>
-      <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim.nl</h2><p>Website</p>
+      <a href="#" class="card affiliate" onclick="openStekkerSlimGuardian(); return false;" style="border-color:rgba(251,191,36,0.35);background:linear-gradient(135deg,rgba(251,191,36,0.07),rgba(255,255,255,0.02));">
+        <div class="dot"></div>
+        <h2>🚀 AI Pipeline</h2><p>Blog · Site check · SEO — 12 staps workflow</p>
       </a>
       <a href="https://github.com/Remyster/stekkerslim" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🐙 Stekkerslim GitHub</h2><p>Repository</p>
+        <div class="dot"></div>
+        <h2>🐙 GitHub</h2><p>Repository &amp; kennisbank</p>
       </a>
-      <a href="https://my.daisycon.com/dashboard" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🌼 Daisycon</h2><p>Affiliate dashboard</p>
+      <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
+        <div class="dot"></div>
+        <h2>🔌 Stekkerslim.nl</h2><p>Live website</p>
       </a>
-      <a href="https://affiliate.bol.com/nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📦 bol.com Affiliate</h2><p>Partner programma</p>
-      </a>
-      <a href="https://ui.awin.com/idp/en/awin/login/prelogin?redirect=%2Flogin%3FnetworkGroup%3Dawin" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔗 Awin</h2><p>Affiliate netwerk</p>
-      </a>
-      <a href="https://www.amazon.nl/ref=nav_logo" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🛒 Amazon NL</h2><p>Affiliate shop</p>
-      </a>
-      <a href="https://search.google.com/search-console?resource_id=sc-domain%3Astekkerslim.nl" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📊 Search Console</h2><p>Stekkerslim.nl SEO</p>
+      <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
+        <div class="dot"></div>
+        <h2>🔧 Bouwen</h2><p>Project assistent &amp; keuring</p>
       </a>
       <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <div class="dot"></div>
         <h2>✍️ StekkerPen</h2><p>Blog &amp; Pinterest schrijver</p>
       </a>
       <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <div class="dot"></div>
         <h2>📣 StekkerBoost</h2><p>Facebook Ads &amp; campagnes</p>
       </a>
       <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <div class="dot"></div>
         <h2>💬 StekkerDesk</h2><p>Bezoekersvragen &amp; support</p>
       </a>
-
-    </div>
-  </section>
-
-  <!-- STEKKERSLIM CHECKER -->
-  <section class="section" id="sec-stekkerslim-checker">
-    <div class="section-label">Stekkerslim Checker</div>
-    <div class="grid">
-      <a href="https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4" class="card affiliate" target="_blank" rel="noopener noreferrer">
+      <a href="https://search.google.com/search-console?resource_id=sc-domain%3Astekkerslim.nl" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
-        <h2>🔍 Grok Site Checker</h2><p>Grok · Site analyse</p>
+        <h2>📊 Search Console</h2><p>SEO &amp; indexering</p>
       </a>
-      <a href="https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447" class="card affiliate" target="_blank" rel="noopener noreferrer">
+      <a href="https://my.daisycon.com/dashboard" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
-        <h2>📈 Grok SEO & Growth</h2><p>Grok · SEO en groei</p>
+        <h2>🌼 Daisycon</h2><p>Affiliate dashboard</p>
       </a>
-      <a href="https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8" class="card affiliate" target="_blank" rel="noopener noreferrer">
+      <a href="https://affiliate.bol.com/nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
-        <h2>✍️ Grok Blog Checker</h2><p>Grok · Blog review</p>
+        <h2>📦 bol.com</h2><p>Partner programma</p>
       </a>
-      <a href="https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg" class="card affiliate" target="_blank" rel="noopener noreferrer">
+      <a href="https://ui.awin.com/idp/en/awin/login/prelogin?redirect=%2Flogin%3FnetworkGroup%3Dawin" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
-        <h2>🌐 Perplexity Groeiafdeling</h2><p>Alles-in-één · SEO &amp; content</p>
+        <h2>🔗 Awin</h2><p>Affiliate netwerk</p>
       </a>
-      <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="card affiliate" target="_blank" rel="noopener noreferrer">
+      <a href="https://www.amazon.nl/ref=nav_logo" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
-        <h2>🔎 Perplexity Auditor</h2><p>Content, SEO &amp; site-check</p>
-      </a>
-      <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <div class="dot"></div>
-        <h2>🛡️ Gemini Site Guardian</h2><p>Blog validator &amp; checker</p>
-      </a>
-      <a href="https://gemini.google.com/u/0/gem/c2b213f954f9" class="card affiliate" target="_blank" rel="noopener noreferrer">
-        <div class="dot"></div>
-        <h2>🤖 Gemini Groeiafdeling</h2><p>Content-auditor &amp; checker</p>
+        <h2>🛒 Amazon NL</h2><p>Affiliate shop</p>
       </a>
     </div>
-  </section>
-
-
-  <!-- STEKKERSLIM SITE GUARDIAN -->
-  <section class="section" id="sec-stekkerslim-guardian">
-    <div class="section-label">StekkerSlim Site Guardian</div>
-    <div class="grid">
-      <a href="#" class="card affiliate" onclick="openStekkerSlimGuardian(); return false;">
-        <div class="dot"></div>
-        <h2>🧠 Site Guardian Hub</h2><p>Blog validator · site audits · workflow</p>
-      </a>
-    </div>
+    <details style="margin-top:12px;">
+      <summary style="font-size:0.68em;color:var(--muted);cursor:pointer;letter-spacing:0.06em;padding:6px 0;">🔍 Losse AI-checkers (los van de pipeline)</summary>
+      <div class="grid" style="margin-top:10px;">
+        <a href="https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>🔍 Grok Site Checker</h2><p>Site analyse</p>
+        </a>
+        <a href="https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>📈 Grok SEO &amp; Growth</h2><p>SEO en groei</p>
+        </a>
+        <a href="https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>✍️ Grok Blog Checker</h2><p>Blog review</p>
+        </a>
+        <a href="https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>🌐 Perplexity Groei</h2><p>SEO &amp; content</p>
+        </a>
+        <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>🔎 Perplexity Auditor</h2><p>Content &amp; site-check</p>
+        </a>
+        <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>🛡️ Gemini Guardian</h2><p>Blog validator</p>
+        </a>
+        <a href="https://gemini.google.com/u/0/gem/c2b213f954f9" class="card affiliate" target="_blank" rel="noopener noreferrer">
+          <div class="dot"></div><h2>🤖 Gemini Groei</h2><p>Content-auditor</p>
+        </a>
+      </div>
+    </details>
   </section>
 
   <!-- TOOLS & PLATFORMS -->
@@ -1830,6 +1824,8 @@ header h1 {
       <button id="ssp-tab-site" onclick="sspSetPipeline('site')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">🛡 Site Check</button>
       <button id="ssp-tab-seo" onclick="sspSetPipeline('seo')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">📈 SEO Growth</button>
     </div>
+    <input id="ssp-project-name" type="text" placeholder="✏️ Waar werk je aan? (bv. p1-meter blog)" onchange="localStorage.setItem('ssp_projectname_'+sspPipeline,this.value)"
+      style="width:100%;padding:9px 12px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.72em;outline:none;">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
       <button onclick="sspPrevStep()" style="padding:9px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--muted);cursor:pointer;font-size:1em;">&#8592;</button>
       <div id="ssp-step-label" style="flex:1;text-align:center;font-family:'DM Mono',monospace;font-size:0.7em;color:#a78bfa;line-height:1.4;"></div>
@@ -1944,7 +1940,9 @@ function sspRender() {
   const steps = SSP_PIPELINES[sspPipeline].steps;
   const step  = steps[sspStepIdx];
   const lbl   = document.getElementById('ssp-step-label');
-  if (lbl) lbl.textContent = step.label;
+  if (lbl) lbl.innerHTML = '<span style="color:#10b981;font-weight:700;">' + (sspStepIdx+1) + '/' + steps.length + '</span> — ' + step.label.replace(/^Stap \d+ van \d+ \u2014 /, '');
+  const pn = document.getElementById('ssp-project-name');
+  if (pn) pn.value = localStorage.getItem('ssp_projectname_'+sspPipeline) || '';
   const aiBtn = document.getElementById('ssp-ai-btn');
   if (aiBtn) { aiBtn.style.display = step.multiAI ? 'none' : ''; if(!step.multiAI) aiBtn.textContent = '\uD83D\uDD17 ' + step.aiLabel; }
   const promptEl = document.getElementById('ssp-prompt');
@@ -1961,9 +1959,15 @@ function sspRender() {
       return '<div style="width:'+sz+';height:'+sz+';border-radius:50%;background:'+col+';cursor:pointer;flex-shrink:0;" onclick="sspGoTo('+i+')" title="Stap '+(i+1)+'"></div>';
     }).join('');
   }
+  const tabLabels = { blog: '📝 Blog', site: '🛡 Site Check', seo: '📈 SEO Growth' };
   ['blog','site','seo'].forEach(p => {
     const tab=document.getElementById('ssp-tab-'+p); if(!tab) return;
     const active=p===sspPipeline, map={blog:'251,191,36',site:'167,139,250',seo:'56,189,248'}, c=map[p];
+    const pSteps = SSP_PIPELINES[p].steps;
+    const doneCount = pSteps.filter((s,i) => s.multiAI
+      ? s.ais.some(ai => !!localStorage.getItem(sspMultiKey(p,i,ai.key)))
+      : !!localStorage.getItem(sspKey(p,i))).length;
+    tab.textContent = tabLabels[p] + (doneCount > 0 ? ' ' + doneCount + '/' + pSteps.length : '');
     if(active) { tab.style.borderColor='rgba('+c+',0.45)'; tab.style.background='rgba('+c+',0.14)'; tab.style.color=p==='blog'?'#fbbf24':p==='site'?'#a78bfa':'#38bdf8'; }
     else { tab.style.borderColor='var(--border)'; tab.style.background='rgba(255,255,255,0.04)'; tab.style.color='var(--muted)'; }
   });
@@ -2064,7 +2068,7 @@ function sspDownloadHtml() {
   html=html.replace(/^```(?:html)?\n?/i,'').replace(/\n?```\s*$/,'').trim();
   // Voeg basis HTML-structuur toe als Claude alleen een fragment geeft (geen <!DOCTYPE>)
   if (!html.toLowerCase().startsWith('<!doctype') && !html.toLowerCase().startsWith('<html')) {
-    html = '<!DOCTYPE html>\n<html lang="nl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>\n<body>\n' + html + '\n</body>\n</html>';
+    html = '<!DOCTYPE html>\n<html lang="nl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>\n<body>\n' + html + '\n</bo' + 'dy>\n</html>';
   }
   const blob=new Blob([html],{type:'text/html;charset=utf-8'});
   const url=URL.createObjectURL(blob);
@@ -4815,6 +4819,206 @@ function copyAllMultiPrompts() {
 }
 
 
+
+// ══════════════════════════════════════════════
+// COMMAND PALETTE (Ctrl+K)
+// ══════════════════════════════════════════════
+const CMD_ACTIONS = [
+  { label: '💶 Vaste Lasten', fn: () => openVasteLasten() },
+  { label: '🗓️ Weekplanner', fn: () => openWeekplanner() },
+  { label: '💼 Werk', fn: () => openWerk() },
+  { label: '⏱️ Pomodoro Timer', fn: () => document.getElementById('pomo-modal-overlay').style.display='flex' },
+  { label: '🚀 StekkerSlim Pipeline', fn: () => openStekkerSlimGuardian() },
+  { label: '✦ Prompt Builder', fn: () => openPromptBuilder() },
+  { label: '🔑 API Key', fn: () => openApiKeyModal() },
+  { label: '📅 Agenda', fn: () => openAgendaModal() }
+];
+
+function cmdBuildIndex() {
+  const items = [...CMD_ACTIONS.map(a => ({ label: a.label, type: 'actie', fn: a.fn }))];
+  document.querySelectorAll('.card').forEach(c => {
+    const h = c.querySelector('h2');
+    if (h && c.href && !c.href.endsWith('#')) {
+      items.push({ label: h.textContent.trim(), type: 'link', url: c.href });
+    }
+  });
+  return items;
+}
+
+let cmdIndex = [];
+function openCmdPalette() {
+  cmdIndex = cmdBuildIndex();
+  const ov = document.getElementById('cmd-overlay');
+  ov.style.display = 'flex';
+  const inp = document.getElementById('cmd-input');
+  inp.value = '';
+  cmdRender('');
+  setTimeout(() => inp.focus(), 50);
+}
+function closeCmdPalette() { document.getElementById('cmd-overlay').style.display = 'none'; }
+
+function cmdRender(q) {
+  const res = document.getElementById('cmd-results');
+  const query = q.toLowerCase().trim();
+  const matches = query
+    ? cmdIndex.filter(i => i.label.toLowerCase().includes(query)).slice(0, 12)
+    : cmdIndex.slice(0, 8);
+  res.innerHTML = matches.map((m, i) => `
+    <div class="cmd-item" data-idx="${i}" style="padding:11px 14px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:0.8em;${i===0?'background:rgba(129,140,248,0.12);':''}"
+      onmouseover="this.style.background='rgba(129,140,248,0.12)'" onmouseout="this.style.background='${i===0?'rgba(129,140,248,0.12)':'transparent'}'">
+      <span style="flex:1;">${m.label}</span>
+      <span style="font-size:0.75em;color:var(--muted);">${m.type}</span>
+    </div>`).join('') || '<div style="padding:16px;text-align:center;color:var(--muted);font-size:0.75em;">Niks gevonden</div>';
+  res.querySelectorAll('.cmd-item').forEach((el, i) => {
+    el.addEventListener('click', () => cmdExec(matches[i]));
+  });
+  res._matches = matches;
+}
+
+function cmdExec(m) {
+  closeCmdPalette();
+  if (m.fn) m.fn();
+  else if (m.url) window.open(m.url, '_blank', 'noopener');
+}
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openCmdPalette(); }
+  if (e.key === 'Escape') closeCmdPalette();
+  if (document.getElementById('cmd-overlay').style.display === 'flex' && e.key === 'Enter') {
+    const matches = document.getElementById('cmd-results')._matches;
+    if (matches && matches.length) cmdExec(matches[0]);
+  }
+});
+document.getElementById('cmd-input').addEventListener('input', e => cmdRender(e.target.value));
+document.getElementById('cmd-overlay').addEventListener('click', function(e) { if (e.target === this) closeCmdPalette(); });
+
+// ══════════════════════════════════════════════
+// PIPELINE SUPABASE SYNC (cross-device)
+// ══════════════════════════════════════════════
+async function sspSyncToCloud(key, value) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/pipeline_state?on_conflict=key`, {
+      method: 'POST',
+      headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates' },
+      body: JSON.stringify({ key, value, updated_at: new Date().toISOString() })
+    });
+  } catch(e) { console.warn('Pipeline cloud sync mislukt:', e); }
+}
+async function sspDeleteFromCloud(key) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/pipeline_state?key=eq.${encodeURIComponent(key)}`, { method: 'DELETE', headers: SB_POST_HDR });
+  } catch(e) {}
+}
+async function sspLoadFromCloud() {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/pipeline_state?select=key,value`, { headers: SB_GET_HDR });
+    if (!r.ok) return;
+    const rows = await r.json();
+    rows.forEach(row => {
+      if (row.key && row.key.startsWith('ssp_')) localStorage.setItem(row.key, row.value || '');
+    });
+  } catch(e) { console.warn('Pipeline cloud load mislukt:', e); }
+}
+// Hook into existing save/delete functions
+const _sspSaveOrig = sspSave;
+sspSave = function() {
+  const outEl = document.getElementById('ssp-output');
+  if (outEl && outEl.value.trim()) sspSyncToCloud(sspKey(sspPipeline, sspStepIdx), outEl.value.trim());
+  _sspSaveOrig();
+};
+const _sspSaveMultiOrig = sspSaveMulti;
+sspSaveMulti = function(i) {
+  const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
+  const ta = document.getElementById('ssp-mout-' + i);
+  if (step && step.multiAI && ta && ta.value.trim()) {
+    sspSyncToCloud(sspMultiKey(sspPipeline, sspStepIdx, step.ais[i].key), ta.value.trim());
+  }
+  _sspSaveMultiOrig(i);
+};
+const _sspDeleteOrig = sspDelete;
+sspDelete = function() {
+  sspDeleteFromCloud(sspKey(sspPipeline, sspStepIdx));
+  _sspDeleteOrig();
+};
+const _sspDeleteMultiOrig = sspDeleteMulti;
+sspDeleteMulti = function(i) {
+  const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
+  if (step && step.multiAI) sspDeleteFromCloud(sspMultiKey(sspPipeline, sspStepIdx, step.ais[i].key));
+  _sspDeleteMultiOrig(i);
+};
+// Cloud state laden bij openen pipeline
+const _openSSGOrig = openStekkerSlimGuardian;
+openStekkerSlimGuardian = async function() {
+  await sspLoadFromCloud();
+  _openSSGOrig();
+};
+
+// ══════════════════════════════════════════════
+// PROMPT BIBLIOTHEEK (Prompt Builder)
+// ══════════════════════════════════════════════
+const PBLIB_KEY = 'remy_prompt_library_v1';
+function pblibGet() { try { return JSON.parse(localStorage.getItem(PBLIB_KEY)||'[]'); } catch { return []; } }
+function pblibSave(arr) { try { localStorage.setItem(PBLIB_KEY, JSON.stringify(arr.slice(0,50))); } catch {} }
+function pblibAdd(promptText, platform) {
+  if (!promptText || !promptText.trim()) return;
+  const lib = pblibGet();
+  lib.unshift({ text: promptText.trim(), platform: platform||'', ts: Date.now() });
+  pblibSave(lib);
+}
+function pblibSaveCurrentPrompt() {
+  const out = document.getElementById('pb-output');
+  if (!out || !out.value.trim()) return;
+  pblibAdd(out.value, pbPlatform);
+  pblibRender();
+  const cnt = document.getElementById('pb-lib-count');
+  if (cnt) cnt.textContent = pblibGet().length;
+  const lib = document.getElementById('pb-lib');
+  if (lib) lib.open = true;
+}
+function pblibRender() {
+  const list = document.getElementById('pb-lib-list');
+  const cnt  = document.getElementById('pb-lib-count');
+  if (!list) return;
+  const lib = pblibGet();
+  if (cnt) cnt.textContent = lib.length;
+  if (!lib.length) { list.innerHTML = '<div style="font-size:0.7em;color:var(--muted);padding:8px;">Nog niks bewaard — genereer een prompt en klik 💾 Bewaar.</div>'; return; }
+  list.innerHTML = lib.map((p, i) => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;">
+      <div style="font-size:0.66em;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;">
+        <span>${p.platform||'algemeen'} · ${new Date(p.ts).toLocaleDateString('nl-NL')}</span>
+        <span>
+          <button onclick="pblibCopy(${i})" style="background:none;border:none;color:#10b981;cursor:pointer;font-size:1em;padding:0 4px;" title="Kopieer">📋</button>
+          <button onclick="pblibDelete(${i})" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:1em;padding:0 4px;" title="Verwijder">✕</button>
+        </span>
+      </div>
+      <div style="font-size:0.7em;color:var(--text);line-height:1.5;max-height:60px;overflow:hidden;white-space:pre-wrap;">${escHtml(p.text.slice(0, 220))}${p.text.length > 220 ? '…' : ''}</div>
+    </div>`).join('');
+}
+function pblibCopy(i) {
+  const lib = pblibGet();
+  if (!lib[i]) return;
+  const tmp = document.createElement('textarea'); tmp.value = lib[i].text; tmp.style.cssText='position:fixed;opacity:0;';
+  document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(tmp);
+}
+function pblibDelete(i) {
+  const lib = pblibGet();
+  lib.splice(i, 1);
+  pblibSave(lib);
+  pblibRender();
+}
+
 </script>
+
+<!-- COMMAND PALETTE -->
+<div id="cmd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:2000;align-items:flex-start;justify-content:center;padding:12vh 16px 16px;">
+  <div style="width:100%;max-width:520px;background:#12141d;border:1px solid var(--border-strong);border-radius:16px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <input id="cmd-input" type="text" placeholder="Typ om te zoeken... (kaarten, tools, modals)" autocomplete="off"
+      style="width:100%;padding:16px 18px;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:0.9em;outline:none;">
+    <div id="cmd-results" style="max-height:50vh;overflow-y:auto;padding:6px;"></div>
+  </div>
+</div>
+
 </body>
 </html>
