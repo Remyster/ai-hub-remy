@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#07080f">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧠</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #0d1017;
@@ -1094,7 +1094,473 @@ header h1 {
 }
 .wp-review-btns { display:flex;gap:8px;margin-top:8px;flex-wrap:wrap; }
 
+
+/* ═══════════════════════════════════════════════════════
+   DESIGN 2.0 — REMY AI HUB
+   Volledige visuele override. Oude regels hierboven
+   blijven als vangnet; deze laag wint.
+   ═══════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #0a0c10;
+  --bg-soft: #0e1116;
+  --panel: #12151c;
+  --panel-2: #171b24;
+  --line: rgba(255,255,255,0.06);
+  --line-strong: rgba(255,255,255,0.11);
+  --ink: #eef1f6;
+  --ink-dim: #9aa2b1;
+  --ink-faint: #5d6575;
+  --brand: #7c7ff2;
+  --brand-soft: rgba(124,127,242,0.12);
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --radius: 14px;
+  --shadow-1: 0 1px 2px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.25);
+  --shadow-2: 0 4px 12px rgba(0,0,0,0.5), 0 16px 48px rgba(0,0,0,0.35);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background:
+    radial-gradient(ellipse 900px 420px at 70% -10%, rgba(124,127,242,0.07), transparent 60%),
+    radial-gradient(ellipse 700px 380px at 10% 0%, rgba(52,211,153,0.04), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--ink);
+  padding: 0 20px 80px;
+  font-size: 15px;
+  letter-spacing: -0.005em;
+}
+
+::selection { background: rgba(124,127,242,0.3); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 6px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+.wrapper { max-width: 1120px; margin: 0 auto; }
+
+/* ── STICKY HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 500;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  margin: 0 -20px 8px; padding: 14px 20px;
+  background: rgba(10,12,16,0.82);
+  backdrop-filter: blur(18px) saturate(1.4);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  border-bottom: 1px solid var(--line);
+}
+header h1 {
+  font-family: 'Syne', sans-serif; font-weight: 800;
+  font-size: 1.18em; letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #fff 20%, #a5a8ff 80%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  margin: 0;
+}
+.clock {
+  font-family: 'JetBrains Mono', monospace; font-size: 0.72em;
+  color: var(--ink-faint); letter-spacing: 0.02em;
+}
+.header-btns { display: flex; gap: 7px; flex-wrap: wrap; margin-left: auto; }
+
+.hbtn {
+  font-family: 'Inter', sans-serif !important; font-weight: 500;
+  font-size: 0.72em !important; letter-spacing: 0 !important;
+  padding: 7px 13px !important; border-radius: 9px !important;
+  border: 1px solid var(--line-strong) !important;
+  background: var(--panel) !important; color: var(--ink-dim) !important;
+  transition: all 0.15s ease !important; cursor: pointer;
+}
+.hbtn:hover {
+  background: var(--panel-2) !important; color: var(--ink) !important;
+  border-color: rgba(124,127,242,0.4) !important;
+  transform: translateY(-1px);
+}
+/* Vaste Lasten = cruciaal → altijd zichtbaar accent */
+.hbtn[onclick*="openVasteLasten"] {
+  color: #fff !important;
+  background: linear-gradient(135deg, #38bdf8, #2f7ff2) !important;
+  border-color: transparent !important;
+  font-weight: 600;
+  box-shadow: 0 2px 12px rgba(56,189,248,0.35);
+}
+.hbtn[onclick*="openVasteLasten"]:hover { box-shadow: 0 4px 20px rgba(56,189,248,0.5); transform: translateY(-1px); }
+
+/* ── HERO STRIP ── */
+#hero-strip {
+  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  margin: 22px 0 30px; padding: 22px 24px;
+  background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
+  border: 1px solid var(--line); border-radius: 18px;
+  box-shadow: var(--shadow-1);
+  animation: heroIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes heroIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+#hero-greet { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35em; letter-spacing: -0.02em; }
+#hero-date  { font-size: 0.78em; color: var(--ink-dim); margin-top: 3px; }
+#hero-today {
+  margin-left: auto; text-align: right; font-size: 0.76em; color: var(--ink-dim);
+  max-width: 340px; line-height: 1.55;
+}
+#hero-today b { color: var(--ink); font-weight: 600; }
+@media (max-width: 640px) { #hero-today { margin-left: 0; text-align: left; } }
+
+/* ── SECTIONS ── */
+.section { margin-bottom: 34px; animation: secIn 0.45s ease both; }
+.section:nth-of-type(2) { animation-delay: 0.04s; }
+.section:nth-of-type(3) { animation-delay: 0.08s; }
+.section:nth-of-type(4) { animation-delay: 0.12s; }
+.section:nth-of-type(5) { animation-delay: 0.16s; }
+@keyframes secIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.section-label {
+  font-family: 'Inter', sans-serif !important; font-weight: 600 !important;
+  font-size: 0.7em !important; letter-spacing: 0.11em !important;
+  text-transform: uppercase; color: var(--ink-faint) !important;
+  display: flex; align-items: center; gap: 10px; margin-bottom: 14px !important;
+}
+.section-label::before {
+  content: ''; width: 7px; height: 7px; border-radius: 3px;
+  background: var(--brand); box-shadow: 0 0 10px rgba(124,127,242,0.6);
+}
+.section-label::after { content: ''; flex: 1; height: 1px; background: var(--line) !important; }
+
+/* ── GRID + CARDS ── */
+.grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)) !important;
+  gap: 10px !important;
+}
+.card {
+  position: relative;
+  background: var(--panel) !important;
+  border: 1px solid var(--line) !important;
+  border-radius: var(--radius) !important;
+  padding: 15px 16px 13px !important;
+  transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease !important;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.card::before { display: none !important; }
+.card:hover {
+  transform: translateY(-3px) !important;
+  background: var(--panel-2) !important;
+  border-color: rgba(124,127,242,0.45) !important;
+  box-shadow: var(--shadow-2), 0 0 0 1px rgba(124,127,242,0.15) !important;
+}
+.card h2 {
+  font-family: 'Inter', sans-serif !important; font-weight: 600 !important;
+  font-size: 0.86em !important; letter-spacing: -0.01em !important;
+  color: var(--ink) !important; margin: 0 0 3px !important;
+}
+.card p {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.7em !important; color: var(--ink-faint) !important;
+  line-height: 1.45 !important; margin: 0 !important;
+}
+.card .dot { display: none !important; }
+.recent-tag { display: none !important; }
+
+/* Sectie-accent per type: subtiele linker rand */
+.card.agent     { border-left: 2px solid rgba(124,127,242,0.5) !important; }
+.card.general   { border-left: 2px solid rgba(148,163,184,0.4) !important; }
+.card.affiliate { border-left: 2px solid rgba(251,191,36,0.5) !important; }
+.card.tool      { border-left: 2px solid rgba(52,211,153,0.5) !important; }
+.card.project   { border-left: 2px solid rgba(56,189,248,0.5) !important; }
+.card.marketing { border-left: 2px solid rgba(236,72,153,0.5) !important; }
+
+/* Pipeline hero-kaart */
+.card[onclick*="openStekkerSlimGuardian"] {
+  background: linear-gradient(135deg, rgba(251,191,36,0.1), var(--panel)) !important;
+  border: 1px solid rgba(251,191,36,0.3) !important;
+}
+.card[onclick*="openStekkerSlimGuardian"]:hover {
+  border-color: rgba(251,191,36,0.6) !important;
+  box-shadow: var(--shadow-2), 0 0 24px rgba(251,191,36,0.12) !important;
+}
+
+/* details/summary (checkers) */
+details summary { font-family: 'Inter', sans-serif; user-select: none; }
+details summary:hover { color: var(--ink-dim) !important; }
+
+/* ── MODALS: uniform paneel-gevoel ── */
+#vl-overlay > div, #wp-modal, #ssp-overlay > div, #pb-modal,
+#pomo-modal-overlay > div, #cmd-overlay > div {
+  border-radius: 18px !important;
+  border: 1px solid var(--line-strong) !important;
+  box-shadow: var(--shadow-2) !important;
+}
+
+/* Command palette verfijning */
+#cmd-overlay > div { background: var(--panel) !important; }
+#cmd-input { font-family: 'Inter', sans-serif !important; font-size: 0.95em !important; }
+
+/* Inputs overal: Inter */
+input, textarea, select, button { font-family: 'Inter', sans-serif; }
+input[type="time"], input[type="date"], input[type="number"],
+.wp-item-meta, .clock, #vl-overlay [id*="bedrag"], .vl-amount {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+/* Scroll-to-top */
+#scrolltop {
+  position: fixed; right: 18px; bottom: 78px; z-index: 400;
+  width: 40px; height: 40px; border-radius: 12px;
+  background: var(--panel); border: 1px solid var(--line-strong);
+  color: var(--ink-dim); font-size: 1em; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  transition: all 0.15s ease; box-shadow: var(--shadow-1);
+}
+#scrolltop:hover { color: var(--ink); border-color: rgba(124,127,242,0.4); transform: translateY(-2px); }
+
+@media (max-width: 640px) {
+  body { padding: 0 12px 70px; font-size: 14px; }
+  header { margin: 0 -12px 8px; padding: 12px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 8px !important; }
+  .card { padding: 12px 13px 11px !important; }
+  #hero-strip { padding: 16px 16px; }
+}
+
 </style>
+<style>
+/* ═══════════════════════════════════════════════════
+   REMY AI HUB — DESIGN 2.0 "OBSIDIAN"
+   Volledige visuele override. Functionaliteit onaangetast.
+   ═══════════════════════════════════════════════════ */
+
+:root {
+  --bg: #0a0c12;
+  --bg-elevated: #10131c;
+  --bg-card: linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
+  --border: rgba(255,255,255,0.06);
+  --border-strong: rgba(255,255,255,0.12);
+  --text: #eef0f6;
+  --text-dim: #a8adbd;
+  --muted: #5d6373;
+  --accent: #7c6ff0;
+  --accent-soft: rgba(124,111,240,0.12);
+  --accent-glow: rgba(124,111,240,0.35);
+  --green: #34d399;
+  --amber: #fbbf24;
+  --blue: #38bdf8;
+  --rose: #fb7185;
+  --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -8px rgba(0,0,0,0.5);
+  --shadow-lift: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px -12px rgba(124,111,240,0.25);
+}
+
+body {
+  background:
+    radial-gradient(ellipse 100% 60% at 50% -20%, rgba(124,111,240,0.10), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 90% 10%, rgba(56,189,248,0.05), transparent 50%),
+    var(--bg) !important;
+  background-attachment: fixed !important;
+  font-family: 'Inter', -apple-system, sans-serif !important;
+  padding: 0 20px 80px !important;
+  letter-spacing: 0.005em;
+}
+
+/* ─── STICKY HEADER ─── */
+header {
+  position: sticky !important;
+  top: 0;
+  z-index: 900;
+  margin: 0 -20px 20px !important;
+  padding: 14px 20px 12px !important;
+  background: rgba(10,12,18,0.82);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+header h1 {
+  font-size: 1.5em !important;
+  margin-bottom: 10px !important;
+  letter-spacing: -0.03em !important;
+}
+.hbtn {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600 !important;
+  font-size: 0.68em !important;
+  padding: 8px 14px !important;
+  border-radius: 100px !important;
+  letter-spacing: 0.01em !important;
+  transition: all 0.18s cubic-bezier(0.4,0,0.2,1) !important;
+}
+.hbtn:hover { transform: translateY(-1px); }
+.hbtn:active { transform: translateY(0) scale(0.97); }
+
+/* ─── HERO STRIP ─── */
+#hero-strip {
+  max-width: 1160px;
+  margin: 0 auto 26px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
+  animation: fadeDown 0.5s ease both;
+  flex-wrap: wrap;
+}
+#hero-datum {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.05em;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, #c7c2ff, #7c6ff0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+#hero-taak {
+  flex: 1;
+  min-width: 200px;
+  font-size: 0.78em;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+#hero-taak .hero-badge {
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 3px 9px;
+  border-radius: 100px;
+  font-size: 0.85em;
+  font-weight: 600;
+  white-space: nowrap;
+}
+#hero-klok {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.85em;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* ─── SECTIES ─── */
+main, .section { max-width: 1160px; margin-left: auto; margin-right: auto; }
+.section { margin-bottom: 34px !important; }
+.section-label {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.66em !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.16em !important;
+  color: var(--muted) !important;
+  margin-bottom: 12px !important;
+}
+.section-label::after { background: linear-gradient(90deg, var(--border), transparent) !important; }
+
+/* ─── CARDS: het echte nieuwe gezicht ─── */
+.grid {
+  grid-template-columns: repeat(auto-fill, minmax(196px, 1fr)) !important;
+  gap: 10px !important;
+}
+.card {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 14px !important;
+  padding: 14px 15px 13px !important;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.18s cubic-bezier(0.4,0,0.2,1), box-shadow 0.18s, border-color 0.18s !important;
+  position: relative;
+  overflow: hidden;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(124,111,240,0.08), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.25s;
+  pointer-events: none;
+}
+.card:hover {
+  transform: translateY(-3px) !important;
+  border-color: var(--border-strong) !important;
+  box-shadow: var(--shadow-lift) !important;
+}
+.card:hover::after { opacity: 1; }
+.card:active { transform: translateY(-1px) scale(0.99) !important; }
+.card h2 {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.88em !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  margin-bottom: 3px !important;
+  color: var(--text) !important;
+}
+.card p {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.68em !important;
+  color: var(--muted) !important;
+  letter-spacing: 0.01em !important;
+  line-height: 1.45;
+}
+.card .dot { display: none !important; }
+.recent-tag {
+  font-family: 'Inter', sans-serif !important;
+  font-size: 0.55em !important;
+  font-weight: 700 !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  padding: 2px 8px !important;
+  border-radius: 100px !important;
+  border: none !important;
+}
+
+/* Sectie-accenten: subtiele linker-rand per type i.p.v. neon-glow */
+.card.agent     { border-left: 2px solid rgba(124,111,240,0.5) !important; }
+.card.general   { border-left: 2px solid rgba(56,189,248,0.4) !important; }
+.card.affiliate { border-left: 2px solid rgba(251,191,36,0.4) !important; }
+.card.tool      { border-left: 2px solid rgba(52,211,153,0.4) !important; }
+.card.project   { border-left: 2px solid rgba(251,113,133,0.4) !important; }
+.card.marketing { border-left: 2px solid rgba(251,113,133,0.4) !important; }
+
+/* ─── DETAILS/SUMMARY (checkers-lade) ─── */
+details summary {
+  font-family: 'Inter', sans-serif !important;
+  font-weight: 600;
+  user-select: none;
+  transition: color 0.2s;
+}
+details summary:hover { color: var(--text-dim) !important; }
+details[open] summary { color: var(--accent) !important; }
+
+/* ─── MODALS: consistent glas ─── */
+#vl-overlay > div, #wp-modal, #ssp-overlay > div > *:first-child,
+#pb-modal, #cmd-overlay > div {
+  border-radius: 20px !important;
+}
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 100px; border: 2px solid var(--bg); }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
+
+/* ─── MOBILE ─── */
+@media (max-width: 640px) {
+  body { padding: 0 12px 60px !important; }
+  header { margin: 0 -12px 16px !important; padding: 10px 12px 10px !important; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 8px !important; }
+  .card { padding: 12px 12px 11px !important; }
+  #hero-strip { padding: 12px 14px; gap: 10px; }
+  #hero-datum { font-size: 0.9em; }
+}
+
+/* ─── REDUCED MOTION ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+
 </head>
 <body>
 
@@ -1573,6 +2039,21 @@ header h1 {
     </div>
   </header>
 
+<div id="hero-strip">
+  <div id="hero-datum">—</div>
+  <div id="hero-taak"><span class="hero-badge">📋 vandaag</span> <span id="hero-taak-tekst">Weekplanner laden…</span></div>
+  <div id="hero-klok">--:--</div>
+</div>
+
+  <!-- HERO STRIP -->
+  <div id="hero-strip">
+    <div>
+      <div id="hero-greet">Hoi Remy</div>
+      <div id="hero-date">laden…</div>
+    </div>
+    <div id="hero-today">Vandaag laden…</div>
+  </div>
+
   <!-- DEX CARD -->
 
 
@@ -1870,7 +2351,7 @@ const SSP_PIPELINES = {
       { label: 'Stap 9 van 11 \u2014 Alle AI\u2019s: Review', multiAI: true, ais: MULTI_AIS, prevSources: [{ stepIdx: 7, placeholder: '[PLAK HIER DE BLOG UIT STAP 8]' }], prompt: "# STEKKERSLIM BLOG PIPELINE\n# STAP 9 VAN 11 — ALLE AI's: REVIEW\n\n---\n\n## ROL\n\nJe bent een kritische reviewer van StekkerSlim.nl-content.\n\n---\n\n## CONTEXT\n\nStekkerSlim.nl is een Nederlandstalige affiliate-doorverwijssite over energie besparen, thuisbatterijen, zonnepanelen, slimme apparaten en energiecontracten. De toon is nuchter, direct en eerlijk — als een slimme buurman, niet als marketingtekst. StekkerSlim verkoopt zelf niets en verwijst alleen door naar externe verkopers.\n\n---\n\n## JOUW TAAK\n\nGeef concreet en eerlijk commentaar op de blog hieronder. Geen algemene complimenten — alleen bruikbare kritiek en suggesties.\n\nBeoordeel op deze punten:\n\n**1. Feitelijke juistheid**\n- Zijn er claims die je niet kunt bevestigen of die twijfelachtig zijn?\n- Staan er verouderde prijzen, percentages of regelgeving in?\n- Noteer exact welke zin/alinea problemen heeft.\n\n**2. Toon en leesbaarheid**\n- Klinkt het als een mens of als een AI?\n- Zijn er zinnen die te lang, te ingewikkeld of te generiek zijn?\n- Geef de exacte zin en een verbeterd alternatief.\n\n**3. SEO**\n- Staat het hoofdzoekwoord in H1, eerste alinea en minimaal 2 H2's?\n- Is de title tag max 60 tekens?\n- Is de meta description max 155 tekens en bevat die een call-to-action?\n- Ontbreken er zoekwoorden die logisch zijn voor dit onderwerp?\n\n**4. Structuur en compleetheid**\n- Mist er een sectie die de lezer verwacht?\n- Is de volgorde logisch?\n- Is er een duidelijke volgende stap voor de lezer aan het einde?\n\n**5. Affiliate en interne links**\n- Zijn de affiliate links correct geplaatst en relevant?\n- Zijn er interne links naar logische StekkerSlim-pagina's die ontbreken?\n- Zijn alle URLs bestaande stekkerslim.nl-pagina's (geen verzinsels)?\n\n**6. Wat je zou weglaten**\n- Is er content die niet bijdraagt of de blog onnodig lang maakt?\n\n---\n\n## OUTPUT FORMAT\n\nLever je commentaar als genummerde lijst. Per punt:\n- **Wat:** beschrijf het probleem of de suggestie\n- **Waar:** citeer de exacte zin of sectie\n- **Hoe:** geef een concreet voorstel\n\nEindig met een korte samenvatting: wat zijn de 1-3 meest urgente aanpassingen?\n\n---\n\n## INPUT\n\nPlak hieronder de volledige HTML-blog uit stap 8:\n\n[PLAK HIER DE BLOG UIT STAP 8]\n\n---\n\n*StekkerSlim Blog Pipeline — Stap 9 van 11 — Universele review*" },
       { label: 'Stap 10 van 12 \u2014 Claude: Verwerk commentaar', aiLabel: 'Claude StekkerSlim Bouwen', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf', driveButton: true, prevSources: [{ stepIdx: 7, placeholder: '[PLAK HIER DE BLOG UIT STAP 8]' }, { stepIdx: 8, placeholder: '[PLAK HIER ALLE COMMENTAREN UIT STAP 9]', isMulti: true }], prompt: "# STEKKERSLIM BLOG PIPELINE\n# STAP 10 VAN 11 — CLAUDE: VERWERK COMMENTAAR + VERBETERDE BLOG\n\n---\n\n## ROL\n\nJe bent Claude, eindredacteur van StekkerSlim.nl.\n\n---\n\n## CONTEXT\n\nJe hebt in stap 8 een volledige HTML-blog geschreven. Die blog is in stap 9 door meerdere AI's beoordeeld. Je krijgt nu alle commentaren binnen en verwerkt die tot een verbeterde versie.\n\n---\n\n## WERKWIJZE\n\n1. Lees alle commentaren zorgvuldig\n2. Beslis per punt of je het verwerkt of niet — en noteer waarom\n3. Pas de blog aan op basis van wat logisch, correct en in lijn is met StekkerSlim\n4. Lever een volledig bijgewerkte HTML-blog op\n\n**Wat je altijd verwerkt:**\n- Feitelijke fouten of niet-verifieerbare claims\n- Toon die klinkt als AI of als marketingtekst\n- Ontbrekende interne links naar logische StekkerSlim-pagina's\n- Verkeerd geplaatste of ontbrekende affiliate links\n- Title/meta die te lang zijn of het zoekwoord missen\n\n**Wat je kritisch beoordeelt:**\n- Structuursuggesties — alleen verwerken als ze de lezer echt helpen\n- Woordkeuze-suggesties — alleen als ze de tekst eerlijker of duidelijker maken\n- Extra secties — alleen toevoegen als ze relevant zijn voor de doelgroep\n\n**Wat je negeert:**\n- Suggesties die de toon formeler of meer als een brochure maken\n- Suggesties die Product/Offer/price aan schema toevoegen — StekkerSlim is geen webshop\n- Suggesties die de blog langer maken zonder toegevoegde waarde\n- Tegenstrijdige suggesties van verschillende AI's — kies de logischste\n\n---\n\n## OUTPUT FORMAT\n\nBegin verplicht met:\n\n```\nCHANGELOG STAP 10\n- Verwerkt: [per punt kort wat je gedaan hebt]\n- Niet verwerkt: [per punt wat je hebt overgeslagen en waarom]\n- Resterende controlepunten voor Remy: [feiten/prijzen die handmatig gecheckt moeten worden]\n```\n\nDaarna direct de volledig bijgewerkte HTML-blog.\n\n---\n\n## REGELS\n\n- Geen nieuwe ongecontroleerde feiten toevoegen\n- Toon blijft nuchter en direct — geen promotietaal\n- Alle interne links zijn bestaande stekkerslim.nl-pagina's (geen verzinsels)\n- JSON-LD schema: alleen Article + BreadcrumbList + FAQPage — nooit Product/Offer/price\n- Affiliate links altijd met `rel=\"noopener sponsored\"`\n\n---\n\n## INPUT\n\nPlak hieronder eerst de originele blog uit stap 8, dan alle commentaren uit stap 9:\n\n**ORIGINELE BLOG:**\n[PLAK HIER DE BLOG UIT STAP 8]\n\n**COMMENTAREN:**\n[PLAK HIER ALLE COMMENTAREN UIT STAP 9]\n\n---\n\n*StekkerSlim Blog Pipeline — Stap 10 van 11 — Claude revisie*" },
       { label: 'Stap 11 van 12 \u2014 Alle AI\u2019s: Finaal oordeel', multiAI: true, ais: MULTI_AIS, prevSources: [{ stepIdx: 9, placeholder: '[PLAK HIER DE DEFINITIEVE BLOG UIT STAP 10]' }], prompt: "# STEKKERSLIM BLOG PIPELINE\n# STAP 11 VAN 11 — ALLE AI's: FINAAL EINDOORDEEL\n\n---\n\n## ROL\n\nJe bent een laatste kwaliteitscheck voor StekkerSlim.nl-content voordat Remy publiceert.\n\n---\n\n## CONTEXT\n\nDit is de definitieve versie van de blog na twee rondes schrijven en revisie. Remy publiceert dit op een statische HTML-site (GitHub Pages). Jouw taak is niet om de blog opnieuw te herschrijven, maar om een eerlijk eindoordeel te geven.\n\n---\n\n## JOUW TAAK\n\nGeef een helder eindoordeel op deze 5 punten. Wees kort en direct — geen lange uitleg, alleen wat er toe doet.\n\n**1. Publiceerbaar? Ja / Nee / Ja met kleine fix**\nGeef één van deze drie antwoorden en motiveer in maximaal 2 zinnen.\n\n**2. Fatale fouten (blokkers)**\nIs er iets wat absoluut niet gepubliceerd kan worden? Denk aan: aantoonbaar onjuiste claim, misleidende belofte over besparing, kapotte link, ontbrekende canonical tag, verkeerde schema.\nAntwoord: geen / ja → dan exact wat en waar.\n\n**3. Laatste verbeterpuntjes (optioneel)**\nMaximaal 3 kleine dingen die beter kunnen maar geen blokker zijn. Per punt: één zin wat en waarom.\n\n**4. Sterkste element**\nWat maakt deze blog goed voor de doelgroep van StekkerSlim? Één concrete reden.\n\n**5. Zwakste element**\nWat is het minste van dit artikel? Één concrete reden — geen algemeenheden.\n\n---\n\n## WAT NIET HOEFT\n\n- Geen herschrijven\n- Geen volledige SEO-analyse\n- Geen herhaling van wat al beoordeeld is in stap 9\n- Geen complimenten zonder onderbouwing\n- Geen suggesties die Product/Offer/price aan schema toevoegen — StekkerSlim is een doorverwijssite, geen webshop\n\n---\n\n## INPUT\n\nPlak hieronder de definitieve HTML-blog uit stap 10:\n\n[PLAK HIER DE DEFINITIEVE BLOG UIT STAP 10]\n\n---\n\n*StekkerSlim Blog Pipeline — Stap 11 van 12 — Finale kwaliteitscheck*" },
-      { label: 'Stap 12 van 12 \u2014 Claude: Finale HTML als bestand', aiLabel: 'Claude StekkerPen', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf', downloadButton: true, prevSources: [{ stepIdx: 9, placeholder: '[PLAK HIER DE BLOG UIT STAP 10]' }, { stepIdx: 10, placeholder: '[PLAK HIER ALLE EINDOORDELEN UIT STAP 11]', isMulti: true }], prompt: "STEKKERSLIM BLOG PIPELINE\nSTAP 12 VAN 12 — CLAUDE: FINALE HTML ALS BESTAND\n\nROL\nJe bent Claude, eindredacteur van StekkerSlim.nl.\n\nDOEL\nSchrijf de definitieve, publicatieklare versie van de blog.\nVerwerk de bijgewerkte blog uit stap 10 en de eindoordelen uit stap 11.\n\nWERKWIJZE\n1. Neem de bijgewerkte blog uit stap 10 als basis\n2. Verwerk alleen de punten uit stap 11 die:\n   - Aantoonbare feitelijke fouten oplossen\n   - Technische issues fixen (canonical, schema, meta, kapotte links)\n   - De leesbaarheid of eerlijkheid verbeteren zonder de blog langer te maken\n3. Negeer suggesties die al verwerkt zijn in stap 10 of die strijdig zijn met het StekkerSlim affiliate-model\n\nOUTPUT — STRIKT VERPLICHT\n- Geef ALLEEN de volledige HTML — geen uitleg, geen inleiding, geen markdown, geen codeblok\n- Begin direct met de HTML (bijv. <!-- StekkerSlim blog --> of <article> of <!DOCTYPE html>)\n- Geen tekst voor of na de HTML\n- De output moet direct als .html bestand opgeslagen en gepubliceerd kunnen worden op GitHub Pages\n- Geen Product/Offer/price in schema — StekkerSlim is een doorverwijssite, geen webshop\n\nINPUT BLOG (stap 10):\n[PLAK HIER DE BLOG UIT STAP 10]\n\nEINDOORDELEN (stap 11):\n[PLAK HIER ALLE EINDOORDELEN UIT STAP 11]" }
+      { label: 'Stap 12 van 12 \u2014 Claude API: Finale HTML als bestand', apiGenerate: true, driveUrl: 'https://drive.google.com/drive/folders/1HASk0JMB27Ja7_MbjbWr4cm7dUAuzIw6', reviewUrl: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1', prevSources: [{ stepIdx: 9, placeholder: '[PLAK HIER DE BLOG UIT STAP 10]' }, { stepIdx: 10, placeholder: '[PLAK HIER ALLE EINDOORDELEN UIT STAP 11]', isMulti: true }], prompt: "STEKKERSLIM BLOG PIPELINE\nSTAP 12 VAN 12 — CLAUDE: FINALE HTML ALS BESTAND\n\nKENNISBANK (verplicht, altijd als eerste actie):\nHaal affiliate-regels.md op via\nhttps://raw.githubusercontent.com/Remyster/stekkerslim/main/Kennisbank/affiliate-regels.md\nter laatste controle op de schema-regels.\n\nROL\nJe bent Claude, eindredacteur van StekkerSlim.nl.\n\nDOEL\nSchrijf de definitieve, publicatieklare versie van de blog op basis van stap 10 + eindoordelen stap 11.\n\nWERKWIJZE\n1. Neem de bijgewerkte blog uit stap 10 als basis\n2. Verwerk alleen punten uit stap 11 die:\n   - Aantoonbare feitelijke fouten oplossen\n   - Technische issues fixen (canonical, schema, meta, kapotte links)\n   - Leesbaarheid verbeteren zonder de blog langer te maken\n3. Negeer wat al verwerkt is in stap 10 of strijdig is met het StekkerSlim affiliate-model\n\nOUTPUT FORMAT — STRIKT VERPLICHT, geen afwijkingen\nRegel 1: BESTANDSNAAM: [slug in kleine letters, alleen a-z 0-9 en koppeltekens, max 50 tekens, GEEN .html]\nRegel 2: [HTML HIERONDER]\nDaarna: de volledige HTML en niets anders — geen uitleg, geen markdown, geen codeblokken\n\nTECHNISCHE VEREISTEN HTML\n- Canonical tag aanwezig\n- OG-tags aanwezig (og:title, og:description, og:image=og-image.png)\n- JSON-LD: alleen Article + BreadcrumbList + FAQPage — NOOIT Product/Offer/price\n- Affiliate links: altijd rel=\"noopener sponsored\"\n- Kan direct als .html op GitHub Pages gepubliceerd worden\n\nINPUT BLOG (stap 10):\n[PLAK HIER DE BLOG UIT STAP 10]\n\nEINDOORDELEN (stap 11):\n[PLAK HIER ALLE EINDOORDELEN UIT STAP 11]" }
     ]
   },
   site: {
@@ -1944,7 +2425,7 @@ function sspRender() {
   const pn = document.getElementById('ssp-project-name');
   if (pn) pn.value = localStorage.getItem('ssp_projectname_'+sspPipeline) || '';
   const aiBtn = document.getElementById('ssp-ai-btn');
-  if (aiBtn) { aiBtn.style.display = step.multiAI ? 'none' : ''; if(!step.multiAI) aiBtn.textContent = '\uD83D\uDD17 ' + step.aiLabel; }
+  if (aiBtn) { const hide=step.multiAI||step.apiGenerate; aiBtn.style.display = hide ? 'none' : ''; if(!hide) aiBtn.textContent = '\uD83D\uDD17 ' + step.aiLabel; }
   const promptEl = document.getElementById('ssp-prompt');
   if (promptEl) promptEl.value = sspGetPrompt(sspPipeline, sspStepIdx);
   const dotsEl = document.getElementById('ssp-dots');
@@ -1976,6 +2457,31 @@ function sspRender() {
 
 function sspRenderOutputContainer(step) {
   const c = document.getElementById('ssp-output-container'); if(!c) return;
+  if (step.apiGenerate) {
+    const storedHtml = localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_html') || '';
+    const storedFn   = localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_filename') || '';
+    if (storedHtml) {
+      const kb = (new Blob([storedHtml]).size/1024).toFixed(1);
+      c.innerHTML='<div style="background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.25);border-radius:14px;padding:14px;margin-bottom:10px;">'
+        +'<div style="font-size:0.68em;color:#34d399;font-weight:600;margin-bottom:10px;">\u2713 HTML gegenereerd \u2014 '+kb+' KB</div>'
+        +'<div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">'
+        +'<input id="ssp-fn-input" type="text" value="'+escHtml(storedFn)+'" style="flex:1;padding:9px 11px;background:rgba(255,255,255,0.05);border:1px solid rgba(124,127,242,0.3);border-radius:9px;color:var(--ink,#fff);font-size:0.78em;outline:none;">'
+        +'<span style="font-size:0.72em;color:var(--ink-faint,#888)">.html</span></div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;">'
+        +'<button onclick="sspDownloadGenHtml()" style="flex:2;min-width:140px;padding:11px;background:linear-gradient(135deg,#7c7ff2,#5b5ee0);border:none;border-radius:10px;color:#fff;font-weight:600;font-size:0.75em;cursor:pointer;">\u{1F4E5} Download .html</button>'
+        +'<button onclick="window.open(SSP_PIPELINES[sspPipeline].steps[sspStepIdx].driveUrl,\'_blank\',\'noopener\')" style="flex:1;min-width:100px;padding:11px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:10px;color:#34d399;font-size:0.72em;cursor:pointer;">\u{1F4C2} Drive</button></div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">'
+        +'<button onclick="sspCopyGenHtml()" style="flex:1;min-width:130px;padding:10px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.28);border-radius:10px;color:#38bdf8;font-size:0.72em;cursor:pointer;">\u{1F4CB} Kopieer HTML</button>'
+        +'<button onclick="window.open(SSP_PIPELINES[sspPipeline].steps[sspStepIdx].reviewUrl,\'_blank\',\'noopener\')" style="flex:1;min-width:150px;padding:10px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.28);border-radius:10px;color:#fbbf24;font-size:0.72em;cursor:pointer;">\u2705 Keuren in Bouwen</button></div>'
+        +'<button onclick="sspGenReset()" style="width:100%;margin-top:8px;padding:8px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:var(--ink-faint,#888);font-size:0.7em;cursor:pointer;">\u21ba Opnieuw genereren</button></div>';
+    } else {
+      c.innerHTML='<div style="text-align:center;padding:22px;">'
+        +'<div style="font-size:0.74em;color:var(--ink-dim,#999);margin-bottom:14px;">Hub roept Claude API direct aan \u2014 geen kopi\u00ebren nodig</div>'
+        +'<button id="ssp-gen-btn" onclick="sspGenerateHtml()" style="padding:14px 26px;background:linear-gradient(135deg,#7c7ff2,#5b5ee0);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:0.85em;cursor:pointer;box-shadow:0 4px 20px rgba(124,127,242,0.35);">\u{1F680} Genereer finale HTML met Claude</button>'
+        +'<div id="ssp-gen-status" style="font-size:0.72em;color:var(--ink-dim,#999);margin-top:12px;min-height:18px;"></div></div>';
+    }
+    return;
+  }
   if (step.multiAI) {
     let html = '<div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:8px;">Plak per AI het antwoord \u2014 sla elk apart op</div>';
     step.ais.forEach((ai,i) => {
@@ -2060,6 +2566,68 @@ function sspShare() {
     document.body.appendChild(tmp); tmp.select(); document.execCommand('copy'); document.body.removeChild(tmp);
     sspStatus('\u2713 Gekopieerd naar klembord.');
   }
+}
+async function sspGenerateHtml() {
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  const btn = document.getElementById('ssp-gen-btn');
+  const st  = document.getElementById('ssp-gen-status');
+  if (btn) btn.disabled = true;
+  if (st) st.textContent = '\u23F3 Claude genereert de finale HTML\u2026 (30-60 sec)';
+  try {
+    const prompt = sspGetPrompt(sspPipeline, sspStepIdx);
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 8192, messages: [{ role:'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const fnMatch = raw.match(/BESTANDSNAAM:[ \t]*([^\r\n]+)/i);
+    const marker = '[HTML HIERONDER]';
+    const mi = raw.indexOf(marker);
+    let filename = fnMatch ? fnMatch[1].trim().toLowerCase().replace(/\.html$/i,'').replace(/[^a-z0-9-]/g,'-').replace(/-+/g,'-').slice(0,50) : 'stekkerslim-blog';
+    let html = mi !== -1 ? raw.slice(mi + marker.length).trim() : raw.replace(/BESTANDSNAAM:[^\r\n]*/i,'').trim();
+    html = html.replace(/^[`]{3}(?:html)?[\r\n]*/i,'').replace(/[\r\n]*[`]{3}[ \t]*$/,'').trim();
+    if (!html.toLowerCase().startsWith('<!doctype') && !html.toLowerCase().startsWith('<html')) {
+      html = '<!DOCTYPE html>\n<html lang="nl">\n<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>\n<body>\n' + html + '\n</bo' + 'dy>\n</html>';
+    }
+    localStorage.setItem(sspKey(sspPipeline,sspStepIdx)+'_html', html);
+    localStorage.setItem(sspKey(sspPipeline,sspStepIdx)+'_filename', filename);
+    sspRender();
+    sspStatus('\u2713 HTML klaar! Download \u2192 Drive \u2192 keuren in Bouwen.', '#34d399');
+  } catch(err) {
+    console.error('Stap 12 API fout:', err);
+    if (st) { st.style.color='#f87171'; st.textContent = '\u26A0 Fout: ' + err.message; }
+    if (btn) btn.disabled = false;
+  }
+}
+function sspDownloadGenHtml() {
+  const html = localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_html') || '';
+  const fnInput = document.getElementById('ssp-fn-input');
+  const filename = ((fnInput ? fnInput.value.trim() : '') || localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_filename') || 'stekkerslim-blog').replace(/\.html$/,'');
+  if (!html) { sspStatus('\u26A0 Genereer eerst de HTML.','#f87171'); return; }
+  const blob = new Blob([html], {type:'text/html;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href=url; a.download=filename+'.html';
+  document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  sspStatus('\u2713 '+filename+'.html gedownload \u2014 Drive opent zo.','#7c7ff2');
+  setTimeout(() => window.open(SSP_PIPELINES[sspPipeline].steps[sspStepIdx].driveUrl,'_blank','noopener'), 800);
+}
+function sspCopyGenHtml() {
+  const html = localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_html') || '';
+  if (!html) { sspStatus('\u26A0 Genereer eerst de HTML.','#f87171'); return; }
+  const tmp=document.createElement('textarea'); tmp.value=html; tmp.style.cssText='position:fixed;opacity:0;';
+  document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(tmp);
+  sspStatus('\u2713 HTML gekopieerd \u2014 plak in Stekkerslim Bouwen.','#38bdf8');
+}
+function sspGenReset() {
+  localStorage.removeItem(sspKey(sspPipeline,sspStepIdx)+'_html');
+  localStorage.removeItem(sspKey(sspPipeline,sspStepIdx)+'_filename');
+  sspRender();
 }
 function sspDownloadHtml() {
   const outEl=document.getElementById('ssp-output'); if(!outEl||!outEl.value.trim()) { sspStatus('\u26A0 Sla eerst het Claude-antwoord op.','#f87171'); return; }
@@ -5009,6 +5577,94 @@ function pblibDelete(i) {
   pblibRender();
 }
 
+
+// ══════════════════════════════════════════════
+// HERO STRIP — begroeting + vandaag
+// ══════════════════════════════════════════════
+function heroInit() {
+  const g = document.getElementById('hero-greet');
+  const d = document.getElementById('hero-date');
+  if (!g || !d) return;
+  const now = new Date();
+  const uur = now.getHours();
+  let groet = 'Goedenavond';
+  if (uur >= 5 && uur < 12) groet = 'Goedemorgen';
+  else if (uur >= 12 && uur < 18) groet = 'Goedemiddag';
+  const emojis = { Goedemorgen: '☀️', Goedemiddag: '⚡', Goedenavond: '🌙' };
+  g.textContent = groet + ', Remy ' + (emojis[groet] || '');
+  d.textContent = now.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
+  heroLoadToday();
+}
+
+async function heroLoadToday() {
+  const el = document.getElementById('hero-today');
+  if (!el) return;
+  try {
+    const now = new Date();
+    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), dd = String(now.getDate()).padStart(2,'0');
+    const vandaag = `${y}-${m}-${dd}`;
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${vandaag}&klaar=eq.false&order=tijd&select=tekst,tijd`, { headers: SB_GET_HDR });
+    if (!r.ok) { el.textContent = ''; return; }
+    const items = await r.json();
+    if (!items.length) {
+      el.innerHTML = '✅ <b>Geen open taken vandaag</b> — lekker bezig';
+      return;
+    }
+    const eerste = items[0];
+    const tijdStr = eerste.tijd ? ' om <b>' + eerste.tijd.slice(0,5) + '</b>' : '';
+    const rest = items.length > 1 ? '<br>+ nog ' + (items.length - 1) + ' open ' + (items.length - 1 === 1 ? 'taak' : 'taken') : '';
+    el.innerHTML = '📌 Eerstvolgende: <b>' + escHtml(eerste.tekst) + '</b>' + tijdStr + rest;
+  } catch(e) { el.textContent = ''; }
+}
+
+window.addEventListener('load', heroInit);
+
+// Scroll-to-top zichtbaarheid
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('scrolltop');
+  if (btn) btn.style.display = window.scrollY > 500 ? 'flex' : 'none';
+});
+
+
+// ══════════════════════════════════════════════
+// HERO STRIP — datum, klok, taak van vandaag
+// ══════════════════════════════════════════════
+function heroUpdate() {
+  const d = new Date();
+  const dagen = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
+  const maanden = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const datEl = document.getElementById('hero-datum');
+  if (datEl) datEl.textContent = dagen[d.getDay()].charAt(0).toUpperCase() + dagen[d.getDay()].slice(1) + ' ' + d.getDate() + ' ' + maanden[d.getMonth()];
+  const klokEl = document.getElementById('hero-klok');
+  if (klokEl) klokEl.textContent = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+}
+heroUpdate();
+setInterval(heroUpdate, 30000);
+
+async function heroLoadTaak() {
+  const el = document.getElementById('hero-taak-tekst');
+  if (!el) return;
+  try {
+    const d = new Date();
+    const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${iso}&klaar=eq.false&order=tijd&limit=3`, { headers: SB_GET_HDR });
+    if (!r.ok) { el.textContent = 'Geen taken vandaag 🎉'; return; }
+    const items = await r.json();
+    if (!items.length) { el.textContent = 'Geen open taken vandaag 🎉'; return; }
+    el.textContent = items.map(t => (t.tijd ? t.tijd.slice(0,5) + ' ' : '') + t.tekst).join('  ·  ');
+  } catch(e) { el.textContent = 'Klik 🗓️ Week voor je planning'; }
+}
+heroLoadTaak();
+
+// Mouse-glow op cards
+document.addEventListener('mousemove', e => {
+  const card = e.target.closest('.card');
+  if (!card) return;
+  const rect = card.getBoundingClientRect();
+  card.style.setProperty('--mx', ((e.clientX - rect.left) / rect.width * 100) + '%');
+  card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
+});
+
 </script>
 
 <!-- COMMAND PALETTE -->
@@ -5020,5 +5676,6 @@ function pblibDelete(i) {
   </div>
 </div>
 
+<button id="scrolltop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Naar boven">↑</button>
 </body>
 </html>
