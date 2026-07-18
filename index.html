@@ -2036,6 +2036,7 @@ details[open] summary { color: var(--accent) !important; }
       <span class="hbtn" style="color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#ef4444;background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.18);" onclick="document.getElementById('pomo-modal-overlay').style.display='flex'">⏱️ Timer</span>
       <span class="hbtn hbtn-muted" onclick="openCmdPalette()" title="Zoek alles (Ctrl+K)">🔍 Zoek <span style="font-size:0.8em;opacity:0.6;">(Ctrl+K)</span></span>
+      <span class="hbtn" style="color:#c084fc;background:rgba(192,132,252,0.08);border-color:rgba(192,132,252,0.18);" onclick="openBrainDump()">🧠 Dump</span>
     </div>
   </header>
 
@@ -2044,6 +2045,66 @@ details[open] summary { color: var(--accent) !important; }
   <div id="hero-taak"><span class="hero-badge">📋 vandaag</span> <span id="hero-taak-tekst">Weekplanner laden…</span></div>
   <div id="hero-klok">--:--</div>
 </div>
+
+<div id="levelup-strip" style="max-width:1160px;margin:0 auto 26px;animation:fadeDown 0.6s ease both;">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+    <span style="font-family:'Inter',sans-serif;font-size:0.66em;font-weight:700;letter-spacing:0.16em;color:var(--muted);text-transform:uppercase;">⚡ Daily Level Up</span>
+    <span id="lu-streak" style="font-family:'Inter',sans-serif;font-size:0.68em;font-weight:700;color:var(--amber);"></span>
+    <button onclick="luRefresh()" title="Nieuwe suggesties" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;transition:color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻</button>
+  </div>
+  <div id="lu-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
+    <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(52,211,153,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
+      <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--green);margin-bottom:6px;font-family:'Inter',sans-serif;">💰 VERDIEN</div>
+      <div id="lu-verdien" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
+    </div>
+    <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(56,189,248,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
+      <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--blue);margin-bottom:6px;font-family:'Inter',sans-serif;">🧠 LEER</div>
+      <div id="lu-leer" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
+    </div>
+    <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(124,111,240,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);position:relative;">
+      <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--accent);margin-bottom:6px;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:space-between;">
+        <span>💬 CONNECT</span>
+        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:0.95em;color:var(--muted);font-weight:600;">
+          <input type="checkbox" id="lu-connect-done" onchange="luToggleDone(this.checked)" style="accent-color:var(--accent);cursor:pointer;"> gedaan
+        </label>
+      </div>
+      <div id="lu-connect" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- SMART BAR: Brain Dump + Agent Router + Context -->
+<div id="smart-bar" style="max-width:1160px;margin:0 auto 26px;display:flex;gap:10px;flex-wrap:wrap;animation:fadeDown 0.5s 0.1s ease both;">
+  <div style="flex:1;min-width:260px;display:flex;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:8px;box-shadow:var(--shadow-card);">
+    <input id="smart-input" type="text" placeholder="🧠 Dump een gedachte of stel een vraag..." autocomplete="off"
+      style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;padding:6px 10px;">
+    <button onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
+      style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:11px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
+    <button onclick="agentRoute()" title="AI kiest de juiste agent voor je vraag"
+      style="padding:9px 14px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:11px;color:var(--green);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎯 Route</button>
+  </div>
+  <button onclick="openDumpInbox()" id="dump-inbox-btn" title="Je gedumpte gedachtes"
+    style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📥 Inbox <span id="dump-count" style="background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:100px;font-size:0.85em;">0</span></button>
+  <button onclick="genContextPakket()" title="Genereer context-pakket voor elke AI"
+    style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📦 Context</button>
+</div>
+<div id="smart-result" style="max-width:1160px;margin:-16px auto 20px;display:none;"></div>
+
+<!-- DUMP INBOX MODAL -->
+<div id="dump-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:1500;align-items:flex-start;justify-content:center;padding:8vh 16px;overflow-y:auto;">
+  <div style="width:100%;max-width:560px;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:20px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1em;color:var(--text);">📥 Brain Dump Inbox</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="dumpSorteer()" id="dump-sort-btn" style="padding:8px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:10px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.68em;font-weight:600;cursor:pointer;">✨ AI Sorteer</button>
+        <button onclick="closeDumpInbox()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div id="dump-list" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;"></div>
+    <div id="dump-sort-result" style="margin-top:12px;font-size:0.72em;color:var(--text-dim);line-height:1.6;"></div>
+  </div>
+</div>
+
 
   <!-- HERO STRIP -->
   <div id="hero-strip">
@@ -2305,8 +2366,11 @@ details[open] summary { color: var(--accent) !important; }
       <button id="ssp-tab-site" onclick="sspSetPipeline('site')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">🛡 Site Check</button>
       <button id="ssp-tab-seo" onclick="sspSetPipeline('seo')" style="flex:1;padding:9px 4px;border-radius:10px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--muted);font-family:'DM Mono',monospace;font-size:0.68em;cursor:pointer;transition:all 0.2s;">📈 SEO Growth</button>
     </div>
-    <input id="ssp-project-name" type="text" placeholder="✏️ Waar werk je aan? (bv. p1-meter blog)" onchange="localStorage.setItem('ssp_projectname_'+sspPipeline,this.value)"
-      style="width:100%;padding:9px 12px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.72em;outline:none;">
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input id="ssp-project-name" type="text" placeholder="✏️ Waar werk je aan? (bv. p1-meter blog)" onchange="localStorage.setItem('ssp_projectname_'+sspPipeline,this.value)"
+        style="flex:1;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.72em;outline:none;">
+      <button onclick="sspContextPakket()" title="Genereer context-pakket voor andere AI's" style="padding:9px 14px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.28);border-radius:9px;color:#34d399;font-family:'DM Mono',monospace;font-size:0.7em;cursor:pointer;white-space:nowrap;">📦 Context</button>
+    </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
       <button onclick="sspPrevStep()" style="padding:9px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:9px;color:var(--muted);cursor:pointer;font-size:1em;">&#8592;</button>
       <div id="ssp-step-label" style="flex:1;text-align:center;font-family:'DM Mono',monospace;font-size:0.7em;color:#a78bfa;line-height:1.4;"></div>
@@ -5665,7 +5729,493 @@ document.addEventListener('mousemove', e => {
   card.style.setProperty('--my', ((e.clientY - rect.top) / rect.height * 100) + '%');
 });
 
+
+// ══════════════════════════════════════════════
+// BRAIN DUMP — capture zonder frictie
+// ══════════════════════════════════════════════
+const DUMP_KEY = 'remy_braindump_v1';
+function dumpGet() { try { return JSON.parse(localStorage.getItem(DUMP_KEY)||'[]'); } catch { return []; } }
+function dumpSave(arr) { try { localStorage.setItem(DUMP_KEY, JSON.stringify(arr)); } catch {} dumpUpdateCount(); }
+function dumpUpdateCount() {
+  const el = document.getElementById('dump-count');
+  if (el) el.textContent = dumpGet().length;
+}
+function brainDump() {
+  const inp = document.getElementById('smart-input');
+  const val = inp.value.trim();
+  if (!val) { inp.focus(); return; }
+  const arr = dumpGet();
+  arr.unshift({ text: val, ts: Date.now() });
+  dumpSave(arr);
+  inp.value = '';
+  smartFlash('💭 Gedumpt! Sorteer later via 📥 Inbox.');
+  // Cloud backup via bestaande pipeline_state tabel
+  try { sspSyncToCloud('braindump_backup', JSON.stringify(arr.slice(0,100))); } catch(e) {}
+}
+function smartFlash(msg, isHtml) {
+  const el = document.getElementById('smart-result');
+  if (!el) return;
+  el.style.display = 'block';
+  el.innerHTML = '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 16px;font-family:Inter,sans-serif;font-size:0.75em;color:var(--text-dim);line-height:1.6;box-shadow:var(--shadow-card);">' + (isHtml ? msg : escHtml(msg)) + '</div>';
+  if (!isHtml) setTimeout(() => { el.style.display = 'none'; }, 3500);
+}
+function openDumpInbox() {
+  document.getElementById('dump-overlay').style.display = 'flex';
+  dumpRenderList();
+}
+function closeDumpInbox() { document.getElementById('dump-overlay').style.display = 'none'; }
+document.getElementById('dump-overlay').addEventListener('click', function(e) { if (e.target === this) closeDumpInbox(); });
+
+function dumpRenderList() {
+  const list = document.getElementById('dump-list');
+  const arr = dumpGet();
+  if (!arr.length) { list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">Leeg! Dump gedachtes via de balk bovenaan de hub.</div>'; return; }
+  list.innerHTML = arr.map((d, i) => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;">
+      <div style="flex:1;">
+        <div style="font-family:Inter,sans-serif;font-size:0.78em;color:var(--text);line-height:1.5;">${escHtml(d.text)}</div>
+        <div style="font-size:0.62em;color:var(--muted);margin-top:4px;">${new Date(d.ts).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+      </div>
+      <button onclick="dumpDelete(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;">✕</button>
+    </div>`).join('');
+}
+function dumpDelete(i) {
+  const arr = dumpGet(); arr.splice(i, 1); dumpSave(arr); dumpRenderList();
+}
+
+async function dumpSorteer() {
+  const arr = dumpGet();
+  if (!arr.length) return;
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  const btn = document.getElementById('dump-sort-btn');
+  const resEl = document.getElementById('dump-sort-result');
+  btn.disabled = true; btn.textContent = '⏳ Sorteren...';
+  try {
+    const prompt = `Sorteer deze losse gedachtes van Remy in categorieën. Remy heeft: een weekplanner (taken), StekkerSlim.nl (blog-ideeën, site-verbeteringen), een AI Hub (feature-ideeën), en algemene notities.
+
+Gedachtes:
+${arr.map((d,i) => (i+1) + '. ' + d.text).join('\n')}
+
+Geef per gedachte EXACT dit format:
+[nummer] → [WEEKPLANNER-TAAK / BLOG-IDEE / STEKKERSLIM-SITE / AI-HUB / NOTITIE] — korte actie-omschrijving
+
+Eindig met: "SNELSTE WIN: [welke van deze het makkelijkst vandaag nog kan]"`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    resEl.innerHTML = '<div style="background:var(--accent-soft);border:1px solid rgba(124,111,240,0.25);border-radius:12px;padding:12px;white-space:pre-wrap;">' + escHtml(text) + '</div>';
+  } catch(err) {
+    resEl.textContent = '⚠ Sorteren mislukt: ' + err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = '✨ AI Sorteer';
+  }
+}
+
+// ══════════════════════════════════════════════
+// AGENT ROUTER — AI kiest de juiste agent
+// ══════════════════════════════════════════════
+const ROUTER_AGENTS = [
+  { name: 'Dr. NeuroCut', desc: 'medische vragen, ADHD, medicatie, gewicht, gezondheid', url: 'https://claude.ai/project/019c8aa5-f843-7141-b663-cb017a540215' },
+  { name: 'Nova R&D', desc: 'werk PWN, drinkwater, onderzoek, metingen, lab', url: 'https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79' },
+  { name: 'Atlas', desc: 'algemeen onderzoek en development', url: 'https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe' },
+  { name: 'Voltex Coder', desc: 'code, Home Assistant, Tuya, Excel, programmeren, debuggen', url: 'https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6' },
+  { name: 'AI Hubby', desc: 'alles over de AI Hub zelf, features, aanpassingen aan het dashboard', url: 'https://claude.ai/project/019d8198-c3d7-7004-a846-5221dd83acb1' },
+  { name: 'Stekkerslim Bouwen', desc: 'StekkerSlim.nl site bouwen, HTML aanpassen, keuren, publiceren', url: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1' },
+  { name: 'StekkerPen', desc: 'blogs schrijven, Pinterest content voor StekkerSlim', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf' },
+  { name: 'StekkerBoost', desc: 'Facebook ads, marketing campagnes StekkerSlim', url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9' },
+  { name: 'StekkerDesk', desc: 'bezoekersvragen en support StekkerSlim', url: 'https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8' },
+  { name: 'DoopieVault', desc: 'crypto, trading, investeringen', url: 'https://claude.ai/project/019cd6d5-1caf-7138-9b61-1a4dbdc90a69' }
+];
+
+async function agentRoute() {
+  const inp = document.getElementById('smart-input');
+  const vraag = inp.value.trim();
+  if (!vraag) { inp.focus(); smartFlash('Typ eerst je vraag, dan kies ik de agent.'); return; }
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  smartFlash('🎯 Even kijken wie dit het beste kan...');
+  try {
+    const prompt = `Kies de beste agent voor deze vraag van Remy. Antwoord met ALLEEN de exacte agent-naam, niets anders.
+
+Agents:
+${ROUTER_AGENTS.map(a => a.name + ': ' + a.desc).join('\n')}
+
+Vraag: "${vraag}"`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const antwoord = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    const agent = ROUTER_AGENTS.find(a => antwoord.toLowerCase().includes(a.name.toLowerCase()));
+    if (!agent) { smartFlash('🤔 Geen duidelijke match — probeer je vraag specifieker te maken.'); return; }
+    // Kopieer de vraag naar klembord
+    const tmp = document.createElement('textarea'); tmp.value = vraag; tmp.style.cssText='position:fixed;opacity:0;';
+    document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(tmp);
+    smartFlash('🎯 <b style="color:var(--accent);">' + escHtml(agent.name) + '</b> is de juiste — je vraag staat op je klembord. <a href="' + agent.url + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open agent →</a>', true);
+    inp.value = '';
+  } catch(err) {
+    smartFlash('⚠ Router mislukt: ' + err.message);
+  }
+}
+
+// Enter in smart-input = route
+document.getElementById('smart-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') agentRoute();
+});
+
+// ══════════════════════════════════════════════
+// CONTEXT-PAKKET GENERATOR
+// ══════════════════════════════════════════════
+async function genContextPakket() {
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  smartFlash('📦 Context-pakket bouwen...');
+  try {
+    // Verzamel actuele staat
+    const d = new Date();
+    const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    let weektaken = [];
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=gte.${iso}&klaar=eq.false&order=datum,tijd&limit=8`, { headers: SB_GET_HDR });
+      if (r.ok) weektaken = await r.json();
+    } catch(e) {}
+    // Pipeline voortgang
+    const pipeStatus = ['blog','site','seo'].map(p => {
+      const steps = SSP_PIPELINES[p].steps;
+      const done = steps.filter((s,i) => s.multiAI ? s.ais.some(ai => !!localStorage.getItem(sspMultiKey(p,i,ai.key))) : !!localStorage.getItem(sspKey(p,i))).length;
+      const naam = localStorage.getItem('ssp_projectname_'+p) || '';
+      return done > 0 ? `${p}: stap ${done}/${steps.length}${naam ? ' ("'+naam+'")' : ''}` : null;
+    }).filter(Boolean);
+    const dumps = dumpGet().slice(0, 5);
+
+    const pakket = `CONTEXT REMY — ${d.toLocaleDateString('nl-NL',{weekday:'long',day:'numeric',month:'long'})}
+
+WIE: Remy, werkt bij PWN (drinkwater), runt StekkerSlim.nl (affiliate site over energie/domotica), bouwt een persoonlijke AI Hub. ADHD — houdt van directe, concrete antwoorden zonder omhaal.
+
+OPEN TAKEN DEZE WEEK:
+${weektaken.length ? weektaken.map(t => '- ' + t.datum + (t.tijd ? ' ' + t.tijd.slice(0,5) : '') + ': ' + t.tekst).join('\n') : '- geen open taken'}
+
+ACTIEVE PIPELINES:
+${pipeStatus.length ? pipeStatus.map(s => '- ' + s).join('\n') : '- geen actieve pipelines'}
+
+RECENTE GEDACHTES (brain dump):
+${dumps.length ? dumps.map(x => '- ' + x.text).join('\n') : '- geen'}
+
+KENNISBANK: https://raw.githubusercontent.com/Remyster/stekkerslim/main/Kennisbank/INDEX.md`;
+
+    const tmp = document.createElement('textarea'); tmp.value = pakket; tmp.style.cssText='position:fixed;opacity:0;';
+    document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(tmp);
+    smartFlash('📦 Context-pakket gekopieerd! Plak als eerste bericht in elke AI (Grok, Gemini, Perplexity, Claude) — ze weten direct waar je mee bezig bent.');
+  } catch(err) {
+    smartFlash('⚠ Mislukt: ' + err.message);
+  }
+}
+
+// Init dump count bij laden
+dumpUpdateCount();
+
+
+// ══════════════════════════════════════════════
+// DAILY LEVEL UP — verdien / leer / connect
+// ══════════════════════════════════════════════
+function luDateKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function luRenderStreak() {
+  const el = document.getElementById('lu-streak');
+  if (!el) return;
+  const streak = parseInt(localStorage.getItem('lu_streak') || '0', 10);
+  el.textContent = streak > 0 ? '🔥 ' + streak + ' dag' + (streak === 1 ? '' : 'en') + ' streak' : '';
+}
+
+function luToggleDone(checked) {
+  const today = luDateKey();
+  const lastDone = localStorage.getItem('lu_last_done') || '';
+  let streak = parseInt(localStorage.getItem('lu_streak') || '0', 10);
+  if (checked) {
+    if (lastDone !== today) {
+      const yesterday = new Date(Date.now() - 86400000);
+      const yKey = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
+      streak = (lastDone === yKey) ? streak + 1 : 1;
+      localStorage.setItem('lu_streak', String(streak));
+      localStorage.setItem('lu_last_done', today);
+    }
+  } else {
+    if (lastDone === today) {
+      streak = Math.max(0, streak - 1);
+      localStorage.setItem('lu_streak', String(streak));
+      localStorage.setItem('lu_last_done', '');
+    }
+  }
+  luRenderStreak();
+}
+
+async function luLoad(force) {
+  const today = luDateKey();
+  const cacheKey = 'lu_content_' + today;
+  const cached = force ? null : localStorage.getItem(cacheKey);
+  const doneToday = localStorage.getItem('lu_last_done') === today;
+  const cb = document.getElementById('lu-connect-done');
+  if (cb) cb.checked = doneToday;
+  luRenderStreak();
+
+  if (cached) {
+    try { luRender(JSON.parse(cached)); return; } catch(e) {}
+  }
+  const key = getApiKey();
+  if (!key) {
+    luRender({ verdien: 'Stel je API key in (🔑 knop) voor dagelijkse suggesties.', leer: 'Stel je API key in voor dagelijkse suggesties.', connect: 'Stel je API key in voor dagelijkse suggesties.' });
+    return;
+  }
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: `Datum: ${today}. Genereer voor Remy (36, Nederlander, technisch, bouwt affiliate-site StekkerSlim.nl over slimme energie/domotica, werkt fulltime bij drinkwaterbedrijf, ADHD, weinig vrije tijd, wil socialer worden) exact 3 korte suggesties. Wees concreet en fris — geen generieke tips, elke dag iets anders (gebruik de datum als variatie-seed).
+
+Geef ALLEEN deze JSON, geen uitleg:
+{"verdien":"1 concreet idee om geld te verdienen of StekkerSlim te laten groeien, max 2 zinnen","leer":"1 concreet ding om vandaag te leren over AI/tech/tools met waarom het nuttig is, max 2 zinnen","connect":"1 kleine concrete sociale actie voor vandaag die 5 min kost, max 2 zinnen"}` }]
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    localStorage.setItem(cacheKey, JSON.stringify(parsed));
+    // Oude cache opruimen
+    Object.keys(localStorage).filter(k => k.startsWith('lu_content_') && k !== cacheKey).forEach(k => localStorage.removeItem(k));
+    luRender(parsed);
+  } catch(e) {
+    console.warn('Level Up laden mislukt:', e);
+    luRender({ verdien: 'Kon niet laden — check je API key of probeer ↻', leer: '—', connect: '—' });
+  }
+}
+
+function luRender(d) {
+  const v = document.getElementById('lu-verdien');
+  const l = document.getElementById('lu-leer');
+  const c = document.getElementById('lu-connect');
+  if (v) v.textContent = d.verdien || '—';
+  if (l) l.textContent = d.leer || '—';
+  if (c) c.textContent = d.connect || '—';
+}
+
+function luRefresh() { luLoad(true); }
+setTimeout(() => luLoad(false), 1200);
+
+
+// ══════════════════════════════════════════════
+// BRAIN DUMP — dump nu, sorteer later
+// ══════════════════════════════════════════════
+function openBrainDump() {
+  document.getElementById('bd-overlay').style.display = 'flex';
+  bdLoadList();
+  setTimeout(() => document.getElementById('bd-input').focus(), 60);
+}
+function closeBrainDump() { document.getElementById('bd-overlay').style.display = 'none'; }
+document.getElementById('bd-overlay').addEventListener('click', function(e) { if (e.target === this) closeBrainDump(); });
+
+function bdStatus(msg, color) {
+  const el = document.getElementById('bd-status');
+  if (!el) return;
+  el.style.color = color || 'var(--green)';
+  el.textContent = msg;
+  setTimeout(() => { if (el) el.textContent = ''; }, 3500);
+}
+
+async function bdSave() {
+  const inp = document.getElementById('bd-input');
+  const tekst = inp.value.trim();
+  if (!tekst) { bdStatus('⚠ Typ eerst iets.', '#f87171'); return; }
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/brain_dumps`, {
+      method: 'POST', headers: SB_POST_HDR,
+      body: JSON.stringify({ tekst, status: 'nieuw' })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    inp.value = '';
+    bdStatus('✓ Gedumpt. Ga verder met je dag.');
+    bdLoadList();
+  } catch(e) { bdStatus('⚠ Opslaan mislukt: ' + e.message, '#f87171'); }
+}
+
+async function bdLoadList() {
+  const list = document.getElementById('bd-list');
+  if (!list) return;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/brain_dumps?status=neq.klaar&order=created_at.desc&limit=30`, { headers: SB_GET_HDR });
+    if (!r.ok) { list.innerHTML = ''; return; }
+    const items = await r.json();
+    if (!items.length) { list.innerHTML = '<div style="font-size:0.68em;color:var(--muted);text-align:center;padding:8px;font-family:Inter,sans-serif;">Leeg — alles gesorteerd 🎉</div>'; return; }
+    const catKleur = { taak: '#38bdf8', blog: '#fbbf24', stekkerslim: '#34d399', idee: '#c084fc', overig: '#8b93a7' };
+    list.innerHTML = items.map(it => `
+      <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:9px 11px;display:flex;align-items:flex-start;gap:8px;">
+        ${it.categorie ? `<span style="font-size:0.58em;font-weight:700;color:${catKleur[it.categorie]||catKleur.overig};background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:100px;white-space:nowrap;font-family:Inter,sans-serif;margin-top:1px;">${escHtml(it.categorie)}</span>` : ''}
+        <span style="flex:1;font-size:0.72em;color:var(--text-dim);line-height:1.45;font-family:Inter,sans-serif;">${escHtml(it.tekst)}</span>
+        <button onclick="bdKlaar(${it.id})" title="Klaar/weg" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:0 3px;">✕</button>
+      </div>`).join('');
+  } catch(e) { console.warn('bd list:', e); }
+}
+
+async function bdKlaar(id) {
+  try {
+    await fetch(`${SB_URL}/rest/v1/brain_dumps?id=eq.${id}`, {
+      method: 'PATCH', headers: SB_POST_HDR, body: JSON.stringify({ status: 'klaar' })
+    });
+    bdLoadList();
+  } catch(e) {}
+}
+
+async function bdSorteer() {
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  const btn = document.getElementById('bd-sorteer-btn');
+  btn.disabled = true;
+  bdStatus('🪄 Claude sorteert je dumps…', 'var(--muted)');
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/brain_dumps?status=eq.nieuw&order=created_at`, { headers: SB_GET_HDR });
+    const dumps = await r.json();
+    if (!dumps.length) { bdStatus('Niks te sorteren.', 'var(--muted)'); btn.disabled = false; return; }
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: `Sorteer deze brain dumps van Remy. Per dump: bepaal categorie en of het een concrete taak is.
+
+Categorieën: "taak" (concrete actie/todo), "blog" (blogidee voor StekkerSlim), "stekkerslim" (site-verbetering/feature), "idee" (algemeen idee/project), "overig".
+
+Als categorie "taak": geef ook een korte taaktekst voor de weekplanner (max 60 tekens).
+
+DUMPS:
+${dumps.map(d => `[${d.id}] ${d.tekst}`).join('\n')}
+
+Geef ALLEEN deze JSON:
+{"items":[{"id":123,"categorie":"taak|blog|stekkerslim|idee|overig","taaktekst":"alleen bij taak, anders leeg"}]}` }]
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+
+    let taken = 0;
+    const vandaag = new Date();
+    const iso = vandaag.getFullYear() + '-' + String(vandaag.getMonth()+1).padStart(2,'0') + '-' + String(vandaag.getDate()).padStart(2,'0');
+
+    for (const item of (parsed.items || [])) {
+      await fetch(`${SB_URL}/rest/v1/brain_dumps?id=eq.${item.id}`, {
+        method: 'PATCH', headers: SB_POST_HDR,
+        body: JSON.stringify({ categorie: item.categorie, status: 'gesorteerd' })
+      });
+      if (item.categorie === 'taak' && item.taaktekst) {
+        await sbPost('weekplanner_items', { datum: iso, tekst: item.taaktekst, tijd: null, tijd_eind: null, categorie: 'taak', klaar: false, volgorde: 50 });
+        taken++;
+      }
+    }
+    bdStatus(`✓ ${parsed.items.length} gesorteerd${taken ? ', ' + taken + ' taak/taken naar weekplanner vandaag' : ''}.`);
+    bdLoadList();
+  } catch(e) {
+    bdStatus('⚠ Sorteren mislukt: ' + e.message, '#f87171');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════
+// CONTEXT-PAKKET — comprimeer huidige staat voor andere AI's
+// ══════════════════════════════════════════════
+async function sspContextPakket() {
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  sspStatus('📦 Context-pakket genereren…', 'var(--muted)');
+  try {
+    const steps = SSP_PIPELINES[sspPipeline].steps;
+    const projectNaam = localStorage.getItem('ssp_projectname_' + sspPipeline) || '(geen naam)';
+    // Verzamel laatste 3 opgeslagen outputs (ingekort)
+    const outputs = [];
+    for (let i = steps.length - 1; i >= 0 && outputs.length < 3; i--) {
+      const s = steps[i];
+      let out = '';
+      if (s.multiAI) {
+        out = s.ais.map(ai => localStorage.getItem(sspMultiKey(sspPipeline, i, ai.key)) || '').filter(Boolean).join('\n---\n');
+      } else {
+        out = localStorage.getItem(sspKey(sspPipeline, i)) || '';
+      }
+      if (out) outputs.unshift(`STAP ${i+1} (${s.label.replace(/^\d+\/\d+ — /, '')}):\n${sspDecode(out).slice(0, 1500)}`);
+    }
+    if (!outputs.length) { sspStatus('⚠ Nog geen opgeslagen stappen om samen te vatten.', '#f87171'); return; }
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: `Maak een compact context-pakket (max 15 regels) dat Remy kan plakken als opening in een andere AI-chat (Grok/Gemini/Perplexity/Claude), zodat die AI meteen weet waar het project staat.
+
+PROJECT: ${projectNaam} (StekkerSlim ${SSP_PIPELINES[sspPipeline].label})
+HUIDIGE STAP: ${sspStepIdx + 1} van ${steps.length}
+
+RECENTE OUTPUTS:
+${outputs.join('\n\n')}
+
+Format: begin met "CONTEXT — StekkerSlim project:" en dan puntsgewijs: wat is het project, welke beslissingen zijn genomen, waar staan we nu, wat is de volgende stap. Alleen de kern. Geen inleiding of afsluiting.` }]
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const pakket = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    const tmp = document.createElement('textarea');
+    tmp.value = pakket; tmp.style.cssText = 'position:fixed;opacity:0;';
+    document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0, 99999);
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(tmp);
+    sspStatus('✓ Context-pakket op je klembord — plak in elke AI als opener.', '#34d399');
+  } catch(e) {
+    sspStatus('⚠ Mislukt: ' + e.message, '#f87171');
+  }
+}
+
 </script>
+
+<!-- BRAIN DUMP -->
+<div id="bd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);backdrop-filter:blur(12px);z-index:1500;align-items:flex-start;justify-content:center;padding:8vh 16px 16px;overflow-y:auto;">
+  <div style="width:100%;max-width:560px;background:#12141d;border:1px solid var(--border-strong);border-radius:18px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <span style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05em;background:linear-gradient(120deg,#e9d5ff,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🧠 Brain Dump</span>
+      <span style="font-size:0.62em;color:var(--muted);font-family:'Inter',sans-serif;">dump nu · sorteer later</span>
+      <button onclick="closeBrainDump()" style="margin-left:auto;background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;padding:2px 6px;">✕</button>
+    </div>
+    <textarea id="bd-input" placeholder="Dump je gedachte... idee, taak, blog-onderwerp, wat dan ook. Niet nadenken, gewoon typen." style="width:100%;height:90px;background:rgba(255,255,255,0.03);border:1px solid rgba(192,132,252,0.25);border-radius:12px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;padding:12px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button onclick="bdSave()" style="flex:2;padding:11px;background:rgba(192,132,252,0.14);border:1px solid rgba(192,132,252,0.35);border-radius:11px;color:#c084fc;font-family:'Inter',sans-serif;font-weight:700;font-size:0.76em;cursor:pointer;">💾 Dump het</button>
+      <button onclick="bdSorteer()" id="bd-sorteer-btn" style="flex:1;padding:11px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.28);border-radius:11px;color:#34d399;font-family:'Inter',sans-serif;font-weight:600;font-size:0.72em;cursor:pointer;">🪄 Sorteer alles</button>
+    </div>
+    <div id="bd-status" style="font-size:0.68em;color:var(--green);text-align:center;min-height:16px;margin-top:8px;font-family:'Inter',sans-serif;"></div>
+    <div id="bd-list" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow-y:auto;"></div>
+  </div>
+</div>
 
 <!-- COMMAND PALETTE -->
 <div id="cmd-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:2000;align-items:flex-start;justify-content:center;padding:12vh 16px 16px;">
