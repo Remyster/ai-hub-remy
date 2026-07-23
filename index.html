@@ -5516,24 +5516,32 @@ function cmdExec(m) {
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openCmdPalette(); }
   if (e.key === 'Escape') closeCmdPalette();
-  if (document.getElementById('cmd-overlay').style.display === 'flex' && e.key === 'Enter') {
-    const matches = document.getElementById('cmd-results')._matches;
+  const cmdOv = document.getElementById('cmd-overlay');
+  if (cmdOv && cmdOv.style.display === 'flex' && e.key === 'Enter') {
+    const cr = document.getElementById('cmd-results');
+    const matches = cr ? cr._matches : null;
     if (matches && matches.length) cmdExec(matches[0]);
   }
 });
-document.getElementById('cmd-input').addEventListener('input', e => cmdRender(e.target.value));
-document.getElementById('cmd-overlay').addEventListener('click', function(e) { if (e.target === this) closeCmdPalette(); });
+document.addEventListener('DOMContentLoaded', () => {
+  const ci = document.getElementById('cmd-input');
+  if (ci) ci.addEventListener('input', e => cmdRender(e.target.value));
+  const co = document.getElementById('cmd-overlay');
+  if (co) co.addEventListener('click', function(e) { if (e.target === this) closeCmdPalette(); });
+});
 
 // ══════════════════════════════════════════════
 // PIPELINE SUPABASE SYNC (cross-device)
 // ══════════════════════════════════════════════
+let _sspCloudAvailable = true;
 async function sspSyncToCloud(key, value) {
+  if (!_sspCloudAvailable) return;
   try {
     await fetch(`${SB_URL}/rest/v1/pipeline_state?on_conflict=key`, {
       method: 'POST',
       headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates' },
       body: JSON.stringify({ key, value, updated_at: new Date().toISOString() })
-    });
+    }).then(r => { if (r.status === 404) { _sspCloudAvailable = false; console.info('pipeline_state tabel bestaat nog niet — cloud sync uit, localStorage werkt normaal.'); } });
   } catch(e) { console.warn('Pipeline cloud sync mislukt:', e); }
 }
 async function sspDeleteFromCloud(key) {
@@ -5542,8 +5550,10 @@ async function sspDeleteFromCloud(key) {
   } catch(e) {}
 }
 async function sspLoadFromCloud() {
+  if (!_sspCloudAvailable) return;
   try {
     const r = await fetch(`${SB_URL}/rest/v1/pipeline_state?select=key,value`, { headers: SB_GET_HDR });
+    if (r.status === 404) { _sspCloudAvailable = false; return; }
     if (!r.ok) return;
     const rows = await r.json();
     rows.forEach(row => {
@@ -6031,7 +6041,10 @@ function openBrainDump() {
   setTimeout(() => document.getElementById('bd-input').focus(), 60);
 }
 function closeBrainDump() { document.getElementById('bd-overlay').style.display = 'none'; }
-document.getElementById('bd-overlay').addEventListener('click', function(e) { if (e.target === this) closeBrainDump(); });
+document.addEventListener('DOMContentLoaded', () => {
+  const bo = document.getElementById('bd-overlay');
+  if (bo) bo.addEventListener('click', function(e) { if (e.target === this) closeBrainDump(); });
+});
 
 function bdStatus(msg, color) {
   const el = document.getElementById('bd-status');
