@@ -1539,6 +1539,35 @@ details[open] summary { color: var(--accent) !important; }
   border-radius: 20px !important;
 }
 
+/* ─── STEKKERSLIM CHECKER PILLS ─── */
+.ss-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+.ss-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 14px;
+  border-radius: 100px;
+  background: rgba(var(--pc), 0.08);
+  border: 1px solid rgba(var(--pc), 0.22);
+  color: rgb(var(--pc));
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7em;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: all 0.18s cubic-bezier(0.4,0,0.2,1);
+  white-space: nowrap;
+}
+.ss-pill:hover {
+  background: rgba(var(--pc), 0.16);
+  border-color: rgba(var(--pc), 0.4);
+  transform: translateY(-1px);
+}
+.ss-pill:active { transform: translateY(0) scale(0.97); }
+@media (max-width: 640px) {
+  .ss-pill { font-size: 0.66em; padding: 7px 12px; }
+}
+
 /* ─── SCROLLBAR ─── */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -2268,32 +2297,18 @@ details[open] summary { color: var(--accent) !important; }
         <h2>🛒 Amazon NL</h2><p>Affiliate shop</p>
       </a>
     </div>
-    <details style="margin-top:12px;">
-      <summary style="font-size:0.68em;color:var(--muted);cursor:pointer;letter-spacing:0.06em;padding:6px 0;">🔍 Losse AI-checkers (los van de pipeline)</summary>
-      <div class="grid" style="margin-top:10px;">
-        <a href="https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>🔍 Grok Site Checker</h2><p>Site analyse</p>
-        </a>
-        <a href="https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>📈 Grok SEO &amp; Growth</h2><p>SEO en groei</p>
-        </a>
-        <a href="https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>✍️ Grok Blog Checker</h2><p>Blog review</p>
-        </a>
-        <a href="https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>🌐 Perplexity Groei</h2><p>SEO &amp; content</p>
-        </a>
-        <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>🔎 Perplexity Auditor</h2><p>Content &amp; site-check</p>
-        </a>
-        <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>🛡️ Gemini Guardian</h2><p>Blog validator</p>
-        </a>
-        <a href="https://gemini.google.com/u/0/gem/c2b213f954f9" class="card affiliate" target="_blank" rel="noopener noreferrer">
-          <div class="dot"></div><h2>🤖 Gemini Groei</h2><p>Content-auditor</p>
-        </a>
+    <div style="margin-top:14px;">
+      <div style="font-size:0.6em;font-weight:700;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin-bottom:9px;font-family:'Inter',sans-serif;">🔍 Losse AI-checkers</div>
+      <div class="ss-pills">
+        <a href="https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">🔍 Grok Site</a>
+        <a href="https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">📈 Grok SEO</a>
+        <a href="https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">✍️ Grok Blog</a>
+        <a href="https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:56,189,248;">🌐 Perplexity Groei</a>
+        <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:56,189,248;">🔎 Perplexity Audit</a>
+        <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🛡️ Gemini Guardian</a>
+        <a href="https://gemini.google.com/u/0/gem/c2b213f954f9" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🤖 Gemini Groei</a>
       </div>
-    </details>
+    </div>
   </section>
 
   <!-- TOOLS & PLATFORMS -->
@@ -6063,7 +6078,11 @@ async function bdSave() {
       method: 'POST', headers: SB_POST_HDR,
       body: JSON.stringify({ tekst, status: 'nieuw' })
     });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
+    if (!r.ok) {
+      const errTxt = await r.text();
+      console.error('Brain Dump OPSLAAN mislukt — HTTP ' + r.status, errTxt);
+      throw new Error('HTTP ' + r.status + (r.status === 404 ? ' — tabel brain_dumps bestaat niet' : r.status === 401 || r.status === 403 ? ' — geen rechten (RLS/GRANT)' : ''));
+    }
     inp.value = '';
     bdStatus('✓ Gedumpt. Ga verder met je dag.');
     bdLoadList();
@@ -6075,7 +6094,15 @@ async function bdLoadList() {
   if (!list) return;
   try {
     const r = await fetch(`${SB_URL}/rest/v1/brain_dumps?status=neq.klaar&order=created_at.desc&limit=30`, { headers: SB_GET_HDR });
-    if (!r.ok) { list.innerHTML = ''; return; }
+    if (!r.ok) {
+      const errTxt = await r.text();
+      console.error('Brain Dump LEZEN mislukt — HTTP ' + r.status, errTxt);
+      list.innerHTML = '<div style="font-size:0.68em;color:#f87171;padding:10px;line-height:1.5;font-family:Inter,sans-serif;">⚠ Kan dumps niet laden (HTTP ' + r.status + ').<br>' +
+        (r.status === 404 ? 'Tabel <b>brain_dumps</b> bestaat niet in dit Supabase-project.' :
+         r.status === 401 || r.status === 403 ? 'Geen rechten — draai de GRANT + DISABLE ROW LEVEL SECURITY query.' :
+         'Zie console voor details.') + '</div>';
+      return;
+    }
     const items = await r.json();
     if (!items.length) { list.innerHTML = '<div style="font-size:0.68em;color:var(--muted);text-align:center;padding:8px;font-family:Inter,sans-serif;">Leeg — alles gesorteerd 🎉</div>'; return; }
     const catKleur = { taak: '#38bdf8', blog: '#fbbf24', stekkerslim: '#34d399', idee: '#c084fc', overig: '#8b93a7' };
