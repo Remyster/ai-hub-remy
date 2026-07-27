@@ -3882,7 +3882,25 @@ async function wpFotoGekozen(event) {
 
   try {
     const base64 = await wpFileToBase64(file);
-    const prompt = `Dit is een foto van een handgeschreven weekplanner (GoodNotes op iPad). Lees per taak/regel uit: op welke dag het hoort, starttijd, eindtijd (indien aangegeven) en de tekst van de taak.
+    const prompt = `Dit is een foto van een handgeschreven weekplanner (GoodNotes op iPad).
+
+STRUCTUUR VAN HET FORMULIER
+- Elke dag heeft een GEDRUKTE dagkop op een grijze balk: MAANDAG t/m ZONDAG.
+  Die gedrukte kop bepaalt bij welke dag alle regels eronder horen — dat is altijd hoge zekerheid.
+- In diezelfde dagkop staan vier locatievakjes: Velserbroek, Heemskerk, Andijk, Thuis.
+  Een vakje kan aangevinkt zijn met pen (kruisje, vinkje of ingekleurd).
+- Onder elke dagkop staan regels met links een smalle TIJD-kolom en rechts de TAAK-tekst,
+  gescheiden door een verticale lijn.
+- De lichtgrijze gedrukte hint "__:__ - __:__" is GEEN invoer. Negeer die volledig.
+
+WAT JE UITLEEST
+Per beschreven regel: de dag (uit de gedrukte kop erboven), de starttijd, de eindtijd
+en de taaktekst. Lege regels sla je over.
+
+LOCATIE
+Is er bij een dag een locatievakje aangevinkt? Zet die locatie dan tussen blokhaken
+vooraan de taaktekst van ELKE regel van die dag, bijvoorbeeld: "[Velserbroek] HWL monsters".
+Geen vakje aangevinkt of twijfel je? Laat de blokhaken weg.
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 {
@@ -3892,9 +3910,11 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 }
 
 Regels:
-- "zekerheid":"laag" zodra het handschrift onduidelijk is of je twijfelt over dag/tijd/tekst
-- "dag":"onbekend" als je niet kan zien welke dag het is
-- Sla niets over — ook vage krabbels teruggeven als losse regel met zekerheid laag
+- "zekerheid":"laag" zodra het handschrift onduidelijk is of je twijfelt over tijd of tekst
+- Staat er een gedrukte dagkop boven de regel? Dan is de dag zeker — gebruik "onbekend" alleen
+  als er echt geen kop te zien is
+- Sla lege regels over, maar geef vage krabbels wel terug met zekerheid laag
+- Neem de gedrukte hulptekst ("TIJD", "TAAK", "__:__", "datum") nooit over als taak
 - Geen tekst buiten de JSON`;
 
     const res = await fetch('https://api.anthropic.com/v1/messages', {
