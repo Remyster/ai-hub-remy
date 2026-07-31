@@ -2624,6 +2624,9 @@ function sspRenderOutputContainer(step) {
   } else {
     const saved=sspDecode(localStorage.getItem(sspKey(sspPipeline,sspStepIdx))||'');
     const curStep=SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
+    const _allSteps=SSP_PIPELINES[sspPipeline].steps;
+    const _isEdge=(sspStepIdx===0||sspStepIdx===_allSteps.length-1);
+    const clearAllBtn=_isEdge?'<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline">&#128465; Wis alles</button>':'';
     const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':''; const driveBtn=curStep.driveUrl?'<button onclick="sspOpenDrive()" style="flex:1;min-width:90px;padding:11px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;color:#10b981;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128194; Open Drive-map</button>':'';
     c.innerHTML='<div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Antwoord van AI <span id="ssp-saved-badge" style="color:#10b981;font-size:0.9em;"></span></div>'
       +'<textarea id="ssp-output" placeholder="Plak hier het volledige antwoord van de AI..." style="width:100%;height:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.22);border-radius:11px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>'
@@ -2631,7 +2634,7 @@ function sspRenderOutputContainer(step) {
       +'<button onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
       +'<button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>'
       +'<button onclick="sspDelete()" style="flex:1;min-width:90px;padding:11px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.22);border-radius:10px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128465; Verwijderen</button>'
-      +driveBtn+downloadBtn+'</div>';
+      +driveBtn+downloadBtn+clearAllBtn+'</div>';
     const ta=document.getElementById('ssp-output'); if(ta) ta.value=saved;
     const badge=document.getElementById('ssp-saved-badge'); if(badge) badge.textContent=saved?'\u2713 opgeslagen':'';
   }
@@ -2713,6 +2716,15 @@ function sspAutoSaveMulti(i) {
   }, 900);
 }
 function sspDelete() { localStorage.removeItem(sspKey(sspPipeline,sspStepIdx)); sspRender(); sspStatus('Verwijderd.','#f87171'); }
+function sspClearAll() {
+  const steps = SSP_PIPELINES[sspPipeline].steps;
+  const label = SSP_PIPELINES[sspPipeline].label;
+  if (!confirm('Wis alle ' + steps.length + ' opgeslagen antwoorden van "' + label + '"?\nDit kan niet ongedaan worden gemaakt.')) return;
+  const prefix = 'ssp_' + sspPipeline + '_';
+  Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+  sspRender();
+  sspStatus('✓ Alle antwoorden gewist.', '#f87171');
+}
 function sspDeleteMulti(i) {
   const step=SSP_PIPELINES[sspPipeline].steps[sspStepIdx]; if(!step||!step.multiAI) return;
   localStorage.removeItem(sspMultiKey(sspPipeline,sspStepIdx,step.ais[i].key));
