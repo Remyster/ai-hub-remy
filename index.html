@@ -1708,6 +1708,12 @@ details[open] summary { color: var(--accent) !important; }
     <div id="council-synthesis-section" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);">
       <span class="pb-label">🧑‍⚖️ Voorzitter — wat maak je hiervan?</span>
       <button id="council-synth-btn" class="pb-generate" onclick="councilSynthesize()">🧑‍⚖️ Vraag synthese (Sonnet 4.5 + GPT-5.6)</button>
+
+      <div id="council-final-wrap" style="display:none;margin-top:16px;background:rgba(251,191,36,0.06);border:2px solid rgba(251,191,36,0.35);border-radius:14px;padding:16px;">
+        <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#fbbf24;margin-bottom:8px;font-family:'Inter',sans-serif;text-transform:uppercase;">📌 Lees dit eerst — kort samengevat</div>
+        <div id="council-final-out" style="font-size:0.85em;color:var(--text);line-height:1.7;white-space:pre-wrap;"><span style="opacity:0.5;">⏳ Bezig met samenvatten...</span></div>
+      </div>
+
       <div id="council-synthesis-results" style="display:none;margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;"></div>
     </div>
 
@@ -2540,7 +2546,7 @@ const SSP_PIPELINES = {
       // STAP 2 — Perplexity valideert de top-5 groeikansen met externe zoekdata
       { label: 'Stap 2 van 4 \u2014 Perplexity: Valideren', aiLabel: 'Perplexity Groeiafdeling', url: 'https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg', hasPrev: true, prevLabel: 'Grok', prevSources: [{ stepIdx: 0, placeholder: '[PLAK HIER HET VOLLEDIGE ANTWOORD VAN GROK]' }], prompt: "PROJECT: STEKKERSLIM SEO & GROWTH\nSTAP 2 VAN 4 \u2014 PERPLEXITY: VALIDEREN\n\nBronnen die je ALTIJD eerst moet controleren, in deze volgorde:\n1. GitHub repo: https://github.com/Remyster/stekkerslim\n2. Google Drive map / kennisbank StekkerSlim\n3. Live website: https://stekkerslim.nl\n\nDoel: valideer de TOP 5 groeikansen uit de Grok-input op basis van actuele interne en externe data.\n\nBelangrijke instructies:\n- Controleer ALTIJD eerst de kennisbank via Google Drive en/of GitHub voordat je conclusies trekt.\n- Controleer daarna de live website om te zien welke pagina's bestaan, hoe ze geinterlinkt zijn en wat de huidige content is.\n- Gebruik daarna externe zoekdata (zoekvolume, concurrentie, trends) om te bepalen of een kans echt groeipotentieel heeft.\n- Gebruik geen aannames. Als iets niet in GitHub, Google Drive, de live site of een externe bron bevestigd wordt, markeer het als NIET BEVESTIGD.\n- Let extra op: zoekwoordoverlap, interne concurrentie, ontbrekende interne links, CTA- en affiliate-kansen, en actuele onderwerpen zoals saldering 2027, thuisbatterijen, dynamische energiecontracten.\n\nPER KANS\nID:\nTitel:\nActualiteitsscore: /10\n- Onderbouwing: [bijv. trend in zoekvolume, recente wetgeving, nieuws, seizoenspatroon]\nConcurrentiepositie: sterk / middel / zwak\n- Onderbouwing: [bijv. SERP-analyse, domeinautoriteit concurrenten, uniek contentvoordeel StekkerSlim]\nValidatie:\n- Interne bron: [GitHub-bestand, kennisbank-notitie, live URL]\n- Externe bron: [zoekdata, trend, concurrentie-analyse]\nBronnen met URL:\nStatus: GO / AANPASSEN / STOP\n- Reden: [korte toelichting]\n\nEINDIG MET\nDEFINITIEVE TOP 3\n- [Kans 1 + reden waarom prioriteit]\n- [Kans 2 + reden waarom prioriteit]\n- [Kans 3 + reden waarom prioriteit]\n\nINPUT VORIGE STAP:\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN GROK]" },
       // STAP 3 — Gemini vergelijkt gaps met Kennisbank via GitHub + Google Drive
-      { label: 'Stap 3 van 4 \u2014 Gemini: Gaps & Prioriteiten', aiLabel: 'Gemini Groeiafdeling', url: 'https://gemini.google.com/u/0/gem/c2b213f954f9', hasPrev: true, prevLabel: 'Perplexity', prevSources: [{ stepIdx: 1, placeholder: '[PLAK HIER HET VOLLEDIGE ANTWOORD VAN PERPLEXITY]' }], prompt: "PROJECT: STEKKERSLIM SEO & GROWTH \u2014 CONTENT GAPS & PRIO\n\nROL & CONTEXT\nJe bent de StekkerSlim Growth Auditor. Je controleert content gaps en groeikansen voor StekkerSlim.nl.\n\nBRONNEN \u2014 GEBRUIK IN DEZE VOLGORDE\n1. GitHub-connector (Remyster/stekkerslim): actuele HTML-bestanden, sitemap, CLAUDE.md. Dit toont exact welke pagina's live zijn en welke content er al staat.\n2. Google Drive / Workspace-connector \u2014 Kennisbank StekkerSlim: lees verplicht:\n   - site-structuur.md & blogs-gepubliceerd.md (om te voorkomen dat je al bestaande onderwerpen als gap aanmerkt)\n   - affiliate-regels.md (om alleen commercieel haalbare partners/kansen voor te stellen)\n   - seo-richtlijnen.md (voor de juiste focus op saldering 2027 en energiecontracten)\n3. Live website: https://stekkerslim.nl als fallback.\n\nMeld onderaan: GitHub gebruikt: ja/gedeeltelijk/nee \u2014 Google Drive gebruikt: ja/gedeeltelijk/nee.\n\nDOEL\nAnalyseer de input van Perplexity en vergelijk met de actuele status van StekkerSlim.nl. Bepaal welke content gap of uitbreiding de hoogste affiliate- en verkeerswaarde heeft voor H2 2026.\n\nTOETSINGSEISEN\n1. Bepaal of de voorgestelde gap niet al (deels) wordt afgedekt op de site.\n2. Bepaal of er een actieve affiliate-partner beschikbaar is in onze Kennisbank (affiliate-regels.md).\n3. Prioriteer onderwerpen rondom saldering 2027 en energiecontracten boven algemene gadgets.\n\nOUTPUTFORMAT\n1. Gevalideerde Content Gaps (gefilterd op haalbaarheid en afwezigheid op de huidige site).\n2. Commerciele Impact (welke affiliate-netwerken uit de Kennisbank sluiten hierop aan).\n3. WINNAAR (het enkele idee met de hoogste ROI voor H2 2026).\n4. CONCREET 7-DAGENPLAN (stap-voor-stap actiepunten van outline tot publicatie).\n\nINPUT PERPLEXITY:\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN PERPLEXITY]" },
+      { label: 'Stap 3 van 4 \u2014 Gemini: Gaps & Prioriteiten', aiLabel: 'Gemini Groeiafdeling', url: 'https://gemini.google.com/u/0/gem/c2b213f954f9', hasPrev: true, prevLabel: 'Perplexity', prevSources: [{ stepIdx: 1, placeholder: '[PLAK HIER HET VOLLEDIGE ANTWOORD VAN PERPLEXITY]' }], prompt: "PROJECT: STEKKERSLIM SEO & GROWTH \u2014 CONTENT GAPS & PRIO\n\nROL & CONTEXT\nJe bent de StekkerSlim Growth Auditor. Je controleert content gaps en groeikansen voor StekkerSlim.nl.\n\nBRONNEN \u2014 GEBRUIK IN DEZE VOLGORDE\n1. GitHub-connector (Remyster/stekkerslim): actuele HTML-bestanden, sitemap, CLAUDE.md. Dit toont exact welke pagina's live zijn en welke content er al staat.\n2. Google Drive / Workspace-connector \u2014 Kennisbank StekkerSlim: lees verplicht:\n   - site-structuur.md & blogs-gepubliceerd.md (om te voorkomen dat je al bestaande onderwerpen als gap aanmerkt)\n   - affiliate-regels.md (om alleen commercieel haalbare partners/kansen voor te stellen)\n   - seo-richtlijnen.md (voor de juiste focus op saldering 2027 en energiecontracten)\n3. Live website: https://stekkerslim.nl als fallback.\n\nMeld onderaan: GitHub gebruikt: ja/gedeeltelijk/nee \u2014 Google Drive gebruikt: ja/gedeeltelijk/nee.\n\nDOEL\nAnalyseer de input van Perplexity en vergelijk met de actuele status van StekkerSlim.nl. Bepaal welke content gap of uitbreiding de hoogste affiliate- en verkeerswaarde heeft voor H2 2026.\n\nTOETSINGSEISEN\n1. Bepaal of de voorgestelde gap niet al (deels) wordt afgedekt op de site.\n2. Bepaal of er een actieve affiliate-partner beschikbaar is in onze Kennisbank (affiliate-regels.md).\n3. Prioriteer onderwerpen rondom saldering 2027 en energiecontracten boven algemene gadgets.\n\nOUTPUTFORMAT\n1. Gevalideerde Content Gaps (gefilterd op haalbaarheid en afwezigheid op de huidige site).\n2. Commerciele Impact (welke affiliate-netwerken uit de Kennisbank sluiten hierop aan).\n3. AFGEVALLEN KANSEN — verplicht: noem elke kans die je NIET als winnaar kiest, met in 1 zin waarom niet. Remy leest niet alle ruwe input terug, dus dit is zijn enige kans om te zien wat er is afgevallen en eventueel zelf een andere te kiezen.\n4. WINNAAR (het enkele idee met de hoogste ROI voor H2 2026) — plus in 1 zin waarom dit won van de nummer 2.\n5. CONCREET 7-DAGENPLAN (stap-voor-stap actiepunten van outline tot publicatie).\n\nINPUT PERPLEXITY:\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN PERPLEXITY]" },
       // STAP 4 — Claude maakt het definitieve groeiplan en pushed naar GitHub
       { label: 'Stap 4 van 4 \u2014 Claude: Actieplan', aiLabel: 'Claude StekkerSlim Bouwen', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf', hasPrev: true, prevLabel: 'Gemini', prompt: "PROJECT: STEKKERSLIM SEO & GROWTH\nSTAP 4 VAN 4 \u2014 CLAUDE: DEFINITIEF ACTIEPLAN\n\nGitHub repo: https://github.com/Remyster/stekkerslim\nLive site: https://stekkerslim.nl\n\nGITHUB WERKWIJZE\nOPHALEN: Haal altijd eerst de actuele staat op via de GitHub-connector (Remyster/stekkerslim) \u2014 voor je een pagina aanraakt, lees je het actuele HTML-bestand. Vertrouw niet op de pipeline-input als enige bron.\nPUSHEN: Zodra je content of HTML klaar hebt, push naar main via de GitHub-connector. Na elke push triggert de GitHub Action (sync-drive.yml) automatisch en synct /Kennisbank/*.md naar Google Drive \u2014 Gemini en andere Gems zien de updates dan direct. Herinner Remy hieraan als je zelf geen schrijfrechten hebt.\n\nOPDRACHT\nMaak een definitief, direct uitvoerbaar groeiplan op basis van alle vorige stappen:\n- Stap 1 (Grok): 10 groeikansen\n- Stap 2 (Perplexity): validatie top-5\n- Stap 3 (Gemini): content gaps & prioritering vs Kennisbank\n\nLEVER\n1. TOP 3 BEST COURSE OF ACTION\n   Per actie: wat, waarom, verwacht resultaat (verkeer/affiliate/zichtbaarheid)\n\n2. 7-DAGENPLAN\n   Dag 1\u20137: per dag 1 concrete taak + verwacht resultaat\n\n3. QUICK WIN (vandaag uitvoerbaar)\n   Wat kan direct gedaan worden (bijv. interne link, title aanpassen, CTA toevoegen)?\n   Geef de exacte bestandsnaam + HTML-snippet.\n\n4. LANGETERMIJNKANS (effect over 2-3 maanden)\n   Welk onderwerp of cluster verdient een grotere investering?\n\n5. CHANGELOG / COMMIT MESSAGE\n   Klaar om direct te gebruiken als git commit message.\n\nINPUT \u2014 PLAK HIERONDER\n[STAP 1 \u2014 GROK]\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN GROK]\n\n[STAP 2 \u2014 PERPLEXITY]\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN PERPLEXITY]\n\n[STAP 3 \u2014 GEMINI]\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN GEMINI]" }
     ]
@@ -2573,6 +2579,16 @@ function sspGetMultiOutput(p, i) {
   }).join('');
 }
 
+// Zelfcheck-instructie — wordt aan ELKE pipeline-prompt geplakt zodat de AI eerst
+// zijn eigen concept-antwoord nakijkt voordat hij het definitieve antwoord geeft.
+// Reden: Remy leest niet alles woord voor woord (ADHD) en vertrouwt zwaar op wat
+// de AI teruggeeft — dit is een ingebouwd vangnet, geen vervanging van zelf lezen.
+const SSP_SELFCHECK = '\n\n---\nVOORDAT JE ANTWOORDT: controleer je eigen concept-antwoord kritisch op fouten, aannames en losse eindjes. Corrigeer dat zelf eerst, en geef daarna pas je definitieve antwoord.';
+function sspAddSelfCheck(prompt) {
+  if (!prompt) return prompt;
+  return prompt + SSP_SELFCHECK;
+}
+
 function sspGetPrompt(p, idx) {
   const step = SSP_PIPELINES[p].steps[idx];
   let prompt = step.prompt;
@@ -2590,7 +2606,7 @@ function sspGetPrompt(p, idx) {
     prompt += prev ? '\n\nINPUT VORIGE STAP (' + label + '):\n' + prev
                    : '\n\nINPUT VORIGE STAP:\n[PLAK HIER HET VOLLEDIGE ANTWOORD VAN ' + label.toUpperCase() + ']';
   }
-  return prompt;
+  return sspAddSelfCheck(prompt);
 }
 
 // ═══════ RENDER ═══════
@@ -2686,7 +2702,7 @@ function sspRenderOutputContainer(step) {
     step.ais.forEach((ai,i) => {
       const saved=sspDecode(localStorage.getItem(sspMultiKey(sspPipeline,sspStepIdx,ai.key))||'');
       const ta=document.getElementById('ssp-mout-'+i); if(ta) ta.value=saved;
-      const pt=document.getElementById('ssp-mprompt-'+i); if(pt && ai.prompt) pt.value=ai.prompt;
+      const pt=document.getElementById('ssp-mprompt-'+i); if(pt && ai.prompt) pt.value=sspAddSelfCheck(ai.prompt);
       const badge=document.getElementById('ssp-mbadge-'+i); if(badge) badge.textContent=saved?'\u2713':'';
     });
   } else {
@@ -2735,7 +2751,7 @@ function sspCopyToClipboard(text) {
 function sspCopyAiPrompt(i) {
   const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
   if (!step || !step.ais || !step.ais[i] || !step.ais[i].prompt) return;
-  const ok = sspCopyToClipboard(step.ais[i].prompt);
+  const ok = sspCopyToClipboard(sspAddSelfCheck(step.ais[i].prompt));
   sspStatus(ok ? '\u2713 Prompt voor ' + step.ais[i].label + ' gekopieerd!' : '\u26A0 Kopieer handmatig.', ok ? '#10b981' : '#fbbf24');
 }
 function sspUpdateCharCount() {
@@ -6111,10 +6127,13 @@ function councilBuildSynthesisPrompt() {
   return `Oorspronkelijke vraag van Remy:\n"${COUNCIL_LAST_QUESTION}"\n\nDrie AI's hebben elk onafhankelijk geantwoord:\n\n${antwoorden}\n\nJij bent een onafhankelijke voorzitter. Geef kort en concreet:\n1. Waar de antwoorden het eens zijn\n2. Waar ze verschillen en waarom dat verschil er waarschijnlijk is\n3. Jouw advies — welke keuze of aanpak het sterkst onderbouwd is, en waarom\n\nWees kritisch, kies niet automatisch het langste of stelligste antwoord. Nederlands, direct, geen inleiding.`;
 }
 
+let COUNCIL_LAST_SYNTHESES = {};
+
 async function councilSynthesize() {
   const btn = document.getElementById('council-synth-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Voorzitters denken na...';
+  document.getElementById('council-final-wrap').style.display = 'none';
 
   const wrap = document.getElementById('council-synthesis-results');
   wrap.innerHTML = COUNCIL_SYNTH_MODELS.map(m => `
@@ -6127,11 +6146,13 @@ async function councilSynthesize() {
   const synthPrompt = councilBuildSynthesisPrompt();
   const systemPrompt = 'Je bent een scherpe, onpartijdige voorzitter die drie AI-antwoorden op dezelfde vraag beoordeelt.';
 
+  COUNCIL_LAST_SYNTHESES = {};
   const calls = COUNCIL_SYNTH_MODELS.map(async m => {
     const el = document.getElementById('council-synth-out-' + m.key);
     try {
       const text = await callOpenRouter(m.model, systemPrompt, synthPrompt);
       el.textContent = text;
+      COUNCIL_LAST_SYNTHESES[m.key] = text;
     } catch (e) {
       el.innerHTML = `<span style="color:#f87171;">❌ ${escHtml(e.message || 'onbekende fout')}</span>`;
     }
@@ -6140,6 +6161,37 @@ async function councilSynthesize() {
 
   btn.disabled = false;
   btn.textContent = '🧑‍⚖️ Vraag synthese (Sonnet 4.5 + GPT-5.6)';
+
+  if (Object.keys(COUNCIL_LAST_SYNTHESES).length >= 1) {
+    await councilFinalSummary();
+  }
+}
+
+// ── Eindsamenvatting: 1 model (geen van beide voorzitters, dus geen herhaling
+// van zijn eigen eerdere mening) perst de 2 voorzitter-oordelen samen tot een
+// paar bullets. Dit is het EERSTE wat Remy leest — de rest staat eronder voor
+// wie dieper wil. Reden: te veel lezen = dingen missen (ADHD).
+const COUNCIL_FINAL_MODEL = 'google/gemini-3.5-flash';
+
+async function councilFinalSummary() {
+  const el = document.getElementById('council-final-out');
+  const wrap = document.getElementById('council-final-wrap');
+  wrap.style.display = 'block';
+  el.innerHTML = '<span style="opacity:0.5;">⏳ Bezig met samenvatten...</span>';
+
+  const oordelen = COUNCIL_SYNTH_MODELS
+    .filter(m => COUNCIL_LAST_SYNTHESES[m.key])
+    .map(m => `=== Voorzitter ${m.naam} ===\n${COUNCIL_LAST_SYNTHESES[m.key]}`)
+    .join('\n\n');
+  const prompt = `Vraag van Remy: "${COUNCIL_LAST_QUESTION}"\n\nTwee onafhankelijke voorzitters hebben elk apart geoordeeld over 3 AI-antwoorden op deze vraag:\n\n${oordelen}\n\nPers dit samen tot maximaal 5 bullets, in dit vaste format en niets extra's:\n- Eens: [waar alle voorzitters/antwoorden het over eens waren]\n- Belangrijkste verschil: [het meest wezenlijke verschil van mening]\n- Advies: [de kortste, duidelijkste aanbeveling]\n\nGeen inleiding, geen afsluiting, geen nuance-zinnen — alleen deze bullets. Nederlands, kort genoeg om in 15 seconden te lezen.`;
+  const systemPrompt = 'Je maakt een ultrakorte eindsamenvatting voor iemand die niet alles wil lezen. Wees meedogenloos kort.';
+
+  try {
+    const text = await callOpenRouter(COUNCIL_FINAL_MODEL, systemPrompt, prompt);
+    el.textContent = text;
+  } catch (e) {
+    el.innerHTML = `<span style="color:#f87171;">❌ ${escHtml(e.message || 'onbekende fout')}</span>`;
+  }
 }
 
 // ══════════════════════════════════════════════
