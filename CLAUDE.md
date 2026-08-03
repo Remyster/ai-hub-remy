@@ -1,5 +1,5 @@
 # Remy's AI Hub — Project Overzicht
-*Laatst bijgewerkt: 31 juli 2026*
+*Laatst bijgewerkt: 3 augustus 2026*
 
 ## Wat is dit?
 Persoonlijk AI dashboard als single-page application (SPA) in één `index.html` bestand (~390KB). Draait via GitHub Pages op `remyster.github.io/ai-hub-remy/`. Geen framework, geen build-stap.
@@ -36,7 +36,7 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **URL:** `https://mdslvdrsggpksqrbtwci.supabase.co`
 - **Variabelen in code:** `SB_URL`, `SB_KEY`
 - **Key type:** `anon`
-- **Tabellen:** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `app_settings`, `weekplanner_items`, `brain_dumps`
+- **Tabellen:** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `app_settings`, `weekplanner_items`, `brain_dumps`, `context_blocks`
 
 ---
 
@@ -205,6 +205,40 @@ Opgeslagen in `app_settings` tabel (Project B, `setting_key: 'claude_api_key'`).
 
 ---
 
+## AI Council (toegevoegd 3 augustus 2026)
+
+Eén vraag parallel naar 3 AI's via OpenRouter — geen kruisgesprek, geen rondes. Kaart bij **Mijn Agents** (`openCouncil()`), aparte overlay in `index.html`.
+
+### Flow
+1. Vraag intypen + optioneel context-blokken aanvinken (zie hieronder)
+2. `councilAsk()` roept 3 modellen **parallel** aan via OpenRouter (`Promise.allSettled`, elk met eigen 60s timeout via `AbortController`)
+3. Antwoorden verschijnen los naast elkaar in 3 kaarten — geen samenvoegen
+4. Optionele synthese-knop: `councilSynthesize()` stuurt vraag + alle 3 antwoorden naar 2 onafhankelijke "voorzitters" die overeenkomsten/verschillen/advies geven
+
+### Modellen (constanten `COUNCIL_MODELS` / `COUNCIL_SYNTH_MODELS`, bovenaan bij de AI Council JS)
+| Rol | Model-ID | Bijzonderheid |
+|-----|----------|----------------|
+| Council #1 | `google/gemini-3.5-flash:online` | |
+| Council #2 | `x-ai/grok-4.5:online` | |
+| Council #3 | `anthropic/claude-sonnet-5:online` | |
+| Voorzitter #1 | `anthropic/claude-sonnet-5` | geen `:online` — redeneert over reeds gegronde antwoorden |
+| Voorzitter #2 | `openai/gpt-5.6-terra` | |
+
+**⚠️ Belangrijke les:** een hoog versienummer in een model-ID (bv. "Sonnet 5", "Gemini 3.5") betekent NIET dat de kennis actueel is. Alle geteste modellen rapporteerden zelf een trainings-cutoff rond begin 2025, los van hun naam. Daarom staat `:online` achter elk Council-model — dat zet OpenRouter's web-search grounding aan. Dit kost ~10-15x meer tokens per call (~€0,03-0,05 per model i.p.v. een paar cent), vandaar de expliciete instructie in de systeemprompt om antwoorden onder de ~200 woorden te houden. Check bij twijfel over actualiteit altijd eerst of `:online` nog aanstaat, niet alleen of het model-ID "nieuw" klinkt.
+
+Gemini 2.5 Pro (eerste keuze) bleek een "thinking"-model dat 20-90+ sec kon hangen door lange interne reasoning, vandaar de overstap naar flash-varianten + de timeout.
+
+### Context-bibliotheek
+Tabel `context_blocks` (Project B): `id, naam, tekst, volgorde, created_at, updated_at`. CRUD via `ctxLoad()` / `ctxSaveNew()` / `ctxSaveEdit()` / `ctxDelete()`. Checkboxen renderen op 2 plekken (`ctxRenderInto('pb-ctx-list')` in Prompt Builder, `ctxRenderInto('council-ctx-list')` in de Council) maar delen dezelfde selectie via localStorage (`remy_ctx_selected_v1`) — vink je een blok aan in de ene, staat het ook aan in de andere.
+
+### Prompt Builder — Council-modus
+Extra pill "🏛️ Council" naast Claude/Gemini/Perplexity/ChatGPT/Copilot/Grok/Multi. Schrijft een model-neutrale vraag (geen platform-specifieke trucjes) i.p.v. een platform-geoptimaliseerde prompt. Na genereren verschijnt knop "🏛️ Stuur naar Council" (`pbSendToCouncil()`) die de prompt in het Council-vraagveld zet en de overlay opent — verstuurt niet automatisch, zodat je 'm eerst kan nalezen.
+
+### OpenRouter key
+Zelfde patroon als Claude key: opgeslagen in `app_settings` (`setting_key: 'openrouter_api_key'`), los invoerveld in het bestaande API Key-modal (`saveOpenRouterKey()` / `syncOpenRouterKeyFromCloud()`).
+
+---
+
 ## Beveiliging — gedaan (29 juli 2026)
 
 RLS ingeschakeld op alle UNRESTRICTED tabellen:
@@ -225,6 +259,10 @@ CREATE POLICY "anon_all" ON brain_dumps FOR ALL TO anon USING (true) WITH CHECK 
 
 ALTER TABLE weekplanner_items ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "anon_all" ON weekplanner_items FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- 3 augustus 2026, bij aanmaken context_blocks meteen RLS aangezet
+ALTER TABLE context_blocks ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "anon_all" ON context_blocks FOR ALL TO anon USING (true) WITH CHECK (true);
 ```
 
 Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
@@ -244,6 +282,15 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 3 augustus 2026 (commit 5cbe70b)
+- **AI Council toegevoegd**: kaart bij Mijn Agents, parallel Gemini 3.5 / Grok 4.5 / Claude Sonnet 5 (web-search grounding via `:online`) + synthese-stap met Sonnet 5 + GPT-5.6-terra — zie sectie "AI Council" hierboven voor volledige details
+- **Context-bibliotheek**: nieuwe Supabase-tabel `context_blocks`, CRUD UI gedeeld tussen Prompt Builder en AI Council
+- **Prompt Builder**: nieuwe "Council"-modus + "Stuur naar Council"-knop
+- **OpenRouter key**: opslag in `app_settings`, los veld in API Key-modal
+- **Header**: snelkoppelingen (kleine key-buttons) naar Tools & Platforms + Mijn Projecten toegevoegd
+- **Tools & Platforms**: GitHub naar boven verplaatst
+- **StekkerSlim sectie**: volgorde AI Pipeline → Bouwen → Pen/Boost/Desk (eigen roze kleur), ook toegevoegd aan Losse AI-checkers pills
 
 ### 31 juli 2026 (commit aa32f1d + cc73771)
 - **Site Guardian**: uitgebreid van 3 naar 5 stappen
