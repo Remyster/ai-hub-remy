@@ -604,6 +604,8 @@ header h1 {
 }
 .pb-pill:hover { border-color: rgba(102,126,234,0.4); color: var(--text); }
 .pb-pill.active { background: rgba(102,126,234,0.12); border-color: rgba(102,126,234,0.5); color: rgba(102,126,234,1); }
+.pb-pill[data-platform="council"].active,
+.pb-pill[data-platform="multi"].active { box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
 
 /* Type pills */
 .pb-types { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
@@ -1624,7 +1626,9 @@ details[open] summary { color: var(--accent) !important; }
       <button class="pb-pill" data-platform="copilot">🪟 Copilot</button>
       <button class="pb-pill" data-platform="grok">𝕏 Grok</button>
       <button class="pb-pill" data-platform="multi" style="background:rgba(167,139,250,0.15);border-color:rgba(167,139,250,0.4);color:#a78bfa;">🔀 Multi</button>
+      <button class="pb-pill" data-platform="council" style="background:rgba(251,191,36,0.12);border-color:rgba(251,191,36,0.35);color:#fbbf24;">🏛️ Council</button>
     </div>
+    <div id="pb-council-hint" style="display:none;font-size:0.68em;color:#fbbf24;background:rgba(251,191,36,0.07);border:1px solid rgba(251,191,36,0.18);border-radius:8px;padding:7px 10px;margin-top:-8px;margin-bottom:16px;line-height:1.45;">🏛️ Council-modus — de prompt wordt model-neutraal geschreven zodat je 'm ongewijzigd naar Gemini, Grok én Claude tegelijk kan sturen.</div>
 
     <span class="pb-label">⚡ Type</span>
     <div class="pb-types">
@@ -1635,6 +1639,18 @@ details[open] summary { color: var(--accent) !important; }
       <button class="pb-type" data-type="roleplay">🎭 Roleplay</button>
     </div>
     <div id="pb-type-hint" style="font-size:0.68em;color:#cc785c;background:rgba(204,120,92,0.07);border:1px solid rgba(204,120,92,0.18);border-radius:8px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
+
+    <span class="pb-label">🧠 Context meesturen (optioneel)</span>
+    <div id="pb-ctx-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
+    <div id="pb-ctx-addform" style="display:none;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;gap:6px;flex-direction:column;">
+      <input id="pb-ctx-naam" placeholder="Naam (bv. Werk)" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.72em;">
+      <textarea id="pb-ctx-tekst" placeholder="Tekst die meegestuurd wordt..." rows="3" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.72em;resize:vertical;"></textarea>
+      <div style="display:flex;gap:6px;">
+        <button type="button" onclick="ctxSaveNew()" style="flex:1;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);color:#34d399;border-radius:8px;padding:6px;font-size:0.7em;cursor:pointer;">✓ Opslaan</button>
+        <button type="button" onclick="ctxCancelAdd()" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px;font-size:0.7em;cursor:pointer;">Annuleer</button>
+      </div>
+    </div>
+    <button type="button" id="pb-ctx-addbtn" onclick="ctxShowAddForm()" style="background:none;border:1px dashed var(--border);color:var(--muted);border-radius:8px;padding:6px 10px;font-size:0.68em;cursor:pointer;margin-bottom:12px;">+ Nieuw context-blok</button>
 
     <span class="pb-label">💡 Jouw idee (hoe ruwer hoe beter)</span>
     <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af..."></textarea>
@@ -1648,6 +1664,7 @@ details[open] summary { color: var(--accent) !important; }
         <button class="pb-copy" onclick="copyPrompt()">📋 Kopieer prompt</button>
         <button class="pb-again" onclick="generatePrompt()">↻ Andere versie</button>
         <button class="pb-copy" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.28);color:#38bdf8;" onclick="pblibSaveCurrentPrompt()">💾 Bewaar</button>
+        <button id="pb-send-council" class="pb-copy" style="display:none;background:rgba(251,191,36,0.14);border-color:rgba(251,191,36,0.3);color:#fbbf24;" onclick="pbSendToCouncil()">🏛️ Stuur naar Council</button>
       </div>
     </div>
 
@@ -1667,6 +1684,34 @@ details[open] summary { color: var(--accent) !important; }
       </div>
     </div>
     <button class="pb-close-btn" onclick="closePromptBuilder()">✕ Sluiten</button>
+  </div>
+</div>
+
+<!-- ══ AI COUNCIL ══ -->
+<div id="council-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div id="council-modal" style="background:#0d0e18;border:1px solid rgba(102,126,234,0.2);border-radius:22px;padding:32px 28px 24px;max-width:1080px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+    <div class="pb-title">🏛️ AI Council</div>
+    <div class="pb-sub">Eén vraag → parallel naar Gemini, Grok en Claude. Geen synthese, geen kruisgesprek — gewoon 3 antwoorden naast elkaar.</div>
+
+    <span class="pb-label">🧠 Context meesturen (optioneel)</span>
+    <div id="council-ctx-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+
+    <span class="pb-label">💬 Jouw vraag</span>
+    <textarea id="council-input" placeholder="bijv: moet ik nu investeren in zonnepanelen of wachten tot 2027..." style="width:100%;min-height:90px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;resize:vertical;box-sizing:border-box;"></textarea>
+
+    <button class="pb-generate" id="council-ask-btn" onclick="councilAsk()" style="margin-top:12px;">🏛️ Vraag de Council</button>
+
+    <div class="pb-error" id="council-error"></div>
+
+    <div id="council-results" style="display:none;margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;"></div>
+
+    <div id="council-synthesis-section" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);">
+      <span class="pb-label">🧑‍⚖️ Voorzitter — wat maak je hiervan?</span>
+      <button id="council-synth-btn" class="pb-generate" onclick="councilSynthesize()">🧑‍⚖️ Vraag synthese (Sonnet 4.5 + GPT-5.6)</button>
+      <div id="council-synthesis-results" style="display:none;margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;"></div>
+    </div>
+
+    <button class="pb-close-btn" onclick="closeCouncil()">✕ Sluiten</button>
   </div>
 </div>
 
@@ -1998,6 +2043,13 @@ details[open] summary { color: var(--accent) !important; }
       <button class="btn-save" onclick="saveApiKey()">✓ Opslaan & activeren</button>
       <button class="btn-skip" onclick="skipApiKey()">Overslaan (fallback)</button>
     </div>
+
+    <h3 style="margin-top:22px;">🌐 OpenRouter API Key (AI Council)</h3>
+    <p>Voor de AI Council — parallel Gemini/Grok/Claude via OpenRouter. → <a href="https://openrouter.ai/settings/keys" target="_blank">openrouter.ai/settings/keys</a></p>
+    <input type="password" id="openrouter-input" placeholder="sk-or-v1-...">
+    <div class="apikey-btns">
+      <button class="btn-save" onclick="saveOpenRouterKey()">✓ Opslaan</button>
+    </div>
   </div>
 </div>
 
@@ -2065,6 +2117,15 @@ details[open] summary { color: var(--accent) !important; }
       <span class="hbtn" style="color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#ef4444;background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.18);" onclick="document.getElementById('pomo-modal-overlay').style.display='flex'">⏱️ Timer</span>
       <span class="hbtn hbtn-muted" onclick="openCmdPalette()" title="Zoek alles (Ctrl+K)">🔍 Zoek <span style="font-size:0.8em;opacity:0.6;">(Ctrl+K)</span></span>
+      <a href="https://github.com/Remyster" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🐙 GitHub</a>
+      <a href="https://drive.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">☁️ Drive</a>
+      <a href="https://mail.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📧 Gmail</a>
+      <a href="https://keep.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📌 Keep</a>
+      <a href="https://photos.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📸 Photos</a>
+      <a href="https://supabase.com/dashboard" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🗄️ Supabase</a>
+      <a href="#" class="hbtn hbtn-muted" style="text-decoration:none;" onclick="openSmart('https://vault.bitwarden.com/','bitwarden://'); return false;">🔐 Bitwarden</a>
+      <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
+      <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
   </header>
 
@@ -2204,6 +2265,10 @@ details[open] summary { color: var(--accent) !important; }
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>💰 DoopieVault</h2><p>Crypto Expert · Sonnet 4.6 Extended</p><span class="kbd">7</span>
       </a>
+      <a href="#" class="card agent" onclick="openCouncil(); return false;" style="border-color:rgba(167,139,250,0.35);background:linear-gradient(135deg,rgba(167,139,250,0.07),rgba(255,255,255,0.02));">
+        <div class="dot"></div>
+        <h2>🏛️ AI Council</h2><p>Gemini + Grok + Claude parallel — 1 vraag, 3 antwoorden</p>
+      </a>
     </div>
   </section>
 
@@ -2251,6 +2316,22 @@ details[open] summary { color: var(--accent) !important; }
         <div class="dot"></div>
         <h2>🚀 AI Pipeline</h2><p>Blog · Site check · SEO — 12 staps workflow</p>
       </a>
+      <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
+        <div class="dot"></div>
+        <h2>🔧 Bouwen</h2><p>Project assistent &amp; keuring</p>
+      </a>
+      <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="card marketing" data-usage="true" target="_blank" rel="noopener noreferrer">
+        <div class="dot"></div>
+        <h2>✍️ StekkerPen</h2><p>Blog &amp; Pinterest schrijver</p>
+      </a>
+      <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="card marketing" data-usage="true" target="_blank" rel="noopener noreferrer">
+        <div class="dot"></div>
+        <h2>📣 StekkerBoost</h2><p>Facebook Ads &amp; campagnes</p>
+      </a>
+      <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="card marketing" data-usage="true" target="_blank" rel="noopener noreferrer">
+        <div class="dot"></div>
+        <h2>💬 StekkerDesk</h2><p>Bezoekersvragen &amp; support</p>
+      </a>
       <a href="https://github.com/Remyster/stekkerslim" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
         <h2>🐙 GitHub</h2><p>Repository &amp; kennisbank</p>
@@ -2258,22 +2339,6 @@ details[open] summary { color: var(--accent) !important; }
       <a href="https://www.stekkerslim.nl/" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
         <h2>🔌 Stekkerslim.nl</h2><p>Live website</p>
-      </a>
-      <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <div class="dot"></div>
-        <h2>🔧 Bouwen</h2><p>Project assistent &amp; keuring</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <div class="dot"></div>
-        <h2>✍️ StekkerPen</h2><p>Blog &amp; Pinterest schrijver</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <div class="dot"></div>
-        <h2>📣 StekkerBoost</h2><p>Facebook Ads &amp; campagnes</p>
-      </a>
-      <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <div class="dot"></div>
-        <h2>💬 StekkerDesk</h2><p>Bezoekersvragen &amp; support</p>
       </a>
       <a href="https://search.google.com/search-console?resource_id=sc-domain%3Astekkerslim.nl" class="card affiliate" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
@@ -2306,6 +2371,9 @@ details[open] summary { color: var(--accent) !important; }
         <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:56,189,248;">🔎 Perplexity Audit</a>
         <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🛡️ Gemini Guardian</a>
         <a href="https://gemini.google.com/u/0/gem/c2b213f954f9" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🤖 Gemini Groei</a>
+        <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:251,113,133;">✍️ StekkerPen</a>
+        <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:251,113,133;">📣 StekkerBoost</a>
+        <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:251,113,133;">💬 StekkerDesk</a>
       </div>
     </div>
   </section>
@@ -2314,6 +2382,10 @@ details[open] summary { color: var(--accent) !important; }
   <section class="section" id="sec-tools">
     <div class="section-label">Tools &amp; Platforms</div>
     <div class="grid">
+      <a href="https://github.com/Remyster" class="card tool" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🐙 GitHub</h2><p>Repositories</p>
+      </a>
       <a href="https://drive.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>☁️ Google Drive</h2><p>Bestanden &amp; docs</p>
@@ -2329,10 +2401,6 @@ details[open] summary { color: var(--accent) !important; }
       <a href="https://mail.google.com/" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>📧 Gmail</h2><p>Google mail</p>
-      </a>
-      <a href="https://github.com/Remyster" class="card tool" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🐙 GitHub</h2><p>Repositories</p>
       </a>
       <a href="https://supabase.com/dashboard" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -2913,8 +2981,42 @@ function skipApiKey() { closeApiKeyModal(); openPopup(); }
 function openApiKeyModal() {
   document.getElementById('apikey-modal').classList.add('show');
   const k = getApiKey(); if (k) document.getElementById('apikey-input').value = k;
+  const ork = getOpenRouterKey(); if (ork) document.getElementById('openrouter-input').value = ork;
 }
 function closeApiKeyModal() { document.getElementById('apikey-modal').classList.remove('show'); }
+
+// ── OpenRouter key (AI Council) — zelfde patroon als Claude key hierboven ──
+const OR_KEY_STORE = 'remy_openrouter_key';
+function getOpenRouterKey() { try { return localStorage.getItem(OR_KEY_STORE) || ''; } catch { return ''; } }
+
+async function syncOpenRouterKeyFromCloud() {
+  try {
+    const rows = await sbGet('app_settings', 'setting_key=eq.openrouter_api_key&select=setting_value');
+    if (rows && rows.length && rows[0].setting_value) {
+      const cloudKey = rows[0].setting_value;
+      if (cloudKey !== getOpenRouterKey()) {
+        localStorage.setItem(OR_KEY_STORE, cloudKey);
+        console.log('🔑 OpenRouter key gesynced vanuit Supabase.');
+      }
+    }
+  } catch (e) {
+    console.error('Kon OpenRouter key niet syncen vanuit Supabase:', e);
+  }
+}
+
+async function saveOpenRouterKey() {
+  const val = document.getElementById('openrouter-input').value.replace(/\s+/g, '');
+  if (!val || !val.startsWith('sk-or-')) { alert('❌ Geen geldige OpenRouter key. Begint met "sk-or-..."'); return; }
+  try { localStorage.setItem(OR_KEY_STORE, val); } catch {}
+  try {
+    await sbUpsert('app_settings', { setting_key: 'openrouter_api_key', setting_value: val, updated_at: new Date().toISOString() });
+  } catch (e) {
+    console.error('Kon OpenRouter key niet opslaan in Supabase:', e);
+    alert('⚠️ Key lokaal opgeslagen, maar cloud-sync naar andere apparaten is mislukt. Check console.');
+    return;
+  }
+  alert('✓ OpenRouter key opgeslagen.');
+}
 
 function buildPrompt() {
   const dag = new Date().toLocaleDateString('nl-NL', { weekday:'long', day:'numeric', month:'long' });
@@ -5068,6 +5170,15 @@ const PB_PLATFORMS = {
 - X/Twitter context en social media analyse
 - Controversiële of ongefiltreerde vragen
 - Korte, punchige output-instructies`
+  },
+  council: {
+    naam: 'AI Council (Gemini + Grok + Claude tegelijk)',
+    instructie: `Je schrijft GEEN platform-specifieke prompt. Deze prompt wordt ONGEWIJZIGD naar drie verschillende AI-modellen tegelijk gestuurd (Gemini, Grok, Claude) om hun antwoorden te vergelijken. Daarom:
+- Schrijf model-neutraal — geen trucjes of stijlen die op één specifiek platform leunen
+- Maak de vraag zelf zo scherp en compleet mogelijk: precies wat je wil weten, welke afweging of beslissing eronder ligt, en welke randvoorwaarden meespelen
+- Vraag impliciet om een concreet, beargumenteerd antwoord (geen slap-om-de-arm advies) — bijvoorbeeld door te vragen naar een concrete aanbeveling met onderbouwing
+- Vermijd dat het antwoord in platform-specifieke tools of features moet resulteren (geen "gebruik web search" of "toon een tabel" tenzij functioneel relevant)
+- Kort en to-the-point — dit is een vraag, geen briefing`
   }
 };
 
@@ -5087,6 +5198,7 @@ function openPromptBuilder() {
   document.getElementById('pb-overlay').classList.add('show');
   document.getElementById('pb-output-wrap').style.display = 'none';
   document.getElementById('pb-error').style.display = 'none';
+  ctxLoad();
 }
 function closePromptBuilder() {
   document.getElementById('pb-overlay').classList.remove('show');
@@ -5140,6 +5252,8 @@ document.querySelectorAll('.pb-pill').forEach(btn => {
       btn.classList.add('active');
       pbPlatform = p;
     }
+    const hint = document.getElementById('pb-council-hint');
+    if (hint) hint.style.display = (pbPlatform === 'council' && !pbMultiMode) ? 'block' : 'none';
   });
 });
 
@@ -5199,7 +5313,9 @@ REGELS:
 - Bij beeld: voeg altijd stijl, compositie en sfeer parameters toe
 - Bij code: voeg taalspecificatie en outputformat toe`;
 
-  const userMsg = `Ruw idee van de gebruiker: "${ruwIdee}"\n\nSchrijf hier de geoptimaliseerde prompt voor:`;
+  const ctxText = ctxSelectedText();
+  const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER (gebruik dit om de prompt persoonlijk en relevant te maken):\n${ctxText}\n\n` : '') +
+    `Ruw idee van de gebruiker: "${ruwIdee}"\n\nSchrijf hier de geoptimaliseerde prompt voor:`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -5229,6 +5345,7 @@ REGELS:
 
     document.getElementById('pb-output').value = output;
     document.getElementById('pb-output-wrap').style.display = 'block';
+    document.getElementById('pb-send-council').style.display = (pbPlatform === 'council') ? 'inline-block' : 'none';
     document.getElementById('pb-output').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   } catch(err) {
@@ -5240,6 +5357,14 @@ REGELS:
     genBtn.disabled = false;
     genBtn.textContent = '✦ Genereer prompt';
   }
+}
+
+function pbSendToCouncil() {
+  const text = document.getElementById('pb-output').value;
+  if (!text) return;
+  closePromptBuilder();
+  openCouncil();
+  document.getElementById('council-input').value = text;
 }
 
 function copyPrompt() {
@@ -5302,6 +5427,7 @@ setTimeout(pbShowNudge, 1200);
 window.addEventListener('load', async () => {
   updatePomoDisplay();
   await syncApiKeyFromCloud();
+  await syncOpenRouterKeyFromCloud();
   // Geen popup, geen apikey modal — direct hub tonen
   // AI blokjes laden als key beschikbaar is
   fetchVoorJou(false);
@@ -5486,12 +5612,13 @@ async function generateMultiPrompt(ruwIdee) {
 ${platform.instructie}
 
 Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens eromheen.`;
+      const ctxText = ctxSelectedText();
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 800,
           system: systeemPrompt,
-          messages: [{ role: 'user', content: `Ruw idee: ${ruwIdee}` }]
+          messages: [{ role: 'user', content: (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + `Ruw idee: ${ruwIdee}` }]
         })
       });
       const data = await resp.json();
@@ -5749,6 +5876,271 @@ function pblibDelete(i) {
   pblibRender();
 }
 
+// ══════════════════════════════════════════════
+// CONTEXT-BIBLIOTHEEK (Prompt Builder + AI Council)
+// ══════════════════════════════════════════════
+let CTX_BLOCKS = [];
+const CTX_SEL_KEY = 'remy_ctx_selected_v1';
+function ctxGetSelected() { try { return new Set(JSON.parse(localStorage.getItem(CTX_SEL_KEY) || '[]')); } catch { return new Set(); } }
+function ctxSaveSelected(set) { try { localStorage.setItem(CTX_SEL_KEY, JSON.stringify([...set])); } catch {} }
+
+async function ctxLoad() {
+  try {
+    CTX_BLOCKS = await sbGet('context_blocks', 'select=id,naam,tekst,volgorde&order=volgorde.asc,id.asc');
+  } catch (e) { console.error('Context blokken laden mislukt:', e); CTX_BLOCKS = []; }
+  ctxRenderAll();
+}
+
+function ctxRenderAll() {
+  ctxRenderInto('pb-ctx-list');
+  ctxRenderInto('council-ctx-list');
+}
+
+function ctxRenderInto(containerId) {
+  const list = document.getElementById(containerId);
+  if (!list) return;
+  const selected = ctxGetSelected();
+  if (!CTX_BLOCKS.length) { list.innerHTML = '<div style="font-size:0.68em;color:var(--muted);">Nog geen context-blokken — voeg er een toe.</div>'; return; }
+  list.innerHTML = CTX_BLOCKS.map(b => `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:8px 10px;" id="${containerId}-row-${b.id}">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" ${selected.has(b.id) ? 'checked' : ''} onchange="ctxToggle(${b.id})" style="accent-color:var(--accent);cursor:pointer;flex-shrink:0;">
+        <span style="flex:1;font-size:0.74em;color:var(--text);font-weight:600;font-family:'Inter',sans-serif;">${escHtml(b.naam)}</span>
+        <button type="button" onclick="ctxShowEdit('${containerId}',${b.id})" title="Bewerk" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85em;padding:0 3px;">✎</button>
+        <button type="button" onclick="ctxDelete(${b.id})" title="Verwijder" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:0.85em;padding:0 3px;">✕</button>
+      </div>
+      <div style="font-size:0.66em;color:var(--muted);margin:4px 0 0 26px;line-height:1.4;">${escHtml(b.tekst.slice(0,110))}${b.tekst.length>110?'…':''}</div>
+    </div>`).join('');
+}
+
+function ctxToggle(id) {
+  const sel = ctxGetSelected();
+  if (sel.has(id)) sel.delete(id); else sel.add(id);
+  ctxSaveSelected(sel);
+  ctxRenderAll();
+}
+
+function ctxSelectedBlocks() {
+  const sel = ctxGetSelected();
+  return CTX_BLOCKS.filter(b => sel.has(b.id));
+}
+
+function ctxSelectedText() {
+  const blocks = ctxSelectedBlocks();
+  if (!blocks.length) return '';
+  return blocks.map(b => `[${b.naam}]\n${b.tekst}`).join('\n\n');
+}
+
+function ctxShowAddForm() {
+  document.getElementById('pb-ctx-addform').style.display = 'flex';
+  document.getElementById('pb-ctx-addbtn').style.display = 'none';
+  document.getElementById('pb-ctx-naam').value = '';
+  document.getElementById('pb-ctx-tekst').value = '';
+  document.getElementById('pb-ctx-naam').focus();
+}
+function ctxCancelAdd() {
+  document.getElementById('pb-ctx-addform').style.display = 'none';
+  document.getElementById('pb-ctx-addbtn').style.display = 'block';
+}
+async function ctxSaveNew() {
+  const naam = document.getElementById('pb-ctx-naam').value.trim();
+  const tekst = document.getElementById('pb-ctx-tekst').value.trim();
+  if (!naam || !tekst) { alert('Vul zowel naam als tekst in.'); return; }
+  const volgorde = CTX_BLOCKS.length ? Math.max(...CTX_BLOCKS.map(b => b.volgorde || 0)) + 1 : 1;
+  await sbPost('context_blocks', { naam, tekst, volgorde });
+  ctxCancelAdd();
+  await ctxLoad();
+}
+
+function ctxShowEdit(containerId, id) {
+  const b = CTX_BLOCKS.find(x => x.id === id);
+  if (!b) return;
+  const row = document.getElementById(`${containerId}-row-${id}`);
+  if (!row) return;
+  row.innerHTML = `
+    <input id="ctx-edit-naam-${id}" value="${escHtml(b.naam)}" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.72em;margin-bottom:6px;">
+    <textarea id="ctx-edit-tekst-${id}" rows="3" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:6px 8px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.72em;resize:vertical;">${escHtml(b.tekst)}</textarea>
+    <div style="display:flex;gap:6px;margin-top:6px;">
+      <button type="button" onclick="ctxSaveEdit(${id})" style="flex:1;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);color:#34d399;border-radius:8px;padding:6px;font-size:0.7em;cursor:pointer;">✓ Opslaan</button>
+      <button type="button" onclick="ctxRenderAll()" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px;font-size:0.7em;cursor:pointer;">Annuleer</button>
+    </div>`;
+}
+async function ctxSaveEdit(id) {
+  const naam = document.getElementById(`ctx-edit-naam-${id}`).value.trim();
+  const tekst = document.getElementById(`ctx-edit-tekst-${id}`).value.trim();
+  if (!naam || !tekst) { alert('Vul zowel naam als tekst in.'); return; }
+  await sbPatch('context_blocks', `id=eq.${id}`, { naam, tekst, updated_at: new Date().toISOString() });
+  await ctxLoad();
+}
+async function ctxDelete(id) {
+  if (!confirm('Dit context-blok verwijderen?')) return;
+  await fetch(`${SB_URL}/rest/v1/context_blocks?id=eq.${id}`, { method: 'DELETE', headers: SB_POST_HDR });
+  const sel = ctxGetSelected(); sel.delete(id); ctxSaveSelected(sel);
+  await ctxLoad();
+}
+
+// ══════════════════════════════════════════════
+// AI COUNCIL — Gemini + Grok + Claude parallel via OpenRouter
+// ══════════════════════════════════════════════
+// ':online' schakelt OpenRouter's web-search grounding in — nodig omdat elk model
+// (ongeacht versienaam) een trainings-cutoff rond begin 2025 blijkt te hebben.
+const COUNCIL_MODELS = [
+  { key: 'gemini', naam: 'Gemini 3.5', model: 'google/gemini-3.5-flash:online', color: '52,211,153' },
+  { key: 'grok',   naam: 'Grok 4.5',   model: 'x-ai/grok-4.5:online',           color: '99,102,241' },
+  { key: 'claude', naam: 'Claude Sonnet 5', model: 'anthropic/claude-sonnet-5:online', color: '204,120,92' }
+];
+
+function openCouncil() {
+  document.getElementById('council-overlay').style.display = 'flex';
+  document.getElementById('council-error').style.display = 'none';
+  ctxLoad();
+}
+function closeCouncil() {
+  document.getElementById('council-overlay').style.display = 'none';
+}
+document.getElementById('council-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeCouncil();
+});
+
+async function callOpenRouter(model, systemPrompt, userMsg, timeoutMs = 60000) {
+  const key = getOpenRouterKey();
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + key,
+        'HTTP-Referer': location.href,
+        'X-Title': 'Remy AI Hub - AI Council'
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMsg }
+        ]
+      })
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(() => '');
+      let msg = `HTTP ${res.status}`;
+      try { msg = JSON.parse(t)?.error?.message || msg; } catch {}
+      throw new Error(msg);
+    }
+    const data = await res.json();
+    return data.choices?.[0]?.message?.content?.trim() || '(leeg antwoord)';
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Timeout na ${timeoutMs/1000}s — geen antwoord`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+let COUNCIL_LAST_QUESTION = '';
+let COUNCIL_LAST_ANSWERS = {};
+
+function councilRenderCards() {
+  const wrap = document.getElementById('council-results');
+  wrap.innerHTML = COUNCIL_MODELS.map(m => `
+    <div style="background:rgba(${m.color},0.05);border:1px solid rgba(${m.color},0.25);border-radius:14px;padding:14px;min-height:120px;">
+      <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:rgb(${m.color});margin-bottom:8px;font-family:'Inter',sans-serif;text-transform:uppercase;">${m.naam}</div>
+      <div id="council-out-${m.key}" style="font-size:0.78em;color:var(--text-dim);line-height:1.6;white-space:pre-wrap;"><span style="opacity:0.5;">⏳ Denken...</span></div>
+    </div>`).join('');
+  wrap.style.display = 'grid';
+  document.getElementById('council-synthesis-section').style.display = 'none';
+  document.getElementById('council-synthesis-results').style.display = 'none';
+  document.getElementById('council-synthesis-results').innerHTML = '';
+}
+
+async function councilAsk() {
+  const vraag = document.getElementById('council-input').value.trim();
+  if (!vraag) { document.getElementById('council-input').focus(); return; }
+  const key = getOpenRouterKey();
+  if (!key) { openApiKeyModal(); return; }
+
+  const errEl = document.getElementById('council-error');
+  errEl.style.display = 'none';
+
+  const ctxText = ctxSelectedText();
+  const systemPrompt = 'Je antwoordt aan Remy Egberts. Wees direct, concreet en bruikbaar — geen wollig taalgebruik. ' +
+    'Houd je antwoord kort en bondig (maximaal circa 200 woorden) — geen lange lappen tekst, alleen de kern met onderbouwing.' +
+    (ctxText ? `\n\nCONTEXT OVER REMY:\n${ctxText}` : '');
+
+  councilRenderCards();
+  COUNCIL_LAST_QUESTION = vraag;
+  COUNCIL_LAST_ANSWERS = {};
+  const btn = document.getElementById('council-ask-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Bezig...';
+
+  const calls = COUNCIL_MODELS.map(async m => {
+    const el = document.getElementById('council-out-' + m.key);
+    try {
+      const text = await callOpenRouter(m.model, systemPrompt, vraag);
+      el.textContent = text;
+      COUNCIL_LAST_ANSWERS[m.key] = text;
+    } catch (e) {
+      el.innerHTML = `<span style="color:#f87171;">❌ ${escHtml(e.message || 'onbekende fout')}</span>`;
+    }
+  });
+  await Promise.allSettled(calls);
+
+  btn.disabled = false;
+  btn.textContent = '🏛️ Vraag de Council';
+
+  if (Object.keys(COUNCIL_LAST_ANSWERS).length >= 2) {
+    document.getElementById('council-synthesis-section').style.display = 'block';
+  }
+}
+
+// ── Synthese-stap: laat 2 onafhankelijke "voorzitters" oordelen over de 3 antwoorden ──
+const COUNCIL_SYNTH_MODELS = [
+  { key: 'sonnet', naam: 'Claude Sonnet 5', model: 'anthropic/claude-sonnet-5', color: '204,120,92' },
+  { key: 'gpt56',  naam: 'GPT-5.6 Terra',   model: 'openai/gpt-5.6-terra',      color: '16,163,127' }
+];
+
+function councilBuildSynthesisPrompt() {
+  const antwoorden = COUNCIL_MODELS
+    .filter(m => COUNCIL_LAST_ANSWERS[m.key])
+    .map(m => `=== ${m.naam} ===\n${COUNCIL_LAST_ANSWERS[m.key]}`)
+    .join('\n\n');
+  return `Oorspronkelijke vraag van Remy:\n"${COUNCIL_LAST_QUESTION}"\n\nDrie AI's hebben elk onafhankelijk geantwoord:\n\n${antwoorden}\n\nJij bent een onafhankelijke voorzitter. Geef kort en concreet:\n1. Waar de antwoorden het eens zijn\n2. Waar ze verschillen en waarom dat verschil er waarschijnlijk is\n3. Jouw advies — welke keuze of aanpak het sterkst onderbouwd is, en waarom\n\nWees kritisch, kies niet automatisch het langste of stelligste antwoord. Nederlands, direct, geen inleiding.`;
+}
+
+async function councilSynthesize() {
+  const btn = document.getElementById('council-synth-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Voorzitters denken na...';
+
+  const wrap = document.getElementById('council-synthesis-results');
+  wrap.innerHTML = COUNCIL_SYNTH_MODELS.map(m => `
+    <div style="background:rgba(${m.color},0.05);border:1px solid rgba(${m.color},0.25);border-radius:14px;padding:14px;min-height:100px;">
+      <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:rgb(${m.color});margin-bottom:8px;font-family:'Inter',sans-serif;text-transform:uppercase;">${m.naam}</div>
+      <div id="council-synth-out-${m.key}" style="font-size:0.78em;color:var(--text-dim);line-height:1.6;white-space:pre-wrap;"><span style="opacity:0.5;">⏳ Denken...</span></div>
+    </div>`).join('');
+  wrap.style.display = 'grid';
+
+  const synthPrompt = councilBuildSynthesisPrompt();
+  const systemPrompt = 'Je bent een scherpe, onpartijdige voorzitter die drie AI-antwoorden op dezelfde vraag beoordeelt.';
+
+  const calls = COUNCIL_SYNTH_MODELS.map(async m => {
+    const el = document.getElementById('council-synth-out-' + m.key);
+    try {
+      const text = await callOpenRouter(m.model, systemPrompt, synthPrompt);
+      el.textContent = text;
+    } catch (e) {
+      el.innerHTML = `<span style="color:#f87171;">❌ ${escHtml(e.message || 'onbekende fout')}</span>`;
+    }
+  });
+  await Promise.allSettled(calls);
+
+  btn.disabled = false;
+  btn.textContent = '🧑‍⚖️ Vraag synthese (Sonnet 4.5 + GPT-5.6)';
+}
 
 // ══════════════════════════════════════════════
 // HERO STRIP — begroeting + vandaag
