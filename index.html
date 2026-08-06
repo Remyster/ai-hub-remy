@@ -4783,6 +4783,16 @@ function loadVlSaldo() {
 // Tijdelijke opslag voor CSV import preview
 let csvImportData = [];
 
+// Handmatig gekoppelde CSV-namen worden onthouden voor volgende imports
+function getGeleerdeCsvAliassen() {
+  try { return JSON.parse(localStorage.getItem('vlCsvAliassen') || '{}'); } catch(e) { return {}; }
+}
+function saveGeleerdeCsvAlias(csvNaamLower, lastId) {
+  const a = getGeleerdeCsvAliassen();
+  a[csvNaamLower] = lastId;
+  localStorage.setItem('vlCsvAliassen', JSON.stringify(a));
+}
+
 function importCSV(input) {
   const file = input.files[0];
   if (!file) return;
@@ -4801,13 +4811,16 @@ function importCSV(input) {
   reader.onload = (e) => {
     const lines = e.target.result.split('\n').filter(l => l.trim());
     // ING CSV: Datum;Naam;Rekening;Tegenrekening;Code;Af Bij;Bedrag;Mutatiesoort;Mededelingen;Saldo;Tag
+    // Scheidingsteken kan ; of , zijn afhankelijk van exportbron — auto-detecteren op header
+    const header = lines[0] || '';
+    const delimiter = (header.split(';').length >= header.split(',').length) ? ';' : ',';
     const gematcht = [];
     const afwijkend = [];
     const nietGematcht = [];
     const alBetaald = [];
 
     for (const line of lines.slice(1)) {
-      const cols = line.split(';').map(c => c.replace(/^"|"$/g, '').trim());
+      const cols = line.split(delimiter).map(c => c.replace(/^"|"$/g, '').trim());
       if (cols.length < 7) continue;
       const [datum, naam, , , , afbij, bedragRaw] = cols;
       if (afbij !== 'Af') continue;
@@ -4893,8 +4906,14 @@ function importCSV(input) {
         return false;
       });
 
+      // Zelf-geleerde koppelingen (handmatig gekoppeld bij eerdere import)
       if (!match) {
-        nietGematcht.push({ csvNaam: naam, bedrag, datum });
+        const geleerdId = getGeleerdeCsvAliassen()[naamLower];
+        if (geleerdId) match = vlLasten.find(l => l.id === geleerdId);
+      }
+
+      if (!match) {
+        nietGematcht.push({ csvNaam: naam, bedrag, datum, lastId: null, geselecteerd: false });
       } else {
         const bet = getBetaling(match.id);
         if (bet?.betaald) {
@@ -4922,7 +4941,7 @@ function importCSV(input) {
 
 function toonCsvPreview() {
   const { gematcht, afwijkend, nietGematcht, alBetaald } = csvImportData;
-  const echteGeen = nietGematcht.filter(r => !r.negeer);
+  const echteGeen = nietGematcht.map((r, i) => ({ ...r, idx: i })).filter(r => !r.negeer);
   const overlay = document.getElementById('csv-preview-overlay');
   const stats = document.getElementById('csv-preview-stats');
   const lijst = document.getElementById('csv-preview-lijst');
@@ -4972,16 +4991,20 @@ function toonCsvPreview() {
     });
   }
 
-  // Niet gematcht
+  // Niet gematcht — handmatig koppelen mogelijk, wordt onthouden voor volgende keer
   if (echteGeen.length) {
-    html += `<div style="font-size:0.68em;color:#ef4444;letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">✕ Geen match gevonden in hub</div>`;
+    html += `<div style="font-size:0.68em;color:#ef4444;letter-spacing:0.1em;text-transform:uppercase;margin:10px 0 4px;">✕ Geen match — koppel handmatig (wordt onthouden)</div>`;
+    const lastenOpties = vlLasten.filter(l => l.categorie !== 'inkomen').sort((a,b) => a.naam.localeCompare(b.naam));
     echteGeen.forEach(r => {
-      html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:8px;opacity:0.7;">
+      html += `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(239,68,68,0.04);border:1px solid rgba(239,68,68,0.15);border-radius:8px;">
         <div style="flex:1;min-width:0;">
-          <div style="font-size:0.82em;color:var(--muted);">${escHtml(r.csvNaam)}</div>
-          <div style="font-size:0.65em;color:var(--muted);">${r.datum}</div>
+          <div style="font-size:0.82em;color:var(--text);">${escHtml(r.csvNaam)}</div>
+          <div style="font-size:0.65em;color:var(--muted);">${r.datum} · €${r.bedrag.toFixed(2)}</div>
         </div>
-        <span style="font-family:'Syne',sans-serif;color:var(--muted);font-size:0.9em;">€${r.bedrag.toFixed(2)}</span>
+        <select onchange="csvKoppelHandmatig(${r.idx}, this.value)" style="max-width:160px;font-size:0.72em;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--text);padding:5px 6px;">
+          <option value="">— koppel aan —</option>
+          ${lastenOpties.map(l => `<option value="${l.id}">${escHtml(l.naam)}</option>`).join('')}
+        </select>
       </div>`;
     });
   }
@@ -4998,9 +5021,23 @@ function toonCsvPreview() {
 
   lijst.innerHTML = html || '<div style="color:var(--muted);font-size:0.82em;text-align:center;padding:20px;">Geen relevante transacties gevonden in deze periode.</div>';
 
-  const aantalTeSlaanOp = gematcht.filter(r => r.geselecteerd).length + afwijkend.filter(r => r.geselecteerd).length;
-  document.getElementById('csv-bevestig-btn').textContent = `✓ Bevestig & sla ${aantalTeSlaanOp} op`;
+  csvUpdateBevestigTeller();
   overlay.style.display = 'flex';
+}
+
+function csvKoppelHandmatig(idx, lastId) {
+  const r = csvImportData.nietGematcht[idx];
+  r.lastId = lastId || null;
+  r.geselecteerd = !!lastId;
+  csvUpdateBevestigTeller();
+}
+
+function csvUpdateBevestigTeller() {
+  const { gematcht, afwijkend, nietGematcht } = csvImportData;
+  const aantalTeSlaanOp = gematcht.filter(r => r.geselecteerd).length
+    + afwijkend.filter(r => r.geselecteerd).length
+    + nietGematcht.filter(r => r.geselecteerd && r.lastId).length;
+  document.getElementById('csv-bevestig-btn').textContent = `✓ Bevestig & sla ${aantalTeSlaanOp} op`;
 }
 
 async function csvBevestigImport() {
@@ -5008,7 +5045,7 @@ async function csvBevestigImport() {
   btn.textContent = 'Opslaan...';
   btn.disabled = true;
 
-  const { gematcht, afwijkend } = csvImportData;
+  const { gematcht, afwijkend, nietGematcht } = csvImportData;
   let saved = 0;
 
   for (const r of [...gematcht, ...afwijkend]) {
@@ -5018,6 +5055,16 @@ async function csvBevestigImport() {
       vaste_last_id: r.lastId, jaar: vlJaar, maand: vlMaand,
       betaald: true, betaald_op: new Date().toISOString(), bedrag_betaald: bedrag
     });
+    saved++;
+  }
+
+  for (const r of nietGematcht) {
+    if (!r.geselecteerd || !r.lastId) continue;
+    await sbUpsert('betalingen', {
+      vaste_last_id: r.lastId, jaar: vlJaar, maand: vlMaand,
+      betaald: true, betaald_op: new Date().toISOString(), bedrag_betaald: r.bedrag
+    });
+    saveGeleerdeCsvAlias(r.csvNaam.toLowerCase(), r.lastId);
     saved++;
   }
 
