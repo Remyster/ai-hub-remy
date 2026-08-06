@@ -1,5 +1,5 @@
 # Remy's AI Hub — Project Overzicht
-*Laatst bijgewerkt: 3 augustus 2026*
+*Laatst bijgewerkt: 6 augustus 2026*
 
 ## Wat is dit?
 Persoonlijk AI dashboard als single-page application (SPA) in één `index.html` bestand (~390KB). Draait via GitHub Pages op `remyster.github.io/ai-hub-remy/`. Geen framework, geen build-stap.
@@ -282,6 +282,13 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 6 augustus 2026 (commit ebeed67)
+- **ING CSV import verbeterd** (`importCSV`, Vaste Lasten tab):
+  - Scheidingsteken (`;` of `,`) wordt nu automatisch gedetecteerd op de headerregel — voorheen faalde de import stil (0 matches, geen foutmelding) bij een komma-gescheiden CSV
+  - Niet-gematchte transacties (naam wijkt af van de post in de hub, bijv. "belastingdienst" of een abonnementsnaam) kunnen nu **handmatig gekoppeld** worden via een dropdown in het preview-scherm
+  - Handmatige koppelingen worden onthouden in `localStorage` (`vlCsvAliassen`, sleutel = csv-naam lowercase → `vaste_last_id`) zodat dezelfde naam bij een volgende import automatisch matcht — geen code-aanpassing meer nodig per naamvariant
+  - Let op: dit geheugen is per browser/apparaat, niet cloud-sync
 
 ### 3 augustus 2026 (commit 5cbe70b)
 - **AI Council toegevoegd**: kaart bij Mijn Agents, parallel Gemini 3.5 / Grok 4.5 / Claude Sonnet 5 (web-search grounding via `:online`) + synthese-stap met Sonnet 5 + GPT-5.6-terra — zie sectie "AI Council" hierboven voor volledige details
