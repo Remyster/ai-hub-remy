@@ -683,49 +683,6 @@ header h1 {
   #pb-modal { padding: 22px 16px 18px; }
 }
 
-/* ══ WERK POPUP ══ */
-#werk-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.82); backdrop-filter: blur(8px);
-  z-index: 1000; display: none; align-items: center; justify-content: center; padding: 20px;
-}
-#werk-overlay.show { display: flex; animation: fadeIn 0.25s ease both; }
-#werk-modal {
-  background: #0d0e18; border: 1px solid rgba(251,191,36,0.2);
-  border-radius: 22px; padding: 28px 24px 22px;
-  max-width: 680px; width: 100%;
-  box-shadow: 0 30px 80px rgba(0,0,0,0.7);
-  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
-  max-height: 92vh; overflow-y: auto;
-}
-.werk-title {
-  font-family: 'Syne', sans-serif; font-size: 1.15em; font-weight: 800;
-  background: linear-gradient(135deg, #fbbf24, #f59e0b);
-  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
-  margin-bottom: 4px;
-}
-.werk-sub { font-size: 0.72em; color: var(--muted); margin-bottom: 18px; }
-.werk-add-row { display: flex; gap: 8px; margin-bottom: 14px; }
-#werk-naam { flex: 1; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(251,191,36,0.2); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.82em; outline: none; }
-#werk-naam:focus { border-color: rgba(251,191,36,0.45); }
-#werk-naam::placeholder { color: var(--muted); }
-#werk-url { flex: 2; padding: 10px 14px; background: rgba(255,255,255,0.04); border: 1px solid rgba(251,191,36,0.2); border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 0.82em; outline: none; }
-#werk-url:focus { border-color: rgba(251,191,36,0.45); }
-#werk-url::placeholder { color: var(--muted); }
-.werk-add-btn { padding: 10px 14px; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.25); border-radius: 8px; color: #fbbf24; font-family: 'DM Mono', monospace; font-size: 0.75em; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
-.werk-add-btn:hover { background: rgba(251,191,36,0.18); }
-.werk-lijst { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
-.werk-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: rgba(251,191,36,0.04); border: 1px solid rgba(251,191,36,0.1); border-radius: 8px; text-decoration: none; transition: all 0.18s; }
-.werk-item:hover { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.2); }
-.werk-item-naam { flex: 1; font-size: 0.85em; color: var(--text); }
-.werk-item-url { font-size: 0.7em; color: var(--muted); flex: 2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.werk-item-del { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 0.9em; padding: 0 2px; transition: color 0.15s; flex-shrink: 0; }
-.werk-item-del:hover { color: #f87171; }
-.werk-item-open { font-size: 0.7em; color: #fbbf24; opacity: 0.7; flex-shrink: 0; }
-.werk-empty { font-size: 0.78em; color: var(--muted); text-align: center; padding: 20px; }
-.werk-close { display: block; width: 100%; margin-top: 6px; padding: 11px; background: transparent; border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-family: 'DM Mono', monospace; font-size: 0.78em; cursor: pointer; transition: all 0.2s; }
-.werk-close:hover { background: rgba(255,255,255,0.04); color: var(--text); }
-
 /* ══ MEDICATIE TRACKER ══ */
 .meds-wrap { margin-bottom: 16px; animation: fadeDown 0.6s 0.08s ease both; opacity: 0; animation-fill-mode: both; }
 .meds-row { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -1084,8 +1041,10 @@ header h1 {
 }
 .wp-review-head { font-size:0.68em;letter-spacing:0.04em;color:#a78bfa;margin-bottom:10px; }
 .wp-review-row {
-  display:grid;grid-template-columns:64px 1fr 84px 84px auto;gap:6px;margin-bottom:6px;align-items:center;
+  display:grid;grid-template-columns:22px 64px 1fr 84px 84px auto;gap:6px;margin-bottom:6px;align-items:center;
 }
+.wp-review-row.dup { background:rgba(248,113,113,0.09);border-radius:7px;box-shadow:0 0 0 1px rgba(248,113,113,0.28); }
+.wp-review-row input[type="checkbox"] { width:16px;height:16px;padding:0;cursor:pointer;accent-color:#10b981; }
 @media (max-width: 700px) {
   .wp-review-row { grid-template-columns:1fr 1fr;grid-auto-rows:auto; }
 }
@@ -1191,25 +1150,6 @@ header h1 {
   box-shadow: 0 2px 12px rgba(56,189,248,0.35);
 }
 .hbtn[onclick*="openVasteLasten"]:hover { box-shadow: 0 4px 20px rgba(56,189,248,0.5); transform: translateY(-1px); }
-
-/* ── HERO STRIP ── */
-#hero-strip {
-  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-  margin: 22px 0 30px; padding: 22px 24px;
-  background: linear-gradient(135deg, var(--panel) 0%, var(--panel-2) 100%);
-  border: 1px solid var(--line); border-radius: 18px;
-  box-shadow: var(--shadow-1);
-  animation: heroIn 0.5s cubic-bezier(0.22,1,0.36,1) both;
-}
-@keyframes heroIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-#hero-greet { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.35em; letter-spacing: -0.02em; }
-#hero-date  { font-size: 0.78em; color: var(--ink-dim); margin-top: 3px; }
-#hero-today {
-  margin-left: auto; text-align: right; font-size: 0.76em; color: var(--ink-dim);
-  max-width: 340px; line-height: 1.55;
-}
-#hero-today b { color: var(--ink); font-weight: 600; }
-@media (max-width: 640px) { #hero-today { margin-left: 0; text-align: left; } }
 
 /* ── SECTIONS ── */
 .section { margin-bottom: 34px; animation: secIn 0.45s ease both; }
@@ -1423,11 +1363,11 @@ header h1 {
 }
 #hero-taak {
   flex: 1;
-  min-width: 200px;
+  min-width: 220px;
   font-size: 0.78em;
   color: var(--text-dim);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
 }
 #hero-taak .hero-badge {
@@ -1438,6 +1378,20 @@ header h1 {
   font-size: 0.85em;
   font-weight: 600;
   white-space: nowrap;
+  margin-top: 2px;
+}
+#hero-taken-lijst { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 0; }
+.hero-taak-row { display: flex; align-items: center; gap: 7px; }
+.hero-taak-row input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; flex-shrink: 0; }
+.hero-taak-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-taak-row.klaar span { text-decoration: line-through; opacity: 0.5; }
+.hero-taak-row b { color: var(--text); font-weight: 600; }
+#hero-weer {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.78em;
+  color: var(--muted);
+  white-space: nowrap;
+  cursor: default;
 }
 #hero-klok {
   font-family: 'DM Mono', monospace;
@@ -1721,140 +1675,6 @@ details[open] summary { color: var(--accent) !important; }
   </div>
 </div>
 
-<!-- ══ WERK POPUP ══ -->
-<div id="werk-overlay">
-  <div id="werk-modal">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-      <div class="werk-title" id="werk-modal-title">💼 Werk</div>
-      <button onclick="closeWerk()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;padding:0 4px;">✕</button>
-    </div>
-
-    <!-- TABS -->
-    <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
-      <button id="werk-tab-links" onclick="switchWerkTab('links')" style="padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🔗 Links</button>
-      <button id="werk-tab-km" onclick="switchWerkTab('km')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">🚗 KM Registratie</button>
-      <button id="werk-tab-agenda" onclick="switchWerkTab('agenda')" style="padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">📅 Agenda Import</button>
-    </div>
-
-    <!-- TAB: LINKS -->
-    <div id="werk-panel-links">
-      <div class="werk-add-row">
-        <input type="text" id="werk-naam" placeholder="Naam (bijv. PWN Intranet)">
-        <input type="text" id="werk-url" placeholder="https://...">
-        <button class="werk-add-btn" onclick="addWerkLink()">+ Toevoegen</button>
-      </div>
-      <div class="werk-lijst" id="werk-lijst"></div>
-    </div>
-
-    <!-- TAB: KM -->
-    <div id="werk-panel-km" style="display:none;">
-
-      <!-- KM Uitleg -->
-      <details style="margin-bottom:14px;background:rgba(251,191,36,0.04);border:1px solid rgba(251,191,36,0.15);border-radius:10px;overflow:hidden;">
-        <summary style="padding:10px 14px;cursor:pointer;font-family:'DM Mono',monospace;font-size:0.74em;color:#fbbf24;list-style:none;display:flex;align-items:center;gap:8px;">
-          <span>ℹ️</span> <span>Hoe werkt de km-berekening?</span>
-          <span style="margin-left:auto;font-size:0.85em;color:var(--muted);">klik om uit te klappen</span>
-        </summary>
-        <div style="padding:0 14px 12px;font-family:'DM Mono',monospace;font-size:0.71em;line-height:1.7;color:var(--muted);border-top:1px solid rgba(251,191,36,0.1);margin-top:0;">
-          <div style="margin-top:10px;display:grid;gap:8px;">
-
-            <div style="padding:8px 10px;background:rgba(16,185,129,0.06);border-left:3px solid #10b981;border-radius:0 6px 6px 0;">
-              <span style="color:#10b981;font-weight:700;">🏢 Woonwerk (standaard)</span><br>
-              Standplaats = Velserbroek · <strong style="color:#e2e8f0;">58 km heen + 58 km terug = 116 km</strong><br>
-              Dit is je basis. Alles wat je op of onder de 58 km rijdt valt onder <em>woonwerk</em>.
-            </div>
-
-            <div style="padding:8px 10px;background:rgba(249,115,22,0.06);border-left:3px solid #f97316;border-radius:0 6px 6px 0;">
-              <span style="color:#f97316;font-weight:700;">🚗 Dienstreis (boven 116 km)</span><br>
-              Rijd je meer dan 116 km totaal? → het <em>meerdere</em> is dienstreis.<br>
-              <strong style="color:#e2e8f0;">Formule: totaal km − 116 = dienstreis km</strong>
-            </div>
-
-            <div style="padding:8px 10px;background:rgba(56,189,248,0.06);border-left:3px solid #38bdf8;border-radius:0 6px 6px 0;">
-              <span style="color:#38bdf8;font-weight:700;">📌 Voorbeeld: Thuis → Andijk → Heemskerk → Andijk → Thuis</span><br>
-              Totale rit = <strong style="color:#e2e8f0;">188 km</strong><br>
-              Woonwerk deel = 42 km (Andijk heen + terug = 21×2)<br>
-              Dienstreis = 188 − 42 = <strong style="color:#f97316;">146 km declareren</strong>
-            </div>
-
-            <div style="padding:8px 10px;background:rgba(167,139,250,0.06);border-left:3px solid #a78bfa;border-radius:0 6px 6px 0;">
-              <span style="color:#a78bfa;font-weight:700;">📋 Afwijkend (andere locatie, minder dan 58 km)</span><br>
-              Rijd je naar een locatie dichterbij dan Velserbroek? (bijv. Hoorn ASR = 6 km)<br>
-              Vul dan gewoon de werkelijke km in · geen dienstreis van toepassing.
-            </div>
-
-          </div>
-        </div>
-      </details>
-
-      <!-- Maand navigatie -->
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <button onclick="kmPrevMaand()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);cursor:pointer;font-size:1em;">◀</button>
-        <div style="text-align:center;">
-          <div id="km-maand-label" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05em;color:#fbbf24;"></div>
-          <div id="km-totaal-label" style="font-size:0.7em;color:var(--muted);margin-top:2px;"></div>
-        </div>
-        <button onclick="kmNextMaand()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:8px;padding:7px 12px;color:var(--text);cursor:pointer;font-size:1em;">▶</button>
-      </div>
-      <!-- Standaard km -->
-      <div style="display:flex;gap:8px;margin-bottom:14px;padding:10px 14px;background:rgba(251,191,36,0.05);border:1px solid rgba(251,191,36,0.15);border-radius:10px;align-items:center;flex-wrap:wrap;">
-        <span style="font-size:0.72em;color:var(--muted);flex:1;min-width:120px;">Standaard heen/terug (km)</span>
-        <div style="display:flex;gap:6px;align-items:center;">
-          <input type="number" id="km-default-heen" placeholder="Heen" min="0" step="0.1"
-            style="width:70px;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82em;outline:none;text-align:center;"
-            oninput="saveKmDefaults()">
-          <span style="color:var(--muted);font-size:0.8em;">↔</span>
-          <input type="number" id="km-default-terug" placeholder="Terug" min="0" step="0.1"
-            style="width:70px;padding:7px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.82em;outline:none;text-align:center;"
-            oninput="saveKmDefaults()">
-          <button onclick="vulKmStandaard()" title="Vul alle lege dagen met standaard km"
-            style="padding:7px 12px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:7px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;white-space:nowrap;">Vul alle lege</button>
-        </div>
-      </div>
-      <!-- Dagen lijst -->
-      <div id="km-dagen" style="display:flex;flex-direction:column;gap:6px;max-height:55vh;overflow-y:auto;padding-right:4px;"></div>
-    </div>
-
-    <!-- TAB: AGENDA IMPORT -->
-    <div id="werk-panel-agenda" style="display:none;">
-      <div style="font-size:0.72em;color:var(--muted);margin-bottom:12px;">Maak een screenshot van je werkagenda en upload hem hieronder. Claude haalt de afspraken eruit en maakt een .ics bestand aan.</div>
-
-      <!-- Upload area -->
-      <label for="agenda-screenshot-input" id="agenda-drop-zone"
-        style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;border:2px dashed rgba(56,189,248,0.3);border-radius:12px;padding:24px;cursor:pointer;background:rgba(56,189,248,0.03);transition:all 0.2s;margin-bottom:12px;"
-        ondragover="event.preventDefault();this.style.borderColor='rgba(56,189,248,0.7)'"
-        ondragleave="this.style.borderColor='rgba(56,189,248,0.3)'"
-        ondrop="agendaHandleDrop(event)">
-        <span style="font-size:1.8em;">📸</span>
-        <span style="font-size:0.78em;color:var(--muted);">Klik of sleep screenshot hiernaartoe</span>
-        <input type="file" id="agenda-screenshot-input" accept="image/*" style="display:none;" onchange="agendaHandleFile(this.files[0])">
-      </label>
-
-      <!-- Preview -->
-      <img id="agenda-preview" style="display:none;width:100%;max-height:140px;object-fit:contain;border-radius:8px;border:1px solid var(--border);margin-bottom:10px;">
-
-      <!-- Status / output -->
-      <div id="agenda-status" style="font-size:0.75em;color:var(--muted);margin-bottom:10px;min-height:18px;"></div>
-
-      <!-- Buttons -->
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="agendaAnalyseer()" id="agenda-analyseer-btn"
-          style="padding:9px 16px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.3);border-radius:9px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;">
-          🤖 Analyseer met Claude
-        </button>
-        <button onclick="agendaDownload()" id="agenda-download-btn" style="display:none;padding:9px 16px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:9px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;">
-          ⬇️ Download .ics
-        </button>
-        <a href="https://calendar.google.com/calendar/r/settings/export" target="_blank" id="agenda-gcal-btn" style="display:none;padding:9px 16px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:9px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.75em;cursor:pointer;text-decoration:none;">
-          📅 Open Google Agenda Import
-        </a>
-      </div>
-    </div>
-
-    <button class="werk-close" onclick="closeWerk()" style="margin-top:14px;">✕ Sluiten</button>
-  </div>
-</div>
-
 <!-- ══ VASTE LASTEN MODAL ══ -->
 <div id="vl-overlay">
   <div id="vl-modal">
@@ -2016,7 +1836,7 @@ details[open] summary { color: var(--accent) !important; }
 
     <div class="wp-add-row">
       <select id="wp-dag-select"></select>
-      <input type="text" id="wp-tekst" placeholder="Wat moet er gebeuren...">
+      <input type="text" id="wp-tekst" placeholder="Wat moet er gebeuren..." onkeydown="if(event.key==='Enter'){event.preventDefault();wpToegevoegd();}">
       <input type="time" id="wp-tijd" title="Starttijd">
       <input type="time" id="wp-tijd-eind" title="Eindtijd (optioneel)">
       <select id="wp-cat-select">
@@ -2117,8 +1937,8 @@ details[open] summary { color: var(--accent) !important; }
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
+      <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
       <span class="hbtn hbtn-muted" onclick="copyIncognito()" id="incognito-btn" title="Kopieert URL → open Ctrl+Shift+N → plak">🕵️ Incognito <span style="font-size:0.8em;opacity:0.6;">(Ctrl+Shift+N)</span></span>
-      <span class="hbtn" style="color:#fbbf24;background:rgba(251,191,36,0.08);border-color:rgba(251,191,36,0.18);" onclick="openWerk()">💼 Werk</span>
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
       <span class="hbtn" style="color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#ef4444;background:rgba(239,68,68,0.08);border-color:rgba(239,68,68,0.18);" onclick="document.getElementById('pomo-modal-overlay').style.display='flex'">⏱️ Timer</span>
@@ -2137,7 +1957,11 @@ details[open] summary { color: var(--accent) !important; }
 
 <div id="hero-strip">
   <div id="hero-datum">—</div>
-  <div id="hero-taak"><span class="hero-badge">📋 vandaag</span> <span id="hero-taak-tekst">Weekplanner laden…</span></div>
+  <div id="hero-taak">
+    <span class="hero-badge">📋 vandaag</span>
+    <div id="hero-taken-lijst"><span style="opacity:.55;">Taken laden…</span></div>
+  </div>
+  <div id="hero-weer" title="Weer op je huidige locatie">🌡️ —</div>
   <div id="hero-klok">--:--</div>
 </div>
 
@@ -2171,8 +1995,12 @@ details[open] summary { color: var(--accent) !important; }
 <!-- SMART BAR: Brain Dump + Agent Router + Context -->
 <div id="smart-bar" style="max-width:1160px;margin:0 auto 26px;display:flex;gap:10px;flex-wrap:wrap;animation:fadeDown 0.5s 0.1s ease both;">
   <div style="flex:1;min-width:260px;display:flex;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:8px;box-shadow:var(--shadow-card);">
-    <input id="smart-input" type="text" placeholder="🧠 Dump een gedachte of stel een vraag..." autocomplete="off"
+    <input id="smart-input" type="text" placeholder="🧠 Dump, plaats, of stel een vraag... (of praat 🎤)" autocomplete="off"
       style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;padding:6px 10px;">
+    <button id="smart-mic-btn" onclick="smartToggleMic()" title="Spraak inspreken"
+      style="padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:11px;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎤</button>
+    <button onclick="smartAutoPlaats()" title="AI zet dit automatisch op de goede plek — weekplanner, boodschap of brain dump"
+      style="padding:9px 14px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:11px;color:#fbbf24;font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">📍 Plaats</button>
     <button onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
       style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:11px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
     <button onclick="agentRoute()" title="AI kiest de juiste agent voor je vraag"
@@ -2199,18 +2027,6 @@ details[open] summary { color: var(--accent) !important; }
     <div id="dump-sort-result" style="margin-top:12px;font-size:0.72em;color:var(--text-dim);line-height:1.6;"></div>
   </div>
 </div>
-
-
-  <!-- HERO STRIP -->
-  <div id="hero-strip">
-    <div>
-      <div id="hero-greet">Hoi Remy</div>
-      <div id="hero-date">laden…</div>
-    </div>
-    <div id="hero-today">Vandaag laden…</div>
-  </div>
-
-  <!-- DEX CARD -->
 
 
 
@@ -2320,7 +2136,7 @@ details[open] summary { color: var(--accent) !important; }
     <div class="grid">
       <a href="#" class="card affiliate" onclick="openStekkerSlimGuardian(); return false;" style="border-color:rgba(251,191,36,0.35);background:linear-gradient(135deg,rgba(251,191,36,0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
-        <h2>🚀 AI Pipeline</h2><p>Blog · Site check · SEO — 12 staps workflow</p>
+        <h2>🚀 AI Pipeline</h2><p>Blog · Site check · SEO — 13 staps workflow</p>
       </a>
       <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
@@ -2370,16 +2186,12 @@ details[open] summary { color: var(--accent) !important; }
     <div style="margin-top:14px;">
       <div style="font-size:0.6em;font-weight:700;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin-bottom:9px;font-family:'Inter',sans-serif;">🔍 Losse AI-checkers</div>
       <div class="ss-pills">
-        <a href="https://grok.com/project/d222c79a-aa16-4fb2-a97d-0f966afd9cb4" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">🔍 Grok Site</a>
-        <a href="https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">📈 Grok SEO</a>
+        <a href="https://grok.com/project/9247065e-9506-47ce-a63c-0aeb349d2447" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">📈 Grok SEO &amp; Groei</a>
         <a href="https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:99,102,241;">✍️ Grok Blog</a>
         <a href="https://www.perplexity.ai/spaces/stekkerslimm-seo-growth-7bvx1_2jSSSd5vlLQnOuwg" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:56,189,248;">🌐 Perplexity Groei</a>
-        <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:56,189,248;">🔎 Perplexity Audit</a>
-        <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🛡️ Gemini Guardian</a>
+        <a href="https://www.perplexity.ai/spaces/stekkerslim-IQjlJvLZSK6wtieIkk186A" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:56,189,248;">🔎 Perplexity Audit Blog</a>
+        <a href="https://gemini.google.com/u/0/gem/53bd2e7c05e5" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🛡️ Gemini Blog &amp; Site Checker</a>
         <a href="https://gemini.google.com/u/0/gem/c2b213f954f9" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:52,211,153;">🤖 Gemini Groei</a>
-        <a href="https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:251,113,133;">✍️ StekkerPen</a>
-        <a href="https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:251,113,133;">📣 StekkerBoost</a>
-        <a href="https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8" class="ss-pill" target="_blank" rel="noopener noreferrer" style="--pc:251,113,133;">💬 StekkerDesk</a>
       </div>
     </div>
   </section>
@@ -3371,431 +3183,6 @@ function filterCards(q) {
 searchEl.addEventListener('input',e=>filterCards(e.target.value));
 
 // ══════════════════════════════════════════════
-// ══════════════════════════════════════════════
-// WERK POPUP — LINKS + KM REGISTRATIE (Supabase)
-// ══════════════════════════════════════════════
-const KM_DAGEN_NL = ['zo','ma','di','wo','do','vr','za'];
-const KM_MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augustus','September','Oktober','November','December'];
-
-// Bestemmingen: { label, woonwerk (enkelvoudig), dienstreis (enkelvoudig) }
-// woonwerk wordt x2, dienstreis is 1 richting zoals opgegeven
-const KM_BESTEMMINGEN = [
-  { label: '— Kies bestemming —',   woonwerk: null, dienstreis: 0 },
-  { label: '🏠 Thuiswerken',             woonwerk: 0,    dienstreis: 0 },
-  { label: '🏢 Velserbroek (standaard)', woonwerk: 58,   dienstreis: 0 },
-  { label: '🏥 Heemskerk Waterweg',      woonwerk: 54,   dienstreis: 0 },
-  { label: '🌲 Kennemerduinen',          woonwerk: 58,   dienstreis: 10 },  // 58x2 woonwerk + (63-58)x2=10 dienstreis
-  { label: '🏙️ Hoorn ASR',              woonwerk: 6,    dienstreis: 0 },
-  { label: '🌾 Andijk LWS',             woonwerk: 21,   dienstreis: 0 },
-  { label: '🔄 Velserbroek → Heemskerk', woonwerk: 58,   dienstreis: 10 }, // 58x2 woonwerk + 10 dienstreis
-  { label: '🔄 Velserbroek → Kennemerduinen', woonwerk: 58, dienstreis: 14 },
-  { label: '🔄 Velserbroek → Andijk',         woonwerk: 58, dienstreis: 39 }, // 58x2 woonwerk + 39 dienstreis = 155km
-  { label: '🌿 Castricum De Hoep',            woonwerk: 47, dienstreis: 0  },
-  { label: '✏️ Vrije rit (handmatig)',         woonwerk: 0,  dienstreis: 0  },
-];
-
-let kmJaar, kmMaand;
-let kmCache = {}; // { "jaar_maand": { dag: {heen,terug,extra} } }
-let werkLinksCache = [];
-
-// ── Supabase helpers Werk/KM ──
-async function sbWerkGet() {
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/werk_links?order=volgorde.asc`, { headers: SB_GET_HDR });
-    if (!r.ok) return [];
-    return await r.json();
-  } catch { return []; }
-}
-async function sbWerkPost(naam, url) {
-  const volgorde = werkLinksCache.length;
-  return sbPost('werk_links', { naam, url, volgorde });
-}
-async function sbWerkDelete(id) {
-  try {
-    await fetch(`${SB_URL}/rest/v1/werk_links?id=eq.${id}`, { method:'DELETE', headers: SB_POST_HDR });
-  } catch {}
-}
-async function sbKmGet(jaar, maand) {
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/km_registratie?jaar=eq.${jaar}&maand=eq.${maand}`, { headers: SB_GET_HDR });
-    if (!r.ok) return [];
-    return await r.json();
-  } catch { return []; }
-}
-async function sbKmUpsert(jaar, maand, dag, heen, terug, extra, dienstreis=0, bestemming_idx=0, gedeclareerd=false, is_dienstreis=false, is_afwijkend=false) {
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/km_registratie?on_conflict=jaar,maand,dag`, {
-      method: 'POST',
-      headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ jaar, maand, dag, heen, terug, extra: { ritten: extra, dienstreis, is_dienstreis, is_afwijkend, bestemming_idx, gedeclareerd } })
-    });
-    if (!r.ok) console.error('KM upsert fout:', r.status, await r.text());
-  } catch(e) { console.error('KM upsert error:', e); }
-}
-async function sbKmDefaultsGet() {
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/km_defaults?id=eq.1`, { headers: SB_GET_HDR });
-    if (!r.ok) return {heen:0,terug:0};
-    const d = await r.json();
-    return d[0] || {heen:0,terug:0};
-  } catch { return {heen:0,terug:0}; }
-}
-async function sbKmDefaultsSave(heen, terug) {
-  try {
-    const r = await fetch(`${SB_URL}/rest/v1/km_defaults?on_conflict=id`, {
-      method: 'POST',
-      headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-      body: JSON.stringify({ id:1, heen, terug })
-    });
-    if (!r.ok) console.error('KM defaults fout:', r.status);
-  } catch {}
-}
-
-// ── Werk popup ──
-function openWerk() {
-  const nu = new Date();
-  kmJaar = nu.getFullYear();
-  kmMaand = nu.getMonth() + 1;
-  document.getElementById('werk-overlay').classList.add('show');
-  loadWerkLinks();
-  loadKmDefaults();
-  loadKmMaand();
-}
-function closeWerk() { document.getElementById('werk-overlay').classList.remove('show'); }
-document.getElementById('werk-overlay').addEventListener('click', function(e) { if(e.target===this) closeWerk(); });
-
-function switchWerkTab(tab) {
-  document.getElementById('werk-panel-links').style.display  = tab==='links'  ? '' : 'none';
-  document.getElementById('werk-panel-km').style.display     = tab==='km'     ? '' : 'none';
-  document.getElementById('werk-panel-agenda').style.display = tab==='agenda' ? '' : 'none';
-  const btnLinks  = document.getElementById('werk-tab-links');
-  const btnKm     = document.getElementById('werk-tab-km');
-  const btnAgenda = document.getElementById('werk-tab-agenda');
-  const actief   = 'padding:7px 16px;border-radius:8px;border:1px solid rgba(251,191,36,0.4);background:rgba(251,191,36,0.12);color:#fbbf24;font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
-  const inactief = 'padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"DM Mono",monospace;font-size:0.75em;cursor:pointer;transition:all 0.2s;';
-  btnLinks.style.cssText  = tab==='links'  ? actief : inactief;
-  btnKm.style.cssText     = tab==='km'     ? actief : inactief;
-  btnAgenda.style.cssText = tab==='agenda' ? actief : inactief;
-}
-
-// ── Werk links ──
-async function loadWerkLinks() {
-  document.getElementById('werk-lijst').innerHTML = '<div class="werk-empty">Laden...</div>';
-  werkLinksCache = await sbWerkGet();
-  renderWerkLinks();
-}
-function renderWerkLinks() {
-  const lijst = document.getElementById('werk-lijst');
-  if (!werkLinksCache.length) {
-    lijst.innerHTML = '<div class="werk-empty">Nog geen links. Voeg ze toe hierboven.</div>';
-    return;
-  }
-  lijst.innerHTML = werkLinksCache.map((l) => `
-    <div class="werk-item" style="display:flex;">
-      <span class="werk-item-naam">${escHtml(l.naam)}</span>
-      <span class="werk-item-url">${escHtml(l.url)}</span>
-      <a href="${escHtml(l.url)}" target="_blank" rel="noopener" class="werk-item-open" onclick="event.stopPropagation()">↗</a>
-      <button class="werk-item-del" onclick="deleteWerkLink('${l.id}')">✕</button>
-    </div>`).join('');
-}
-async function addWerkLink() {
-  const naam = document.getElementById('werk-naam').value.trim();
-  let url    = document.getElementById('werk-url').value.trim();
-  if (!naam || !url) return;
-  if (!url.startsWith('http')) url = 'https://' + url;
-  document.getElementById('werk-naam').value = '';
-  document.getElementById('werk-url').value  = '';
-  await sbWerkPost(naam, url);
-  werkLinksCache = await sbWerkGet();
-  renderWerkLinks();
-}
-async function deleteWerkLink(id) {
-  await sbWerkDelete(id);
-  werkLinksCache = await sbWerkGet();
-  renderWerkLinks();
-}
-document.getElementById('werk-naam').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('werk-url').focus(); });
-document.getElementById('werk-url').addEventListener('keydown', e => { if(e.key==='Enter') addWerkLink(); });
-
-// ── KM registratie ──
-function kmPrevMaand() { kmMaand--; if(kmMaand<1){kmMaand=12;kmJaar--;} loadKmMaand(); }
-function kmNextMaand() { kmMaand++; if(kmMaand>12){kmMaand=1;kmJaar++;} loadKmMaand(); }
-
-async function loadKmDefaults() {
-  const d = await sbKmDefaultsGet();
-  document.getElementById('km-default-heen').value  = d.heen||'';
-  document.getElementById('km-default-terug').value = d.terug||'';
-}
-async function saveKmDefaults() {
-  const heen  = parseFloat(document.getElementById('km-default-heen').value)||0;
-  const terug = parseFloat(document.getElementById('km-default-terug').value)||0;
-  await sbKmDefaultsSave(heen, terug);
-}
-
-async function loadKmMaand() {
-  document.getElementById('km-maand-label').textContent = KM_MAANDEN[kmMaand-1] + ' ' + kmJaar;
-  document.getElementById('km-dagen').innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;font-size:0.8em;">Laden...</div>';
-  const rows = await sbKmGet(kmJaar, kmMaand);
-  // Zet om naar { dag: {...} }
-  const data = {};
-  rows.forEach(r => {
-    const ex = r.extra || {};
-    // Support zowel oude structuur (array) als nieuwe (object met ritten/dienstreis/etc)
-    const ritten       = Array.isArray(ex) ? ex : (ex.ritten || []);
-    const dienstreis   = Array.isArray(ex) ? 0  : (ex.dienstreis || 0);
-    const is_dienstreis = Array.isArray(ex) ? false : (ex.is_dienstreis || false);
-    const is_afwijkend  = Array.isArray(ex) ? false : (ex.is_afwijkend  || false);
-    const bestemming_idx = Array.isArray(ex) ? 0 : (ex.bestemming_idx || 0);
-    const gedeclareerd = Array.isArray(ex) ? false : (ex.gedeclareerd || false);
-    data[r.dag] = { heen: r.heen, terug: r.terug, extra: ritten, dienstreis, is_dienstreis, is_afwijkend, bestemming_idx, gedeclareerd };
-  });
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  renderKmDagen();
-}
-
-function getKmCacheData() { return kmCache[`${kmJaar}_${kmMaand}`] || {}; }
-
-function getDagenInMaand(jaar, maand) { return new Date(jaar, maand, 0).getDate(); }
-
-function renderKmDagen() {
-  document.getElementById('km-maand-label').textContent = KM_MAANDEN[kmMaand-1] + ' ' + kmJaar;
-  const container = document.getElementById('km-dagen');
-  const aantalDagen = getDagenInMaand(kmJaar, kmMaand);
-  const data = getKmCacheData();
-
-  // Dropdown opties HTML
-  const dropOpts = KM_BESTEMMINGEN.map((b,i) => `<option value="${i}">${escHtml(b.label)}</option>`).join('');
-
-  let html = '';
-  for (let dag = 1; dag <= aantalDagen; dag++) {
-    const datum = new Date(kmJaar, kmMaand-1, dag);
-    const dagNaam = KM_DAGEN_NL[datum.getDay()];
-    const isWeekend = datum.getDay()===0 || datum.getDay()===6;
-    const d = data[dag] || {};
-    const heen       = d.heen       != null ? d.heen       : '';
-    const terug      = d.terug      != null ? d.terug      : '';
-    const dienstreis = d.dienstreis != null ? d.dienstreis : '';
-    const gedecl            = d.gedeclareerd ? true : false;
-    const is_dienstreis_vlag = d.is_dienstreis ? true : false;
-    const is_afwijkend_vlag  = d.is_afwijkend  ? true : false;
-    const extra      = d.extra || [];
-    const bestIdx    = d.bestemming_idx != null ? d.bestemming_idx : 0;
-
-    const dagBg = isWeekend ? 'rgba(255,255,255,0.02)'
-      : is_dienstreis_vlag ? 'rgba(249,115,22,0.08)'
-      : is_afwijkend_vlag  ? 'rgba(56,189,248,0.08)'
-      : gedecl             ? 'rgba(16,185,129,0.05)'
-      : 'rgba(255,255,255,0.04)';
-    const dagBorder = isWeekend ? 'rgba(255,255,255,0.06)'
-      : is_dienstreis_vlag ? 'rgba(249,115,22,0.5)'
-      : is_afwijkend_vlag  ? 'rgba(56,189,248,0.5)'
-      : gedecl             ? 'rgba(16,185,129,0.25)'
-      : 'rgba(251,191,36,0.1)';
-
-    const extraHtml = extra.map((ex,ei) =>
-      `<div style="display:flex;gap:5px;align-items:center;margin-top:5px;">
-        <input type="text" placeholder="Omschrijving" value="${escHtml(ex.omschrijving||'')}"
-          style="flex:2;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;"
-          onchange="updateKmExtra(${dag},${ei},'omschrijving',this.value)">
-        <input type="number" placeholder="km" min="0" step="0.1" value="${ex.km||''}"
-          style="width:60px;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.75em;outline:none;text-align:center;"
-          onchange="updateKmExtra(${dag},${ei},'km',parseFloat(this.value)||0)">
-        <button onclick="deleteKmExtra(${dag},${ei})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.85em;padding:0 3px;">✕</button>
-      </div>`
-    ).join('');
-
-    html += `
-      <div style="padding:10px 12px;background:${dagBg};border:1px solid ${dagBorder};border-radius:10px;transition:border-color 0.2s;">
-        <!-- Rij 1: dag + dropdown + gedeclareerd -->
-        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:${(heen||terug||dienstreis) ? '8px' : '0'};">
-          <div style="min-width:52px;">
-            <span style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.9em;color:${isWeekend?'var(--muted)':'var(--text)'};">${dag}</span>
-            <span style="font-size:0.65em;color:var(--muted);margin-left:4px;text-transform:uppercase;">${dagNaam}</span>
-          </div>
-          <select onchange="kmBestemmingGekozen(${dag},parseInt(this.value))"
-            style="flex:1;min-width:160px;padding:6px 8px;background:#1e1f3a;border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:${bestIdx>0?'#fbbf24':'#9ca3af'};font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;outline:none;color-scheme:dark;">
-            ${KM_BESTEMMINGEN.map((b,i) => `<option value="${i}"${i===bestIdx?' selected':''} style="background:#1e1f3a;color:#e2e8f0;">${escHtml(b.label)}</option>`).join('')}
-          </select>
-          <!-- Gedeclareerd vinkje -->
-          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Gedeclareerd">
-            <input type="checkbox" ${gedecl?'checked':''} onchange="toggleKmGedeclareerd(${dag},this.checked)"
-              style="width:15px;height:15px;accent-color:#10b981;cursor:pointer;">
-            <span style="font-size:0.68em;color:${gedecl?'#10b981':'var(--muted)'};">${gedecl?'✅ gedecl.':'declareer'}</span>
-          </label>
-          <!-- Dienstreis toggle -->
-          <label style="display:flex;align-items:center;gap:5px;cursor:pointer;user-select:none;white-space:nowrap;" title="Dienstreis">
-            <input type="checkbox" ${is_dienstreis_vlag?'checked':''} onchange="toggleKmDienstreis(${dag},this.checked)"
-              style="width:15px;height:15px;accent-color:#f97316;cursor:pointer;">
-            <span style="font-size:0.68em;color:${is_dienstreis_vlag?'#f97316':'var(--muted)'};">${is_dienstreis_vlag?'🚗 dienstreis':'dienstreis'}</span>
-          </label>
-        </div>
-        <!-- Rij 2: km velden (alleen tonen als bestemming gekozen of al ingevuld) -->
-        ${(bestIdx > 0 || heen || terug || dienstreis) ? `
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding-left:60px;">
-          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <span style="font-size:0.6em;color:#10b981;text-transform:uppercase;letter-spacing:0.08em;">woonwerk</span>
-            <div style="display:flex;gap:4px;">
-              <input type="number" min="0" step="0.1" value="${heen}" placeholder="heen"
-                style="width:62px;padding:5px 7px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.78em;outline:none;text-align:center;"
-                onchange="updateKmDag(${dag},'heen',parseFloat(this.value)||0)">
-              <span style="color:var(--muted);font-size:0.75em;align-self:center;">↔</span>
-              <input type="number" min="0" step="0.1" value="${terug}" placeholder="terug"
-                style="width:62px;padding:5px 7px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:7px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.78em;outline:none;text-align:center;"
-                onchange="updateKmDag(${dag},'terug',parseFloat(this.value)||0)">
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
-            <span style="font-size:0.6em;color:#f97316;text-transform:uppercase;letter-spacing:0.08em;">dienstreis</span>
-            <input type="number" min="0" step="0.1" value="${dienstreis}" placeholder="0"
-              style="width:70px;padding:5px 7px;background:rgba(249,115,22,0.06);border:1px solid rgba(249,115,22,0.2);border-radius:7px;color:#f97316;font-family:'DM Mono',monospace;font-size:0.78em;outline:none;text-align:center;"
-              onchange="updateKmDag(${dag},'dienstreis',parseFloat(this.value)||0)">
-          </div>
-          <button onclick="addKmExtra(${dag})"
-            style="padding:5px 9px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.2);border-radius:7px;color:#fbbf24;font-family:'DM Mono',monospace;font-size:0.7em;cursor:pointer;white-space:nowrap;align-self:flex-end;">+ Rit</button>
-        </div>` : ''}
-        ${extraHtml ? `<div style="padding-left:60px;margin-top:2px;">${extraHtml}</div>` : ''}
-      </div>`;
-  }
-  container.innerHTML = html;
-  updateKmTotaal();
-}
-
-async function kmBestemmingGekozen(dag, idx) {
-  const b = KM_BESTEMMINGEN[idx];
-  if (!b || b.woonwerk === null) return; // "kies bestemming" geselecteerd
-  if (b.label && b.label.includes('Vrije rit')) {
-    const data = getKmCacheData();
-    if (!data[dag]) data[dag] = {heen:0,terug:0,dienstreis:0,extra:[],bestemming_idx:0,gedeclareerd:false};
-    data[dag].bestemming_idx = idx;
-    kmCache[`${kmJaar}_${kmMaand}`] = data;
-    await sbKmUpsert(kmJaar, kmMaand, dag, 0, 0, data[dag].extra||[], 0, idx, data[dag].gedeclareerd||false);
-    renderKmDagen();
-    return;
-  }
-  const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {extra:[]};
-  data[dag].bestemming_idx = idx;
-  data[dag].heen       = b.woonwerk;
-  data[dag].terug      = b.woonwerk;
-  data[dag].dienstreis = b.dienstreis;
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  updateKmTotaal();
-  await sbKmUpsert(kmJaar, kmMaand, dag, data[dag].heen, data[dag].terug, data[dag].extra||[], data[dag].dienstreis||0, idx, data[dag].gedeclareerd||false, data[dag].is_dienstreis||false);
-  renderKmDagen();
-}
-
-async function toggleKmGedeclareerd(dag, checked) {
-  const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0,terug:0,dienstreis:0,extra:[]};
-  data[dag].gedeclareerd = checked;
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, checked);
-  renderKmDagen();
-}
-
-async function toggleKmDienstreis(dag, checked) {
-  const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0,terug:0,dienstreis:0,is_dienstreis:false,is_afwijkend:false,extra:[],bestemming_idx:0,gedeclareerd:false};
-  data[dag].is_dienstreis = checked;
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, checked, d.is_afwijkend||false);
-  renderKmDagen();
-}
-
-async function updateKmDag(dag, veld, val) {
-  const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0, terug:0, dienstreis:0, is_afwijkend:false, extra:[], bestemming_idx:0, gedeclareerd:false};
-  data[dag][veld] = val;
-  if (veld === 'heen' || veld === 'terug') {
-    const h = data[dag].heen || 0;
-    const t = data[dag].terug || 0;
-    const STD = 58;
-    data[dag].is_afwijkend = (h > 0 && h < STD);
-    const totaal = h + t;
-    if (totaal > STD * 2) {
-      data[dag].dienstreis = Math.round((totaal - STD * 2) * 10) / 10;
-    }
-  }
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  updateKmTotaal();
-  const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra||[], d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false, d.is_afwijkend||false);
-  if (veld === 'heen' || veld === 'terug') renderKmDagen();
-}
-
-async function addKmExtra(dag) {
-  const data = getKmCacheData();
-  if (!data[dag]) data[dag] = {heen:0, terug:0, dienstreis:0, extra:[], bestemming_idx:0, gedeclareerd:false};
-  if (!data[dag].extra) data[dag].extra = [];
-  data[dag].extra.push({omschrijving:'', km:0});
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  const d = data[dag];
-  await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
-  renderKmDagen();
-}
-
-async function updateKmExtra(dag, ei, veld, val) {
-  const data = getKmCacheData();
-  if (data[dag] && data[dag].extra && data[dag].extra[ei]) {
-    data[dag].extra[ei][veld] = val;
-    kmCache[`${kmJaar}_${kmMaand}`] = data;
-    updateKmTotaal();
-    const d = data[dag];
-    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
-  }
-}
-
-async function deleteKmExtra(dag, ei) {
-  const data = getKmCacheData();
-  if (data[dag] && data[dag].extra) {
-    data[dag].extra.splice(ei,1);
-    kmCache[`${kmJaar}_${kmMaand}`] = data;
-    const d = data[dag];
-    await sbKmUpsert(kmJaar, kmMaand, dag, d.heen||0, d.terug||0, d.extra, d.dienstreis||0, d.bestemming_idx||0, d.gedeclareerd||false, d.is_dienstreis||false);
-  }
-  renderKmDagen();
-}
-
-function updateKmTotaal() {
-  const data = getKmCacheData();
-  let totWoonwerk = 0, totDienst = 0;
-  Object.values(data).forEach(d => {
-    totWoonwerk += parseFloat(d.heen||0) + parseFloat(d.terug||0);
-    totDienst   += parseFloat(d.dienstreis||0);
-    (d.extra||[]).forEach(ex => totDienst += parseFloat(ex.km||0));
-  });
-  const totaal = totWoonwerk + totDienst;
-  document.getElementById('km-totaal-label').textContent =
-    `Totaal: ${totaal.toFixed(0)} km  |  woonwerk: ${totWoonwerk.toFixed(0)}  |  dienst: ${totDienst.toFixed(0)}`;
-}
-
-async function vulKmStandaard() {
-  const heen  = parseFloat(document.getElementById('km-default-heen').value)||0;
-  const terug = parseFloat(document.getElementById('km-default-terug').value)||0;
-  if (!heen && !terug) return;
-  await sbKmDefaultsSave(heen, terug);
-  const aantalDagen = getDagenInMaand(kmJaar, kmMaand);
-  const data = getKmCacheData();
-  const promises = [];
-  for (let dag = 1; dag <= aantalDagen; dag++) {
-    const datum = new Date(kmJaar, kmMaand-1, dag);
-    const isWeekend = datum.getDay()===0 || datum.getDay()===6;
-    if (!isWeekend && (!data[dag] || (!data[dag].heen && !data[dag].terug))) {
-      if (!data[dag]) data[dag] = {extra:[]};
-      data[dag].heen  = heen;
-      data[dag].terug = terug;
-      promises.push(sbKmUpsert(kmJaar, kmMaand, dag, heen, terug, data[dag].extra||[]));
-    }
-  }
-  kmCache[`${kmJaar}_${kmMaand}`] = data;
-  await Promise.all(promises);
-  renderKmDagen();
-}
-
-
-// ══════════════════════════════════════════════
 // POMODORO TIMER
 // ══════════════════════════════════════════════
 let pomoInterval  = null;
@@ -3900,6 +3287,47 @@ async function sbPatch(table, params, body) {
   });
   if (!r.ok) { const t = await r.text(); console.error(`sbPatch ${table} fout:`, r.status, t); return null; }
   return null;
+}
+
+// ══════════════════════════════════════════════
+// BACKUP — alle Supabase-tabellen als één JSON-bestand
+// ══════════════════════════════════════════════
+const BACKUP_TABELLEN = [
+  'weekplanner_items', 'vaste_lasten', 'betalingen', 'brain_dumps',
+  'km_registratie', 'km_defaults', 'werk_links', 'app_settings', 'pipeline_state'
+];
+async function backupAlles() {
+  const btn = document.getElementById('backup-btn');
+  const origTxt = btn.textContent;
+  btn.textContent = '💾 Bezig...'; btn.style.pointerEvents = 'none';
+  const resultaat = { gemaakt_op: new Date().toISOString(), tabellen: {} };
+  const fouten = [];
+  for (const tabel of BACKUP_TABELLEN) {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/${tabel}?select=*`, { headers: SB_GET_HDR });
+      if (!r.ok) {
+        if (r.status !== 404) fouten.push(`${tabel}: HTTP ${r.status}`);
+        resultaat.tabellen[tabel] = null;
+        continue;
+      }
+      resultaat.tabellen[tabel] = await r.json();
+    } catch(e) {
+      fouten.push(`${tabel}: ${e.message}`);
+      resultaat.tabellen[tabel] = null;
+    }
+  }
+  const blob = new Blob([JSON.stringify(resultaat, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ai-hub-backup-${heroVandaagIso ? heroVandaagIso() : new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  btn.textContent = origTxt; btn.style.pointerEvents = '';
+  if (fouten.length) {
+    console.warn('Backup: sommige tabellen gaven een fout:', fouten);
+    alert('Backup gedownload, maar met fouten bij:\n' + fouten.join('\n') + '\n\n(Check console voor details — kan betekenen dat de tabel nog niet bestaat.)');
+  }
 }
 async function sbUpsert(table, body) {
   // Bepaal conflict kolommen per tabel
@@ -4052,6 +3480,11 @@ async function wpToegevoegd() {
   const result = document.getElementById('wp-result');
   if (!tekst) { result.style.color = '#f87171'; result.textContent = '⚠️ Typ eerst iets in.'; return; }
   const datum = wpFmtDate(wpAddDays(wpWeekStart, dagIdx));
+  if (wpIsDuplicate(datum, tekst) && !confirm(`"${tekst}" staat al op ${WP_DAGNAMEN[dagIdx]}. Toch nog een keer toevoegen?`)) {
+    result.style.color = '#fbbf24';
+    result.textContent = 'Niet toegevoegd — stond er al.';
+    return;
+  }
   const body = { datum, tekst, tijd: tijd || null, tijd_eind: tijdEind || null, categorie: cat, klaar: false, volgorde: wpItems.filter(it => it.datum === datum).length };
   await sbPost('weekplanner_items', body);
   document.getElementById('wp-tekst').value = '';
@@ -4092,6 +3525,28 @@ function wpFileToBase64(file) {
 function wpDagNaarIndex(dagStr) {
   const map = { ma:0, di:1, wo:2, do:3, vr:4, za:5, zo:6 };
   return map[(dagStr||'').toLowerCase()] ?? 0;
+}
+
+// Normaliseert tekst zodat "HWL monsters!" en "hwl  monsters" hetzelfde zijn
+function wpNormText(s) {
+  return String(s || '')
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^\w\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+// Staat deze taak al op die datum in de al geladen week?
+function wpIsDuplicate(datumISO, tekst) {
+  const norm = wpNormText(tekst);
+  if (!norm) return false;
+  return wpItems.some(it => {
+    if (it.datum !== datumISO) return false;
+    const b = wpNormText(it.tekst);
+    if (b === norm) return true;
+    if (norm.length > 4 && b.length > 4 && (b.includes(norm) || norm.includes(b))) return true;
+    return false;
+  });
 }
 
 async function wpFotoGekozen(event) {
@@ -4175,20 +3630,28 @@ Regels:
     const raw = textBlocks.map(b => b.text).join('');
     const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
 
-    wpReviewData = (parsed.items || []).map(it => ({
-      dagIdx: wpDagNaarIndex(it.dag),
-      tekst: it.tekst || '',
-      van: it.tijd_van || '',
-      tot: it.tijd_tot || '',
-      laag: it.zekerheid === 'laag'
-    }));
+    wpReviewData = (parsed.items || []).map(it => {
+      const dagIdx = wpDagNaarIndex(it.dag);
+      const datumISO = wpFmtDate(wpAddDays(wpWeekStart, dagIdx));
+      const tekst = it.tekst || '';
+      const dup = wpIsDuplicate(datumISO, tekst);
+      return {
+        dagIdx, tekst,
+        van: it.tijd_van || '',
+        tot: it.tijd_tot || '',
+        laag: it.zekerheid === 'laag',
+        dup, add: !dup
+      };
+    });
 
     if (!wpReviewData.length) {
       status.style.color = '#fbbf24';
       status.textContent = '⚠️ AI vond geen leesbare regels. Voeg handmatig toe of probeer een scherpere foto.';
     } else {
+      const nieuw = wpReviewData.filter(it => !it.dup).length;
+      const dups  = wpReviewData.length - nieuw;
       status.style.color = '#10b981';
-      status.textContent = `✓ ${wpReviewData.length} regel(s) gevonden — controleer hieronder voor je opslaat!`;
+      status.textContent = `✓ ${wpReviewData.length} regel(s) — ${nieuw} nieuw, ${dups} stond er al (uitgevinkt). Check voor je opslaat!`;
     }
     wpRenderReview();
   } catch (err) {
@@ -4206,11 +3669,12 @@ function wpRenderReview() {
   if (!wpReviewData.length) { box.style.display = 'none'; return; }
   box.style.display = 'block';
   list.innerHTML = wpReviewData.map((it, i) => `
-    <div class="wp-review-row${it.laag ? ' laag' : ''}">
+    <div class="wp-review-row${it.laag ? ' laag' : ''}${it.dup ? ' dup' : ''}">
+      <input type="checkbox" ${it.add ? 'checked' : ''} onchange="wpReviewVeld(${i},'add',this.checked)" title="${it.dup ? 'Staat al in de lijst — vink aan om tóch toe te voegen' : 'Toevoegen'}">
       <select onchange="wpReviewVeld(${i},'dagIdx',this.value)">
         ${WP_DAGNAMEN.map((n, di) => `<option value="${di}" ${di === it.dagIdx ? 'selected' : ''}>${n}</option>`).join('')}
       </select>
-      <input type="text" value="${escHtml(it.tekst)}" placeholder="taak..." onchange="wpReviewVeld(${i},'tekst',this.value)">
+      <input type="text" value="${escHtml(it.tekst)}" placeholder="${it.dup ? 'dubbel — staat er al' : 'taak...'}" onchange="wpReviewVeld(${i},'tekst',this.value)">
       <input type="time" value="${it.van}" onchange="wpReviewVeld(${i},'van',this.value)">
       <input type="time" value="${it.tot}" onchange="wpReviewVeld(${i},'tot',this.value)">
       <button class="wp-item-del" onclick="wpReviewVerwijderRegel(${i})" title="Verwijderen">✕</button>
@@ -4220,13 +3684,21 @@ function wpRenderReview() {
 function wpReviewVeld(i, veld, val) {
   if (veld === 'dagIdx') val = parseInt(val, 10);
   wpReviewData[i][veld] = val;
+  // Dag of tekst gewijzigd? Dan kan de dubbel-status omslaan — opnieuw checken.
+  if (veld === 'dagIdx' || veld === 'tekst') {
+    const it = wpReviewData[i];
+    const datumISO = wpFmtDate(wpAddDays(wpWeekStart, it.dagIdx));
+    const wasDup = it.dup;
+    it.dup = wpIsDuplicate(datumISO, it.tekst);
+    if (wasDup !== it.dup) { it.add = !it.dup; wpRenderReview(); }
+  }
 }
 function wpReviewVerwijderRegel(i) {
   wpReviewData.splice(i, 1);
   wpRenderReview();
 }
 function wpReviewToevoegRegel() {
-  wpReviewData.push({ dagIdx: 0, tekst: '', van: '', tot: '', laag: false });
+  wpReviewData.push({ dagIdx: 0, tekst: '', van: '', tot: '', laag: false, dup: false, add: true });
   wpRenderReview();
 }
 function wpReviewAnnuleer() {
@@ -4236,8 +3708,13 @@ function wpReviewAnnuleer() {
 }
 
 async function wpReviewOpslaan() {
-  const teVerwerken = wpReviewData.filter(it => it.tekst.trim());
-  if (!teVerwerken.length) return;
+  const teVerwerken = wpReviewData.filter(it => it.tekst.trim() && it.add);
+  if (!teVerwerken.length) {
+    const s = document.getElementById('wp-foto-status');
+    s.style.color = '#fbbf24';
+    s.textContent = 'Niks aangevinkt — er is dus niks opgeslagen.';
+    return;
+  }
   const body = teVerwerken.map(it => ({
     datum: wpFmtDate(wpAddDays(wpWeekStart, it.dagIdx)),
     tekst: it.tekst.trim(),
@@ -5496,158 +4973,6 @@ window.addEventListener('load', async () => {
   fetchVoorJou(false);
 });
 
-// ══════════════════════════════════════════════
-// AGENDA IMPORT (screenshot → .ics via Claude)
-// ══════════════════════════════════════════════
-let agendaImageBase64 = null;
-let agendaImageType   = null;
-let agendaIcsData     = null;
-
-function agendaHandleDrop(e) {
-  e.preventDefault();
-  document.getElementById('agenda-drop-zone').style.borderColor = 'rgba(56,189,248,0.3)';
-  const file = e.dataTransfer.files[0];
-  if (file && file.type.startsWith('image/')) agendaHandleFile(file);
-}
-
-function agendaHandleFile(file) {
-  if (!file) return;
-  agendaImageType = file.type;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const dataUrl = e.target.result;
-    agendaImageBase64 = dataUrl.split(',')[1];
-    const preview = document.getElementById('agenda-preview');
-    preview.src = dataUrl;
-    preview.style.display = 'block';
-    document.getElementById('agenda-status').textContent = '✓ Afbeelding geladen — klik op Analyseer';
-    document.getElementById('agenda-download-btn').style.display = 'none';
-    document.getElementById('agenda-gcal-btn').style.display = 'none';
-    agendaIcsData = null;
-  };
-  reader.readAsDataURL(file);
-}
-
-function sanitizeIcs(raw) {
-  var txt = raw;
-  // Remove markdown fences
-  txt = txt.split('```').join('');
-  txt = txt.trim();
-  // Find ICS block
-  var s = txt.indexOf('BEGIN:VCALENDAR');
-  var e = txt.lastIndexOf('END:VCALENDAR');
-  if (s === -1 || e === -1) return null;
-  txt = txt.slice(s, e + 13);
-  // Normalize to CRLF
-  txt = txt.split('\r\n').join('\n').split('\r').join('\n');
-  var lineArr = txt.split('\n');
-  var out = [];
-  var inEvent = false, hasUid = false, hasDtstamp = false, uid = 0;
-  var now = new Date();
-  var stamp = now.toISOString().replace(/-/g,'').replace(/:/g,'').replace(/\..*/,'') + 'Z';
-  for (var i = 0; i < lineArr.length; i++) {
-    var ln = lineArr[i].trimEnd();
-    if (!ln) continue;
-    if (ln === 'BEGIN:VEVENT') { inEvent=true; hasUid=false; hasDtstamp=false; out.push(ln); continue; }
-    if (ln === 'END:VEVENT') {
-      if (!hasUid)     out.push('UID:hub-' + (++uid) + '-' + stamp + '@remyster.github.io');
-      if (!hasDtstamp) out.push('DTSTAMP:' + stamp);
-      out.push(ln); inEvent=false; continue;
-    }
-    if (inEvent) {
-      if (ln.startsWith('UID:'))     hasUid=true;
-      if (ln.startsWith('DTSTAMP:')) hasDtstamp=true;
-      // Fix dashed dates: 2026-05-11T09:00:00 -> 20260511T090000
-      ln = ln.replace(/(DTSTART|DTEND|DTSTAMP)(;[^:]*)?:(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})/,
-        function(m,p,z,y,mo,d,h,mi,s){ return (p+(z||''))+':'+y+mo+d+'T'+h+mi+s; });
-    }
-    out.push(ln);
-  }
-  var result = out.join('\r\n');
-  if (result.indexOf('PRODID:') === -1)  result = result.replace('BEGIN:VCALENDAR', 'BEGIN:VCALENDAR\r\nPRODID:-//Remy AI Hub//NL');
-  if (result.indexOf('VERSION:') === -1) result = result.replace('BEGIN:VCALENDAR', 'BEGIN:VCALENDAR\r\nVERSION:2.0');
-  return result;
-}
-
-
-async function agendaAnalyseer() {
-  if (!agendaImageBase64) {
-    document.getElementById('agenda-status').textContent = '⚠️ Upload eerst een screenshot';
-    return;
-  }
-  const apiKey = getApiKey();
-  if (!apiKey) {
-    document.getElementById('agenda-status').textContent = '⚠️ Geen API key — stel in via ⚙️';
-    return;
-  }
-  const btn = document.getElementById('agenda-analyseer-btn');
-  btn.textContent = '⏳ Claude analyseert...';
-  btn.disabled = true;
-  document.getElementById('agenda-status').textContent = 'Afspraken worden herkend...';
-  document.getElementById('agenda-download-btn').style.display = 'none';
-  document.getElementById('agenda-gcal-btn').style.display = 'none';
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 3000,
-        messages: [
-          {
-            role: 'user',
-            content: [
-              { type: 'image', source: { type: 'base64', media_type: agendaImageType, data: agendaImageBase64 } },
-              { type: 'text', text: `Analyseer deze werkagenda screenshot en geef ALLEEN een geldig iCalendar (.ics) bestand terug.
-
-STRIKTE REGELS:
-- Begin EXACT met: BEGIN:VCALENDAR
-- Eindig EXACT met: END:VCALENDAR
-- Elke afspraak heeft: BEGIN:VEVENT, SUMMARY, DTSTART, DTEND, END:VEVENT
-- Datum formaat: YYYYMMDDTHHMMSS (geen koppeltekens, geen dubbele punten in datum)
-- Voorbeeld: DTSTART:20260512T090000
-- Geen markdown, geen uitleg, geen tekst buiten de ICS blok
-- Huidig jaar is ${new Date().getFullYear()} als het jaar niet zichtbaar is` }
-            ]
-          }
-        ]
-      })
-    });
-
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error?.message || resp.status);
-
-    const raw = data.content?.[0]?.text || '';
-    const icsClean = sanitizeIcs(raw);
-    if (!icsClean) throw new Error('Claude kon geen geldige afspraken herkennen');
-
-    agendaIcsData = icsClean;
-    const count = (agendaIcsData.match(/BEGIN:VEVENT/g) || []).length;
-    document.getElementById('agenda-status').textContent = '✅ ' + count + ' afspraak' + (count !== 1 ? 'en' : '') + ' klaar voor import!';
-    document.getElementById('agenda-download-btn').style.display = '';
-    document.getElementById('agenda-gcal-btn').style.display = '';
-  } catch(err) {
-    document.getElementById('agenda-status').textContent = '❌ Fout: ' + err.message;
-  } finally {
-    btn.textContent = '🤖 Analyseer met Claude';
-    btn.disabled = false;
-  }
-}
-
-function agendaDownload() {
-  if (!agendaIcsData) return;
-  const blob = new Blob([agendaIcsData], { type: 'text/calendar;charset=utf-8' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href     = url;
-  a.download = 'werkagenda-import.ics';
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-
-
 // ── Multi-platform prompt generator ──────────────────
 async function generateMultiPrompt(ruwIdee) {
   const geselecteerd = [...pbMultiSelected].filter(p => PB_PLATFORMS[p]);
@@ -5746,7 +5071,6 @@ function copyAllMultiPrompts() {
 const CMD_ACTIONS = [
   { label: '💶 Vaste Lasten', fn: () => openVasteLasten() },
   { label: '🗓️ Weekplanner', fn: () => openWeekplanner() },
-  { label: '💼 Werk', fn: () => openWerk() },
   { label: '⏱️ Pomodoro Timer', fn: () => document.getElementById('pomo-modal-overlay').style.display='flex' },
   { label: '🚀 StekkerSlim Pipeline', fn: () => openStekkerSlimGuardian() },
   { label: '✦ Prompt Builder', fn: () => openPromptBuilder() },
@@ -5880,8 +5204,32 @@ sspDeleteMulti = function(i) {
 const _openSSGOrig = openStekkerSlimGuardian;
 openStekkerSlimGuardian = async function() {
   await sspLoadFromCloud();
+  await sspRestorePositie();
   _openSSGOrig();
 };
+
+// ── Positie onthouden: welke pipeline + welke stap, ook na tab sluiten ──
+async function sspSyncPositie() {
+  sspSyncToCloud('ssp_positie', JSON.stringify({ pipeline: sspPipeline, stepIdx: sspStepIdx }));
+}
+async function sspRestorePositie() {
+  if (!_sspCloudAvailable) return;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/pipeline_state?key=eq.ssp_positie&select=value`, { headers: SB_GET_HDR });
+    if (!r.ok) return;
+    const rows = await r.json();
+    if (!rows.length) return;
+    const pos = JSON.parse(rows[0].value);
+    if (pos && SSP_PIPELINES[pos.pipeline]) {
+      sspPipeline = pos.pipeline;
+      sspStepIdx = Math.min(pos.stepIdx || 0, SSP_PIPELINES[pos.pipeline].steps.length - 1);
+    }
+  } catch(e) { console.warn('Pipeline-positie herstellen mislukt:', e); }
+}
+const _sspSetPipelineOrig = sspSetPipeline;
+sspSetPipeline = function(p) { _sspSetPipelineOrig(p); sspSyncPositie(); };
+const _sspGoToOrig = sspGoTo;
+sspGoTo = function(i) { _sspGoToOrig(i); sspSyncPositie(); };
 
 // ══════════════════════════════════════════════
 // PROMPT BIBLIOTHEEK (Prompt Builder)
@@ -6241,47 +5589,6 @@ async function councilFinalSummary() {
   }
 }
 
-// ══════════════════════════════════════════════
-// HERO STRIP — begroeting + vandaag
-// ══════════════════════════════════════════════
-function heroInit() {
-  const g = document.getElementById('hero-greet');
-  const d = document.getElementById('hero-date');
-  if (!g || !d) return;
-  const now = new Date();
-  const uur = now.getHours();
-  let groet = 'Goedenavond';
-  if (uur >= 5 && uur < 12) groet = 'Goedemorgen';
-  else if (uur >= 12 && uur < 18) groet = 'Goedemiddag';
-  const emojis = { Goedemorgen: '☀️', Goedemiddag: '⚡', Goedenavond: '🌙' };
-  g.textContent = groet + ', Remy ' + (emojis[groet] || '');
-  d.textContent = now.toLocaleDateString('nl-NL', { weekday: 'long', day: 'numeric', month: 'long' });
-  heroLoadToday();
-}
-
-async function heroLoadToday() {
-  const el = document.getElementById('hero-today');
-  if (!el) return;
-  try {
-    const now = new Date();
-    const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), dd = String(now.getDate()).padStart(2,'0');
-    const vandaag = `${y}-${m}-${dd}`;
-    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${vandaag}&klaar=eq.false&order=tijd&select=tekst,tijd`, { headers: SB_GET_HDR });
-    if (!r.ok) { el.textContent = ''; return; }
-    const items = await r.json();
-    if (!items.length) {
-      el.innerHTML = '✅ <b>Geen open taken vandaag</b> — lekker bezig';
-      return;
-    }
-    const eerste = items[0];
-    const tijdStr = eerste.tijd ? ' om <b>' + eerste.tijd.slice(0,5) + '</b>' : '';
-    const rest = items.length > 1 ? '<br>+ nog ' + (items.length - 1) + ' open ' + (items.length - 1 === 1 ? 'taak' : 'taken') : '';
-    el.innerHTML = '📌 Eerstvolgende: <b>' + escHtml(eerste.tekst) + '</b>' + tijdStr + rest;
-  } catch(e) { el.textContent = ''; }
-}
-
-window.addEventListener('load', heroInit);
-
 // Scroll-to-top zichtbaarheid
 window.addEventListener('scroll', () => {
   const btn = document.getElementById('scrolltop');
@@ -6304,20 +5611,57 @@ function heroUpdate() {
 heroUpdate();
 setInterval(heroUpdate, 30000);
 
+function heroVandaagIso() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
 async function heroLoadTaak() {
-  const el = document.getElementById('hero-taak-tekst');
+  const el = document.getElementById('hero-taken-lijst');
   if (!el) return;
   try {
-    const d = new Date();
-    const iso = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${iso}&klaar=eq.false&order=tijd&limit=3`, { headers: SB_GET_HDR });
-    if (!r.ok) { el.textContent = 'Geen taken vandaag 🎉'; return; }
+    const iso = heroVandaagIso();
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${iso}&order=klaar,tijd&limit=8`, { headers: SB_GET_HDR });
+    if (!r.ok) { el.innerHTML = '<span style="opacity:.6;">Kon taken niet laden</span>'; return; }
     const items = await r.json();
-    if (!items.length) { el.textContent = 'Geen open taken vandaag 🎉'; return; }
-    el.textContent = items.map(t => (t.tijd ? t.tijd.slice(0,5) + ' ' : '') + t.tekst).join('  ·  ');
-  } catch(e) { el.textContent = 'Klik 🗓️ Week voor je planning'; }
+    if (!items.length) { el.innerHTML = '✅ <b>Niks gepland vandaag</b> — lekker bezig'; return; }
+    el.innerHTML = items.map(t => `
+      <label class="hero-taak-row${t.klaar ? ' klaar' : ''}">
+        <input type="checkbox" ${t.klaar ? 'checked' : ''} onchange="heroToggleTaak(${t.id}, this.checked, this)">
+        <span>${t.tijd ? '<b>' + t.tijd.slice(0,5) + '</b> ' : ''}${escHtml(t.tekst)}</span>
+      </label>`).join('');
+  } catch(e) { el.innerHTML = '<span style="opacity:.6;">Klik 🗓️ Week voor je planning</span>'; }
+}
+async function heroToggleTaak(id, checked, cb) {
+  cb.closest('.hero-taak-row').classList.toggle('klaar', checked);
+  await sbPatch('weekplanner_items', `id=eq.${id}`, { klaar: checked });
 }
 heroLoadTaak();
+
+// ── Vandaag: weer via browser-locatie + Open-Meteo (gratis, geen API-key) ──
+async function heroLoadWeer() {
+  const el = document.getElementById('hero-weer');
+  if (!el || !navigator.geolocation) return;
+  const cacheKey = 'remy_weer_' + heroVandaagIso() + '_' + new Date().getHours();
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) { el.textContent = cached; return; }
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const { latitude, longitude } = pos.coords;
+      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`);
+      if (!r.ok) return;
+      const data = await r.json();
+      const temp = Math.round(data.current?.temperature_2m);
+      const code = data.current?.weather_code ?? 0;
+      const icoon = code === 0 ? '☀️' : code <= 3 ? '⛅' : code <= 48 ? '🌫️' : code <= 67 ? '🌧️' : code <= 77 ? '🌨️' : code <= 82 ? '🌦️' : code <= 99 ? '⛈️' : '🌡️';
+      const txt = `${icoon} ${temp}°`;
+      el.textContent = txt;
+      sessionStorage.setItem(cacheKey, txt);
+    } catch(e) { /* stil falen, weer is decoratief */ }
+  }, () => { el.textContent = ''; }, { timeout: 8000, maximumAge: 1800000 });
+}
+heroLoadWeer();
+
 setTimeout(() => { if (typeof dumpLoadCloud === 'function') dumpLoadCloud(); }, 600);
 
 // Mouse-glow op cards
@@ -6541,6 +5885,107 @@ document.getElementById('smart-input').addEventListener('keydown', e => {
 });
 
 // ══════════════════════════════════════════════
+// AUTO-PLAATS — AI bepaalt waar een dumptje hoort
+// (weekplanner-taak / boodschap / brain dump) en zet het daar direct neer
+// ══════════════════════════════════════════════
+async function smartAutoPlaats() {
+  const inp = document.getElementById('smart-input');
+  const tekst = inp.value.trim();
+  if (!tekst) { inp.focus(); smartFlash('Typ of spreek eerst iets in.'); return; }
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  smartFlash('📍 Even bepalen waar dit hoort...');
+  try {
+    const vandaagIdx = (new Date().getDay() + 6) % 7; // 0=ma..6=zo
+    const vandaagNaam = ['ma','di','wo','do','vr','za','zo'][vandaagIdx];
+    const prompt = `Je routeert een losse notitie van Remy naar de juiste plek in zijn persoonlijke AI Hub.
+Vandaag is ${vandaagNaam}, ${heroVandaagIso()}.
+
+Notitie: "${tekst}"
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{"type":"taak|boodschap|brain_dump","dag":"ma|di|wo|do|vr|za|zo|vandaag","tijd":"HH:MM of lege string","tekst":"opgeschoonde korte tekst zonder de dag/tijd erin herhaald"}
+
+Regels:
+- "taak": iets met een concreet moment of actie deze week (afspraak, overleg, klusje, sport)
+- "boodschap": iets kopen of halen
+- "brain_dump": een los idee, gedachte of iets zonder concreet moment (bv. blogidee, feature-idee)
+- "dag": alleen invullen als een dag expliciet genoemd wordt, anders "vandaag"
+- "tijd": alleen invullen als er echt een tijdstip genoemd is`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+
+    if (parsed.type === 'brain_dump') {
+      const r = await fetch(`${SB_URL}/rest/v1/brain_dumps`, { method: 'POST', headers: SB_POST_HDR, body: JSON.stringify({ tekst: parsed.tekst || tekst, status: 'nieuw' }) });
+      if (!r.ok) throw new Error('Opslaan brain dump mislukt (HTTP ' + r.status + ')');
+      await dumpLoadCloud();
+      smartFlash('🧠 Als <b>brain dump</b> bewaard: "' + escHtml(parsed.tekst || tekst) + '"', true);
+    } else {
+      let dagIdx = vandaagIdx;
+      if (parsed.dag && parsed.dag !== 'vandaag') {
+        const target = wpDagNaarIndex(parsed.dag);
+        dagIdx = (vandaagIdx + ((target - vandaagIdx + 7) % 7)) % 7;
+      }
+      const monday = wpGetMonday(new Date());
+      const datum = wpFmtDate(wpAddDays(monday, dagIdx));
+      const categorie = parsed.type === 'boodschap' ? 'boodschap' : 'taak';
+      const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items`, {
+        method: 'POST', headers: SB_POST_HDR,
+        body: JSON.stringify({ datum, tekst: parsed.tekst || tekst, tijd: parsed.tijd || null, tijd_eind: null, categorie, klaar: false, volgorde: 0 })
+      });
+      if (!r.ok) throw new Error('Opslaan weekplanner mislukt (HTTP ' + r.status + ')');
+      const label = WP_DAGNAMEN[dagIdx] + ' ' + datum.split('-').reverse().join('-');
+      smartFlash('🗓️ Als <b>' + (categorie === 'boodschap' ? 'boodschap' : 'taak') + '</b> gezet op <b>' + label + '</b>: "' + escHtml(parsed.tekst || tekst) + '"', true);
+      heroLoadTaak();
+    }
+    inp.value = '';
+  } catch (err) {
+    console.error('Auto-plaats mislukt:', err);
+    smartFlash('⚠ Plaatsen mislukt: ' + err.message);
+  }
+}
+
+// ══════════════════════════════════════════════
+// SPRAAKINVOER — Web Speech API (werkt in Safari op iPad)
+// ══════════════════════════════════════════════
+let smartRecognition = null;
+let smartListening = false;
+function smartToggleMic() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const btn = document.getElementById('smart-mic-btn');
+  if (!SR) { smartFlash('⚠ Spraakherkenning wordt niet ondersteund in deze browser.'); return; }
+  if (smartListening) { smartRecognition.stop(); return; }
+  smartRecognition = new SR();
+  smartRecognition.lang = 'nl-NL';
+  smartRecognition.interimResults = false;
+  smartRecognition.maxAlternatives = 1;
+  smartRecognition.onstart = () => {
+    smartListening = true;
+    btn.textContent = '⏺️';
+    btn.style.color = '#ef4444'; btn.style.borderColor = 'rgba(239,68,68,0.4)';
+  };
+  smartRecognition.onresult = (e) => {
+    const tekst = e.results[0][0].transcript;
+    const inp = document.getElementById('smart-input');
+    inp.value = inp.value ? inp.value + ' ' + tekst : tekst;
+  };
+  smartRecognition.onerror = (e) => { smartFlash('⚠ Spraak niet verstaan: ' + e.error); };
+  smartRecognition.onend = () => {
+    smartListening = false;
+    btn.textContent = '🎤';
+    btn.style.color = 'var(--muted)'; btn.style.borderColor = 'var(--border)';
+  };
+  smartRecognition.start();
+}
+
+// ══════════════════════════════════════════════
 // CONTEXT-PAKKET GENERATOR
 // ══════════════════════════════════════════════
 async function genContextPakket() {
@@ -6754,5 +6199,34 @@ Format: begin met "CONTEXT — StekkerSlim project:" en dan puntsgewijs: wat is 
 </div>
 
 <button id="scrolltop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Naar boven">↑</button>
+
+<!-- iOS "Zet op beginscherm" banner — Apple heeft geen install-prompt API, dus dit moet handmatig -->
+<div id="ios-install-banner" style="display:none;position:fixed;left:14px;right:14px;bottom:14px;z-index:2500;background:#12141d;border:1px solid rgba(167,139,250,0.35);border-radius:14px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,0.5);font-family:'Inter',sans-serif;">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <span style="font-size:1.3em;">📲</span>
+    <div style="flex:1;font-size:0.76em;color:var(--text-dim);line-height:1.5;">
+      Zet de hub op je beginscherm: tik <b style="color:var(--text);">Deel</b> onderin Safari → <b style="color:var(--text);">Zet op beginscherm</b>. Werkt dan als app, ook offline.
+    </div>
+    <button onclick="document.getElementById('ios-install-banner').style.display='none';localStorage.setItem('ios_install_dismissed','1')" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:1em;padding:2px 6px;flex-shrink:0;">✕</button>
+  </div>
+</div>
+
+<script>
+// ══ PWA: service worker registreren + iOS install-banner ══
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.warn('Service worker registratie mislukt:', e));
+  });
+}
+(function() {
+  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const dismissed = localStorage.getItem('ios_install_dismissed');
+  if (isIos && !isStandalone && !dismissed) {
+    document.getElementById('ios-install-banner').style.display = 'block';
+  }
+})();
+</script>
 </body>
 </html>
+
