@@ -2006,6 +2006,11 @@ details[open] summary { color: var(--accent) !important; }
       </div>
       <div id="lu-connect" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
     </div>
+    <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(52,211,153,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
+      <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--green);margin-bottom:6px;font-family:'Inter',sans-serif;">📚 VANDAAG GELEERD</div>
+      <div id="lu-wiki" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;margin-bottom:8px;"><span style="opacity:0.5;">Laden…</span></div>
+      <div id="lu-ftm" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;padding-top:8px;border-top:1px solid var(--border);"><span style="opacity:0.5;">Laden…</span></div>
+    </div>
   </div>
 </div>
 
@@ -6308,8 +6313,82 @@ function luRender(d) {
   if (c) c.textContent = d.connect || '—';
 }
 
-function luRefresh() { luLoad(true); }
+function luRefresh() { luLoad(true); lu4Load(true); }
 setTimeout(() => luLoad(false), 1200);
+
+// ══════════════════════════════════════════════
+// VANDAAG GELEERD — Wikipedia "on this day" + FTM-kop via Haiku+websearch
+// ══════════════════════════════════════════════
+var lu4FtmLink = 'https://www.ftm.nl/';
+async function lu4Load(force) {
+  const today = luDateKey();
+  const cacheKey = 'lu4_content_' + today;
+  const cached = force ? null : localStorage.getItem(cacheKey);
+  if (cached) {
+    try { lu4Render(JSON.parse(cached)); return; } catch(e) {}
+  }
+  const [wiki, ftm] = await Promise.all([lu4LoadWiki(), lu4LoadFtm()]);
+  const result = { wiki, ftm };
+  localStorage.setItem(cacheKey, JSON.stringify(result));
+  Object.keys(localStorage).filter(k => k.startsWith('lu4_content_') && k !== cacheKey).forEach(k => localStorage.removeItem(k));
+  lu4Render(result);
+}
+
+async function lu4LoadWiki() {
+  try {
+    const now = new Date();
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const res = await fetch(`https://nl.wikipedia.org/api/rest_v1/feed/onthisday/selected/${mm}/${dd}`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const items = data.selected || [];
+    if (!items.length) throw new Error('geen weetjes vandaag');
+    const pick = items[Math.floor(Math.random() * items.length)];
+    const jaar = pick.year ? pick.year + ': ' : '';
+    return `🌐 ${jaar}${pick.text}`;
+  } catch(e) {
+    console.warn('Wikipedia weetje laden mislukt:', e);
+    return '🌐 Kon Wikipedia-weetje niet laden — probeer ↻';
+  }
+}
+
+async function lu4LoadFtm() {
+  const key = getApiKey();
+  if (!key) return '💰 Stel je API key in voor de FTM-kop van vandaag.';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: `Zoek het meest recente artikel op ftm.nl (Follow the Money, Nederlandse onderzoeksjournalistiek). Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"titel":"de exacte titel van het artikel","teaser":"1 zin samenvatting waarom dit interessant is","url":"de volledige url naar het artikel op ftm.nl"}` }]
+      })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    if (!parsed.titel || !parsed.url) throw new Error('onvolledige respons');
+    lu4FtmLink = parsed.url;
+    return `💰 <b>${escHtml(parsed.titel)}</b> — ${escHtml(parsed.teaser||'')}`;
+  } catch(e) {
+    console.warn('FTM-kop laden mislukt:', e);
+    lu4FtmLink = 'https://www.ftm.nl/';
+    return '💰 Kon FTM-kop niet laden — <a href="https://www.ftm.nl/" target="_blank" rel="noopener noreferrer" style="color:var(--green);">bekijk ftm.nl direct</a>';
+  }
+}
+
+function lu4Render(d) {
+  const w = document.getElementById('lu-wiki');
+  const f = document.getElementById('lu-ftm');
+  if (w) w.textContent = d.wiki || '—';
+  if (f) f.innerHTML = (d.ftm || '—') + (lu4FtmLink ? ` <a href="${lu4FtmLink}" target="_blank" rel="noopener noreferrer" style="color:var(--green);white-space:nowrap;">→ lees</a>` : '');
+}
+function lu4Refresh() { lu4Load(true); }
+setTimeout(() => lu4Load(false), 1400);
 
 // ══════════════════════════════════════════════
 // CONTEXT-PAKKET — comprimeer huidige staat voor andere AI's
