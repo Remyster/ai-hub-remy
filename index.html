@@ -220,6 +220,71 @@ body::after {
 }
 .btn-skip:hover { background: rgba(255,255,255,0.08); }
 
+/* ══ KOSTEN MODAL ══ */
+#kosten-modal {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
+  z-index: 2000; align-items: center; justify-content: center; padding: 20px;
+}
+#kosten-modal.show { display: flex; }
+#kosten-box {
+  background: #0d0e18; border: 1px solid rgba(102,126,234,0.25);
+  border-radius: 22px; padding: 32px 28px; max-width: 460px; width: 100%;
+  box-shadow: 0 0 80px rgba(102,126,234,0.06);
+}
+#kosten-box h3 { font-family: 'Syne', sans-serif; font-size: 1.15em; margin-bottom: 6px; color: rgba(102,126,234,1); }
+#kosten-box .kosten-sub { font-size: 0.72em; color: var(--muted); margin-bottom: 18px; }
+.kosten-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 10px; margin-bottom: 8px; font-size: 0.82em;
+}
+.kosten-row .kl { color: var(--text); }
+.kosten-row .kv { color: rgba(102,126,234,1); font-family: 'DM Mono', monospace; font-weight: 600; }
+.kosten-row .kc { color: var(--muted); font-size: 0.85em; margin-left: 6px; }
+.kosten-note { font-size: 0.68em; color: var(--muted); line-height: 1.6; margin-top: 12px; }
+.kosten-close {
+  margin-top: 18px; width: 100%; padding: 11px; background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border); border-radius: 10px; color: var(--muted);
+  font-family: 'DM Mono', monospace; font-size: 0.8em; cursor: pointer; transition: background 0.2s;
+}
+.kosten-close:hover { background: rgba(255,255,255,0.08); }
+
+/* ══ PIPELINE ARCHIEF MODAL ══ */
+#ssp-archive-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.88); backdrop-filter: blur(8px);
+  z-index: 2100; align-items: center; justify-content: center; padding: 20px;
+}
+#ssp-archive-overlay.show { display: flex; }
+#ssp-archive-box {
+  background: #0d0e18; border: 1px solid rgba(167,139,250,0.25);
+  border-radius: 22px; padding: 30px 26px; max-width: 640px; width: 100%;
+  max-height: 82vh; display: flex; flex-direction: column;
+  box-shadow: 0 0 80px rgba(167,139,250,0.06);
+}
+#ssp-archive-box h3 { font-family: 'Syne', sans-serif; font-size: 1.15em; margin-bottom: 4px; color: #a78bfa; }
+#ssp-archive-box .ssp-arch-sub { font-size: 0.72em; color: var(--muted); margin-bottom: 16px; }
+#ssp-archive-list { overflow-y: auto; flex: 1; }
+.ssp-arch-row {
+  background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px; margin-bottom: 8px; font-size: 0.8em;
+}
+.ssp-arch-meta { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; color: var(--text); }
+.ssp-arch-date { font-size: 0.85em; color: var(--muted); }
+.ssp-arch-btns { display: flex; gap: 8px; }
+.ssp-arch-btns button {
+  padding: 6px 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text); font-family: 'DM Mono', monospace;
+  font-size: 0.78em; cursor: pointer; transition: background 0.2s;
+}
+.ssp-arch-btns button:hover { background: rgba(255,255,255,0.09); }
+.ssp-arch-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); max-height: 260px; overflow-y: auto; }
+.ssp-arch-step { margin-bottom: 10px; }
+.ssp-arch-step b { font-size: 0.85em; color: #a78bfa; display: block; margin-bottom: 4px; }
+.ssp-arch-step pre { white-space: pre-wrap; word-break: break-word; font-family: 'DM Mono', monospace; font-size: 0.78em; color: var(--muted); line-height: 1.5; margin: 0; }
+.kosten-close.ssp-arch-close { margin-top: 16px; }
+
 /* ══ HEADER ══ */
 header { text-align: center; margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 header h1 {
@@ -1549,6 +1614,47 @@ details[open] summary { color: var(--accent) !important; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 100px; border: 2px solid var(--bg); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }
 
+/* ─── FLAIR: aurora-gloed + diepte ─── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(600px 500px at 15% 15%, rgba(124,111,240,0.11), transparent 60%),
+    radial-gradient(520px 440px at 88% 10%, rgba(56,189,248,0.08), transparent 60%),
+    radial-gradient(560px 460px at 45% 95%, rgba(52,211,153,0.055), transparent 60%);
+  filter: blur(30px);
+  animation: auroraDrift 28s ease-in-out infinite alternate;
+}
+@keyframes auroraDrift {
+  0%   { transform: translate(0,0) scale(1); }
+  50%  { transform: translate(2%,-2%) scale(1.06); }
+  100% { transform: translate(-2%,2%) scale(1); }
+}
+header h1 {
+  background-size: 200% auto !important;
+  animation: shimmerText 9s ease-in-out infinite;
+}
+@keyframes shimmerText {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+#hero-strip { position: relative; overflow: hidden; }
+#hero-strip::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent 45%);
+  pointer-events: none;
+}
+.card.agent     { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(124,111,240,0.4); }
+.card.general   { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(56,189,248,0.35); }
+.card.affiliate { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(251,191,36,0.35); }
+.card.tool      { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(52,211,153,0.35); }
+.card.project   { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(251,113,133,0.35); }
+.card.marketing { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(251,113,133,0.35); }
+
 /* ─── MOBILE ─── */
 @media (max-width: 640px) {
   body { padding: 0 12px 60px !important; }
@@ -1729,6 +1835,8 @@ details[open] summary { color: var(--accent) !important; }
       </div>
     </div>
 
+    <div id="vl-trend" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:16px;"></div>
+
     <div class="vl-import-row">
       <button class="vl-import-btn" onclick="document.getElementById('vl-csv-input').click()">📂 ING CSV importeren</button>
       <input type="file" id="vl-csv-input" accept=".csv" onchange="importCSV(this)">
@@ -1898,6 +2006,27 @@ details[open] summary { color: var(--accent) !important; }
   </div>
 </div>
 
+<!-- ══ KOSTEN MODAL ══ -->
+<div id="kosten-modal">
+  <div id="kosten-box">
+    <h3>💳 AI-kosten deze maand</h3>
+    <div class="kosten-sub" id="kosten-maand-label">—</div>
+    <div id="kosten-rows"><span style="opacity:0.5;font-size:0.8em;">Laden…</span></div>
+    <div class="kosten-note">Claude-kosten zijn exact berekend uit de token-usage van elke API-call. OpenRouter-kosten (AI Council) zijn een schatting per call — OpenRouter geeft geen token-detail terug in de browser-response.</div>
+    <button class="kosten-close" onclick="closeKostenModal()">Sluiten</button>
+  </div>
+</div>
+
+<!-- ══ PIPELINE ARCHIEF MODAL ══ -->
+<div id="ssp-archive-overlay">
+  <div id="ssp-archive-box">
+    <h3>📁 Pipeline-archief</h3>
+    <div class="ssp-arch-sub">Automatisch opgeslagen bij "Wis alles" — klik Bekijk voor de volledige antwoorden.</div>
+    <div id="ssp-archive-list"><span style="opacity:0.5;font-size:0.8em;">Laden…</span></div>
+    <button class="kosten-close ssp-arch-close" onclick="closeSspArchive()">Sluiten</button>
+  </div>
+</div>
+
 <!-- ══ DAGELIJKSE POPUP ══ -->
 <div id="popup-overlay">
   <div id="popup">
@@ -1958,6 +2087,7 @@ details[open] summary { color: var(--accent) !important; }
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
+      <span class="hbtn" style="color:rgba(102,126,234,1);background:rgba(102,126,234,0.08);border-color:rgba(102,126,234,0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
       <span class="hbtn" style="color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.18);" onclick="openWerk()">💼 Werk</span>
@@ -2149,10 +2279,6 @@ details[open] summary { color: var(--accent) !important; }
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent · Sonnet 4.6 Extended</p>
       </a>
-      <a href="https://claude.ai/project/019cd6d5-1caf-7138-9b61-1a4dbdc90a69" class="card agent" data-key="7" data-usage="true" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💰 DoopieVault</h2><p>Crypto Expert · Sonnet 4.6 Extended</p><span class="kbd">7</span>
-      </a>
       <a href="#" class="card agent" onclick="openCouncil(); return false;" style="border-color:rgba(167,139,250,0.35);background:linear-gradient(135deg,rgba(167,139,250,0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
         <h2>🏛️ AI Council</h2><p>Gemini + Grok + Claude parallel — 1 vraag, 3 antwoorden</p>
@@ -2183,10 +2309,6 @@ details[open] summary { color: var(--accent) !important; }
       <a href="https://gemini.google.com/u/0/app" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🤖 Gemini</h2><p>Google AI</p>
-      </a>
-      <a href="https://aistudio.google.com/?project=gen-lang-client-0932412151" class="card general" target="_blank" rel="noopener noreferrer">
-        <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🎨 Google AI Studio</h2><p>Experimenteren</p>
       </a>
       <a href="https://notebooklm.google.com/?pli=1" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -2585,6 +2707,7 @@ function sspRenderOutputContainer(step) {
     const _allSteps=SSP_PIPELINES[sspPipeline].steps;
     const _isEdge=(sspStepIdx===0||sspStepIdx===_allSteps.length-1);
     const clearAllBtn=_isEdge?'<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline">&#128465; Wis alles</button>':'';
+    const archiveBtn=_isEdge?'<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>':'';
     const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':''; const driveBtn=curStep.driveUrl?'<button onclick="sspOpenDrive()" style="flex:1;min-width:90px;padding:11px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;color:#10b981;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128194; Open Drive-map</button>':'';
     c.innerHTML='<div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Antwoord van AI <span id="ssp-saved-badge" style="color:#10b981;font-size:0.9em;"></span></div>'
       +'<textarea id="ssp-output" placeholder="Plak hier het volledige antwoord van de AI..." style="width:100%;height:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.22);border-radius:11px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>'
@@ -2592,7 +2715,7 @@ function sspRenderOutputContainer(step) {
       +'<button onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
       +'<button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>'
       +'<button onclick="sspDelete()" style="flex:1;min-width:90px;padding:11px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.22);border-radius:10px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128465; Verwijderen</button>'
-      +driveBtn+downloadBtn+clearAllBtn+'</div>';
+      +driveBtn+downloadBtn+clearAllBtn+archiveBtn+'</div>';
     const ta=document.getElementById('ssp-output'); if(ta) ta.value=saved;
     const badge=document.getElementById('ssp-saved-badge'); if(badge) badge.textContent=saved?'\u2713 opgeslagen':'';
   }
@@ -2674,15 +2797,98 @@ function sspAutoSaveMulti(i) {
   }, 900);
 }
 function sspDelete() { localStorage.removeItem(sspKey(sspPipeline,sspStepIdx)); sspRender(); sspStatus('Verwijderd.','#f87171'); }
-function sspClearAll() {
+function sspGatherAntwoorden(pipeline) {
+  const steps = SSP_PIPELINES[pipeline].steps;
+  const out = [];
+  steps.forEach((step, i) => {
+    if (step.multiAI) {
+      const multi = {};
+      step.ais.forEach(ai => {
+        const v = localStorage.getItem(sspMultiKey(pipeline, i, ai.key));
+        if (v) multi[ai.key] = v;
+      });
+      if (Object.keys(multi).length) out.push({ idx: i, label: step.label, multi });
+    } else {
+      const v = localStorage.getItem(sspKey(pipeline, i));
+      if (v) out.push({ idx: i, label: step.label, value: v });
+    }
+  });
+  return out;
+}
+async function sspClearAll() {
   const steps = SSP_PIPELINES[sspPipeline].steps;
   const label = SSP_PIPELINES[sspPipeline].label;
-  if (!confirm('Wis alle ' + steps.length + ' opgeslagen antwoorden van "' + label + '"?\nDit kan niet ongedaan worden gemaakt.')) return;
+  if (!confirm('Wis alle ' + steps.length + ' opgeslagen antwoorden van "' + label + '"?\nEr wordt eerst automatisch een archiefkopie gemaakt (zie 📁 Archief).')) return;
+  const antwoorden = sspGatherAntwoorden(sspPipeline);
+  if (antwoorden.length) {
+    try {
+      const projectName = localStorage.getItem('ssp_projectname_' + sspPipeline) || '';
+      const snapshot = { pipeline: sspPipeline, label, projectName, archivedAt: new Date().toISOString(), antwoorden };
+      await sspSyncToCloud('ssp_archive_' + sspPipeline + '_' + Date.now(), JSON.stringify(snapshot));
+    } catch(e) { console.warn('Archiveren mislukt, wis gaat wel door:', e); }
+  }
   const prefix = 'ssp_' + sspPipeline + '_';
   Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
   sspRender();
-  sspStatus('✓ Alle antwoorden gewist.', '#f87171');
+  sspStatus(antwoorden.length ? '✓ Alle antwoorden gewist (archiefkopie opgeslagen).' : '✓ Alle antwoorden gewist.', '#f87171');
 }
+// ── Pipeline-archief: bekijk/herstel/verwijder oude runs ──
+async function sspOpenArchive() {
+  const list = document.getElementById('ssp-archive-list');
+  list.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">Laden…</span>';
+  document.getElementById('ssp-archive-overlay').classList.add('show');
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/pipeline_state?select=key,value,updated_at&key=like.ssp_archive_${sspPipeline}_*&order=updated_at.desc`, { headers: SB_GET_HDR });
+    if (!r.ok) { list.innerHTML = '<span style="opacity:0.6;font-size:0.8em;">Geen archief gevonden of tabel niet bereikbaar.</span>'; return; }
+    const rows = await r.json();
+    if (!rows.length) { list.innerHTML = '<span style="opacity:0.6;font-size:0.8em;">Nog geen archief voor deze pipeline. Archiveren gebeurt automatisch bij "Wis alles".</span>'; return; }
+    list.innerHTML = rows.map(row => {
+      let snap; try { snap = JSON.parse(row.value); } catch(e) { return ''; }
+      const datum = new Date(row.updated_at).toLocaleString('nl-NL', { day:'numeric', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      const naam = snap.projectName ? escHtml(snap.projectName) : '(geen projectnaam)';
+      const key = escHtml(row.key);
+      return `<div class="ssp-arch-row">
+        <div class="ssp-arch-meta"><b>${naam}</b><span class="ssp-arch-date">${datum} — ${snap.antwoorden.length} stap(pen)</span></div>
+        <div class="ssp-arch-btns">
+          <button onclick="sspArchiveToggle(this)">Bekijk</button>
+          <button onclick="sspArchiveRestore('${key}')" style="color:#34d399;">Herstel</button>
+          <button onclick="sspArchiveDelete('${key}')" style="color:#f87171;">Verwijder</button>
+        </div>
+        <div class="ssp-arch-detail" style="display:none;">${snap.antwoorden.map(a => `<div class="ssp-arch-step"><b>${escHtml(a.label)}</b><pre>${escHtml(a.value || Object.entries(a.multi||{}).map(([k,v])=>k+':\n'+v).join('\n\n'))}</pre></div>`).join('')}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    list.innerHTML = '<span style="opacity:0.6;font-size:0.8em;">Archief laden mislukt: ' + escHtml(e.message) + '</span>';
+  }
+}
+function sspArchiveToggle(btn) {
+  const row = btn.closest('.ssp-arch-row');
+  const detail = row.querySelector('.ssp-arch-detail');
+  detail.style.display = detail.style.display === 'none' ? 'block' : 'none';
+}
+async function sspArchiveRestore(key) {
+  if (!confirm('Dit overschrijft je huidige antwoorden in deze pipeline met de gearchiveerde versie. Doorgaan?')) return;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/pipeline_state?key=eq.${encodeURIComponent(key)}&select=value`, { headers: SB_GET_HDR });
+    const rows = await r.json();
+    if (!rows.length) return;
+    const snap = JSON.parse(rows[0].value);
+    snap.antwoorden.forEach(a => {
+      if (a.multi) Object.entries(a.multi).forEach(([aiKey, v]) => localStorage.setItem(sspMultiKey(snap.pipeline, a.idx, aiKey), v));
+      else localStorage.setItem(sspKey(snap.pipeline, a.idx), a.value);
+    });
+    if (snap.projectName) localStorage.setItem('ssp_projectname_' + snap.pipeline, snap.projectName);
+    closeSspArchive();
+    sspRender();
+    sspStatus('✓ Archief hersteld.', '#34d399');
+  } catch(e) { alert('Herstellen mislukt: ' + e.message); }
+}
+async function sspArchiveDelete(key) {
+  if (!confirm('Deze archiefkopie definitief verwijderen?')) return;
+  await sspDeleteFromCloud(key);
+  sspOpenArchive();
+}
+function closeSspArchive() { document.getElementById('ssp-archive-overlay').classList.remove('show'); }
 function sspDeleteMulti(i) {
   const step=SSP_PIPELINES[sspPipeline].steps[sspStepIdx]; if(!step||!step.multiAI) return;
   localStorage.removeItem(sspMultiKey(sspPipeline,sspStepIdx,step.ais[i].key));
@@ -2836,6 +3042,89 @@ function getRand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const KEY_STORE = 'remy_claude_key';
 function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
+
+// ══════════════════════════════════════════════
+// KOSTEN-TRACKER — schat AI-uitgaven door fetch-calls naar Claude API + OpenRouter te onderscheppen
+// ══════════════════════════════════════════════
+(function() {
+  const CLAUDE_PRICING = {
+    'claude-haiku-4-5': { in: 1, out: 5 },
+    'claude-sonnet-5': { in: 3, out: 15 },
+  };
+  const USD_EUR = 0.92; // ruwe indicatieve koers, alleen voor weergave
+  function claudePriceFor(model) {
+    if (!model) return null;
+    if (model.startsWith('claude-haiku-4-5')) return CLAUDE_PRICING['claude-haiku-4-5'];
+    if (model.startsWith('claude-sonnet-5')) return CLAUDE_PRICING['claude-sonnet-5'];
+    return null;
+  }
+  function kostenMaandKey() {
+    const d = new Date();
+    return 'remy_kosten_' + d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  }
+  function kostenLoad() { try { return JSON.parse(localStorage.getItem(kostenMaandKey()) || '{}'); } catch(e) { return {}; } }
+  function kostenSave(d) { try { localStorage.setItem(kostenMaandKey(), JSON.stringify(d)); } catch(e) {} }
+  function kostenAdd(bron, euro) {
+    const d = kostenLoad();
+    if (!d[bron]) d[bron] = { euro: 0, calls: 0 };
+    d[bron].euro += euro;
+    d[bron].calls += 1;
+    kostenSave(d);
+    kostenRenderBadge();
+  }
+  const origFetch = window.fetch.bind(window);
+  window.fetch = async function(input, init) {
+    const res = await origFetch(input, init);
+    try {
+      const url = typeof input === 'string' ? input : (input && input.url) || '';
+      if (url.includes('api.anthropic.com/v1/messages')) {
+        res.clone().json().then(data => {
+          if (data && data.usage) {
+            const price = claudePriceFor(data.model);
+            if (price) {
+              const euro = ((data.usage.input_tokens || 0) / 1e6 * price.in + (data.usage.output_tokens || 0) / 1e6 * price.out) * USD_EUR;
+              kostenAdd('claude', euro);
+            }
+          }
+        }).catch(() => {});
+      } else if (url.includes('openrouter.ai/api/v1/chat/completions')) {
+        res.clone().json().then(data => {
+          const model = (data && data.model) || '';
+          const euro = model.includes(':online') ? 0.04 : 0.01; // schatting — OpenRouter geeft geen token-usage terug
+          kostenAdd('openrouter', euro);
+        }).catch(() => {});
+      }
+    } catch(e) {}
+    return res;
+  };
+  window.kostenLoad = kostenLoad;
+})();
+function kostenTotaal(d) { return Object.values(d).reduce((s, x) => s + (x.euro || 0), 0); }
+function kostenFmt(euro) { return '€' + euro.toFixed(2).replace('.', ','); }
+function kostenRenderBadge() {
+  const el = document.getElementById('kosten-btn');
+  if (!el || typeof window.kostenLoad !== 'function') return;
+  el.textContent = '💳 ' + kostenFmt(kostenTotaal(window.kostenLoad()));
+}
+function openKostenModal() {
+  const d = window.kostenLoad();
+  const maandLabel = new Date().toLocaleDateString('nl-NL', { month: 'long', year: 'numeric' });
+  document.getElementById('kosten-maand-label').textContent = maandLabel.charAt(0).toUpperCase() + maandLabel.slice(1);
+  const bronnen = { claude: '🧠 Claude API (direct)', openrouter: '🏛️ OpenRouter (AI Council)' };
+  const rows = document.getElementById('kosten-rows');
+  const keys = Object.keys(bronnen).filter(k => d[k] && d[k].calls);
+  if (!keys.length) {
+    rows.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">Nog geen AI-calls gemeten deze maand.</span>';
+  } else {
+    rows.innerHTML = keys.map(k => `<div class="kosten-row"><span class="kl">${bronnen[k]}</span><span><span class="kv">${kostenFmt(d[k].euro)}</span><span class="kc">(${d[k].calls}x)</span></span></div>`).join('')
+      + `<div class="kosten-row" style="border-color:rgba(102,126,234,0.3);"><span class="kl"><b>Totaal</b></span><span class="kv"><b>${kostenFmt(kostenTotaal(d))}</b></span></div>`;
+  }
+  document.getElementById('kosten-modal').classList.add('show');
+}
+function closeKostenModal() { document.getElementById('kosten-modal').classList.remove('show'); }
+document.getElementById('kosten-modal').addEventListener('click', function(e) { if (e.target === this) closeKostenModal(); });
+document.getElementById('ssp-archive-overlay').addEventListener('click', function(e) { if (e.target === this) closeSspArchive(); });
+kostenRenderBadge();
 
 // Haalt de key uit Supabase en zet 'm lokaal — zo heeft elk apparaat altijd dezelfde key.
 async function syncApiKeyFromCloud() {
@@ -3199,6 +3488,8 @@ document.addEventListener('keydown', e => {
   const typing = active && (active.tagName==='INPUT'||active.tagName==='TEXTAREA');
   if (e.key==='Escape') {
     if (document.getElementById('apikey-modal').classList.contains('show')) { closeApiKeyModal(); return; }
+    if (document.getElementById('kosten-modal').classList.contains('show')) { closeKostenModal(); return; }
+    if (document.getElementById('ssp-archive-overlay').classList.contains('show')) { closeSspArchive(); return; }
     if (document.getElementById('popup-overlay').classList.contains('show')) { closePopup(); return; }
     if (document.getElementById('pb-overlay').classList.contains('show')) { closePromptBuilder(); return; }
     if (typing) { active.blur(); }
@@ -3554,7 +3845,7 @@ async function vltDeleteItem(id) {
 const BACKUP_TABELLEN = [
   'weekplanner_items', 'vaste_lasten', 'betalingen', 'brain_dumps',
   'km_registratie', 'km_defaults', 'werk_links', 'app_settings', 'pipeline_state',
-  'vault_meta', 'vault_items'
+  'vault_meta', 'vault_items', 'context_blocks'
 ];
 async function backupAlles() {
   const btn = document.getElementById('backup-btn');
@@ -4121,10 +4412,62 @@ async function loadVasteLasten() {
 
     renderVasteLasten();
     renderSpaar();
+    vlLoadTrend();
   } catch(e) {
     document.getElementById('vl-content').innerHTML = '<div class="vl-loading">❌ Verbinding mislukt — check Supabase setup</div>';
     console.error(e);
   }
+}
+
+// ── Trendlijn: totaal betaald per maand, laatste 6 maanden ──
+async function vlLoadTrend() {
+  const el = document.getElementById('vl-trend');
+  if (!el) return;
+  const maanden = [];
+  let j = vlJaar, m = vlMaand;
+  for (let i = 5; i >= 0; i--) {
+    let mm = m - i, jj = j;
+    while (mm < 1) { mm += 12; jj -= 1; }
+    maanden.push({ jaar: jj, maand: mm });
+  }
+  el.innerHTML = '<span style="opacity:0.5;font-size:0.72em;">Trend laden…</span>';
+  try {
+    const orFilter = maanden.map(x => `and(jaar.eq.${x.jaar},maand.eq.${x.maand})`).join(',');
+    const rows = await sbGet('betalingen', `or=(${orFilter})&select=jaar,maand,bedrag_betaald,vaste_last_id`);
+    const lastenById = {};
+    vlLasten.forEach(l => lastenById[l.id] = l);
+    const perMaand = {};
+    maanden.forEach(x => perMaand[x.jaar + '-' + x.maand] = 0);
+    (Array.isArray(rows) ? rows : []).forEach(b => {
+      const last = lastenById[b.vaste_last_id];
+      if (last && last.categorie === 'inkomen') return;
+      const key = b.jaar + '-' + b.maand;
+      if (!(key in perMaand)) return;
+      perMaand[key] += Number(b.bedrag_betaald != null ? b.bedrag_betaald : (last ? last.bedrag : 0)) || 0;
+    });
+    vlRenderTrend(maanden, perMaand);
+  } catch(e) {
+    el.innerHTML = '<span style="opacity:0.5;font-size:0.72em;">Trend niet beschikbaar.</span>';
+    console.warn('Vaste Lasten trend laden mislukt:', e);
+  }
+}
+function vlRenderTrend(maanden, perMaand) {
+  const el = document.getElementById('vl-trend');
+  if (!el) return;
+  const waarden = maanden.map(x => perMaand[x.jaar + '-' + x.maand] || 0);
+  const max = Math.max(...waarden, 1);
+  const maandKort = ['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+  const bars = maanden.map((x, i) => {
+    const h = Math.round((waarden[i] / max) * 60) + 4;
+    const isNu = x.jaar === vlJaar && x.maand === vlMaand;
+    return `<div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:1;">
+      <div style="font-size:0.58em;color:var(--muted);white-space:nowrap;">${euroFmt(waarden[i])}</div>
+      <div style="width:100%;max-width:28px;height:${h}px;background:${isNu ? '#38bdf8' : 'rgba(56,189,248,0.32)'};border-radius:5px 5px 0 0;transition:height 0.3s;"></div>
+      <div style="font-size:0.6em;color:var(--muted);">${maandKort[x.maand-1]}</div>
+    </div>`;
+  }).join('');
+  el.innerHTML = '<div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">📈 Trend — laatste 6 maanden</div>'
+    + '<div style="display:flex;align-items:flex-end;gap:6px;height:92px;">' + bars + '</div>';
 }
 
 function getBetaling(id) { return vlBetalingen.find(b => b.vaste_last_id === id); }
@@ -5823,26 +6166,48 @@ async function heroToggleTaak(id, checked, cb) {
 heroLoadTaak();
 
 // ── Vandaag: weer via browser-locatie + Open-Meteo (gratis, geen API-key) ──
+// Locatie wordt in localStorage gecached (12u) zodat de browser niet elke sessie opnieuw om toestemming vraagt.
+const HERO_LOC_CACHE_KEY = 'remy_geoloc_v1';
+const HERO_LOC_MAX_AGE_MS = 12 * 60 * 60 * 1000;
+function heroGetCachedLoc() {
+  try {
+    const raw = localStorage.getItem(HERO_LOC_CACHE_KEY);
+    if (!raw) return null;
+    const d = JSON.parse(raw);
+    if (!d || (Date.now() - d.t) > HERO_LOC_MAX_AGE_MS) return null;
+    return { latitude: d.lat, longitude: d.lon };
+  } catch(e) { return null; }
+}
+function heroGetPosition() {
+  return new Promise((resolve, reject) => {
+    const cached = heroGetCachedLoc();
+    if (cached) { resolve(cached); return; }
+    if (!navigator.geolocation) { reject(new Error('geen geolocation')); return; }
+    navigator.geolocation.getCurrentPosition((pos) => {
+      const { latitude, longitude } = pos.coords;
+      try { localStorage.setItem(HERO_LOC_CACHE_KEY, JSON.stringify({ lat: latitude, lon: longitude, t: Date.now() })); } catch(e) {}
+      resolve({ latitude, longitude });
+    }, reject, { timeout: 8000, maximumAge: 1800000 });
+  });
+}
 async function heroLoadWeer() {
   const el = document.getElementById('hero-weer');
-  if (!el || !navigator.geolocation) return;
+  if (!el) return;
   const cacheKey = 'remy_weer_' + heroVandaagIso() + '_' + new Date().getHours();
   const cached = sessionStorage.getItem(cacheKey);
   if (cached) { el.textContent = cached; return; }
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    try {
-      const { latitude, longitude } = pos.coords;
-      const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`);
-      if (!r.ok) return;
-      const data = await r.json();
-      const temp = Math.round(data.current?.temperature_2m);
-      const code = data.current?.weather_code ?? 0;
-      const icoon = code === 0 ? '☀️' : code <= 3 ? '⛅' : code <= 48 ? '🌫️' : code <= 67 ? '🌧️' : code <= 77 ? '🌨️' : code <= 82 ? '🌦️' : code <= 99 ? '⛈️' : '🌡️';
-      const txt = `${icoon} ${temp}°`;
-      el.textContent = txt;
-      sessionStorage.setItem(cacheKey, txt);
-    } catch(e) { /* stil falen, weer is decoratief */ }
-  }, () => { el.textContent = ''; }, { timeout: 8000, maximumAge: 1800000 });
+  try {
+    const { latitude, longitude } = await heroGetPosition();
+    const r = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&timezone=auto`);
+    if (!r.ok) return;
+    const data = await r.json();
+    const temp = Math.round(data.current?.temperature_2m);
+    const code = data.current?.weather_code ?? 0;
+    const icoon = code === 0 ? '☀️' : code <= 3 ? '⛅' : code <= 48 ? '🌫️' : code <= 67 ? '🌧️' : code <= 77 ? '🌨️' : code <= 82 ? '🌦️' : code <= 99 ? '⛈️' : '🌡️';
+    const txt = `${icoon} ${temp}°`;
+    el.textContent = txt;
+    sessionStorage.setItem(cacheKey, txt);
+  } catch(e) { el.textContent = ''; /* stil falen, weer is decoratief */ }
 }
 heroLoadWeer();
 
@@ -6023,8 +6388,7 @@ const ROUTER_AGENTS = [
   { name: 'Stekkerslim Bouwen', desc: 'StekkerSlim.nl site bouwen, HTML aanpassen, keuren, publiceren', url: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1' },
   { name: 'StekkerPen', desc: 'blogs schrijven, Pinterest content voor StekkerSlim', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf' },
   { name: 'StekkerBoost', desc: 'Facebook ads, marketing campagnes StekkerSlim', url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9' },
-  { name: 'StekkerDesk', desc: 'bezoekersvragen en support StekkerSlim', url: 'https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8' },
-  { name: 'DoopieVault', desc: 'crypto, trading, investeringen', url: 'https://claude.ai/project/019cd6d5-1caf-7138-9b61-1a4dbdc90a69' }
+  { name: 'StekkerDesk', desc: 'bezoekersvragen en support StekkerSlim', url: 'https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8' }
 ];
 
 async function agentRoute() {
@@ -6320,6 +6684,7 @@ setTimeout(() => luLoad(false), 1200);
 // VANDAAG GELEERD — Wikipedia "on this day" + FTM-kop via Haiku+websearch
 // ══════════════════════════════════════════════
 var lu4FtmLink = 'https://www.ftm.nl/';
+var lu4FtmIsNew = false;
 async function lu4Load(force) {
   const today = luDateKey();
   const cacheKey = 'lu4_content_' + today;
@@ -6328,25 +6693,43 @@ async function lu4Load(force) {
     try { lu4Render(JSON.parse(cached)); return; } catch(e) {}
   }
   const [wiki, ftm] = await Promise.all([lu4LoadWiki(), lu4LoadFtm()]);
-  const result = { wiki, ftm };
+  const result = { wiki, ftm, ftmLink: lu4FtmLink, ftmNew: lu4FtmIsNew };
   localStorage.setItem(cacheKey, JSON.stringify(result));
   Object.keys(localStorage).filter(k => k.startsWith('lu4_content_') && k !== cacheKey).forEach(k => localStorage.removeItem(k));
   lu4Render(result);
 }
 
+// Claude+websearch antwoorden bevatten soms tekst rond de JSON ondanks instructies — pak alleen het {...}-blok.
+function lu4ExtractJson(raw) {
+  const m = raw.match(/\{[\s\S]*\}/);
+  if (!m) throw new Error('geen JSON gevonden in respons');
+  return JSON.parse(m[0]);
+}
+
 async function lu4LoadWiki() {
+  // Wikipedia's "on this day"-feed API ondersteunt geen nl-taalversie, dus Claude+websearch zoekt zelf een NL-weetje op.
+  const key = getApiKey();
+  if (!key) return '🌐 Stel je API key in voor het weetje van vandaag.';
   try {
     const now = new Date();
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const res = await fetch(`https://nl.wikipedia.org/api/rest_v1/feed/onthisday/selected/${mm}/${dd}`);
+    const dagMaand = now.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: `Zoek op Wikipedia (nl.wikipedia.org, "${dagMaand}") een interessant historisch weetje dat op ${dagMaand} gebeurd is. Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"jaar":"jaartal als tekst, of leeg als onbekend","tekst":"het weetje in het Nederlands, 1 zin"}` }]
+      })
+    });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const items = data.selected || [];
-    if (!items.length) throw new Error('geen weetjes vandaag');
-    const pick = items[Math.floor(Math.random() * items.length)];
-    const jaar = pick.year ? pick.year + ': ' : '';
-    return `🌐 ${jaar}${pick.text}`;
+    const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    const parsed = lu4ExtractJson(raw);
+    if (!parsed.tekst) throw new Error('onvolledige respons');
+    const jaar = parsed.jaar ? parsed.jaar + ': ' : '';
+    return `🌐 ${jaar}${parsed.tekst}`;
   } catch(e) {
     console.warn('Wikipedia weetje laden mislukt:', e);
     return '🌐 Kon Wikipedia-weetje niet laden — probeer ↻';
@@ -6370,13 +6753,17 @@ async function lu4LoadFtm() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const parsed = lu4ExtractJson(raw);
     if (!parsed.titel || !parsed.url) throw new Error('onvolledige respons');
     lu4FtmLink = parsed.url;
+    const vorigeUrl = localStorage.getItem('lu4_last_ftm_url');
+    lu4FtmIsNew = !!(vorigeUrl && vorigeUrl !== parsed.url);
+    localStorage.setItem('lu4_last_ftm_url', parsed.url);
     return `💰 <b>${escHtml(parsed.titel)}</b> — ${escHtml(parsed.teaser||'')}`;
   } catch(e) {
     console.warn('FTM-kop laden mislukt:', e);
     lu4FtmLink = 'https://www.ftm.nl/';
+    lu4FtmIsNew = false;
     return '💰 Kon FTM-kop niet laden — <a href="https://www.ftm.nl/" target="_blank" rel="noopener noreferrer" style="color:var(--green);">bekijk ftm.nl direct</a>';
   }
 }
@@ -6385,7 +6772,9 @@ function lu4Render(d) {
   const w = document.getElementById('lu-wiki');
   const f = document.getElementById('lu-ftm');
   if (w) w.textContent = d.wiki || '—';
-  if (f) f.innerHTML = (d.ftm || '—') + (lu4FtmLink ? ` <a href="${lu4FtmLink}" target="_blank" rel="noopener noreferrer" style="color:var(--green);white-space:nowrap;">→ lees</a>` : '');
+  const link = d.ftmLink || lu4FtmLink;
+  const badge = d.ftmNew ? ' <span style="background:rgba(52,211,153,0.18);color:var(--green);font-size:0.68em;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap;">🆕 nieuw</span>' : '';
+  if (f) f.innerHTML = (d.ftm || '—') + badge + (link ? ` <a href="${link}" target="_blank" rel="noopener noreferrer" style="color:var(--green);white-space:nowrap;">→ lees</a>` : '');
 }
 function lu4Refresh() { lu4Load(true); }
 setTimeout(() => lu4Load(false), 1400);
