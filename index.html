@@ -6165,8 +6165,12 @@ async function heroToggleTaak(id, checked, cb) {
 }
 heroLoadTaak();
 
-// ── Vandaag: weer via browser-locatie + Open-Meteo (gratis, geen API-key) ──
-// Locatie wordt in localStorage gecached (12u) zodat de browser niet elke sessie opnieuw om toestemming vraagt.
+// ── Vandaag: weer via Open-Meteo (gratis, geen API-key) ──
+// Belangrijk: de hub vraagt NOOIT uit zichzelf om je locatie. iOS Safari geeft toestemming
+// standaard maar voor één sessie, dus een cache lost het herhaalde prompten niet op —
+// daarom draaien we het om: vaste thuislocatie, en alleen als de toestemming al
+// permanent vaststaat ('granted') gebruiken we je echte positie.
+const HERO_FALLBACK_LOC = { latitude: 52.4331, longitude: 4.6597 }; // Velserbroek
 const HERO_LOC_CACHE_KEY = 'remy_geoloc_v1';
 const HERO_LOC_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 function heroGetCachedLoc() {
@@ -6178,16 +6182,25 @@ function heroGetCachedLoc() {
     return { latitude: d.lat, longitude: d.lon };
   } catch(e) { return null; }
 }
-function heroGetPosition() {
-  return new Promise((resolve, reject) => {
-    const cached = heroGetCachedLoc();
-    if (cached) { resolve(cached); return; }
-    if (!navigator.geolocation) { reject(new Error('geen geolocation')); return; }
+// Vraagt de positie op zonder ooit een prompt te veroorzaken.
+// Volgorde: verse cache → al verleende toestemming → vaste thuislocatie.
+async function heroGetPosition() {
+  const cached = heroGetCachedLoc();
+  if (cached) return cached;
+  if (!navigator.geolocation) return HERO_FALLBACK_LOC;
+
+  // Permissions API ontbreekt (oudere Safari) → niet gokken, gewoon thuislocatie
+  if (!navigator.permissions || !navigator.permissions.query) return HERO_FALLBACK_LOC;
+  let staat;
+  try { staat = (await navigator.permissions.query({ name: 'geolocation' })).state; } catch(e) { return HERO_FALLBACK_LOC; }
+  if (staat !== 'granted') return HERO_FALLBACK_LOC; // 'prompt' of 'denied' → geen popup uitlokken
+
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition((pos) => {
       const { latitude, longitude } = pos.coords;
       try { localStorage.setItem(HERO_LOC_CACHE_KEY, JSON.stringify({ lat: latitude, lon: longitude, t: Date.now() })); } catch(e) {}
       resolve({ latitude, longitude });
-    }, reject, { timeout: 8000, maximumAge: 1800000 });
+    }, () => resolve(HERO_FALLBACK_LOC), { timeout: 8000, maximumAge: 1800000 });
   });
 }
 async function heroLoadWeer() {
@@ -6707,12 +6720,15 @@ function lu4ExtractJson(raw) {
 }
 
 async function lu4LoadWiki() {
-  // Wikipedia's "on this day"-feed API ondersteunt geen nl-taalversie, dus Claude+websearch zoekt zelf een NL-weetje op.
+  // Bewust GEEN "on this day"-historie: het weetje moet actueel zijn — iets van nu,
+  // iets dat eraan komt, of een ontwikkeling van de afgelopen ~2 jaar.
   const key = getApiKey();
   if (!key) return '🌐 Stel je API key in voor het weetje van vandaag.';
   try {
     const now = new Date();
     const dagMaand = now.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
+    const jaarNu = now.getFullYear();
+    const jaarVanaf = jaarNu - 2;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
@@ -6720,7 +6736,7 @@ async function lu4LoadWiki() {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: `Zoek op Wikipedia (nl.wikipedia.org, "${dagMaand}") een interessant historisch weetje dat op ${dagMaand} gebeurd is. Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"jaar":"jaartal als tekst, of leeg als onbekend","tekst":"het weetje in het Nederlands, 1 zin"}` }]
+        messages: [{ role: 'user', content: `Vandaag is het ${dagMaand} ${jaarNu}. Zoek via websearch één interessant, verrassend weetje dat ACTUEEL is: iets wat nu speelt, iets wat binnenkort gaat gebeuren, of een ontwikkeling/ontdekking uit de periode ${jaarVanaf}-${jaarNu}. GEEN historische "vandaag in de geschiedenis"-feiten en niets van vóór ${jaarVanaf}. Varieer het onderwerp (wetenschap, techniek, natuur, ruimtevaart, samenleving) en kies iets dat niet in elke krantenkop staat. Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"jaar":"het jaartal of de maand+jaar waar het weetje bij hoort, als tekst","tekst":"het weetje in het Nederlands, 1 zin"}` }]
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);

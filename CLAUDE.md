@@ -283,6 +283,10 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 
 ## Changelog
 
+### 16 augustus 2026
+- **Weer-locatie vraagt niet meer elke sessie** (`heroGetPosition`): de 12-uurs localStorage-cache loste het niet op, want iOS Safari verleent geolocatie standaard maar voor één sessie — dan wordt er niks gecachet en volgt bij de volgende load weer een prompt. Nu omgekeerd: vaste thuislocatie `HERO_FALLBACK_LOC` (Velserbroek) is de default, en `navigator.permissions.query` bepaalt of de echte positie überhaupt opgevraagd mag worden. Alleen bij state `granted` volgt een `getCurrentPosition()` — er wordt dus nooit meer spontaan een popup uitgelokt.
+- **Vandaag Geleerd is actueel i.p.v. historisch** (`lu4LoadWiki`): prompt zoekt nu iets wat nu speelt, eraan komt, of uit de afgelopen 2 jaar komt (jaargrenzen worden dynamisch uit de systeemdatum berekend). De oude "vandaag in de geschiedenis"-opzet is expliciet verboden in de prompt.
+
 ### 6 augustus 2026 (commit ebeed67)
 - **ING CSV import verbeterd** (`importCSV`, Vaste Lasten tab):
   - Scheidingsteken (`;` of `,`) wordt nu automatisch gedetecteerd op de headerregel — voorheen faalde de import stil (0 matches, geen foutmelding) bij een komma-gescheiden CSV
