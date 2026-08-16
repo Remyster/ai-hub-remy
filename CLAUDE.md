@@ -184,8 +184,8 @@ Alle Claude-stappen (site stap 5, seo stap 4) bevatten expliciete instructies:
 | Agent | Project ID | Doel |
 |-------|-----------|------|
 | Dr. NeuroCut | — | Medische vragen |
-| Nova R&D | — | PWN werk, onderzoek |
-| Atlas | — | Algemeen onderzoek |
+| Nova R&D | — | Theorie & onderzoek — het waarom achter een proces |
+| Atlas | — | Techniek in de praktijk — PWN-installaties, pompen, storingen |
 | Voltex Coder | — | Code, Home Assistant, programmeren |
 | AI Hubby | — | AI Hub features |
 | Stekkerslim Bouwen | `019d39d8-8ed9-77a5-984e-f584661c27d1` | Site development, prijscheck, actielijst |
@@ -239,6 +239,29 @@ Zelfde patroon als Claude key: opgeslagen in `app_settings` (`setting_key: 'open
 
 ---
 
+## Toolkits — FMHY + OSINT4All (16 augustus 2026)
+
+Twee kaarten bij **Tools & Platforms** (`🧰 Gratis Tools` en `🕵️ Uitzoeken`) openen dezelfde overlay (`toolkit-overlay`) via `openToolkit('fmhy')` / `openToolkit('osint')`.
+
+**Waarom zo:** beide bronsites zijn onbruikbaar groot. De hub bevat een *handgeschreven, ingedikte* kopie in de constante `TOOLKITS` — geen scrape, geen sync. Categorieën staan standaard dichtgeklapt (`<details>`), zodat je nooit een muur tekst ziet.
+
+| | Categorieën | Tools |
+|---|---|---|
+| `fmhy` | 22 (groepen Wiki + Tools) | 282 |
+| `osint` | 11 (groepen Checken/Zoeken/Controleren) | 104 |
+
+FMHY dekt alle wiki- en tool-secties van fmhy.net, inclusief de download-/torrent-kant. Non-English is overgeslagen (geen Nederlandse sectie). OSINT4All is teruggebracht tot wat praktisch is: de Amerikaanse people-search en fake-ID-generators zijn eruit, er zijn NL-bronnen (KVK, CBS, PDOK, Kadaster, Rechtspraak) en een categorie "🔧 Je eigen site doorlichten" bij gezet voor StekkerSlim.
+
+### Functies
+| Functie | Wat |
+|---------|-----|
+| `openToolkit(key)` / `closeToolkit()` | Overlay openen op `fmhy` of `osint` |
+| `toolkitRenderCats()` | Tekent groepskoppen + dichtgeklapte categorieën |
+| `toolkitAsk()` | "Wat heb je nodig?" → Haiku via OpenRouter, max 3 tools terug |
+| `toolkitSurprise()` | 3 willekeurige tools, geen API-call — puur om op ideeën te komen |
+
+**`toolkitAsk()` detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-4.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
+
 ## Beveiliging — gedaan (29 juli 2026)
 
 RLS ingeschakeld op alle UNRESTRICTED tabellen:
@@ -284,6 +307,9 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ## Changelog
 
 ### 16 augustus 2026
+- **Algemeen-sectie**: DeepSeek en Kimi toegevoegd. Elke AI-kaart heeft nu twee regels: waar díé AI het beste in is (i.p.v. "OpenAI chats" / "Google AI"), en daaronder een concreet voorbeeld uit Remy's eigen werk via de nieuwe CSS-klasse `.card p.voorbeeld` (cursief, gestippelde scheidingslijn). Kimi ook in de toolkit-lijst gezet.
+- **Mijn Agents**: Nova R&D en Atlas stonden allebei op "Research & Development" — nu uit elkaar getrokken. Nova = theorie/onderzoek, Atlas = techniek in de praktijk (PWN-installaties, pompen, storingen). Beide met voorbeeldregel.
+- **Toolkits toegevoegd**: twee kaarten (FMHY + OSINT4All) → overlay met 33 dichtgeklapte categorieën en 386 tools, plus een Haiku-zoeker en een 🎲-knop. Zie sectie "Toolkits" hierboven.
 - **Weer-locatie vraagt niet meer elke sessie** (`heroGetPosition`): de 12-uurs localStorage-cache loste het niet op, want iOS Safari verleent geolocatie standaard maar voor één sessie — dan wordt er niks gecachet en volgt bij de volgende load weer een prompt. Nu omgekeerd: vaste thuislocatie `HERO_FALLBACK_LOC` (Velserbroek) is de default, en `navigator.permissions.query` bepaalt of de echte positie überhaupt opgevraagd mag worden. Alleen bij state `granted` volgt een `getCurrentPosition()` — er wordt dus nooit meer spontaan een popup uitgelokt.
 - **Vandaag Geleerd is actueel i.p.v. historisch** (`lu4LoadWiki`): prompt zoekt nu iets wat nu speelt, eraan komt, of uit de afgelopen 2 jaar komt (jaargrenzen worden dynamisch uit de systeemdatum berekend). De oude "vandaag in de geschiedenis"-opzet is expliciet verboden in de prompt.
 

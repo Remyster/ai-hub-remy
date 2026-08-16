@@ -1293,6 +1293,15 @@ header h1 {
   font-size: 0.7em !important; color: var(--ink-faint) !important;
   line-height: 1.45 !important; margin: 0 !important;
 }
+/* Voorbeeldregel onder een kaart: waar gebruik ik dit concreet voor */
+.card p.voorbeeld {
+  margin-top: 6px !important;
+  padding-top: 6px !important;
+  border-top: 1px dashed rgba(255,255,255,0.09) !important;
+  font-size: 0.66em !important;
+  font-style: italic !important;
+  color: rgba(148,163,184,0.85) !important;
+}
 .card .dot { display: none !important; }
 .recent-tag { display: none !important; }
 
@@ -1800,6 +1809,32 @@ header h1 {
   </div>
 </div>
 
+<!-- ══ TOOLKIT BROWSER (FMHY + OSINT4All, uitgedund) ══ -->
+<div id="toolkit-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div id="toolkit-modal" style="background:#0d0e18;border:1px solid rgba(102,126,234,0.2);border-radius:22px;padding:32px 28px 24px;max-width:860px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+    <div class="pb-title" id="toolkit-title">🧰 Toolkit</div>
+    <div class="pb-sub" id="toolkit-sub"></div>
+
+    <span class="pb-label">🔎 Wat heb je nodig?</span>
+    <input id="toolkit-input" placeholder="bijv: ik wil weten of deze foto echt is" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')toolkitAsk()">
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+      <button class="pb-generate" id="toolkit-ask-btn" onclick="toolkitAsk()" style="flex:1 1 200px;width:auto;margin-top:0;">✨ Zoek de juiste tool</button>
+      <button class="pb-generate" onclick="toolkitSurprise()" style="flex:0 1 150px;width:auto;margin-top:0;background:rgba(251,146,60,0.12);border-color:rgba(251,146,60,0.4);color:#fb923c;">🎲 Verras me</button>
+    </div>
+
+    <div class="pb-error" id="toolkit-error"></div>
+    <div id="toolkit-answer" style="display:none;margin-top:16px;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:16px;"></div>
+
+    <div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--border);">
+      <span class="pb-label">📂 Of blader zelf (alles dichtgeklapt)</span>
+      <div id="toolkit-cats" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <div id="toolkit-source" style="margin-top:16px;font-size:0.72em;color:var(--muted);text-align:center;"></div>
+    <button class="pb-close-btn" onclick="closeToolkit()">✕ Sluiten</button>
+  </div>
+</div>
+
 <!-- ══ VASTE LASTEN MODAL ══ -->
 <div id="vl-overlay">
   <div id="vl-modal">
@@ -2261,11 +2296,13 @@ header h1 {
       </a>
       <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79" class="card agent" data-key="2" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔬 Nova R&D</h2><p>Research &amp; Development</p><span class="kbd">2</span>
+        <h2>🔬 Nova R&D</h2><p>Theorie &amp; onderzoek — het waarom erachter</p>
+        <p class="voorbeeld">→ hoe zit dit proces in elkaar, wat zegt het onderzoek</p><span class="kbd">2</span>
       </a>
       <a href="https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏗️ Atlas</h2><p>Research &amp; Development</p>
+        <h2>🏗️ Atlas</h2><p>Techniek in de praktijk — installaties &amp; storingen</p>
+        <p class="voorbeeld">→ pompen, leidingwerk, waarom draait dit ding niet</p>
       </a>
       <a href="https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6" class="card agent" data-key="3" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -2292,27 +2329,43 @@ header h1 {
     <div class="grid">
       <a href="https://claude.ai/new" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>✨ Claude / Dex</h2><p>Nieuw gesprek</p>
+        <h2>✨ Claude / Dex</h2><p>Beste in schrijven &amp; code — lange, precieze teksten</p>
+        <p class="voorbeeld">→ StekkerSlim-blog schrijven, of deze hub verbouwen</p>
       </a>
       <a href="https://www.perplexity.ai/" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>❓ Perplexity</h2><p>Snelle vragen</p>
+        <h2>❓ Perplexity</h2><p>Beste voor actuele feiten — altijd met bronvermelding</p>
+        <p class="voorbeeld">→ "klopt die salderingsregel nog in 2026?" — mét bron</p>
       </a>
       <a href="https://chatgpt.com/" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💬 ChatGPT</h2><p>OpenAI chats</p>
+        <h2>💬 ChatGPT</h2><p>Allrounder — beeld, spraak en data-analyse in één</p>
+        <p class="voorbeeld">→ foto van je meterkast erin en laten uitleggen</p>
       </a>
       <a href="https://grok.com/" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🚀 Grok</h2><p>xAI chats</p>
+        <h2>🚀 Grok</h2><p>Beste voor wat nú op X speelt — direct en ongefilterd</p>
+        <p class="voorbeeld">→ wat roepen mensen deze week over thuisbatterijen</p>
       </a>
       <a href="https://gemini.google.com/u/0/app" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🤖 Gemini</h2><p>Google AI</p>
+        <h2>🤖 Gemini</h2><p>Beste bij lange documenten &amp; Google-spullen — royaal gratis</p>
+        <p class="voorbeeld">→ hele Kennisbank doorlezen en de gaten aanwijzen</p>
+      </a>
+      <a href="https://chat.deepseek.com/" class="card general" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🐋 DeepSeek</h2><p>Beste in redeneren, wiskunde &amp; code — gratis onbeperkt</p>
+        <p class="voorbeeld">→ terugverdientijd doorrekenen, of een script dat niet wil</p>
+      </a>
+      <a href="https://www.kimi.com/" class="card general" target="_blank" rel="noopener noreferrer">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🌙 Kimi</h2><p>Beste bij enorme lappen tekst — hele boeken of codebases</p>
+        <p class="voorbeeld">→ dik rapport of je hele index.html in één keer erin</p>
       </a>
       <a href="https://notebooklm.google.com/?pli=1" class="card general" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📓 NotebookLM</h2><p>AI notities &amp; research</p>
+        <h2>📓 NotebookLM</h2><p>Beste om jóúw eigen documenten uit te vragen</p>
+        <p class="voorbeeld">→ PWN-stukken erin en er een podcast van laten maken</p>
       </a>
 
     </div>
@@ -2412,6 +2465,14 @@ header h1 {
       <a href="#" class="card tool" onclick="openVault(); return false;">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
         <h2>🔐 Kluis</h2><p>Eigen wachtwoordkluis</p>
+      </a>
+      <a href="#" class="card tool" onclick="openToolkit('fmhy'); return false;">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🧰 Gratis Tools</h2><p>FMHY, uitgedund</p>
+      </a>
+      <a href="#" class="card tool" onclick="openToolkit('osint'); return false;">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🕵️ Uitzoeken</h2><p>Checken &amp; natrekken</p>
       </a>
       <a href="https://www.twitch.tv/" class="card tool" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -6113,6 +6174,602 @@ async function councilFinalSummary() {
     el.textContent = text;
   } catch (e) {
     el.innerHTML = `<span style="color:#f87171;">❌ ${escHtml(e.message || 'onbekende fout')}</span>`;
+  }
+}
+
+// ══════════════════════════════════════════════
+// TOOLKITS — uitgedunde FMHY + OSINT4All
+// ══════════════════════════════════════════════
+// Bewust GEEN volledige kopie van beide sites: die zijn onbruikbaar groot.
+// Dit is een handmatige selectie van wat voor Remy relevant is. De lijst past
+// compleet in een prompt, dus de "wat heb je nodig"-zoeker heeft geen zoekindex
+// nodig — Haiku krijgt gewoon de hele lijst mee en kiest er 3 uit.
+const TOOLKIT_ASK_MODEL = 'anthropic/claude-haiku-4.5';
+
+const TOOLKITS = {
+  fmhy: {
+    titel: '🧰 Gratis Tools (FMHY)',
+    sub: 'Alle categorieen van FMHY, per onderwerp uitgeklapt. Klik een kopje open om te zien wat erin zit.',
+    bron: 'https://fmhy.net/',
+    bronNaam: 'fmhy.net',
+    cats: [
+      { groep: 'Wiki', naam: '🛡️ Adblock & Privacy', bron: 'https://fmhy.net/privacy', items: [
+        { n: 'uBlock Origin', u: 'https://github.com/gorhill/uBlock', d: 'De adblocker. Enige die je echt nodig hebt' },
+        { n: 'SponsorBlock', u: 'https://sponsor.ajay.app/', d: 'Slaat gesponsorde stukken in YouTube automatisch over' },
+        { n: 'AdGuard', u: 'https://adguard.com/', d: 'Adblocker die ook buiten de browser werkt' },
+        { n: 'Proton VPN', u: 'https://protonvpn.com/', d: 'Gratis VPN zonder datalimiet' },
+        { n: 'Windscribe', u: 'https://windscribe.com/', d: 'VPN, 10GB per maand gratis' },
+        { n: 'Cloudflare WARP', u: 'https://one.one.one.one/', d: 'Gratis en onbeperkt, meer versneller dan echte VPN' },
+        { n: 'KeePassXC', u: 'https://keepassxc.org/', d: 'Wachtwoordkluis lokaal, geen abonnement' },
+        { n: 'Bitwarden', u: 'https://bitwarden.com/', d: 'Wachtwoordkluis met cloudsync, gratis plan is ruim' },
+        { n: 'Ente Auth', u: 'https://ente.io/auth/', d: '2FA-app met versleutelde backup' },
+        { n: 'Aegis', u: 'https://getaegis.app/', d: '2FA voor Android, volledig offline' },
+        { n: 'VirusTotal', u: 'https://www.virustotal.com/', d: 'Bestand of link scannen met 70+ virusscanners' },
+        { n: 'Malwarebytes', u: 'https://www.malwarebytes.com/', d: 'Opruimen als er toch iets binnen is' },
+        { n: 'Sandboxie Plus', u: 'https://sandboxie-plus.com/', d: 'Verdachte software draaien in een afgesloten bak' },
+        { n: 'Proton Mail', u: 'https://proton.me/mail', d: 'Versleutelde mail, 1GB gratis' },
+        { n: 'Privacy Guides', u: 'https://www.privacyguides.org/', d: 'Wat je wel en niet moet gebruiken, goed onderbouwd' },
+        { n: 'The New Oil', u: 'https://thenewoil.org/', d: 'Privacy uitgelegd voor gewone mensen' }
+      ]},
+      { groep: 'Wiki', naam: '🤖 Kunstmatige intelligentie', bron: 'https://fmhy.net/ai', items: [
+        { n: 'Google AI Studio', u: 'https://aistudio.google.com/', d: 'Gemini gratis met hoge limieten, ook API-keys' },
+        { n: 'DeepSeek', u: 'https://chat.deepseek.com/', d: 'Sterk in redeneren, wiskunde en code. Gratis onbeperkt' },
+        { n: 'Kimi', u: 'https://www.kimi.com/', d: 'Enorme context, slikt hele boeken en codebases' },
+        { n: 'Qwen Chat', u: 'https://chat.qwen.ai/', d: 'Chinees topmodel, gratis' },
+        { n: 'Together.ai', u: 'https://chat.together.ai/', d: 'Meerdere modellen naast elkaar proberen' },
+        { n: 'NVIDIA NIM', u: 'https://build.nvidia.com/models', d: 'Veel modellen testen zonder account' },
+        { n: 'LM Studio', u: 'https://lmstudio.ai/', d: 'AI-modellen lokaal op je eigen pc draaien' },
+        { n: 'Open WebUI', u: 'https://openwebui.com/', d: 'Zelf-gehoste ChatGPT-achtige interface' },
+        { n: 'Ollama', u: 'https://ollama.com/', d: 'Makkelijkste manier om lokale modellen te draaien' },
+        { n: 'Google Flow', u: 'https://labs.google/fx/tools/flow', d: 'Video genereren met Veo, dagelijkse gratis credits' },
+        { n: 'Artificial Analysis', u: 'https://artificialanalysis.ai/', d: 'Welk model is nu echt het beste, snelste, goedkoopste' },
+        { n: 'LMArena', u: 'https://lmarena.ai/', d: 'Modellen blind tegen elkaar, ranglijst' },
+        { n: 'ElevenLabs', u: 'https://elevenlabs.io/', d: 'Tekst naar natuurlijke spraak' },
+        { n: 'Whisper', u: 'https://github.com/openai/whisper', d: 'Audio en video automatisch uitschrijven naar tekst' },
+        { n: 'Applio', u: 'https://applio.org/', d: 'Stem klonen zonder account' },
+        { n: 'Prompting Guide', u: 'https://www.promptingguide.ai/', d: 'Naslagwerk prompt engineering' },
+        { n: 'Anthropic prompt docs', u: 'https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview', d: 'Officiele prompt-uitleg van Claude zelf' }
+      ]},
+      { groep: 'Wiki', naam: '🎬 Films / Series / Anime', bron: 'https://fmhy.net/video', items: [
+        { n: 'Tubi', u: 'https://tubitv.com/', d: 'Legaal gratis films en series, met reclame' },
+        { n: 'Plex Free', u: 'https://watch.plex.tv/', d: 'Legaal gratis catalogus, met reclame' },
+        { n: 'Cineby', u: 'https://cineby.at/', d: 'Streaming-aggregator, films/series/anime' },
+        { n: 'GOATED', u: 'https://goated.cx/', d: 'Aggregator met 4K en auto-next' },
+        { n: 'Flixer', u: 'https://flixer.gd/', d: 'Aggregator, films/series/anime' },
+        { n: 'CinemaOS', u: 'https://cinemaos.live/', d: 'Multi-server streaming' },
+        { n: 'Miruro', u: 'https://www.miruro.com/', d: 'Anime, sub en dub' },
+        { n: 'animepahe', u: 'https://animepahe.pw/', d: 'Anime met kleine bestandsgroottes' },
+        { n: 'Stremio', u: 'https://www.stremio.com/', d: 'App die alles samenbrengt via addons' },
+        { n: 'Jellyfin', u: 'https://jellyfin.org/', d: 'Eigen mediaserver, gratis Plex-alternatief' },
+        { n: 'Radarr', u: 'https://radarr.video/', d: 'Films automatisch binnenhalen en ordenen' },
+        { n: 'Sonarr', u: 'https://sonarr.tv/', d: 'Zelfde maar voor series' },
+        { n: 'Streamed', u: 'https://streamed.pk/', d: 'Live sport aggregator' },
+        { n: 'TVCL', u: 'https://www.tvchannellists.com/', d: 'Index van live tv-kanalen' },
+        { n: 'SmartTube', u: 'https://github.com/yuliskov/SmartTube', d: 'YouTube zonder reclame op Android TV' }
+      ]},
+      { groep: 'Wiki', naam: '🎵 Muziek / Podcasts / Radio', bron: 'https://fmhy.net/audio', items: [
+        { n: 'SoundCloud', u: 'https://soundcloud.com/', d: 'Zelf-geuploade muziek, veel unieke dingen' },
+        { n: 'Monochrome', u: 'https://monochrome.tf/', d: 'Lossless muziek in de browser' },
+        { n: 'lucida', u: 'https://lucida.to/', d: 'Muziek downloaden van meerdere diensten, ook FLAC' },
+        { n: 'DoubleDouble', u: 'https://doubledouble.top/', d: 'Zelfde idee, andere bronnen' },
+        { n: 'Nicotine+', u: 'https://nicotine-plus.org/', d: 'Soulseek-client, de plek voor zeldzame muziek' },
+        { n: 'Radio Garden', u: 'https://radio.garden/', d: 'Wereldbol met radiostations, verslavend' },
+        { n: 'FMSTREAM', u: 'https://fmstream.org/', d: 'Index van radiostreams wereldwijd' },
+        { n: 'Listen Notes', u: 'https://www.listennotes.com/', d: 'Zoekmachine voor podcasts' },
+        { n: 'Pocket Casts', u: 'https://play.pocketcasts.com/', d: 'Podcast-app die ook in de browser werkt' },
+        { n: 'BBC Sounds', u: 'https://www.bbc.co.uk/sounds', d: 'BBC radio en programmas terugluisteren' }
+      ]},
+      { groep: 'Wiki', naam: '🎮 Games & Emulatie', bron: 'https://fmhy.net/gaming', items: [
+        { n: 'itch.io gratis', u: 'https://itch.io/games/new-and-popular/featured/free', d: 'Duizenden gratis indiegames' },
+        { n: 'Game Jolt', u: 'https://gamejolt.com/games?price=free', d: 'Nog meer gratis indiegames' },
+        { n: 'Newgrounds', u: 'https://www.newgrounds.com/games', d: 'Browsergames, klassiek' },
+        { n: 'r/PiratedGames Mega', u: 'https://rentry.org/pgames', d: 'De index waar alle game-bronnen op staan' },
+        { n: 'FitGirl Repacks', u: 'https://fitgirl-repacks.site/', d: 'Sterk ingepakte games, kleine downloads' },
+        { n: 'SteamRIP', u: 'https://steamrip.com/', d: 'Voorgeinstalleerde games' },
+        { n: 'CS.RIN.RU', u: 'https://cs.rin.ru/forum', d: 'Het forum waar alles langskomt' },
+        { n: 'Online Fix', u: 'https://online-fix.me/', d: 'Multiplayer werkend krijgen' },
+        { n: 'Emulation Wiki', u: 'https://emulation.gametechwiki.com/', d: 'Welke emulator voor welke console, met uitleg' },
+        { n: 'RetroAchievements', u: 'https://retroachievements.org/', d: 'Achievements toevoegen aan oude games' },
+        { n: 'Flashpoint', u: 'https://flashpointarchive.org/', d: 'Alle Flash-games bewaard, speelbaar' },
+        { n: 'GameBanana', u: 'https://gamebanana.com/', d: 'Mods voor van alles' },
+        { n: 'OpenMW', u: 'https://openmw.org/', d: 'Morrowind opnieuw gebouwd, modbaar' }
+      ]},
+      { groep: 'Wiki', naam: '📚 Boeken / Strips / Manga', bron: 'https://fmhy.net/reading', items: [
+        { n: 'Annas Archive', u: 'https://annas-archive.org/', d: 'De grootste zoekmachine over boekarchieven' },
+        { n: 'Library Genesis', u: 'https://libgen.li/', d: 'Boeken, strips, manga' },
+        { n: 'Z-Library', u: 'https://z-lib.gd/', d: 'Boeken, strips en luisterboeken' },
+        { n: 'Project Gutenberg', u: 'https://www.gutenberg.org/', d: 'Rechtenvrije klassiekers, volledig legaal' },
+        { n: 'Internet Archive', u: 'https://archive.org/', d: 'Boeken, tijdschriften, kranten, van alles' },
+        { n: 'MangaDex', u: 'https://mangadex.org/', d: 'Manga lezen, met community-vertalingen' },
+        { n: 'GetComics', u: 'https://getcomics.org/', d: 'Strips downloaden' },
+        { n: 'ComicBookPlus', u: 'https://comicbookplus.com/', d: 'Oude strips, rechtenvrij' },
+        { n: 'AudiobookBay', u: 'https://audiobookbay.lu/', d: 'Luisterboeken' },
+        { n: 'Sci-Hub', u: 'https://sci-hub.ru/', d: 'Wetenschappelijke artikelen achter betaalmuren' },
+        { n: 'arXiv', u: 'https://arxiv.org/', d: 'Preprints, volledig legaal en gratis' },
+        { n: 'Kiosko', u: 'https://en.kiosko.net/', d: 'Voorpaginas van kranten wereldwijd' }
+      ]},
+      { groep: 'Wiki', naam: '⬇️ Software downloaden', bron: 'https://fmhy.net/downloading', items: [
+        { n: 'Internet Archive', u: 'https://archive.org/', d: 'Oude software, spellen, media, legaal gearchiveerd' },
+        { n: 'PortableApps', u: 'https://portableapps.com/', d: 'Programmas draaien zonder installatie' },
+        { n: 'MajorGeeks', u: 'https://www.majorgeeks.com/', d: 'Betrouwbare freeware-downloads' },
+        { n: 'Softpedia', u: 'https://www.softpedia.com/', d: 'Grote freeware-catalogus' },
+        { n: 'Adobe Alternatives', u: 'https://github.com/KenneyNL/Adobe-Alternatives', d: 'Gratis vervanging voor elk Adobe-programma' },
+        { n: 'Awesome Open Source', u: 'https://awesomeopensource.com/', d: 'Open source alternatief voor bijna alles' },
+        { n: 'CracksURL', u: 'https://cracksurl.com/', d: 'Verzamelde software-downloads met uitleg' },
+        { n: 'Mobilism', u: 'https://forum.mobilism.org/', d: 'Forum, veel apps en boeken' },
+        { n: 'r/opendirectories', u: 'https://www.reddit.com/r/opendirectories/', d: 'Open mappen op internet die per ongeluk publiek staan' },
+        { n: 'new(releases)', u: 'https://newreleases.io/', d: 'Melding krijgen als software een update krijgt' }
+      ]},
+      { groep: 'Wiki', naam: '🧲 Torrents', bron: 'https://fmhy.net/torrenting', items: [
+        { n: 'qBittorrent', u: 'https://www.qbittorrent.org/', d: 'De standaard-client. Geen reclame, open source' },
+        { n: 'Deluge', u: 'https://www.deluge-torrent.org/', d: 'Lichter, met plugins' },
+        { n: 'Transmission', u: 'https://transmissionbt.com/', d: 'Simpel en licht, goed voor een NAS' },
+        { n: '1337x', u: 'https://1337x.to/home/', d: 'Grote publieke index' },
+        { n: 'RuTracker', u: 'https://rutracker.org/', d: 'Russisch, veruit het beste voor zeldzame dingen' },
+        { n: 'Knaben', u: 'https://knaben.org/', d: 'Doorzoekt meerdere torrentsites tegelijk' },
+        { n: 'ExT', u: 'https://ext.to/', d: 'Nog een meta-zoeker' },
+        { n: 'ngosang trackerlist', u: 'https://ngosang.github.io/trackerslist/', d: 'Actuele trackerlijst, versnelt je downloads' },
+        { n: 'PreDB', u: 'https://predb.net/', d: 'Welke release is de echte, en wanneer kwam hij uit' }
+      ]},
+      { groep: 'Wiki', naam: '🎓 Leren', bron: 'https://fmhy.net/educational', items: [
+        { n: 'Khan Academy', u: 'https://www.khanacademy.org/', d: 'Gratis cursussen, sterk in wiskunde en natuurkunde' },
+        { n: 'edX', u: 'https://www.edx.org/', d: 'Universitaire vakken, gratis te volgen' },
+        { n: 'Class Central', u: 'https://www.classcentral.com/', d: 'Zoekmachine over alle cursusplatforms' },
+        { n: 'OSSU', u: 'https://github.com/ossu/computer-science', d: 'Volledige informatica-opleiding, zelf te doen' },
+        { n: 'The Odin Project', u: 'https://www.theodinproject.com/', d: 'Gratis webdevelopment-opleiding' },
+        { n: 'free-programming-books', u: 'https://github.com/EbookFoundation/free-programming-books', d: 'Duizenden gratis programmeerboeken' },
+        { n: 'BetterExplained', u: 'https://betterexplained.com/', d: 'Wiskunde uitgelegd zodat het klikt' },
+        { n: 'Feynman Lectures', u: 'https://www.feynmanlectures.caltech.edu/', d: 'De beroemde natuurkundecolleges, gratis online' },
+        { n: 'Ciechanowski', u: 'https://ciechanow.ski/', d: 'Interactieve uitleg van hoe dingen werken. Prachtig' },
+        { n: 'WolframAlpha', u: 'https://www.wolframalpha.com/', d: 'Rekent en legt uit, van sommen tot scheikunde' },
+        { n: 'Anki', u: 'https://apps.ankiweb.net/', d: 'Flashcards die zich aanpassen aan wat je vergeet' },
+        { n: 'IHaveNoTV', u: 'https://ihavenotv.com/', d: 'Documentaires, gratis' },
+        { n: 'NASA+', u: 'https://plus.nasa.gov/', d: 'Ruimtevaartdocumentaires van NASA zelf' }
+      ]},
+      { groep: 'Wiki', naam: '📱 Android / iOS', bron: 'https://fmhy.net/mobile', items: [
+        { n: 'F-Droid', u: 'https://f-droid.org/', d: 'Alleen open source apps, geen tracking' },
+        { n: 'APKMirror', u: 'https://www.apkmirror.com/', d: 'Officiele APKs, ongewijzigd en geverifieerd' },
+        { n: 'Aurora Store', u: 'https://auroraoss.com/', d: 'Play Store zonder Google-account' },
+        { n: 'Obtainium', u: 'https://obtainium.imranr.dev/', d: 'Apps rechtstreeks uit GitHub bijwerken' },
+        { n: 'ReVanced', u: 'https://revanced.app/', d: 'Apps aanpassen, reclame eruit' },
+        { n: 'Shizuku', u: 'https://shizuku.rikka.app/', d: 'Diepere rechten zonder te rooten' },
+        { n: 'App Manager', u: 'https://muntashirakon.github.io/AppManager/', d: 'Zien en beheren wat apps echt doen' },
+        { n: 'Magisk', u: 'https://github.com/topjohnwu/Magisk', d: 'Rooten zonder systeempartitie aan te raken' },
+        { n: 'AltStore', u: 'https://altstore.io/', d: 'iOS-apps installeren buiten de App Store' },
+        { n: 'Sideloadly', u: 'https://sideloadly.io/', d: 'Zelfde, vanaf je pc' }
+      ]},
+      { groep: 'Wiki', naam: '🐧 Linux / macOS', bron: 'https://fmhy.net/linux-macos', items: [
+        { n: 'DistroChooser', u: 'https://distrochooser.de/', d: 'Quiz die uitkomt op de distro die bij je past' },
+        { n: 'DistroWatch', u: 'https://distrowatch.com/', d: 'Overzicht en nieuws van alle distros' },
+        { n: 'Bottles', u: 'https://usebottles.com/', d: 'Windows-programmas draaien op Linux' },
+        { n: 'WineHQ AppDB', u: 'https://appdb.winehq.org/', d: 'Werkt dit Windows-programma onder Linux' },
+        { n: 'Btop', u: 'https://github.com/aristocratos/btop', d: 'Mooiste systeemmonitor voor de terminal' },
+        { n: 'Flatpak', u: 'https://flatpak.org/', d: 'Apps installeren die overal werken' },
+        { n: 'Homebrew', u: 'https://brew.sh/', d: 'Pakketbeheer voor macOS' },
+        { n: 'Raycast', u: 'https://www.raycast.com/', d: 'Spotlight-vervanger voor Mac, met extensies' },
+        { n: 'Proxmox', u: 'https://www.proxmox.com/', d: 'Eigen server met virtuele machines' },
+        { n: 'UTM', u: 'https://mac.getutm.app/', d: 'Virtuele machines op Mac, ook Apple Silicon' }
+      ]},
+      { groep: 'Wiki', naam: '🗂️ Diversen', bron: 'https://fmhy.net/misc', items: [
+        { n: 'Home Assistant', u: 'https://www.home-assistant.io/', d: 'Je smarthome-hub (heb je al)' },
+        { n: 'Awesome Selfhosted', u: 'https://awesome-selfhosted.net/', d: 'Elke clouddienst, maar dan op eigen hardware' },
+        { n: 'Nextcloud', u: 'https://nextcloud.com/', d: 'Eigen Google Drive' },
+        { n: 'ESPHome', u: 'https://esphome.io/', d: 'Zelf sensoren bouwen voor Home Assistant' },
+        { n: 'Tasmota', u: 'https://tasmota.github.io/docs/', d: 'Eigen firmware op slimme stekkers, weg van de cloud' },
+        { n: 'Firefly III', u: 'https://firefly-iii.org/', d: 'Zelf-gehost huishoudboekje' },
+        { n: 'Ghostfolio', u: 'https://ghostfol.io/', d: 'Beleggingen volgen, open source' },
+        { n: 'TradingView', u: 'https://www.tradingview.com/', d: 'Koersgrafieken en marktanalyse' },
+        { n: 'RTINGS', u: 'https://www.rtings.com/', d: 'Echt gemeten productreviews, geen meningen' },
+        { n: 'Tweakers Pricewatch', u: 'https://tweakers.net/pricewatch/', d: 'NL prijsvergelijker met prijsgeschiedenis' },
+        { n: 'Pepper NL', u: 'https://nl.pepper.com/', d: 'Nederlandse deals-community' },
+        { n: 'Hacker News', u: 'https://news.ycombinator.com/', d: 'Waar tech-nieuws als eerste opduikt' },
+        { n: 'Ground News', u: 'https://ground.news/', d: 'Zelfde nieuws door meerdere brillen' },
+        { n: 'Organic Maps', u: 'https://organicmaps.app/', d: 'Offline kaarten zonder tracking' },
+        { n: 'Seat61', u: 'https://www.seat61.com/', d: 'Met de trein door Europa, alles uitgezocht' }
+      ]},
+
+      { groep: 'Tools', naam: '🪟 Systeem (Windows)', bron: 'https://fmhy.net/system-tools', items: [
+        { n: 'PowerToys', u: 'https://learn.microsoft.com/windows/powertoys/', d: 'Microsoft-eigen toevoegingen: snelzoeken, vensters, hernoemen' },
+        { n: 'Everything', u: 'https://www.voidtools.com/', d: 'Vindt elk bestand direct, geen wachten' },
+        { n: 'EverythingToolbar', u: 'https://github.com/srwi/EverythingToolbar', d: 'Zet Everything in je taakbalk' },
+        { n: 'WizTree', u: 'https://www.diskanalyzer.com/', d: 'Laat in seconden zien wat je schijf volvreet' },
+        { n: 'AutoHotkey', u: 'https://www.autohotkey.com/', d: 'Toetsen en handelingen automatiseren' },
+        { n: 'HWiNFO', u: 'https://www.hwinfo.com/', d: 'Alle sensoren en hardware-info van je pc' },
+        { n: 'Sysinternals', u: 'https://learn.microsoft.com/sysinternals/', d: 'Diepe systeemtools van Microsoft zelf' },
+        { n: 'Windhawk', u: 'https://windhawk.net/', d: 'Windows aanpassen op plekken waar dat niet mag' },
+        { n: 'StartAllBack', u: 'https://www.startallback.com/', d: 'Startmenu en taakbalk terug naar normaal' },
+        { n: 'EarTrumpet', u: 'https://eartrumpet.app/', d: 'Volume per app regelen' },
+        { n: 'TrafficMonitor', u: 'https://github.com/zhongyang219/TrafficMonitor/', d: 'Netwerk- en cpu-gebruik in je taakbalk' },
+        { n: 'GParted', u: 'https://gparted.org/', d: 'Partities aanmaken en verplaatsen' },
+        { n: 'Validrive', u: 'https://www.grc.com/validrive.htm', d: 'Is die USB-stick echt zo groot als hij zegt' }
+      ]},
+      { groep: 'Tools', naam: '📁 Bestanden', bron: 'https://fmhy.net/file-tools', items: [
+        { n: 'LocalSend', u: 'https://localsend.org/', d: 'Bestanden tussen je apparaten sturen, zonder internet' },
+        { n: 'PairDrop', u: 'https://pairdrop.net/', d: 'Zelfde maar in de browser, zonder account' },
+        { n: 'Gofile', u: 'https://gofile.io/', d: 'Groot bestand delen zonder limiet' },
+        { n: '7-Zip', u: 'https://www.7-zip.org/', d: 'Uitpakken en inpakken, alles' },
+        { n: 'NanaZip', u: 'https://nanazip.org/', d: '7-Zip maar dan modern en met Windows 11-menu' },
+        { n: 'File Converter', u: 'https://file-converter.io/', d: 'Rechtermuisknop-menu om alles om te zetten' },
+        { n: 'VERT', u: 'https://vert.sh/', d: 'Converteren in de browser, blijft lokaal' },
+        { n: 'TestDisk', u: 'https://www.cgsecurity.org/wiki/TestDisk', d: 'Verdwenen partitie terughalen' },
+        { n: 'PhotoRec', u: 'https://www.cgsecurity.org/wiki/PhotoRec', d: 'Gewiste bestanden van een kaartje redden' },
+        { n: 'Cryptomator', u: 'https://cryptomator.org/', d: 'Je clouddrive versleutelen voor het uploadt' },
+        { n: 'VeraCrypt', u: 'https://www.veracrypt.fr/', d: 'Hele schijf of USB-stick versleutelen' },
+        { n: 'Files', u: 'https://files.community/', d: 'Verkenner met tabbladen, wat Windows had moeten zijn' },
+        { n: 'MEGA', u: 'https://mega.io/', d: '20GB gratis cloudopslag, versleuteld' }
+      ]},
+      { groep: 'Tools', naam: '🌐 Internet & browser', bron: 'https://fmhy.net/internet-tools', items: [
+        { n: 'Firefox', u: 'https://www.firefox.com/', d: 'Open source browser, echte extensie-ondersteuning' },
+        { n: 'Dark Reader', u: 'https://darkreader.org/', d: 'Donkere modus op elke site' },
+        { n: 'Stylus', u: 'https://add0n.com/stylus.html', d: 'Uiterlijk van sites zelf aanpassen' },
+        { n: 'Vimium', u: 'https://vimium.github.io/', d: 'Browsen met alleen je toetsenbord' },
+        { n: 'LibRedirect', u: 'https://libredirect.github.io/', d: 'Stuurt je automatisch naar privacy-vriendelijke versies' },
+        { n: 'SearXNG', u: 'https://searx.space/', d: 'Meta-zoekmachine zonder tracking' },
+        { n: 'Marginalia', u: 'https://marginalia-search.com/', d: 'Vindt kleine, tekstuele sites die Google verstopt' },
+        { n: 'Fast.com', u: 'https://fast.com/', d: 'Snelheidstest zonder gedoe' },
+        { n: 'Cloudflare Speed', u: 'https://speed.cloudflare.com/', d: 'Uitgebreidere snelheidstest' },
+        { n: 'Wayback Machine', u: 'https://web.archive.org/', d: 'Hoe zag een site er vroeger uit' },
+        { n: 'ArchiveBox', u: 'https://archivebox.io/', d: 'Je eigen persoonlijke webarchief' },
+        { n: 'Wireshark', u: 'https://www.wireshark.org/', d: 'Zien wat er echt over je netwerk gaat' },
+        { n: 'FreshRSS', u: 'https://freshrss.org/', d: 'Zelf-gehoste RSS-lezer' },
+        { n: 'Feedly', u: 'https://feedly.com/', d: 'RSS zonder zelf te hosten' }
+      ]},
+      { groep: 'Tools', naam: '💬 Social media', bron: 'https://fmhy.net/social-media-tools', items: [
+        { n: 'Redlib', u: 'https://github.com/redlib-org/redlib', d: 'Reddit lezen zonder tracking of account' },
+        { n: 'Old Reddit Redirect', u: 'https://github.com/tom-james-watson/old-reddit-redirect', d: 'Altijd de oude, bruikbare Reddit' },
+        { n: 'FreeTube', u: 'https://freetubeapp.io/', d: 'YouTube-app zonder reclame en zonder account' },
+        { n: 'Invidious', u: 'https://invidious.io/', d: 'YouTube in de browser, privacy-vriendelijk' },
+        { n: 'DeArrow', u: 'https://dearrow.ajay.app/', d: 'Vervangt clickbait-titels en -thumbnails' },
+        { n: 'Return YouTube Dislike', u: 'https://returnyoutubedislike.com/', d: 'Dislikes weer zichtbaar' },
+        { n: 'GrayJay', u: 'https://grayjay.app/', d: 'Een app voor YouTube, Twitch, Rumble en meer' },
+        { n: 'XCancel', u: 'https://xcancel.com/', d: 'X/Twitter lezen zonder account' },
+        { n: 'Thread Reader', u: 'https://threadreaderapp.com/', d: 'Lange draadjes als een leesbaar artikel' },
+        { n: 'Vencord', u: 'https://vencord.dev/', d: 'Discord met plugins en thema-ondersteuning' },
+        { n: 'Discord Chat Exporter', u: 'https://github.com/Tyrrrz/DiscordChatExporter', d: 'Gesprekken bewaren voor ze verdwijnen' },
+        { n: 'Instaloader', u: 'https://instaloader.github.io/', d: 'Instagram-content downloaden' }
+      ]},
+      { groep: 'Tools', naam: '📝 Tekst & documenten', bron: 'https://fmhy.net/text-tools', items: [
+        { n: 'DeepL', u: 'https://www.deepl.com/translator', d: 'Vertalen, duidelijk beter Nederlands dan Google' },
+        { n: 'LanguageTool', u: 'https://languagetool.org/nl', d: 'Spelling en grammatica, ook Nederlands' },
+        { n: 'Obsidian', u: 'https://obsidian.md/', d: 'Notities in gewone bestanden, geen abonnement' },
+        { n: 'Logseq', u: 'https://logseq.com/', d: 'Notities als losse punten die je aan elkaar knoopt' },
+        { n: 'Notesnook', u: 'https://notesnook.com/', d: 'Versleutelde notities, cross-device' },
+        { n: 'Stirling PDF', u: 'https://stirlingpdf.com/', d: 'PDF samenvoegen, splitsen, comprimeren, tekenen' },
+        { n: 'CyberChef', u: 'https://gchq.github.io/CyberChef/', d: 'Alles coderen, decoderen en omzetten wat met tekst kan' },
+        { n: 'PrivateBin', u: 'https://privatebin.net/', d: 'Tekst delen die zichzelf wist' },
+        { n: 'Rentry', u: 'https://rentry.co/', d: 'Snel een stuk tekst delen met markdown' },
+        { n: 'Notepad++', u: 'https://notepad-plus-plus.org/', d: 'Teksteditor die grote bestanden wel aankan' },
+        { n: 'Zettlr', u: 'https://www.zettlr.com/', d: 'Markdown-editor voor lange stukken' },
+        { n: 'Typst', u: 'https://typst.app/', d: 'Nette documenten opmaken, makkelijker dan LaTeX' },
+        { n: 'Whisper', u: 'https://github.com/openai/whisper', d: 'Gesprek of video uitschrijven naar tekst' }
+      ]},
+      { groep: 'Tools', naam: '🕹️ Gaming tools', bron: 'https://fmhy.net/gaming-tools', items: [
+        { n: 'Playnite', u: 'https://playnite.link/', d: 'Al je games uit alle launchers in een bibliotheek' },
+        { n: 'SpecialK', u: 'https://www.special-k.info/', d: 'Games vloeiender en beter laten draaien' },
+        { n: 'MSI Afterburner', u: 'https://www.msi.com/Landing/afterburner', d: 'Videokaart uitlezen en tunen' },
+        { n: 'RTSS', u: 'https://www.guru3d.com/files-details/rtss-rivatuner-statistics-server-download.html', d: 'FPS en temperaturen in beeld tijdens het spelen' },
+        { n: 'Lossless Scaling', u: 'https://store.steampowered.com/app/993090/', d: 'Elke game opschalen en frames bijmaken' },
+        { n: 'DS4Windows', u: 'https://github.com/schmaldeo/DS4Windows', d: 'PlayStation-controller werkend krijgen op pc' },
+        { n: 'DriftGuard', u: 'https://driftguard.app/', d: 'Testen of je stick drift heeft' },
+        { n: 'ZeroTier', u: 'https://www.zerotier.com/', d: 'Virtueel LAN-feestje over internet' },
+        { n: 'Nucleus Co-op', u: 'https://github.com/SplitScreen-Me/splitscreenme-nucleus', d: 'Splitscreen in games die dat niet ondersteunen' },
+        { n: 'Backloggd', u: 'https://www.backloggd.com/', d: 'Bijhouden wat je gespeeld hebt' },
+        { n: 'IsThereAnyDeal', u: 'https://isthereanydeal.com/', d: 'Wacht op de laagste prijs, met alarm' }
+      ]},
+      { groep: 'Tools', naam: '🖼️ Beeld', bron: 'https://fmhy.net/image-tools', items: [
+        { n: 'Photopea', u: 'https://www.photopea.com/', d: 'Photoshop in je browser, opent gewoon PSD' },
+        { n: 'GIMP', u: 'https://www.gimp.org/', d: 'Volwaardige fotobewerker, gratis' },
+        { n: 'Krita', u: 'https://krita.org/', d: 'Digitaal tekenen en schilderen' },
+        { n: 'Inkscape', u: 'https://inkscape.org/', d: 'Vectortekenen, logos en iconen' },
+        { n: 'Squoosh', u: 'https://squoosh.app/', d: 'Afbeeldingen kleiner zonder zichtbaar verlies' },
+        { n: 'Caesium', u: 'https://saerasoft.com/caesium/', d: 'Hele mappen tegelijk comprimeren' },
+        { n: 'remove.bg', u: 'https://www.remove.bg/', d: 'Achtergrond eruit knippen in een klik' },
+        { n: 'ObjectRemover', u: 'https://objectremover.com/', d: 'Iets uit een foto weghalen alsof het er nooit was' },
+        { n: 'Upscayl', u: 'https://upscayl.org/', d: 'Kleine of wazige foto scherper en groter' },
+        { n: 'ShareX', u: 'https://getsharex.com/', d: 'Screenshots en schermopnames. De beste voor Windows' },
+        { n: 'EZGif', u: 'https://ezgif.com/', d: 'GIF en video knippen, converteren, comprimeren' },
+        { n: 'Unsplash', u: 'https://unsplash.com/', d: 'Gratis rechtenvrije stockfotos, prima voor blogs' },
+        { n: 'Pixabay', u: 'https://pixabay.com/', d: 'Stockfotos zonder bronvermelding' },
+        { n: 'Coolors', u: 'https://coolors.co/', d: 'Kleurenpalet samenstellen voor een site' },
+        { n: 'Figma', u: 'https://www.figma.com/', d: 'Ontwerpen en prototypes, gratis plan' },
+        { n: 'Printables', u: 'https://www.printables.com/', d: '3D-modellen om te printen' },
+        { n: 'Blender', u: 'https://www.blender.org/', d: '3D-suite die met betaalde software meekan' }
+      ]},
+      { groep: 'Tools', naam: '🎞️ Video', bron: 'https://fmhy.net/video-tools', items: [
+        { n: 'DaVinci Resolve', u: 'https://www.blackmagicdesign.com/products/davinciresolve', d: 'Professionele videoeditor, gratis versie is enorm' },
+        { n: 'Shotcut', u: 'https://shotcut.org/', d: 'Simpelere editor, open source' },
+        { n: 'Kdenlive', u: 'https://kdenlive.org/', d: 'Multitrack-editor, werkt overal' },
+        { n: 'LosslessCut', u: 'https://github.com/mifi/lossless-cut', d: 'Stukken uit video knippen zonder opnieuw te renderen' },
+        { n: 'yt-dlp', u: 'https://github.com/yt-dlp/yt-dlp', d: 'Video downloaden van honderden sites' },
+        { n: 'cobalt', u: 'https://cobalt.tools/', d: 'Zelfde maar gewoon in je browser, plak de link' },
+        { n: 'HandBrake', u: 'https://handbrake.fr/', d: 'Video omzetten en kleiner maken' },
+        { n: 'OBS Studio', u: 'https://obsproject.com/', d: 'Scherm opnemen en livestreamen' },
+        { n: 'MPV', u: 'https://mpv.io/', d: 'Videospeler die alles afspeelt, eindeloos aanpasbaar' },
+        { n: 'VLC', u: 'https://www.videolan.org/', d: 'Speelt echt alles af' },
+        { n: 'FFmpeg', u: 'https://ffmpeg.org/', d: 'Het gereedschap waar alle andere op draaien' }
+      ]},
+      { groep: 'Tools', naam: '🔊 Audio', bron: 'https://fmhy.net/audio', items: [
+        { n: 'Audacity', u: 'https://www.audacityteam.org/', d: 'Audio knippen, plakken en opnemen' },
+        { n: 'Tenacity', u: 'https://tenacityaudio.org/', d: 'Audacity zonder telemetrie' },
+        { n: 'ocenaudio', u: 'https://www.ocenaudio.com/', d: 'Sneller en simpeler dan Audacity' },
+        { n: 'Reaper', u: 'https://www.reaper.fm/', d: 'Professionele DAW, blijft werken na de proefperiode' },
+        { n: 'LMMS', u: 'https://lmms.io/', d: 'Muziek maken, gratis en open source' },
+        { n: 'MP3Tag', u: 'https://www.mp3tag.de/en/', d: 'Muziektags netjes maken, batchgewijs' },
+        { n: 'MusicBrainz Picard', u: 'https://picard.musicbrainz.org/', d: 'Herkent je muziek en vult de tags zelf in' },
+        { n: 'fre:ac', u: 'https://www.freac.org/', d: 'Audio omzetten, ook cds rippen' },
+        { n: 'Freesound', u: 'https://freesound.org/', d: 'Geluidseffecten uit de community' },
+        { n: 'BigSoundBank', u: 'https://bigsoundbank.com/', d: 'Rechtenvrije geluidseffecten' },
+        { n: 'MuseScore', u: 'https://musescore.org/', d: 'Bladmuziek schrijven en afspelen' },
+        { n: 'Spek', u: 'https://www.spek.cc/', d: 'Is dit echt FLAC of een omgezette MP3' },
+        { n: 'Foobar2000', u: 'https://www.foobar2000.org/', d: 'Muziekspeler die je helemaal naar je hand zet' }
+      ]},
+      { groep: 'Tools', naam: '💻 Developer', bron: 'https://fmhy.net/developer-tools', items: [
+        { n: 'DevDocs', u: 'https://devdocs.io/', d: 'Alle documentatie doorzoekbaar op een plek, ook offline' },
+        { n: 'DevToys', u: 'https://devtoys.app/', d: 'Zwitsers zakmes voor ontwikkelaars, offline' },
+        { n: 'Devhints', u: 'https://devhints.io/', d: 'Spiekbriefjes voor bijna elke taal en tool' },
+        { n: 'free-for.dev', u: 'https://free-for.dev/', d: 'Diensten met een bruikbaar gratis plan' },
+        { n: 'Learn X in Y Minutes', u: 'https://learnxinyminutes.com/', d: 'Een taal snappen in een pagina' },
+        { n: '30 Seconds of Code', u: 'https://www.30secondsofcode.org/', d: 'Kleine kant-en-klare stukjes code' },
+        { n: 'VS Code', u: 'https://code.visualstudio.com/', d: 'De standaard-editor' },
+        { n: 'VSCodium', u: 'https://vscodium.com/', d: 'VS Code zonder Microsoft-telemetrie' },
+        { n: 'Zed', u: 'https://zed.dev/', d: 'Snelle nieuwe editor' },
+        { n: 'lazygit', u: 'https://github.com/jesseduffield/lazygit/', d: 'Git in de terminal maar dan begrijpelijk' },
+        { n: 'Fork', u: 'https://git-fork.com/', d: 'Git met een fijne interface' },
+        { n: 'Cloudflare Workers', u: 'https://workers.cloudflare.com/', d: 'Kleine backend zonder server, gratis laag' },
+        { n: 'Netlify', u: 'https://www.netlify.com/', d: 'Site hosten met automatische deploys uit GitHub' },
+        { n: 'Vercel', u: 'https://vercel.com/', d: 'Zelfde idee, sterk voor frontends' },
+        { n: 'Astro', u: 'https://astro.build/', d: 'Snelle statische sites bouwen' },
+        { n: 'ImHex', u: 'https://imhex.werwolv.net/', d: 'Hex-editor voor als je echt in een bestand moet kijken' }
+      ]}
+    ]
+  },
+
+  osint: {
+    titel: '🕵️ Uitzoeken & Checken',
+    sub: 'De bruikbare kant van OSINT4All: iets natrekken, een foto verifieren, een site doorlichten. Amerikaanse people-search eruit gelaten.',
+    bron: 'https://start.me/p/L1rEYQ/osint4all',
+    bronNaam: 'start.me/osint4all',
+    cats: [
+      { groep: 'Checken', naam: '📸 Is deze foto of video echt?', items: [
+        { n: 'Google Lens', u: 'https://lens.google/', d: 'Waar komt deze foto vandaan, wat staat erop' },
+        { n: 'Yandex Images', u: 'https://yandex.com/images/', d: 'Veruit de beste omgekeerde beeldzoeker, ook voor gezichten' },
+        { n: 'TinEye', u: 'https://tineye.com/', d: 'Vindt de oudste versie van een foto, dus de bron' },
+        { n: 'Bing Visual Search', u: 'https://www.bing.com/visualsearch', d: 'Derde mening, vindt soms wat de rest mist' },
+        { n: 'FotoForensics', u: 'https://fotoforensics.com/', d: 'Laat zien of een foto bewerkt is' },
+        { n: 'Forensically', u: 'https://29a.ch/photo-forensics/', d: 'Ruisanalyse, kloondetectie, in de browser' },
+        { n: 'EXIF Viewer', u: 'https://exif.tools/', d: 'Verborgen data in een foto: camera, tijd, gps' },
+        { n: 'SunCalc', u: 'https://www.suncalc.org/', d: 'Klopt de schaduw met het gemelde tijdstip' },
+        { n: 'InVID / WeVerify', u: 'https://www.invid-project.eu/tools-and-services/invid-verification-plugin/', d: 'Video-frames uitpakken en los verifieren' },
+        { n: 'Deepware Scanner', u: 'https://scanner.deepware.ai/', d: 'Kans dat een video een deepfake is' }
+      ]},
+      { groep: 'Checken', naam: '🌐 Site of domein doorlichten', items: [
+        { n: 'urlscan.io', u: 'https://urlscan.io/', d: 'Opent een verdachte site veilig en laat zien wat hij doet' },
+        { n: 'VirusTotal URL', u: 'https://www.virustotal.com/gui/home/url', d: 'Link controleren met tientallen scanners' },
+        { n: 'Wayback Machine', u: 'https://web.archive.org/', d: 'Hoe zag deze pagina er vorig jaar uit' },
+        { n: 'archive.today', u: 'https://archive.ph/', d: 'Momentopname maken voor iets verdwijnt' },
+        { n: 'Whois lookup', u: 'https://whois.domaintools.com/', d: 'Wie heeft dit domein geregistreerd en wanneer' },
+        { n: 'SIDN whois (.nl)', u: 'https://www.sidn.nl/whois', d: 'Officiele whois voor Nederlandse domeinen' },
+        { n: 'BuiltWith', u: 'https://builtwith.com/', d: 'Met welke techniek is een site gebouwd' },
+        { n: 'Wappalyzer', u: 'https://www.wappalyzer.com/', d: 'Zelfde, als browserextensie' },
+        { n: 'crt.sh', u: 'https://crt.sh/', d: 'Alle subdomeinen via certificaatlogs' },
+        { n: 'SecurityTrails', u: 'https://securitytrails.com/', d: 'Domein- en DNS-geschiedenis' },
+        { n: 'Shodan', u: 'https://www.shodan.io/', d: 'Wat staat er van dit IP of bedrijf open op internet' },
+        { n: 'DNSDumpster', u: 'https://dnsdumpster.com/', d: 'Kaart van alles wat aan een domein hangt' },
+        { n: 'Scamadviser', u: 'https://www.scamadviser.com/', d: 'Snelle betrouwbaarheidsindicatie van een webshop' }
+      ]},
+      { groep: 'Checken', naam: '🔧 Je eigen site doorlichten', items: [
+        { n: 'PageSpeed Insights', u: 'https://pagespeed.web.dev/', d: 'Snelheid en Core Web Vitals, direct van Google' },
+        { n: 'Google Search Console', u: 'https://search.google.com/search-console', d: 'Wat Google echt van je site vindt en toont' },
+        { n: 'Rich Results Test', u: 'https://search.google.com/test/rich-results', d: 'Werkt je gestructureerde data' },
+        { n: 'Screaming Frog', u: 'https://www.screamingfrog.co.uk/seo-spider/', d: 'Kruipt je hele site af, 500 paginas gratis' },
+        { n: 'Ahrefs Webmaster Tools', u: 'https://ahrefs.com/webmaster-tools', d: 'Gratis backlink- en SEO-audit van je eigen site' },
+        { n: 'Bing Webmaster', u: 'https://www.bing.com/webmasters', d: 'Vergeten kanaal, gratis zoekdata' },
+        { n: 'Security Headers', u: 'https://securityheaders.com/', d: 'Staan je beveiligingsheaders goed' },
+        { n: 'SSL Labs', u: 'https://www.ssllabs.com/ssltest/', d: 'Hoe goed is je https echt ingesteld' },
+        { n: 'W3C Validator', u: 'https://validator.w3.org/', d: 'Klopt je HTML' },
+        { n: 'Broken Link Checker', u: 'https://www.deadlinkchecker.com/', d: 'Dode links opsporen' },
+        { n: 'Schema Markup Validator', u: 'https://validator.schema.org/', d: 'Controleer je schema.org-code' }
+      ]},
+      { groep: 'Checken', naam: '🏢 Bedrijf natrekken', items: [
+        { n: 'KVK Handelsregister', u: 'https://www.kvk.nl/zoeken/', d: 'Bestaat dit bedrijf, sinds wanneer, wie zit erachter' },
+        { n: 'Company.info', u: 'https://www.company.info/', d: 'NL bedrijfsdata inclusief jaarrekeningen' },
+        { n: 'OpenCorporates', u: 'https://opencorporates.com/', d: 'Bedrijfsregisters wereldwijd doorzoeken' },
+        { n: 'EU VIES btw-check', u: 'https://ec.europa.eu/taxation_customs/vies/', d: 'Is dit btw-nummer geldig' },
+        { n: 'Rechtspraak.nl', u: 'https://uitspraken.rechtspraak.nl/', d: 'Is er over dit bedrijf geprocedeerd' },
+        { n: 'Faillissementsregister', u: 'https://insolventies.rechtspraak.nl/', d: 'Faillissementen en surseances' },
+        { n: 'ACM Consuwijzer', u: 'https://www.consuwijzer.nl/', d: 'Regels en meldingen rond handelspraktijken' },
+        { n: 'LinkedIn via Google', u: 'https://www.google.com/search?q=site:linkedin.com/in+', d: 'Profielen vinden zonder LinkedIn-account' }
+      ]},
+      { groep: 'Zoeken', naam: '🔍 Beter zoeken', items: [
+        { n: 'Google Advanced Search', u: 'https://www.google.com/advanced_search', d: 'Zoekfilters zonder operatoren te onthouden' },
+        { n: 'Google zoekoperatoren', u: 'https://support.google.com/websearch/answer/2466433', d: 'site:, filetype:, intitle: en de rest, officieel' },
+        { n: 'Yandex', u: 'https://yandex.com/', d: 'Vindt regelmatig wat Google niet laat zien' },
+        { n: 'Mojeek', u: 'https://www.mojeek.com/', d: 'Eigen index, dus echt andere resultaten' },
+        { n: 'Marginalia', u: 'https://marginalia-search.com/', d: 'Vindt kleine, ouderwetse, tekstuele sites' },
+        { n: 'Million Short', u: 'https://millionshort.com/', d: 'Verbergt de populairste sites, zo vind je de rest' },
+        { n: 'Boardreader', u: 'https://boardreader.com/', d: 'Doorzoekt fora, waar de echte antwoorden staan' },
+        { n: 'Google Scholar', u: 'https://scholar.google.com/', d: 'Wetenschappelijke publicaties' },
+        { n: 'Internet Archive Scholar', u: 'https://scholar.archive.org/', d: 'Open access papers, ook oude' },
+        { n: 'GrayHatWarfare', u: 'https://buckets.grayhatwarfare.com/', d: 'Per ongeluk openbare cloud-opslag doorzoeken' },
+        { n: 'Google Trends', u: 'https://trends.google.nl/trends/', d: 'Waar wordt nu op gezocht, per regio' }
+      ]},
+      { groep: 'Zoeken', naam: '📍 Waar is dit', items: [
+        { n: 'Google Earth', u: 'https://earth.google.com/web/', d: 'Satellietbeeld met tijdlijn terug in de tijd' },
+        { n: 'Mapillary', u: 'https://www.mapillary.com/app/', d: 'Straatbeeld waar Street View niet komt' },
+        { n: 'KartaView', u: 'https://kartaview.org/', d: 'Nog een bron voor straatbeeld' },
+        { n: 'OpenStreetMap', u: 'https://www.openstreetmap.org/', d: 'Detailkaart, vaak completer dan Google' },
+        { n: 'Overpass Turbo', u: 'https://overpass-turbo.eu/', d: 'Zoek op kenmerken: alle windmolens in deze regio' },
+        { n: 'GeoHints', u: 'https://geohints.com/', d: 'Herken een land aan palen, borden, kentekens' },
+        { n: 'Sentinel Hub', u: 'https://apps.sentinel-hub.com/eo-browser/', d: 'Gratis actuele satellietbeelden' },
+        { n: 'PDOK Viewer', u: 'https://app.pdok.nl/viewer/', d: 'Officiele Nederlandse geodata, zeer gedetailleerd' },
+        { n: 'Kadaster BAG viewer', u: 'https://bagviewer.kadaster.nl/', d: 'Bouwjaar en gegevens van elk NL pand' },
+        { n: 'Ruimtelijke plannen', u: 'https://www.ruimtelijkeplannen.nl/', d: 'Wat mag er op deze plek gebouwd worden' },
+        { n: 'Windy', u: 'https://www.windy.com/', d: 'Weer, wind en webcams over de hele wereld' },
+        { n: 'FIRMS', u: 'https://firms.modaps.eosdis.nasa.gov/map/', d: 'Actieve branden en hitte wereldwijd via NASA' }
+      ]},
+      { groep: 'Zoeken', naam: '🎨 Beeld vinden & maken', items: [
+        { n: 'Unsplash', u: 'https://unsplash.com/', d: 'Gratis rechtenvrije fotos van hoge kwaliteit' },
+        { n: 'Pexels', u: 'https://www.pexels.com/', d: 'Fotos en videos, rechtenvrij' },
+        { n: 'Openverse', u: 'https://openverse.org/', d: 'Zoekt door alle Creative Commons-beelden' },
+        { n: 'Wikimedia Commons', u: 'https://commons.wikimedia.org/', d: 'Miljoenen vrij bruikbare afbeeldingen met bron' },
+        { n: 'Rijksstudio', u: 'https://www.rijksmuseum.nl/nl/rijksstudio', d: 'Rijksmuseum-collectie in hoge resolutie, vrij te gebruiken' },
+        { n: 'Google Flow', u: 'https://labs.google/fx/tools/flow', d: 'Beeld en video genereren, dagelijkse gratis credits' },
+        { n: 'Gemini', u: 'https://gemini.google.com/', d: 'Afbeeldingen genereren en bewerken via chat' },
+        { n: 'Photopea', u: 'https://www.photopea.com/', d: 'Bewerken in de browser, opent PSD' },
+        { n: 'Squoosh', u: 'https://squoosh.app/', d: 'Comprimeren voor je site' },
+        { n: 'Coolors', u: 'https://coolors.co/', d: 'Kleurenpalet samenstellen' }
+      ]},
+      { groep: 'Controleren', naam: '📰 Klopt dit bericht', items: [
+        { n: 'Ground News', u: 'https://ground.news/', d: 'Zelfde verhaal bij links, rechts en midden naast elkaar' },
+        { n: 'Nieuwscheckers', u: 'https://nieuwscheckers.nl/', d: 'NL factcheck-redactie van Universiteit Leiden' },
+        { n: 'Bellingcat Toolkit', u: 'https://bellingcat.gitbook.io/toolkit', d: 'De onderzoeksmethodes van de profs' },
+        { n: 'EUvsDisinfo', u: 'https://euvsdisinfo.eu/', d: 'Database van weerlegde desinformatie' },
+        { n: 'Snopes', u: 'https://www.snopes.com/', d: 'Klassieke factchecker voor virale claims' },
+        { n: 'Google Fact Check', u: 'https://toolbox.google.com/factcheck/explorer', d: 'Doorzoekt factchecks wereldwijd' },
+        { n: 'Media Bias Fact Check', u: 'https://mediabiasfactcheck.com/', d: 'Hoe betrouwbaar en gekleurd is deze bron' }
+      ]},
+      { groep: 'Controleren', naam: '📊 Open data', items: [
+        { n: 'CBS StatLine', u: 'https://opendata.cbs.nl/statline/', d: 'Alle Nederlandse statistiek, gratis' },
+        { n: 'data.overheid.nl', u: 'https://data.overheid.nl/', d: 'Open datasets van de NL overheid' },
+        { n: 'Klimaatmonitor', u: 'https://klimaatmonitor.databank.nl/', d: 'NL energie- en klimaatcijfers per gemeente' },
+        { n: 'CBS energiecijfers', u: 'https://www.cbs.nl/nl-nl/dossier/dossier-energie', d: 'Verbruik, opwek, prijzen. Goed voor StekkerSlim' },
+        { n: 'Eurostat', u: 'https://ec.europa.eu/eurostat/data/database', d: 'Europese cijfers, goed voor vergelijkingen' },
+        { n: 'Our World in Data', u: 'https://ourworldindata.org/', d: 'Grote onderwerpen met bronnen en grafieken' },
+        { n: 'Energieopwek.nl', u: 'https://energieopwek.nl/', d: 'Live hoeveel duurzame stroom Nederland maakt' },
+        { n: 'ENTSO-E Transparency', u: 'https://transparency.entsoe.eu/', d: 'Europese stroomproductie en -prijzen, ruwe data' },
+        { n: 'Wikidata Query', u: 'https://query.wikidata.org/', d: 'Gestructureerde feiten uit Wikipedia opvragen' }
+      ]},
+      { groep: 'Controleren', naam: '🔐 Veiligheid & lekken', items: [
+        { n: 'Have I Been Pwned', u: 'https://haveibeenpwned.com/', d: 'Staat dit mailadres in een datalek' },
+        { n: 'Firefox Monitor', u: 'https://monitor.mozilla.org/', d: 'Zelfde, met waarschuwingen bij nieuwe lekken' },
+        { n: 'WhatsMyName', u: 'https://whatsmyname.app/', d: 'Op welke sites bestaat deze gebruikersnaam' },
+        { n: 'Epieos', u: 'https://epieos.com/', d: 'Wat hangt er aan een mailadres of telefoonnummer' },
+        { n: 'BrowserLeaks', u: 'https://browserleaks.com/', d: 'Wat lekt jouw browser aan elke site' },
+        { n: 'Cover Your Tracks', u: 'https://coveryourtracks.eff.org/', d: 'Hoe uniek en volgbaar ben je online' },
+        { n: 'Google Resultaten over jou', u: 'https://myactivity.google.com/results-about-you', d: 'Vraag Google jouw gegevens uit de zoekresultaten te halen' }
+      ]},
+      { groep: 'Controleren', naam: '🎭 Anoniem testen', items: [
+        { n: 'SimpleLogin', u: 'https://simplelogin.io/', d: 'Wegwerp-mailadres dat doorstuurt naar je echte' },
+        { n: 'addy.io', u: 'https://addy.io/', d: 'Zelfde idee, open source' },
+        { n: 'DuckDuckGo Email', u: 'https://duckduckgo.com/email/', d: 'Gratis alias die trackers uit je mail sloopt' },
+        { n: 'MailDrop', u: 'https://maildrop.cc/', d: 'Tijdelijke inbox zonder account' },
+        { n: 'Firefox Containers', u: 'https://addons.mozilla.org/firefox/addon/multi-account-containers/', d: 'Meerdere accounts naast elkaar zonder uitloggen' },
+        { n: 'Fake Name Generator', u: 'https://www.fakenamegenerator.com/', d: 'Testgegevens voor formulieren die je bouwt' }
+      ]}
+    ]
+  }
+};
+let TOOLKIT_ACTIEF = 'fmhy';
+
+function openToolkit(key) {
+  TOOLKIT_ACTIEF = key;
+  const tk = TOOLKITS[key];
+  document.getElementById('toolkit-title').textContent = tk.titel;
+  document.getElementById('toolkit-sub').textContent = tk.sub;
+  document.getElementById('toolkit-source').innerHTML =
+    `Uitgedunde selectie — volledige lijst: <a href="${tk.bron}" target="_blank" rel="noopener noreferrer" style="color:var(--muted);">${tk.bronNaam}</a>`;
+  document.getElementById('toolkit-input').value = '';
+  document.getElementById('toolkit-answer').style.display = 'none';
+  document.getElementById('toolkit-error').style.display = 'none';
+  toolkitRenderCats();
+  document.getElementById('toolkit-overlay').style.display = 'flex';
+}
+function closeToolkit() {
+  document.getElementById('toolkit-overlay').style.display = 'none';
+}
+document.getElementById('toolkit-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeToolkit();
+});
+
+function toolkitItemHtml(it) {
+  return `<a href="${it.u}" target="_blank" rel="noopener noreferrer" style="display:block;padding:8px 10px;border-radius:9px;text-decoration:none;background:rgba(255,255,255,0.02);">
+    <span style="color:var(--text);font-size:0.8em;font-weight:600;">${escHtml(it.n)}</span>
+    <span style="color:var(--muted);font-size:0.74em;display:block;margin-top:2px;line-height:1.45;">${escHtml(it.d)}</span>
+  </a>`;
+}
+
+function toolkitRenderCats() {
+  const tk = TOOLKITS[TOOLKIT_ACTIEF];
+  let html = '';
+  let vorigeGroep = null;
+  tk.cats.forEach(c => {
+    if (c.groep && c.groep !== vorigeGroep) {
+      html += `<div style="font-size:0.62em;font-weight:700;letter-spacing:0.14em;color:var(--muted);text-transform:uppercase;margin:14px 0 2px;font-family:'Inter',sans-serif;">${escHtml(c.groep)}</div>`;
+      vorigeGroep = c.groep;
+    }
+    const bronLink = c.bron
+      ? `<a href="${c.bron}" target="_blank" rel="noopener noreferrer" style="display:block;margin-top:6px;font-size:0.7em;color:var(--muted);text-decoration:none;">↗ volledige lijst op de bron</a>`
+      : '';
+    html += `<details style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:10px 12px;">
+      <summary style="cursor:pointer;font-size:0.82em;font-weight:600;color:var(--text);list-style:none;">
+        ${escHtml(c.naam)} <span style="color:var(--muted);font-weight:400;font-size:0.9em;">(${c.items.length})</span>
+      </summary>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-top:8px;">${c.items.map(toolkitItemHtml).join('')}</div>
+      ${bronLink}
+    </details>`;
+  });
+  document.getElementById('toolkit-cats').innerHTML = html;
+}
+
+// "Verras me" — 3 willekeurige tools, puur om op ideeen te komen. Geen API-call.
+function toolkitSurprise() {
+  const alle = TOOLKITS[TOOLKIT_ACTIEF].cats.flatMap(c => c.items.map(i => ({ ...i, cat: c.naam })));
+  const picks = [];
+  const pool = alle.slice();
+  while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  const el = document.getElementById('toolkit-answer');
+  el.style.display = 'block';
+  el.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#fb923c;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🎲 Drie willekeurige</div>
+    <div style="display:flex;flex-direction:column;gap:4px;">${picks.map(toolkitItemHtml).join('')}</div>`;
+}
+
+async function toolkitAsk() {
+  const vraag = document.getElementById('toolkit-input').value.trim();
+  const errEl = document.getElementById('toolkit-error');
+  const outEl = document.getElementById('toolkit-answer');
+  errEl.style.display = 'none';
+  if (!vraag) { document.getElementById('toolkit-input').focus(); return; }
+  if (!getOpenRouterKey()) {
+    errEl.textContent = '❌ Geen OpenRouter key. Zet die eerst in het API Key-scherm.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const tk = TOOLKITS[TOOLKIT_ACTIEF];
+  const lijst = tk.cats.map(c => c.naam + '\n' + c.items.map(i => `- ${i.n} | ${i.u} | ${i.d}`).join('\n')).join('\n\n');
+
+  const btn = document.getElementById('toolkit-ask-btn');
+  const oudeTekst = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Zoeken...';
+  outEl.style.display = 'block';
+  outEl.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">⏳ Bezig...</span>';
+
+  const systemPrompt = 'Je bent een toolkit-gids voor Remy. Hij heeft ADHD en raakt overweldigd door lange lijsten, dus je bent meedogenloos kort. Je kiest ALTIJD maximaal 3 tools, nooit meer. Je verzint nooit tools die niet in de lijst staan. Antwoord in het Nederlands, in dit exacte format per tool en verder niets:\n\nNAAM | URL | een zin waarom dit past bij zijn vraag\n\nGeen inleiding, geen afsluiting, geen kopjes. Als niets in de lijst echt past, antwoord dan met precies een regel: GEEN | | korte uitleg wat hij beter kan zoeken.';
+  const userMsg = `Beschikbare tools:\n\n${lijst}\n\nRemy vraagt: "${vraag}"\n\nKies de 3 beste (of minder als er minder passen).`;
+
+  try {
+    const text = await callOpenRouter(TOOLKIT_ASK_MODEL, systemPrompt, userMsg, 30000);
+    const regels = text.split('\n').map(r => r.trim()).filter(r => r.includes('|'));
+    let html = '';
+    if (!regels.length || regels[0].startsWith('GEEN')) {
+      const uitleg = regels.length ? regels[0].split('|').slice(2).join('|').trim() : text;
+      html = `<div style="font-size:0.8em;color:var(--text-dim);line-height:1.6;">🤷 Hier zit niks passends bij. ${escHtml(uitleg)}</div>`;
+    } else {
+      html = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">✨ Dit zou ik pakken</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">` +
+        regels.slice(0, 3).map(r => {
+          const [naam, url, waarom] = r.split('|').map(s => (s || '').trim());
+          const veilig = /^https?:\/\//.test(url) ? url : null;
+          return toolkitItemHtml({ n: naam.replace(/^[-*\d.\s]+/, ''), u: veilig || tk.bron, d: waarom || '' });
+        }).join('') + '</div>';
+    }
+    outEl.innerHTML = html;
+  } catch (e) {
+    outEl.style.display = 'none';
+    errEl.textContent = '❌ ' + (e.message || 'onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = oudeTekst;
   }
 }
 
