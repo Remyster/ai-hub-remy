@@ -241,7 +241,7 @@ Zelfde patroon als Claude key: opgeslagen in `app_settings` (`setting_key: 'open
 
 ## Toolkits — FMHY + OSINT4All (16 augustus 2026)
 
-Twee kaarten bij **Tools & Platforms** (`🧰 Gratis Tools` en `🕵️ Uitzoeken`) openen dezelfde overlay (`toolkit-overlay`) via `openToolkit('fmhy')` / `openToolkit('osint')`.
+Twee kleine knoppen in de **header** (`🧰 Gratis Tools` en `🕵️ Uitzoeken`) openen dezelfde overlay (`toolkit-overlay`) via `openToolkit('fmhy')` / `openToolkit('osint')`. Stonden tot 17 augustus 2026 als kaart in Tools & Platforms.
 
 **Waarom zo:** beide bronsites zijn onbruikbaar groot. De hub bevat een *handgeschreven, ingedikte* kopie in de constante `TOOLKITS` — geen scrape, geen sync. Categorieën staan standaard dichtgeklapt (`<details>`), zodat je nooit een muur tekst ziet.
 
@@ -305,6 +305,14 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 17 augustus 2026
+- **Toolkit-kaarten naar de header**: 🧰 Gratis Tools en 🕵️ Uitzoeken zijn nu `.hbtn`-knoppen in `.header-btns` (tussen 🔐 Kluis en 🎮 Twitch), met een `title`-tooltip die uitlegt wat de toolkit is. Reden: als kaart stonden ze onderaan de pagina in Tools & Platforms en werden ze simpelweg nooit gezien.
+- **Secties Tools & Platforms (`#sec-tools`) en Mijn Projecten (`#sec-projects`) verwijderd**: alle kaarten daaruit (GitHub, Drive, Photos, Gmail, Supabase, Kluis, Twitch, Home Assistant) bestonden al als kleine knop in de header — puur dubbelop. Geen JS verwees naar deze section-id's. Nieuwe tools voortaan als `.hbtn` in de header toevoegen, niet als kaart.
+- **Toolkit-uitleg**: de `sub` van beide toolkits begint nu met "Wat dit is:" en legt in gewone taal uit wat *gratis tools* en *uitzoeken* betekenen — de losse kaart-ondertitel ("FMHY, uitgedund") viel weg met de sectie.
+- **AI-kaarten in Algemeen tweeregelig**: elke `p.voorbeeld` heeft nu `→ algemeen: …<br>→ bij mij: …`. Eerst waar die AI in het algemeen goed voor is, dan het eigen voorbeeld. Voorheen stond er alleen een StekkerSlim-voorbeeld, wat de indruk gaf dat bijv. Claude alleen voor blogs was.
+- **Hint onderaan aangepast** naar alleen "Esc om te sluiten" — er waren maar 3 kaarten met `data-key`, dus "Toets 1–8" klopte niet.
+- Let op bij het schrijven van `TOOLKITS`-teksten: het zijn single-quoted JS-strings, dus geen apostrof in woorden als `programma's`.
 
 ### 16 augustus 2026
 - **Algemeen-sectie**: DeepSeek en Kimi toegevoegd. Elke AI-kaart heeft nu twee regels: waar díé AI het beste in is (i.p.v. "OpenAI chats" / "Google AI"), en daaronder een concreet voorbeeld uit Remy's eigen werk via de nieuwe CSS-klasse `.card p.voorbeeld` (cursief, gestippelde scheidingslijn). Kimi ook in de toolkit-lijst gezet.
