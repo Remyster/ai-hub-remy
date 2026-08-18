@@ -1,5 +1,5 @@
 # Remy's AI Hub — Project Overzicht
-*Laatst bijgewerkt: 6 augustus 2026*
+*Laatst bijgewerkt: 18 augustus 2026*
 
 ## Wat is dit?
 Persoonlijk AI dashboard als single-page application (SPA) in één `index.html` bestand (~390KB). Draait via GitHub Pages op `remyster.github.io/ai-hub-remy/`. Geen framework, geen build-stap.
@@ -69,21 +69,24 @@ Drie pipelines voor StekkerSlim. Elke stap opent een AI-tool, prompt wordt gepla
 
 ### Blog Pipeline — 13 stappen
 
-| Stap | AI | Functie |
-|------|----|---------|
-| 1 | Gemini + Grok | Blogideeën (multi-AI) |
-| 2 | Perplexity | Selectie & factcheck |
-| 3 | Gemini | Content gap & SEO |
-| 4 | StekkerPen (Claude) | Outline schrijven |
-| 5 | Grok | Outline review |
-| 6 | Perplexity | Feitencheck |
-| 7 | Gemini | SEO finaal |
-| 8 | StekkerPen (Claude) | Blog schrijven |
-| 9 | Alle AI's | Review ronde |
-| 10 | StekkerPen (Claude) | Commentaar verwerken |
-| 11 | Alle AI's | Finaal oordeel |
-| 12 | StekkerPen (Claude) | Finale HTML |
-| 13 | Stekkerslim Bouwen (Claude) | Publicatiecheck |
+| Stap | AI | Functie | Krijgt als input |
+|------|----|---------|---|
+| 1 | Gemini + Grok | Blogideeën (multi-AI) | — |
+| 2 | Perplexity | Selectie & factcheck | stap 1 (Gemini + Grok) |
+| 3 | Gemini | Content gap & SEO | stap 2 |
+| 4 | StekkerPen (Claude) | Outline schrijven | stap 3 |
+| 5 | Grok | Outline review | stap 4 |
+| 6 | Perplexity | Feitencheck | stap 4 (outline) + stap 5 (Grok-review) |
+| 7 | Gemini | SEO finaal | stap 4 + stap 5 + stap 6 |
+| 8 | StekkerPen (Claude) | Blog schrijven | stap 4 + stap 5 + stap 6 + stap 7 |
+| 9 | Alle AI's | Review ronde | stap 8 (blog) |
+| 10 | StekkerPen (Claude) | Commentaar verwerken | stap 8 + stap 9 |
+| 11 | Alle AI's | Finaal oordeel | stap 10 |
+| 12 | StekkerPen (Claude) | Finale HTML | stap 10 + stap 11 |
+| 13 | Stekkerslim Bouwen (Claude) | Publicatiecheck | stap 12 |
+
+**Let op:** stap 6, 7 en 8 hebben *cumulatief* alle voorgaande artefacten nodig (niet
+alleen de direct voorafgaande stap) — zie changelog 18 augustus 2026 voor de reden.
 
 ---
 
@@ -305,6 +308,44 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 18 augustus 2026
+- **Blog Pipeline bedrading gerepareerd**: stap 6, 7 en 8 kregen alleen de output van
+  de direct voorafgaande stap mee, niet het artefact zelf. Daardoor beoordeelden
+  Perplexity (6) en Gemini (7) een outline die ze nooit zagen, en schreef Claude in
+  stap 8 de blog op basis van uitsluitend een SEO-scorelijst. `prevSources` van deze
+  drie stappen bevat nu alle inputs die de prompt zelf opsomt, volgens hetzelfde
+  patroon als stap 10 en 12.
+- **INPUTCONTROLE-blok** toegevoegd aan stap 6, 7 en 8: bij een ontbrekend of nog
+  ongevuld INPUT-blok stopt de AI en vraagt erom, in plaats van te reconstrueren.
+- **Stap 3**: "PER IDEE" naar enkelvoud (werkt sinds de KEUZE VAN REMY-toevoeging maar
+  aan één onderwerp, wat leidde tot "ID: N/A"). WINNAAR-blok uitgebreid met doelgroep,
+  primaire zoekintentie, FAQ-vragen en factchecklijst zodat stap 4 die niet meer hoeft
+  te verzinnen.
+- **Linkverificatie** (stap 4, 8, 10, 12, 13): live site nu boven de raw-URL in de
+  verificatievolgorde (Claude kan de raw-URL vanuit de chatinterface vaak niet
+  betrouwbaar ophalen), plus expliciet verbod op google.com/search-links als
+  "geverifieerde" interne link — die kwamen eerder als BESTAAT langs terwijl het
+  zoeklinks waren.
+- **Pipeline cross-device sync gerepareerd**: `sspSyncToCloud`/`sspLoadFromCloud`/
+  archief-functies/`backupAlles` wezen voor de `pipeline_state`-tabel per ongeluk naar
+  Project B (`SB_URL`), terwijl die tabel in Project A staat. Elke sync kreeg een 404,
+  waarna `_sspCloudAvailable` voor de rest van de sessie stil op false ging — dus alles
+  bleef alleen lokaal op het apparaat staan waar het ingevuld werd. Nu op `SS_SBURL` /
+  nieuwe `SS_GET_HDR`/`SS_POST_HDR` gezet en end-to-end getest (POST/GET/DELETE).
+- **Kluis: dual-code ontgrendeling**: in plaats van één hoofdwachtwoord wordt nu een
+  willekeurige data-key tweemaal apart ingepakt (AES-256-GCM, PBKDF2 250.000 iteraties)
+  — één keer met de dagelijkse code, één keer met een zelfgekozen herstelcode. Eén
+  invoerveld accepteert beide; na 5 mislukte pogingen verandert alleen de hint-tekst
+  ("gebruik je herstelcode"), de herstelcode werkt vanaf het begin al (bewuste keuze:
+  een noodgreep die je niet eerst kunt "op slot zetten" heeft geen echt nut). Oude
+  single-code meta (`salt`/`check_iv`/`check_ct`) wordt bij setup opgeruimd.
+- **Kluis: CSV-import** toegevoegd (📥-knop naast + Nieuw): eigen RFC4180-parser
+  (nodig omdat wachtwoorden zelf komma's en quotes kunnen bevatten), URL/bron/TOTP
+  gaan in de notitie, upload in batches van 50.
+- **AI Pipeline content**: nieuw "bestand-plakken"-hulpje (`ssp-filenote-block`) voor
+  te lange prompts, DeepSeek toegevoegd aan de losse AI-checkers, Kimi K2.6 toegevoegd
+  als 4e AI Council-model.
 
 ### 17 augustus 2026
 - **Toolkit-kaarten naar de header**: 🧰 Gratis Tools en 🕵️ Uitzoeken zijn nu `.hbtn`-knoppen in `.header-btns` (tussen 🔐 Kluis en 🎮 Twitch), met een `title`-tooltip die uitlegt wat de toolkit is. Reden: als kaart stonden ze onderaan de pagina in Tools & Platforms en werden ze simpelweg nooit gezien.
