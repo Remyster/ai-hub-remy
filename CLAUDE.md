@@ -310,6 +310,21 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ## Changelog
 
 ### 18 augustus 2026
+- **Pipeline "Opschonen"-knop**: bij elk antwoord-invoerveld (los en multi-AI) staat nu
+  een 🧹 Opschonen-knop die het geplakte antwoord door `anthropic/claude-haiku-4.5`
+  (via OpenRouter, `callOpenRouter()`) haalt en alleen bronstatus-blokken,
+  connector-bevestigingen en voortgangsmeldingen verwijdert — de inhoud zelf blijft
+  ongewijzigd. Reden: Remy plakte AI-antwoorden inclusief alle meta-rapportage
+  (bronstatus, "connector werkte: ja") klakkeloos door naar de volgende stap, waardoor
+  die stap een berg ruis kreeg in plaats van alleen het bruikbare antwoord. Schoont
+  niet automatisch op — resultaat verschijnt in hetzelfde veld, pas na controle zelf
+  op Opslaan klikken.
+- **Downloadknop bij "prompt te lang"-hint** (`fileNote`-stappen, nu alleen stap 2):
+  in plaats van dat Remy de samengestelde prompt zelf via Kladblok/Notities moest
+  knippen-plakken (bron van kapotte tekens als â†’/â‚¬ en per ongeluk verkeerde stukken
+  meenemen), staat er nu een directe downloadknop die exact `sspGetPrompt()`'s output
+  als UTF-8 .txt-bestand wegschrijft — dat bestand is meteen correct, niks om mis te
+  laten gaan.
 - **Blog Pipeline bedrading gerepareerd**: stap 6, 7 en 8 kregen alleen de output van
   de direct voorafgaande stap mee, niet het artefact zelf. Daardoor beoordeelden
   Perplexity (6) en Gemini (7) een outline die ze nooit zagen, en schreef Claude in

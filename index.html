@@ -2492,9 +2492,14 @@ header h1 {
     </div>
     </div>
     <div id="ssp-filenote-block" style="display:none;margin-bottom:14px;background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.22);border-radius:11px;padding:11px;">
-      <div style="font-size:0.6em;color:#38bdf8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">📎 Prompt te lang? Stuur 'm als bestand — plak dit erbij</div>
+      <div style="font-size:0.6em;color:#38bdf8;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;">📎 Prompt te lang voor het tekstvak — 2 stappen, niet zelf knippen-plakken</div>
+      <div style="font-size:0.72em;color:var(--text);margin-bottom:9px;line-height:1.5;">
+        <b>Stap 1:</b> download het bestand hieronder en upload dat bij de AI (bijlage-knop, geen kopieer-plak nodig — dit is exact de goede tekst, niks kan hier misgaan).<br>
+        <b>Stap 2:</b> kopieer het venstertje daaronder en plak dát los in het chatvak.
+      </div>
+      <button onclick="sspDownloadPromptFile()" style="width:100%;padding:11px;background:rgba(16,185,129,0.14);border:1px solid rgba(16,185,129,0.36);border-radius:10px;color:#10b981;font-family:'DM Mono',monospace;font-size:0.74em;cursor:pointer;font-weight:700;margin-bottom:10px;">&#11015;&#65039; Stap 1: Download bestand</button>
       <textarea id="ssp-filenote" readonly style="width:100%;height:90px;background:rgba(0,0,0,0.2);border:1px solid rgba(56,189,248,0.22);border-radius:9px;color:var(--text);font-family:'DM Mono',monospace;font-size:0.66em;padding:9px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;"></textarea>
-      <button onclick="sspCopyFileNote()" style="width:100%;margin-top:8px;padding:10px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;font-weight:700;">&#128203; Kopieer dit venstertje</button>
+      <button onclick="sspCopyFileNote()" style="width:100%;margin-top:8px;padding:10px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:'DM Mono',monospace;font-size:0.72em;cursor:pointer;font-weight:700;">&#128203; Stap 2: Kopieer dit venstertje</button>
     </div>
     <div id="ssp-output-container" style="margin-bottom:8px;"></div>
         <div id="ssp-status" style="font-size:0.7em;color:#10b981;text-align:center;min-height:18px;"></div>
@@ -2723,6 +2728,7 @@ function sspRenderOutputContainer(step) {
           ) : '')
         + '<textarea id="ssp-mout-'+i+'" oninput="sspAutoSaveMulti('+i+')" placeholder="Plak antwoord van '+ai.label+'..." style="width:100%;height:120px;background:rgba(0,0,0,0.2);border:1px solid rgba(56,189,248,0.2);border-radius:9px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.67em;padding:9px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;"></textarea>'
         + '<div style="display:flex;gap:6px;margin-top:7px;">'
+        + '<button onclick="sspCleanupMulti('+i+')" style="padding:8px 10px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.28);border-radius:9px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>'
         + '<button onclick="sspSaveMulti('+i+')" style="flex:1;padding:8px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.28);border-radius:9px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128190; Opslaan</button>'
         + '<button onclick="sspDeleteMulti('+i+')" style="padding:8px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:9px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128465;</button>'
         + '</div></div>';
@@ -2745,6 +2751,7 @@ function sspRenderOutputContainer(step) {
     c.innerHTML='<div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Antwoord van AI <span id="ssp-saved-badge" style="color:#10b981;font-size:0.9em;"></span></div>'
       +'<textarea id="ssp-output" placeholder="Plak hier het volledige antwoord van de AI..." style="width:100%;height:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.22);border-radius:11px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>'
       +'<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;flex-wrap:wrap;">'
+      +'<button onclick="sspCleanup()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>'
       +'<button onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
       +'<button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>'
       +'<button onclick="sspDelete()" style="flex:1;min-width:90px;padding:11px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.22);border-radius:10px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128465; Verwijderen</button>'
@@ -2763,6 +2770,48 @@ function sspNextStep() { const steps=SSP_PIPELINES[sspPipeline].steps; if(sspSte
 // ═══════ ACTIES ═══════
 const SSP_FILENOTE_TEXT = "Ik stuur je hierbij een bijlage met de volledige input voor deze opdracht (de output van de vorige stap(pen)). Het is te lang om hieronder te plakken, dus staat in het meegestuurde bestand.\n\nBehandel de inhoud van dat bestand exact alsof ik die letterlijk had geplakt op de plek waar in de hoofdprompt \"[PLAK HIER...]\" staat. Het bestand IS die input — geen aparte bijlage om apart te bekijken of samen te vatten.\n\nVoer de hoofdprompt hierboven gewoon volledig uit zodra je het bestand hebt gelezen. Vraag niet eerst om bevestiging, vat het bestand niet eerst samen, en meld niet dat je 'wacht op de input' — je hebt het al, het staat in de bijlage.";
 
+// ── Opschonen: haalt bronstatus/connector-checks/voortgangsmeldingen uit een
+// geplakt AI-antwoord, zodat alleen de bruikbare inhoud doorgaat naar de volgende stap ──
+const SSP_CLEANUP_MODEL = 'anthropic/claude-haiku-4.5';
+const SSP_CLEANUP_SYSPROMPT = "Je krijgt een ruwe, geplakte AI-output uit een contentpipeline. Die output bevat vaak meta-tekst die niet bedoeld is voor de volgende stap in de pipeline: bronstatus-rapportages (bijvoorbeeld \"GitHub-connector werkte: ja\", \"Sitemap gecontroleerd: ja\"), connector-bevestigingen, voortgangsmeldingen, herhalingen van de opdracht zelf, en andere administratieve ruis rond het eigenlijke antwoord.\n\nJouw taak: geef ALLEEN de eigenlijke inhoudelijke output terug — het deel waar de volgende AI in de pipeline daadwerkelijk mee moet werken (bijvoorbeeld de lijst met ideeen, de outline, de reviewpunten, de factcheck-resultaten zelf). Verwijder:\n- Bronstatus-blokken (GitHub/Drive/live site/sitemap gecontroleerd: ja/nee/gedeeltelijk)\n- Connector-bevestigingen en meldingen over welke tools wel/niet werkten\n- Voortgangsmeldingen en tussentijdse meta-tekst (\"ik ga nu...\", \"hierbij mijn analyse...\")\n- Letterlijke herhaling van de opdracht of instructies\n\nVerander NIETS aan de inhoud van het eigenlijke antwoord zelf: geen samenvatting, geen herschrijving, geen eigen interpretatie, geen tekst toevoegen. Alleen de ruis eromheen weg. Twijfel je of iets ruis is of inhoud: laat het staan, beter te veel bewaren dan inhoud verliezen.\n\nGeef uitsluitend de opgeschoonde tekst terug, zonder inleiding, aanhef of toelichting van jouzelf.";
+
+async function sspCleanupText(rawText) {
+  return callOpenRouter(SSP_CLEANUP_MODEL, SSP_CLEANUP_SYSPROMPT, rawText, 45000);
+}
+async function sspCleanup() {
+  const ta = document.getElementById('ssp-output');
+  if (!ta || !ta.value.trim()) { sspStatus('Niks om op te schonen.', '#fbbf24'); return; }
+  sspStatus('🧹 Opschonen…', '#38bdf8');
+  try {
+    ta.value = await sspCleanupText(ta.value.trim());
+    sspStatus('✓ Opgeschoond — controleer en klik daarna Opslaan.', '#10b981');
+  } catch(e) {
+    sspStatus('⚠ Opschonen mislukt: ' + e.message, '#f87171');
+  }
+}
+async function sspCleanupMulti(i) {
+  const ta = document.getElementById('ssp-mout-' + i);
+  if (!ta || !ta.value.trim()) { sspStatus('Niks om op te schonen.', '#fbbf24'); return; }
+  sspStatus('🧹 Opschonen…', '#38bdf8');
+  try {
+    ta.value = await sspCleanupText(ta.value.trim());
+    sspStatus('✓ Opgeschoond — controleer en klik daarna Opslaan.', '#10b981');
+  } catch(e) {
+    sspStatus('⚠ Opschonen mislukt: ' + e.message, '#f87171');
+  }
+}
+
+function sspDownloadPromptFile() {
+  const text = sspGetPrompt(sspPipeline, sspStepIdx);
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'stekkerslim-pipeline-' + sspPipeline + '-stap' + (sspStepIdx + 1) + '.txt';
+  a.click();
+  URL.revokeObjectURL(url);
+  sspStatus('✓ Bestand gedownload — upload dit bij de AI.', '#10b981');
+}
 function sspCopyFileNote() {
   const el = document.getElementById('ssp-filenote'); if (!el) return;
   const ok = sspCopyToClipboard(el.value);
