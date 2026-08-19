@@ -1,0 +1,24 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping StekkerSlim AI Control (project A) REST API
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "https://dezyzzkuqkpljhprcbrg.supabase.co/rest/v1/pipeline_state?select=id&limit=1" \
+            -H "apikey: ${SS_SBKEY}" \
+            -H "Authorization: Bearer ${SS_SBKEY}")
+          echo "HTTP status: $STATUS"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "Keepalive ping failed with status $STATUS"
+            exit 1
+          fi
+        env:
+          SS_SBKEY: eyJhbGci••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••
