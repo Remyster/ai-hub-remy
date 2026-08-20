@@ -1782,6 +1782,19 @@ header h1 {
   margin-right: 4px;
 }
 
+/* ══ HERINNERINGSBANNER ══ */
+#rem-banner {
+  position: fixed; left: 14px; bottom: 14px; z-index: 2600;
+  width: min(340px, calc(100vw - 28px));
+  background: #12141d;
+  border: 1px solid rgba(52,211,153,0.35);
+  border-radius: 14px; padding: 13px 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,0.6);
+  display: none;
+}
+#rem-banner.show { display: block; animation: remIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes remIn { from { opacity: 0; transform: translateY(16px) scale(0.97); } to { opacity: 1; transform: none; } }
+
 /* ══ PIPELINE-VOORTGANG OP DE HUB-KAART ══ */
 #ssp-hub-progress { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
 .sspp-row { display: flex; align-items: center; gap: 8px; }
@@ -2339,13 +2352,15 @@ header h1 {
       style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;padding:6px 10px;">
     <button id="smart-mic-btn" onclick="smartToggleMic()" title="Spraak inspreken"
       style="padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:11px;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎤</button>
-    <button onclick="smartAutoPlaats()" title="AI zet dit automatisch op de goede plek — weekplanner, boodschap of brain dump"
+    <button onclick="smartAutoPlaats()" title="AI kijkt wat dit is, kiest een datum (alleen vandaag als je dat ook zegt) en zet het op de goede plek — met herinnering en agenda-knop"
       style="padding:9px 14px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:11px;color:#fbbf24;font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">📍 Plaats</button>
     <button onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
       style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:11px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
     <button onclick="agentRoute()" title="AI kiest de juiste agent voor je vraag"
       style="padding:9px 14px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:11px;color:var(--green);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎯 Route</button>
   </div>
+  <button onclick="remOpenLijst()" id="rem-btn" title="Herinneringen"
+    style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">🔔 <span id="rem-count" style="color:#34d399;"></span></button>
   <button onclick="openDumpInbox()" id="dump-inbox-btn" title="Je gedumpte gedachtes"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📥 Inbox <span id="dump-count" style="background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:100px;font-size:0.85em;">0</span></button>
   <button onclick="genContextPakket()" title="Genereer context-pakket voor elke AI"
@@ -7422,69 +7437,523 @@ document.getElementById('smart-input').addEventListener('keydown', e => {
 // AUTO-PLAATS — AI bepaalt waar een dumptje hoort
 // (weekplanner-taak / boodschap / brain dump) en zet het daar direct neer
 // ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// 📍 PLAATS — losse notitie naar de juiste plek
+// Kijkt wat het is, kiest een datum (alleen vandaag als je dat ook echt zegt),
+// slaat het op, en laat daarna in een paneel zien wat er precies gebeurd is —
+// met knoppen om het te corrigeren, in de agenda te zetten of te laten herinneren.
+// ══════════════════════════════════════════════
+
+// Woorden die "vandaag" betekenen. Staat er niks van dit alles in de notitie,
+// dan mag het NIET op vandaag — dan is het toekomst. Zonder deze harde regel
+// belandde elke losse gedachte op de dag van vandaag en liep de planning vol.
+const SMART_VANDAAG_RE = /\b(vandaag|vanochtend|vanmorgen|vanmiddag|vanavond|vannacht|straks|zometeen|zo meteen|nu|meteen|direct|deze ochtend|deze middag|deze avond)\b/i;
+const SMART_WEEKDAG_RE = /\b(maandag|dinsdag|woensdag|donderdag|vrijdag|zaterdag|zondag|ma|di|wo|do|vr|za|zo)\b/i;
+
+// De laatst geplaatste regel, zodat "ongedaan maken" en de losse knoppen weten
+// waar ze het over hebben.
+let smartLaatstePlaatsing = null;
+
+function smartIsoNaarDate(iso) { const [j, m, d] = iso.split('-').map(Number); return new Date(j, m - 1, d); }
+function smartDagenVerschil(iso) {
+  const nu = new Date(); nu.setHours(0, 0, 0, 0);
+  return Math.round((smartIsoNaarDate(iso) - nu) / 86400000);
+}
+function smartDatumLabel(iso) {
+  const v = smartDagenVerschil(iso);
+  if (v === 0) return 'vandaag';
+  if (v === 1) return 'morgen';
+  if (v === -1) return 'gisteren';
+  const d = smartIsoNaarDate(iso);
+  const dag = WP_DAGNAMEN[(d.getDay() + 6) % 7];
+  const label = `${dag} ${d.getDate()} ${['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'][d.getMonth()]}`;
+  // Vanaf een week vooruit is "Do 27 aug" op zichzelf niet duidelijk genoeg —
+  // dan is dezelfde weekdag als vandaag makkelijk te verwarren met deze week.
+  return v >= 7 ? `${label} (over ${v} dagen)` : label;
+}
+
 async function smartAutoPlaats() {
   const inp = document.getElementById('smart-input');
   const tekst = inp.value.trim();
   if (!tekst) { inp.focus(); smartFlash('Typ of spreek eerst iets in.'); return; }
   const key = getApiKey();
   if (!key) { openApiKeyModal(); return; }
-  smartFlash('📍 Even bepalen waar dit hoort...');
+  smartFlash('📍 Even bepalen wat dit is…');
   try {
-    const vandaagIdx = (new Date().getDay() + 6) % 7; // 0=ma..6=zo
-    const vandaagNaam = ['ma','di','wo','do','vr','za','zo'][vandaagIdx];
+    const nu = new Date();
+    const vandaagIso = heroVandaagIso();
+    const vandaagNaam = ['ma','di','wo','do','vr','za','zo'][(nu.getDay() + 6) % 7];
+    const zegtVandaag = SMART_VANDAAG_RE.test(tekst);
+
     const prompt = `Je routeert een losse notitie van Remy naar de juiste plek in zijn persoonlijke AI Hub.
-Vandaag is ${vandaagNaam}, ${heroVandaagIso()}.
+Vandaag is ${vandaagNaam} ${vandaagIso}, het is nu ${String(nu.getHours()).padStart(2,'0')}:${String(nu.getMinutes()).padStart(2,'0')}.
 
 Notitie: "${tekst}"
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{"type":"taak|boodschap|brain_dump","dag":"ma|di|wo|do|vr|za|zo|vandaag","tijd":"HH:MM of lege string","tekst":"opgeschoonde korte tekst zonder de dag/tijd erin herhaald"}
+{"type":"taak|boodschap|afspraak|sport|brain_dump","datum":"YYYY-MM-DD of lege string","tijd":"HH:MM of lege string","duur_min":30,"agenda":true of false,"herinner_min":15,"tekst":"opgeschoonde korte tekst","waarom":"1 korte zin waarom je dit zo plaatst"}
 
-Regels:
-- "taak": iets met een concreet moment of actie deze week (afspraak, overleg, klusje, sport)
+WAT IS HET:
+- "afspraak": iets met iemand anders op een vast moment (dokter, tandarts, overleg, visite, ophalen)
+- "sport": trainen, sportschool, hardlopen, fietsen
 - "boodschap": iets kopen of halen
-- "brain_dump": een los idee, gedachte of iets zonder concreet moment (bv. blogidee, feature-idee)
-- "dag": alleen invullen als een dag expliciet genoemd wordt, anders "vandaag"
-- "tijd": alleen invullen als er echt een tijdstip genoemd is`;
+- "taak": een klusje of actie die op een dag moet gebeuren
+- "brain_dump": een los idee of gedachte zonder moment (blogidee, feature-idee, "ik moet eens nadenken over...")
+
+DATUM — dit is de belangrijkste regel:
+- Alleen ${vandaagIso} (vandaag) als de notitie dat ECHT zegt: "vandaag", "vanavond", "vanmiddag", "straks", "nu".
+- Staat er een dag of datum in ("dinsdag", "12 september", "volgende week")? Reken die uit als volledige datum in de TOEKOMST. Is de genoemde weekdag vandaag, pak dan die dag volgende week.
+- Staat er geen enkele tijdsaanduiding in? Dan wordt het MORGEN, niet vandaag.
+- Bij "brain_dump": laat datum leeg.
+
+TIJD:
+- Alleen invullen als er echt een tijdstip genoemd is. "vanavond" zonder klok = leeg laten.
+- "duur_min": hoe lang het waarschijnlijk duurt (afspraak 60, sport 60, klusje 30, boodschap 15).
+
+AGENDA:
+- "agenda": true als dit in een echte agenda hoort — een afspraak of iets met een vast tijdstip waar je niet te laat bij wil komen. Een boodschap of los klusje is false.
+- "herinner_min": hoeveel minuten van tevoren Remy gewaarschuwd wil worden (afspraak 60, sport 30, rest 15).`;
+
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
-    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const p = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    const schoon = (p.tekst || tekst).trim();
 
-    if (parsed.type === 'brain_dump') {
-      const r = await fetch(`${SB_URL}/rest/v1/brain_dumps`, { method: 'POST', headers: SB_POST_HDR, body: JSON.stringify({ tekst: parsed.tekst || tekst, status: 'nieuw' }) });
+    if (p.type === 'brain_dump') {
+      const r = await fetch(`${SB_URL}/rest/v1/brain_dumps`, { method: 'POST', headers: { ...SB_POST_HDR, 'Prefer': 'return=representation' }, body: JSON.stringify({ tekst: schoon, status: 'nieuw' }) });
       if (!r.ok) throw new Error('Opslaan brain dump mislukt (HTTP ' + r.status + ')');
+      const rij = (await r.json())[0] || null;
       await dumpLoadCloud();
-      smartFlash('🧠 Als <b>brain dump</b> bewaard: "' + escHtml(parsed.tekst || tekst) + '"', true);
-    } else {
-      let dagIdx = vandaagIdx;
-      if (parsed.dag && parsed.dag !== 'vandaag') {
-        const target = wpDagNaarIndex(parsed.dag);
-        dagIdx = (vandaagIdx + ((target - vandaagIdx + 7) % 7)) % 7;
-      }
-      const monday = wpGetMonday(new Date());
-      const datum = wpFmtDate(wpAddDays(monday, dagIdx));
-      const categorie = parsed.type === 'boodschap' ? 'boodschap' : 'taak';
-      const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items`, {
-        method: 'POST', headers: SB_POST_HDR,
-        body: JSON.stringify({ datum, tekst: parsed.tekst || tekst, tijd: parsed.tijd || null, tijd_eind: null, categorie, klaar: false, volgorde: 0 })
-      });
-      if (!r.ok) throw new Error('Opslaan weekplanner mislukt (HTTP ' + r.status + ')');
-      const label = WP_DAGNAMEN[dagIdx] + ' ' + datum.split('-').reverse().join('-');
-      smartFlash('🗓️ Als <b>' + (categorie === 'boodschap' ? 'boodschap' : 'taak') + '</b> gezet op <b>' + label + '</b>: "' + escHtml(parsed.tekst || tekst) + '"', true);
-      heroLoadTaak();
+      smartLaatstePlaatsing = { soort: 'dump', id: rij && rij.id, tekst: schoon, waarom: p.waarom || '' };
+      smartToonResultaat();
+      inp.value = '';
+      return;
     }
+
+    // ── Datum vaststellen, en de "niet stiekem op vandaag"-regel afdwingen ──
+    let datum = /^\d{4}-\d{2}-\d{2}$/.test(p.datum || '') ? p.datum : '';
+    let bijgestuurd = '';
+    if (!datum) {
+      datum = wpFmtDate(wpAddDays(new Date(), zegtVandaag ? 0 : 1));
+      if (!zegtVandaag) bijgestuurd = 'Geen dag genoemd, dus op morgen gezet in plaats van vandaag.';
+    }
+    // Het model mag "vandaag" kiezen, maar alleen als de notitie dat ook zegt.
+    // Deze controle staat hier en niet alleen in de prompt, omdat dit de regel is
+    // die Remy expliciet wil — die mag niet afhangen van hoe het model die dag luimt.
+    if (smartDagenVerschil(datum) === 0 && !zegtVandaag) {
+      datum = wpFmtDate(wpAddDays(smartIsoNaarDate(datum), SMART_WEEKDAG_RE.test(tekst) ? 7 : 1));
+      bijgestuurd = 'Je zei niet "vandaag", dus vooruit gezet naar ' + smartDatumLabel(datum) + '.';
+    }
+    // Een datum in het verleden is nooit de bedoeling.
+    while (smartDagenVerschil(datum) < 0) datum = wpFmtDate(wpAddDays(smartIsoNaarDate(datum), 7));
+
+    const tijd = /^\d{1,2}:\d{2}$/.test(p.tijd || '') ? p.tijd.padStart(5, '0') : null;
+    const categorie = ['taak','boodschap','afspraak','sport'].includes(p.type) ? p.type : 'taak';
+    const duur = Math.max(5, Math.min(480, parseInt(p.duur_min) || 30));
+
+    let tijdEind = null;
+    if (tijd) {
+      const [hh, mm] = tijd.split(':').map(Number);
+      const tot = hh * 60 + mm + duur;
+      tijdEind = `${String(Math.floor(tot / 60) % 24).padStart(2,'0')}:${String(tot % 60).padStart(2,'0')}`;
+    }
+
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items`, {
+      method: 'POST', headers: { ...SB_POST_HDR, 'Prefer': 'return=representation' },
+      body: JSON.stringify({ datum, tekst: schoon, tijd, tijd_eind: tijdEind, categorie, klaar: false, volgorde: 0 })
+    });
+    if (!r.ok) throw new Error('Opslaan weekplanner mislukt (HTTP ' + r.status + ')');
+    const rij = (await r.json())[0] || null;
+
+    smartLaatstePlaatsing = {
+      soort: 'planner',
+      id: rij && rij.id,
+      tekst: schoon,
+      datum: datum,
+      tijd: tijd,
+      duur: duur,
+      categorie: categorie,
+      agenda: !!p.agenda,
+      herinnerMin: Math.max(0, Math.min(1440, parseInt(p.herinner_min) || 15)),
+      waarom: p.waarom || '',
+      bijgestuurd: bijgestuurd
+    };
+
+    // Heeft het een tijd? Dan meteen een herinnering klaarzetten — dat is
+    // tenslotte de reden dat je het opschrijft.
+    if (tijd) smartZetHerinnering(true);
+
+    smartToonResultaat();
+    heroLoadTaak();
     inp.value = '';
   } catch (err) {
     console.error('Auto-plaats mislukt:', err);
     smartFlash('⚠ Plaatsen mislukt: ' + err.message);
   }
 }
+
+// ── Resultaatpaneel: wat is er nou eigenlijk gebeurd ──────────────
+function smartToonResultaat() {
+  const el = document.getElementById('smart-result');
+  const s = smartLaatstePlaatsing;
+  if (!el || !s) return;
+  el.style.display = 'block';
+
+  const knop = (label, onclick, kleur) =>
+    `<button onclick="${onclick}" style="padding:7px 12px;background:rgba(${kleur},0.1);border:1px solid rgba(${kleur},0.3);border-radius:9px;color:rgb(${kleur});font-family:Inter,sans-serif;font-size:0.92em;font-weight:600;cursor:pointer;white-space:nowrap;">${label}</button>`;
+
+  let kop, regels = '', knoppen = '';
+
+  if (s.soort === 'dump') {
+    kop = '🧠 Bewaard als <b>brain dump</b>';
+    regels = `<div style="color:var(--text);font-size:1.05em;margin:4px 0 2px;">“${escHtml(s.tekst)}”</div>
+      <div>Geen datum — dit staat in je inbox tot je het sorteert.</div>`;
+    knoppen = knop('📥 Inbox openen', 'openDumpInbox()', '124,111,240') +
+              knop('↩️ Ongedaan maken', 'smartOngedaan()', '248,113,113');
+  } else {
+    const ico = (WP_CAT[s.categorie] || WP_CAT.taak).icon;
+    const wanneer = smartDatumLabel(s.datum) + (s.tijd ? ' om <b>' + s.tijd + '</b>' : '');
+    kop = `${ico} Ingepland als <b>${escHtml(s.categorie)}</b> — ${wanneer}`;
+    regels = `<div style="color:var(--text);font-size:1.05em;margin:4px 0 2px;">“${escHtml(s.tekst)}”</div>`;
+    if (s.waarom) regels += `<div style="opacity:0.75;">${escHtml(s.waarom)}</div>`;
+    if (s.bijgestuurd) regels += `<div style="color:#fbbf24;margin-top:3px;">↪ ${escHtml(s.bijgestuurd)}</div>`;
+    if (!s.tijd) regels += `<div style="opacity:0.75;margin-top:3px;">Geen tijdstip genoemd — staat als losse taak op die dag.</div>`;
+
+    knoppen =
+      (s.tijd ? knop(smartHerinneringAan() ? '🔔 Herinnering staat aan' : '🔔 Herinner me', 'smartZetHerinnering()', '52,211,153') : '') +
+      (s.agenda || s.tijd ? knop('📅 Google Agenda', 'smartNaarGoogleAgenda()', '56,189,248') : '') +
+      (s.tijd ? knop('📥 .ics voor iPhone', 'smartDownloadIcs()', '167,139,250') : '') +
+      knop('📆 Andere dag', 'smartVerschuif()', '251,191,36') +
+      knop('🗓️ Weekplanner', 'smartOpenPlannerOpDatum()', '124,111,240') +
+      knop('↩️ Ongedaan maken', 'smartOngedaan()', '248,113,113');
+  }
+
+  el.innerHTML = `<div style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(52,211,153,0.6);border-radius:14px;padding:13px 16px;font-family:Inter,sans-serif;font-size:0.75em;color:var(--text-dim);line-height:1.6;box-shadow:var(--shadow-card);">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="flex:1;">${kop}</span>
+      <button onclick="document.getElementById('smart-result').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:1.1em;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    ${regels}
+    <div id="smart-result-status" style="margin-top:6px;min-height:0;"></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">${knoppen}</div>
+  </div>`;
+}
+
+function smartResultStatus(msg, kleur) {
+  const el = document.getElementById('smart-result-status');
+  if (el) el.innerHTML = `<span style="color:${kleur || '#34d399'};">${escHtml(msg)}</span>`;
+}
+
+async function smartOngedaan() {
+  const s = smartLaatstePlaatsing;
+  if (!s || !s.id) { smartResultStatus('Kan dit niet meer terugdraaien — geen id bekend.', '#fbbf24'); return; }
+  try {
+    const tabel = s.soort === 'dump' ? 'brain_dumps' : 'weekplanner_items';
+    const r = await fetch(`${SB_URL}/rest/v1/${tabel}?id=eq.${s.id}`, { method: 'DELETE', headers: SB_POST_HDR });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    smartHerinneringVerwijder(s.id);
+    document.getElementById('smart-input').value = s.tekst;
+    document.getElementById('smart-result').style.display = 'none';
+    smartLaatstePlaatsing = null;
+    if (s.soort === 'dump') await dumpLoadCloud(); else heroLoadTaak();
+    smartFlash('↩️ Teruggedraaid — de tekst staat weer in het invoerveld.');
+  } catch (e) {
+    smartResultStatus('Terugdraaien mislukt: ' + e.message, '#f87171');
+  }
+}
+
+async function smartVerschuif() {
+  const s = smartLaatstePlaatsing;
+  if (!s || s.soort !== 'planner') return;
+  const invoer = prompt('Naar welke datum? (JJJJ-MM-DD, of een getal: 1 = morgen, 7 = over een week)', s.datum);
+  if (!invoer) return;
+  let nieuw;
+  if (/^\d{1,3}$/.test(invoer.trim())) nieuw = wpFmtDate(wpAddDays(new Date(), parseInt(invoer.trim())));
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(invoer.trim())) nieuw = invoer.trim();
+  else { smartResultStatus('Datum niet begrepen — gebruik JJJJ-MM-DD of een aantal dagen.', '#fbbf24'); return; }
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?id=eq.${s.id}`, { method: 'PATCH', headers: SB_POST_HDR, body: JSON.stringify({ datum: nieuw }) });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    s.datum = nieuw;
+    s.bijgestuurd = '';
+    smartHerinneringVerwijder(s.id);
+    if (s.tijd) smartZetHerinnering(true);
+    smartToonResultaat();
+    smartResultStatus('Verplaatst naar ' + smartDatumLabel(nieuw) + '.');
+    heroLoadTaak();
+  } catch (e) {
+    smartResultStatus('Verplaatsen mislukt: ' + e.message, '#f87171');
+  }
+}
+
+function smartOpenPlannerOpDatum() {
+  const s = smartLaatstePlaatsing;
+  if (s && s.datum) wpWeekStart = wpGetMonday(smartIsoNaarDate(s.datum));
+  openWeekplanner();
+}
+
+function smartNaarGoogleAgenda() {
+  const s = smartLaatstePlaatsing;
+  if (!s || s.soort !== 'planner') return;
+  const ico = (WP_CAT[s.categorie] || WP_CAT.taak).icon;
+  const fmt = d => d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  let dates;
+  if (s.tijd) {
+    const [hh, mm] = s.tijd.split(':').map(Number);
+    const start = smartIsoNaarDate(s.datum); start.setHours(hh, mm, 0, 0);
+    dates = fmt(start) + '/' + fmt(new Date(start.getTime() + s.duur * 60000));
+  } else {
+    // Hele dag: Google wil een einddatum van de dag erna.
+    const eind = wpFmtDate(wpAddDays(smartIsoNaarDate(s.datum), 1));
+    dates = s.datum.replace(/-/g, '') + '/' + eind.replace(/-/g, '');
+  }
+  window.open(`https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(ico + ' ' + s.tekst)}&dates=${dates}&details=${encodeURIComponent('Via Remy AI Hub')}`, '_blank', 'noopener');
+  smartResultStatus('Google Agenda geopend — daar nog op Opslaan drukken.');
+}
+
+// .ics met een VALARM erin: de agenda-app van je telefoon doet dan zelf de
+// melding, ook als de hub dichtstaat. Dat is de enige manier die zonder server werkt.
+function smartDownloadIcs() {
+  const s = smartLaatstePlaatsing;
+  if (!s || s.soort !== 'planner' || !s.tijd) return;
+  const ico = (WP_CAT[s.categorie] || WP_CAT.taak).icon;
+  const titel = wpIcsEscape(`${ico} ${s.tekst}`.replace(/[\r\n]/g, ' '));
+  const [hh, mm] = s.tijd.split(':').map(Number);
+  const tot = hh * 60 + mm + s.duur;
+  const eind = `${String(Math.floor(tot / 60) % 24).padStart(2,'0')}:${String(tot % 60).padStart(2,'0')}`;
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Remy AI Hub//Plaats//NL', 'CALSCALE:GREGORIAN',
+    'BEGIN:VEVENT',
+    `UID:plaats-${s.id || Date.now()}@remyaihub`,
+    `DTSTAMP:${wpIcsNowStamp()}`,
+    `DTSTART:${wpIcsDatum(s.datum, s.tijd)}`,
+    `DTEND:${wpIcsDatum(s.datum, eind)}`,
+    `SUMMARY:${titel}`,
+    'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${titel}`, `TRIGGER:-PT${s.herinnerMin || 15}M`, 'END:VALARM',
+    'END:VEVENT', 'END:VCALENDAR'
+  ];
+  const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'afspraak-' + s.datum + '.ics';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  smartResultStatus('Bestand gedownload — open het, dan zet je agenda-app hem erin mét alarm.');
+}
+
+// ══════════════════════════════════════════════
+// 🔔 HERINNERINGEN
+// Eerlijk over wat dit wel en niet kan: er is geen server, dus er is geen echte
+// push. Deze meldingen komen zolang de hub ergens openstaat (tab of als app op je
+// beginscherm). Moet het gegarandeerd afgaan met alles dicht, gebruik dan de
+// knop "📅 Google Agenda" of "📥 .ics" — die laten je agenda-app het werk doen.
+// ══════════════════════════════════════════════
+const REM_KEY = 'hub_herinneringen_v1';
+const REM_INTERVAL_MS = 30000;
+
+function remLaad() {
+  try {
+    const arr = JSON.parse(localStorage.getItem(REM_KEY) || '[]');
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) { return []; }
+}
+function remBewaar(arr) { try { localStorage.setItem(REM_KEY, JSON.stringify(arr)); } catch (e) {} }
+
+// Weekplanner-id's zijn getallen, maar via een onclick-attribuut komen ze als
+// tekst terug. Altijd als tekst vergelijken, anders matcht er niets.
+function remZelfdeId(a, b) { return String(a) === String(b); }
+
+function remMoment(r) {
+  const d = smartIsoNaarDate(r.datum);
+  const [hh, mm] = (r.tijd || '09:00').split(':').map(Number);
+  d.setHours(hh, mm, 0, 0);
+  return d;
+}
+
+// Alles wat meer dan 12 uur voorbij is, hoeft nooit meer af te gaan.
+function remOpschonen() {
+  const grens = Date.now() - 12 * 3600000;
+  const over = remLaad().filter(r => !r.klaar && remMoment(r).getTime() > grens);
+  remBewaar(over);
+  return over;
+}
+
+function smartHerinneringAan() {
+  const s = smartLaatstePlaatsing;
+  return !!(s && s.id && remLaad().some(r => remZelfdeId(r.id, s.id) && !r.klaar));
+}
+
+function smartHerinneringVerwijder(id) {
+  if (!id) return;
+  remBewaar(remLaad().filter(r => !remZelfdeId(r.id, id)));
+  remRenderKnop();
+}
+
+// stil = automatisch gezet bij het plaatsen; dan geen toestemmingsvraag opwerpen.
+// Zonder klik van Remy zou die vraag zomaar in beeld springen, en browsers
+// blokkeren zo'n verzoek buiten een echte klik alsnog.
+function smartZetHerinnering(stil) {
+  const s = smartLaatstePlaatsing;
+  if (!s || s.soort !== 'planner' || !s.tijd || !s.id) return;
+  const lijst = remLaad().filter(r => !remZelfdeId(r.id, s.id));
+  lijst.push({
+    id: s.id, tekst: s.tekst, datum: s.datum, tijd: s.tijd,
+    categorie: s.categorie, herinnerMin: s.herinnerMin || 15,
+    gemeldVoor: false, gemeldExact: false, klaar: false
+  });
+  remBewaar(lijst);
+  remRenderKnop();
+  if (!stil) {
+    remVraagToestemming().then(status => {
+      smartToonResultaat();
+      if (status === 'granted') smartResultStatus('Herinnering staat aan — je krijgt ' + (s.herinnerMin || 15) + ' min van tevoren een melding.');
+      else smartResultStatus('Herinnering staat aan. Meldingen zijn niet toegestaan, dus je ziet hem hier in beeld zolang de hub openstaat.', '#fbbf24');
+    });
+  }
+}
+
+async function remVraagToestemming() {
+  if (typeof Notification === 'undefined') return 'unsupported';
+  if (Notification.permission !== 'default') return Notification.permission;
+  try { return await Notification.requestPermission(); } catch (e) { return 'denied'; }
+}
+
+function remMeld(r, soort) {
+  const ico = (WP_CAT[r.categorie] || WP_CAT.taak).icon;
+  const titel = soort === 'voor' ? `${ico} Over ${r.herinnerMin} min: ${r.tekst}` : `${ico} Nu: ${r.tekst}`;
+  const body = `${smartDatumLabel(r.datum)} om ${r.tijd}`;
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      const n = new Notification(titel, { body: body, icon: './icon-192.png', tag: 'hub-rem-' + r.id + '-' + soort });
+      n.onclick = () => { window.focus(); openWeekplanner(); n.close(); };
+    } catch (e) { /* installatie-afhankelijk; de banner hieronder blijft altijd werken */ }
+  }
+  remToonBanner(r, soort);
+}
+
+function remToonBanner(r, soort) {
+  let el = document.getElementById('rem-banner');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'rem-banner';
+    document.body.appendChild(el);
+  }
+  const ico = (WP_CAT[r.categorie] || WP_CAT.taak).icon;
+  const kop = soort === 'voor' ? `Over ${r.herinnerMin} minuten` : 'Nu op de planning';
+  el.innerHTML = `<div style="display:flex;align-items:flex-start;gap:10px;">
+      <span style="font-size:1.3em;line-height:1;">${ico}</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:0.62em;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:#34d399;font-family:Inter,sans-serif;">🔔 ${escHtml(kop)}</div>
+        <div style="color:var(--text);font-size:0.82em;font-weight:600;margin-top:3px;font-family:Inter,sans-serif;">${escHtml(r.tekst)}</div>
+        <div style="color:var(--muted);font-size:0.72em;margin-top:2px;font-family:Inter,sans-serif;">${escHtml(smartDatumLabel(r.datum))} om ${escHtml(r.tijd)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">
+          <button onclick="remKlaar('${r.id}')" style="padding:6px 11px;background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.32);border-radius:8px;color:#34d399;font-family:Inter,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">✓ Gezien</button>
+          <button onclick="remSnooze('${r.id}',10)" style="padding:6px 11px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:8px;color:#fbbf24;font-family:Inter,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">😴 10 min</button>
+          <button onclick="openWeekplanner()" style="padding:6px 11px;background:rgba(124,111,240,0.1);border:1px solid rgba(124,111,240,0.3);border-radius:8px;color:var(--accent);font-family:Inter,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">🗓️ Planner</button>
+        </div>
+      </div>
+      <button onclick="document.getElementById('rem-banner').classList.remove('show')" style="background:none;border:none;color:var(--muted);font-size:1.05em;cursor:pointer;line-height:1;">✕</button>
+    </div>`;
+  el.classList.add('show');
+}
+
+function remKlaar(id) {
+  const lijst = remLaad().map(r => remZelfdeId(r.id, id) ? { ...r, klaar: true } : r);
+  remBewaar(lijst);
+  const el = document.getElementById('rem-banner');
+  if (el) el.classList.remove('show');
+  remRenderKnop();
+}
+
+function remSnooze(id, min) {
+  const lijst = remLaad().map(r => {
+    if (!remZelfdeId(r.id, id)) return r;
+    const nieuw = new Date(Date.now() + min * 60000);
+    return {
+      ...r,
+      datum: wpFmtDate(nieuw),
+      tijd: String(nieuw.getHours()).padStart(2,'0') + ':' + String(nieuw.getMinutes()).padStart(2,'0'),
+      herinnerMin: 0, gemeldVoor: true, gemeldExact: false
+    };
+  });
+  remBewaar(lijst);
+  const el = document.getElementById('rem-banner');
+  if (el) el.classList.remove('show');
+  remRenderKnop();
+}
+
+function remTick() {
+  const lijst = remOpschonen();
+  const nu = Date.now();
+  let gewijzigd = false;
+  for (const r of lijst) {
+    const moment = remMoment(r).getTime();
+    if (!r.gemeldVoor && r.herinnerMin > 0 && nu >= moment - r.herinnerMin * 60000 && nu < moment) {
+      r.gemeldVoor = true; gewijzigd = true; remMeld(r, 'voor');
+      break;
+    }
+    if (!r.gemeldExact && nu >= moment) {
+      r.gemeldExact = true; r.gemeldVoor = true; gewijzigd = true; remMeld(r, 'nu');
+      break;
+    }
+  }
+  if (gewijzigd) remBewaar(lijst);
+  remRenderKnop();
+}
+
+// Belletje in de smart bar: laat zien hoeveel er klaarstaat en wat er nu volgt.
+function remRenderKnop() {
+  const btn = document.getElementById('rem-btn');
+  if (!btn) return;
+  const lijst = remOpschonen().filter(r => !r.klaar);
+  const badge = document.getElementById('rem-count');
+  if (badge) badge.textContent = lijst.length ? String(lijst.length) : '';
+  btn.style.opacity = lijst.length ? '1' : '0.55';
+  const volgende = lijst.slice().sort((a, b) => remMoment(a) - remMoment(b))[0];
+  btn.title = volgende
+    ? `Volgende herinnering: ${volgende.tekst} — ${smartDatumLabel(volgende.datum)} om ${volgende.tijd}`
+    : 'Geen herinneringen klaarstaan';
+}
+
+function remOpenLijst() {
+  const lijst = remOpschonen().filter(r => !r.klaar).sort((a, b) => remMoment(a) - remMoment(b));
+  const el = document.getElementById('smart-result');
+  el.style.display = 'block';
+  const toestemming = typeof Notification === 'undefined' ? 'unsupported' : Notification.permission;
+  const uitleg = toestemming === 'granted'
+    ? 'Meldingen staan aan — je krijgt ze zolang de hub ergens openstaat.'
+    : toestemming === 'denied'
+      ? '⚠ Meldingen zijn geblokkeerd in deze browser. Je ziet ze alleen hier in beeld.'
+      : 'Meldingen staan nog niet aan. Zet ze aan, dan krijg je ook een melding buiten dit tabblad.';
+  el.innerHTML = `<div style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(52,211,153,0.6);border-radius:14px;padding:13px 16px;font-family:Inter,sans-serif;font-size:0.75em;color:var(--text-dim);line-height:1.6;box-shadow:var(--shadow-card);">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="flex:1;">🔔 <b>Herinneringen</b> — ${lijst.length} klaarstaan</span>
+      <button onclick="document.getElementById('smart-result').style.display='none'" style="background:none;border:none;color:var(--muted);font-size:1.1em;cursor:pointer;line-height:1;">✕</button>
+    </div>
+    ${lijst.length ? lijst.map(r => `<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-top:1px solid var(--border);">
+        <span>${(WP_CAT[r.categorie] || WP_CAT.taak).icon}</span>
+        <span style="flex:1;min-width:0;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(r.tekst)}</span>
+        <span style="color:var(--muted);white-space:nowrap;">${escHtml(smartDatumLabel(r.datum))} ${escHtml(r.tijd)}</span>
+        <button onclick="smartHerinneringVerwijder('${r.id}');remOpenLijst();" title="Herinnering weghalen" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:1em;">✕</button>
+      </div>`).join('') : '<div style="opacity:0.7;">Nog niks. Plaats iets met een tijdstip, dan zet ik hem er automatisch bij.</div>'}
+    <div style="margin-top:9px;padding-top:8px;border-top:1px solid var(--border);opacity:0.8;">${escHtml(uitleg)}</div>
+    ${toestemming === 'default' ? '<button onclick="remVraagToestemming().then(remOpenLijst)" style="margin-top:8px;padding:7px 12px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:9px;color:#34d399;font-family:Inter,sans-serif;font-size:0.92em;font-weight:600;cursor:pointer;">🔔 Meldingen aanzetten</button>' : ''}
+    <div style="margin-top:8px;opacity:0.65;font-size:0.92em;">Moet het gegarandeerd afgaan met alles dicht? Gebruik dan bij het plaatsen de knop <b>📅 Google Agenda</b> of <b>📥 .ics</b> — dan doet je agenda-app de melding.</div>
+  </div>`;
+}
+
+remRenderKnop();
+remTick();
+setInterval(remTick, REM_INTERVAL_MS);
+// Terug uit de achtergrond (tab weer actief, telefoon weer aan) meteen inhalen —
+// timers lopen in een slapende tab niet betrouwbaar door.
+document.addEventListener('visibilitychange', () => { if (!document.hidden) remTick(); });
 
 // ══════════════════════════════════════════════
 // SPRAAKINVOER — Web Speech API (werkt in Safari op iPad)

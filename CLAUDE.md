@@ -265,6 +265,71 @@ FMHY dekt alle wiki- en tool-secties van fmhy.net, inclusief de download-/torren
 
 **`toolkitAsk()` detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-4.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
 
+## 📍 Plaats-knop + herinneringen (20 augustus 2026)
+
+De knop **📍 Plaats** in de smart bar (`smartAutoPlaats()`) doet vijf dingen achter elkaar:
+kijken wát het is, een datum kiezen, opslaan, een herinnering klaarzetten, en daarna in
+een paneel laten zien wat er precies gebeurd is.
+
+### 1. Wat is het
+Haiku geeft JSON terug met `type` (`taak` / `boodschap` / `afspraak` / `sport` /
+`brain_dump`), `datum`, `tijd`, `duur_min`, `agenda`, `herinner_min`, `tekst` en
+`waarom` — die laatste is één zin die in het paneel komt te staan, zodat je ziet
+waaróm het daar terechtkwam.
+
+### 2. Datumregel — dit is de kern
+**Alleen op vandaag als de notitie dat ook echt zegt.** Getest tegen `SMART_VANDAAG_RE`
+(vandaag, vanavond, vanmiddag, straks, nu, meteen…). Staat er niks van dat alles in:
+
+| Notitie | Wordt |
+|---------|-------|
+| "vanavond 20:00 sporten" | vandaag |
+| "melk halen" | **morgen** |
+| "donderdag tandarts" (het ís donderdag) | donderdag **volgende week** |
+| datum in het verleden | zelfde weekdag vooruit |
+
+Deze controle staat **in de code**, niet alleen in de prompt (`smartAutoPlaats`, blok
+"Datum vaststellen"). Reden: dit is de regel die Remy expliciet wilde, die mag niet
+afhangen van hoe het model die dag luimt. Voorheen was de promptregel *"anders vandaag"*,
+waardoor elke losse gedachte op vandaag belandde.
+
+Datums worden nu als volledige datum opgeslagen, niet meer geklemd binnen de huidige week.
+
+### 3. Agenda
+`agenda: true` bij een echte afspraak met een tijdstip. Het paneel toont dan
+**📅 Google Agenda** (template-link, zelfde patroon als `agendaModalToevoegen`) en
+**📥 .ics voor iPhone** (`smartDownloadIcs()`, met `VALARM`).
+
+### 4. Herinneringen (`REM_KEY` = `hub_herinneringen_v1`)
+Bij een tijdstip wordt automatisch een herinnering klaargezet. `remTick()` draait elke
+30s plus bij `visibilitychange` (timers lopen in een slapende tab niet door) en vuurt op
+`herinner_min` vóór het moment én op het moment zelf: een `Notification` als dat mag, plus
+altijd de banner `#rem-banner` met Gezien / 10 min snoozen / Planner. Belletje `#rem-btn`
+in de smart bar toont het aantal; `remOpenLijst()` laat ze zien en laat ze weghalen.
+
+**⚠ Eerlijk over de grens hiervan:** er is geen server, dus geen echte web push. Deze
+meldingen komen alleen zolang de hub ergens openstaat (tab of als PWA). Moet het
+gegarandeerd afgaan met alles dicht, dan is de Google Agenda- of .ics-knop de route —
+die laten de agenda-app van de telefoon het werk doen. Dat staat ook zo in `remOpenLijst()`
+op het scherm.
+
+Toestemming voor meldingen wordt **nooit bij het laden** gevraagd, alleen na een klik op
+🔔 Herinner me of "Meldingen aanzetten" — buiten een echte klik blokkeren browsers dat
+verzoek alsnog.
+
+### 5. Resultaatpaneel (`smartToonResultaat()`)
+Onder de smart bar: wat het geworden is, de opgeschoonde tekst, het waarom, een gele regel
+als de datum is bijgestuurd, en knoppen — 🔔 Herinner me · 📅 Google Agenda · 📥 .ics ·
+📆 Andere dag (`smartVerschuif()`) · 🗓️ Weekplanner (springt naar de juiste week) ·
+↩️ Ongedaan maken (`smartOngedaan()`, verwijdert de zojuist aangemaakte rij en zet de
+tekst terug in het invoerveld).
+
+Daarvoor wordt bij de POST `Prefer: return=representation` meegestuurd, zodat het `id`
+van de nieuwe rij bekend is. Let op: weekplanner-id's zijn **getallen**, maar via een
+`onclick`-attribuut komen ze als tekst terug — vergelijk ze altijd via `remZelfdeId()`.
+
+---
+
 ## Command Palette — ⌘K / Ctrl+K (20 augustus 2026)
 
 Eén zoekveld over de hele hub. Openen met `⌘K` / `Ctrl+K` (werkt ook terwijl je in een
@@ -368,6 +433,18 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ## Changelog
 
 ### 20 augustus 2026
+- **📍 Plaats-knop volledig herzien** — zie de sectie "Plaats-knop + herinneringen"
+  hierboven. Belangrijkste: de oude promptregel was *"dag: alleen invullen als een dag
+  expliciet genoemd wordt, anders vandaag"*, waardoor élke losse gedachte op de dag van
+  vandaag belandde en de planning vollliep. Nu geldt het omgekeerde en staat het in code
+  afgedwongen: alleen vandaag als de notitie dat ook echt zegt ("vandaag", "vanavond",
+  "straks"), anders morgen of de genoemde dag in de toekomst. Verder: 5 categorieën in
+  plaats van 3, echte datums (niet meer geklemd binnen deze week), automatische
+  herinnering bij een tijdstip, agenda- en .ics-knop, en een resultaatpaneel met
+  ongedaan maken.
+- **Herinneringen + meldingen** (`hub_herinneringen_v1`, `remTick()`, `#rem-banner`,
+  belletje in de smart bar). Werkt zolang de hub openstaat; voor gegarandeerd afgaan met
+  alles dicht wijst de UI door naar Google Agenda of het .ics-bestand.
 - **Command Palette (⌘K / Ctrl+K)** toegevoegd — één zoekveld over ~475 dingen: acties,
   kaarten, header-knoppen, losse AI-checkers, alle 22 pipelinestappen, alle 387
   toolkit-tools en je brain dumps. Zie de sectie "Command Palette" hierboven. Ook een
