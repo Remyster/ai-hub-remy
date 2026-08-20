@@ -1680,6 +1680,138 @@ header h1 {
 }
 </style>
 
+<style>
+/* ══════════════════════════════════════════════
+   COMMAND PALETTE (⌘K / Ctrl+K)
+   Doorzoekt alles: kaarten, header-knoppen, pipelinestappen, toolkit-tools.
+   ══════════════════════════════════════════════ */
+#cmdk-overlay {
+  position: fixed; inset: 0; z-index: 3000; display: none;
+  background: rgba(4,5,10,0.74);
+  backdrop-filter: blur(10px);
+  padding: 10vh 16px 16px;
+}
+#cmdk-overlay.show { display: block; animation: cmdkFade 0.16s ease both; }
+@keyframes cmdkFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cmdkRise { from { opacity: 0; transform: translateY(-12px) scale(0.985); } to { opacity: 1; transform: none; } }
+
+#cmdk-box {
+  max-width: 660px; margin: 0 auto;
+  background: linear-gradient(180deg, #13151f 0%, #0b0d15 100%);
+  border: 1px solid rgba(129,140,248,0.28);
+  border-radius: 18px;
+  box-shadow: 0 34px 90px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.04);
+  overflow: hidden;
+  animation: cmdkRise 0.2s cubic-bezier(0.22,1,0.36,1) both;
+  display: flex; flex-direction: column;
+  max-height: 76vh;
+}
+#cmdk-top {
+  display: flex; align-items: center; gap: 11px;
+  padding: 15px 17px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#cmdk-glyph { font-size: 1em; opacity: 0.6; }
+#cmdk-input {
+  flex: 1; min-width: 0;
+  background: transparent; border: none; outline: none;
+  color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 0.95em; font-weight: 500;
+}
+#cmdk-input::placeholder { color: rgba(230,232,238,0.32); font-weight: 400; }
+#cmdk-count {
+  font-family: 'DM Mono', monospace; font-size: 0.66em;
+  color: var(--muted); white-space: nowrap;
+}
+
+#cmdk-list { overflow-y: auto; padding: 7px; flex: 1; scrollbar-width: thin; }
+#cmdk-list::-webkit-scrollbar { width: 8px; }
+#cmdk-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.09); border-radius: 8px; }
+
+.cmdk-group {
+  font-family: 'Inter', sans-serif; font-size: 0.6em; font-weight: 700;
+  letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted);
+  padding: 11px 10px 5px;
+}
+.cmdk-row {
+  display: flex; align-items: center; gap: 11px;
+  padding: 9px 11px; border-radius: 11px; cursor: pointer;
+  border: 1px solid transparent;
+}
+.cmdk-row.sel {
+  background: rgba(129,140,248,0.13);
+  border-color: rgba(129,140,248,0.3);
+}
+.cmdk-ico { font-size: 1.02em; width: 21px; text-align: center; flex-shrink: 0; }
+/* Titel en ondertitel op één regel: met 475 items in de index passen er zo
+   bijna twee keer zoveel resultaten in beeld. */
+.cmdk-txt { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 9px; }
+.cmdk-title {
+  font-family: 'Inter', sans-serif; font-size: 0.83em; font-weight: 600;
+  color: var(--text); white-space: nowrap; flex-shrink: 0;
+  max-width: 62%; overflow: hidden; text-overflow: ellipsis;
+}
+.cmdk-title b { color: #a5b4fc; font-weight: 700; }
+.cmdk-sub {
+  font-family: 'Inter', sans-serif; font-size: 0.71em; color: var(--muted);
+  flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  line-height: 1.4;
+}
+.cmdk-tag {
+  font-family: 'DM Mono', monospace; font-size: 0.6em;
+  color: var(--muted); background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 2px 7px; flex-shrink: 0; white-space: nowrap;
+}
+.cmdk-row.sel .cmdk-tag { color: #a5b4fc; border-color: rgba(129,140,248,0.32); background: rgba(129,140,248,0.1); }
+
+#cmdk-empty {
+  padding: 30px 16px; text-align: center;
+  font-family: 'Inter', sans-serif; font-size: 0.8em; color: var(--muted); line-height: 1.7;
+}
+#cmdk-foot {
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  padding: 9px 15px; border-top: 1px solid var(--border);
+  background: rgba(0,0,0,0.22); flex-shrink: 0;
+  font-family: 'Inter', sans-serif; font-size: 0.66em; color: var(--muted);
+}
+#cmdk-foot kbd {
+  font-family: 'DM Mono', monospace; font-size: 0.94em;
+  background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+  border-bottom-width: 2px; border-radius: 5px; padding: 1px 5px; color: var(--text);
+  margin-right: 4px;
+}
+
+/* ══ PIPELINE-VOORTGANG OP DE HUB-KAART ══ */
+#ssp-hub-progress { margin-top: 10px; display: flex; flex-direction: column; gap: 5px; }
+.sspp-row { display: flex; align-items: center; gap: 8px; }
+.sspp-name {
+  font-family: 'Inter', sans-serif; font-size: 0.62em; font-weight: 600;
+  color: var(--muted); width: 34px; flex-shrink: 0;
+}
+.sspp-track {
+  flex: 1; height: 4px; border-radius: 4px;
+  background: rgba(255,255,255,0.07); overflow: hidden;
+}
+.sspp-fill { display: block; height: 100%; border-radius: 4px; transition: width 0.5s cubic-bezier(0.22,1,0.36,1); }
+.sspp-num {
+  font-family: 'DM Mono', monospace; font-size: 0.6em;
+  color: var(--muted); width: 32px; text-align: right; flex-shrink: 0;
+}
+.sspp-row.klaar .sspp-name, .sspp-row.klaar .sspp-num { color: #34d399; }
+
+@media (max-width: 600px) {
+  #cmdk-overlay { padding: 5vh 10px 10px; }
+  #cmdk-box { max-height: 86vh; }
+  #cmdk-foot { display: none; }
+  /* Op een telefoon past titel + omschrijving niet naast elkaar: onder elkaar,
+     anders blijft er van de titel een paar tekens over. */
+  .cmdk-txt { display: block; }
+  .cmdk-title { display: block; max-width: 100%; }
+  .cmdk-sub { display: block; margin-top: 2px; }
+}
+</style>
+
 </head>
 <body>
 
@@ -2112,6 +2244,24 @@ header h1 {
   </div>
 </div>
 
+<!-- ══ COMMAND PALETTE (⌘K) ══ -->
+<div id="cmdk-overlay" onclick="if(event.target===this) cmdkClose()">
+  <div id="cmdk-box">
+    <div id="cmdk-top">
+      <span id="cmdk-glyph">⌘</span>
+      <input id="cmdk-input" type="text" placeholder="Zoek een agent, tool, knop of pipelinestap…" autocomplete="off" spellcheck="false">
+      <span id="cmdk-count"></span>
+    </div>
+    <div id="cmdk-list"></div>
+    <div id="cmdk-foot">
+      <span><kbd>↑↓</kbd>kiezen</span>
+      <span><kbd>↵</kbd>openen</span>
+      <span><kbd>esc</kbd>sluiten</span>
+      <span style="margin-left:auto;opacity:0.7;">doorzoekt alles in de hub</span>
+    </div>
+  </div>
+</div>
+
 <!-- ══ MAIN HUB ══ -->
 <div class="wrapper">
 
@@ -2119,6 +2269,7 @@ header h1 {
     <h1>🧠 Remy AI Hub</h1>
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
+      <span class="hbtn" id="cmdk-open-btn" data-cmdk-skip="1" onclick="cmdkOpen()" title="Zoek alles in de hub — agents, tools, knoppen, pipelinestappen" style="color:#a5b4fc;background:rgba(129,140,248,0.1);border-color:rgba(129,140,248,0.28);font-weight:700;">🔍 Zoek alles <span style="opacity:0.55;font-family:'DM Mono',monospace;font-size:0.9em;">⌘K</span></span>
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
@@ -2385,6 +2536,7 @@ header h1 {
       <a href="#" class="card affiliate" onclick="openStekkerSlimGuardian(); return false;" style="border-color:rgba(251,191,36,0.35);background:linear-gradient(135deg,rgba(251,191,36,0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
         <h2>🚀 AI Pipeline</h2><p>Blog · Site check · SEO — 13 staps workflow</p>
+        <div id="ssp-hub-progress"></div>
       </a>
       <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
         <div class="dot"></div>
@@ -2450,7 +2602,7 @@ header h1 {
 
 
 
-  <p class="hint">Esc om te sluiten</p>
+  <p class="hint">⌘K / Ctrl+K om alles te zoeken · Esc om te sluiten</p>
 
 </div>
 
@@ -5789,12 +5941,16 @@ setTimeout(pbShowNudge, 1200);
 // INIT
 // ══════════════════════════════════════════════
 window.addEventListener('load', async () => {
-  updatePomoDisplay();
-  await syncApiKeyFromCloud();
-  await syncOpenRouterKeyFromCloud();
+  // Let op: hier stond een aanroep van updatePomoDisplay(), een restant van een
+  // verwijderde pomodoro-timer. Die gooide een ReferenceError op de eerste regel,
+  // waardoor de rest van deze init nooit draaide — geen key-sync uit de cloud en
+  // geen fetchVoorJou(). Elke stap hieronder los afgeschermd, zodat één kapotte
+  // aanroep nooit meer de hele init meesleurt.
+  try { await syncApiKeyFromCloud(); } catch(e) { console.warn('Init: Claude-key sync mislukt:', e); }
+  try { await syncOpenRouterKeyFromCloud(); } catch(e) { console.warn('Init: OpenRouter-key sync mislukt:', e); }
   // Geen popup, geen apikey modal — direct hub tonen
   // AI blokjes laden als key beschikbaar is
-  fetchVoorJou(false);
+  try { fetchVoorJou(false); } catch(e) { console.warn('Init: fetchVoorJou mislukt:', e); }
 });
 
 // ── Multi-platform prompt generator ──────────────────
@@ -7666,6 +7822,426 @@ Format: begin met "CONTEXT — StekkerSlim project:" en dan puntsgewijs: wat is 
     sspStatus('⚠ Mislukt: ' + e.message, '#f87171');
   }
 }
+
+// ══════════════════════════════════════════════
+// PIPELINE-VOORTGANG OP DE HUB-KAART
+// Toont per pipeline hoeveel stappen er al een opgeslagen antwoord hebben,
+// zodat je op de hub meteen ziet waar je gebleven was zonder de wizard te openen.
+// ══════════════════════════════════════════════
+const SSPP_KLEUR = { blog: '251,191,36', site: '56,189,248', seo: '52,211,153' };
+const SSPP_KORT  = { blog: 'blog', site: 'site', seo: 'seo' };
+
+function sspPipelineVoortgang(p) {
+  const steps = SSP_PIPELINES[p].steps;
+  let done = 0;
+  steps.forEach((s, i) => {
+    if (s.multiAI) {
+      if (s.ais.some(ai => localStorage.getItem(sspMultiKey(p, i, ai.key)))) done++;
+    } else if (localStorage.getItem(sspKey(p, i))) done++;
+  });
+  return { done: done, total: steps.length };
+}
+
+function sspRenderHubProgress() {
+  const el = document.getElementById('ssp-hub-progress');
+  if (!el || typeof SSP_PIPELINES === 'undefined') return;
+  let html = '';
+  Object.keys(SSP_PIPELINES).forEach(p => {
+    const v = sspPipelineVoortgang(p);
+    const pct = v.total ? Math.round((v.done / v.total) * 100) : 0;
+    const rgb = SSPP_KLEUR[p] || '129,140,248';
+    const klaar = v.done === v.total && v.total > 0 ? ' klaar' : '';
+    html += `<div class="sspp-row${klaar}" onclick="event.preventDefault();event.stopPropagation();sspSpringNaar('${p}')" title="Open de ${escHtml(SSP_PIPELINES[p].label)}">
+      <span class="sspp-name">${SSPP_KORT[p] || p}</span>
+      <span class="sspp-track"><span class="sspp-fill" style="width:${pct}%;background:linear-gradient(90deg,rgba(${rgb},0.55),rgba(${rgb},1));"></span></span>
+      <span class="sspp-num">${v.done}/${v.total}</span>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// Open de wizard en spring naar de eerste stap die nog geen antwoord heeft.
+function sspSpringNaar(p) {
+  openStekkerSlimGuardian();
+  sspSetPipeline(p);
+  const steps = SSP_PIPELINES[p].steps;
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    const gevuld = s.multiAI
+      ? s.ais.some(ai => localStorage.getItem(sspMultiKey(p, i, ai.key)))
+      : !!localStorage.getItem(sspKey(p, i));
+    if (!gevuld) { sspGoTo(i); return; }
+  }
+  sspGoTo(steps.length - 1);
+}
+
+// sspRender() draait na elke opslag/verwijdering, dus dat is het goedkoopste haakje
+// om de balkjes op de hub mee gelijk te houden.
+(function() {
+  const _origSspRender = sspRender;
+  sspRender = function() {
+    const r = _origSspRender.apply(this, arguments);
+    try { sspRenderHubProgress(); } catch(e) {}
+    return r;
+  };
+})();
+
+// ══════════════════════════════════════════════
+// COMMAND PALETTE (⌘K / Ctrl+K)
+// Eén zoekveld over de hele hub: acties, kaarten, header-knoppen, losse
+// AI-checkers, elke pipelinestap, elke toolkit-tool en je brain dumps.
+// Reden: de header telt inmiddels ~19 knoppen en de toolkits samen ~386 tools —
+// bladeren werkt niet meer, typen wel.
+// ══════════════════════════════════════════════
+const CMDK_FREQ_KEY = 'cmdk_freq_v1';
+let cmdkIndex = [];
+let cmdkResults = [];
+let cmdkSel = 0;
+
+// Vaste acties. `fn` wordt pas opgenomen als de functie ook echt bestaat,
+// zodat een hernoemde/verwijderde functie geen dode regel in de palette achterlaat.
+const CMDK_ACTIES = [
+  { ico: '🚀', title: 'AI Pipeline',            sub: 'Blog · Site check · SEO wizard',              fn: 'openStekkerSlimGuardian' },
+  { ico: '🏛️', title: 'AI Council',             sub: '1 vraag parallel naar 3 AI’s',           fn: 'openCouncil' },
+  { ico: '✦',  title: 'Prompt Builder',         sub: 'Ruw idee → nette prompt',                fn: 'openPromptBuilder' },
+  { ico: '🔐', title: 'Kluis',                  sub: 'Wachtwoorden, versleuteld',                   fn: 'openVault' },
+  { ico: '🗓️', title: 'Week Planner',           sub: 'Taken per dag + foto-import',                 fn: 'openWeekplanner' },
+  { ico: '💶', title: 'Vaste Lasten',           sub: 'Financieel dashboard + CSV-import',           fn: 'openVasteLasten' },
+  { ico: '💼', title: 'Werk',                   sub: 'Werklinks en KM-registratie',                 fn: 'openWerk' },
+  { ico: '📥', title: 'Brain Dump Inbox',       sub: 'Je gedumpte gedachtes sorteren',              fn: 'openDumpInbox' },
+  { ico: '📅', title: 'Agenda',                 sub: 'Afspraak toevoegen',                          fn: 'openAgendaModal' },
+  { ico: '🧰', title: 'Gratis Tools (FMHY)',    sub: 'Films, muziek, software, privacy',            run: () => openToolkit('fmhy') },
+  { ico: '🕵️', title: 'Uitzoeken (OSINT)',      sub: 'Nummer, e-mail, foto of bedrijf natrekken',   run: () => openToolkit('osint') },
+  { ico: '🎲', title: 'Verras me met 3 tools',  sub: 'Willekeurige greep uit de toolkit',           run: () => { openToolkit('fmhy'); setTimeout(toolkitSurprise, 60); } },
+  { ico: '🗂️', title: 'Pipeline archief',       sub: 'Oude pipeline-runs terughalen',               fn: 'sspOpenArchive' },
+  { ico: '📦', title: 'Context-pakket maken',   sub: 'Korte briefing voor een andere AI',           fn: 'genContextPakket' },
+  { ico: '🔑', title: 'API keys',               sub: 'Claude- en OpenRouter-sleutel',               fn: 'openApiKeyModal' },
+  { ico: '💳', title: 'AI-kosten deze maand',   sub: 'Schatting per bron',                          fn: 'openKostenModal' },
+  { ico: '💾', title: 'Backup downloaden',      sub: 'Alle Supabase-data als JSON',                 fn: 'backupAlles' },
+  { ico: '🧮', title: 'Rekenmachine',           sub: 'Snel iets uitrekenen',                        fn: 'toggleCalc' },
+  { ico: '🔄', title: 'Daily Level Up verversen', sub: 'Nieuwe suggesties ophalen',                 fn: 'luRefresh' },
+  { ico: '⬆️', title: 'Naar boven',             sub: 'Scroll naar de top van de hub',               run: () => window.scrollTo({ top: 0, behavior: 'smooth' }) }
+];
+
+function cmdkFreqLoad() { try { return JSON.parse(localStorage.getItem(CMDK_FREQ_KEY) || '{}'); } catch(e) { return {}; } }
+function cmdkFreqBump(id) {
+  const f = cmdkFreqLoad();
+  const e = f[id] || { n: 0, t: 0 };
+  f[id] = { n: e.n + 1, t: Date.now() };
+  // Nooit onbeperkt laten groeien: houd de 60 meest recente bij.
+  const keys = Object.keys(f);
+  if (keys.length > 60) {
+    keys.sort((a, b) => (f[b].t || 0) - (f[a].t || 0)).slice(60).forEach(k => delete f[k]);
+  }
+  try { localStorage.setItem(CMDK_FREQ_KEY, JSON.stringify(f)); } catch(e2) {}
+}
+function cmdkFreqBonus(id, freq) {
+  const e = freq[id];
+  if (!e) return 0;
+  const dagen = (Date.now() - (e.t || 0)) / 86400000;
+  const versheid = dagen < 1 ? 14 : dagen < 7 ? 8 : dagen < 30 ? 3 : 0;
+  return Math.min(e.n, 8) * 4 + versheid;
+}
+
+// Emoji vooraan een titel wordt het icoontje; de rest blijft de zoekbare tekst.
+function cmdkSplitIco(tekst, fallback) {
+  const m = String(tekst || '').trim().match(/^([^\w\s(]+)\s+(.*)$/u);
+  if (m && m[2]) return { ico: m[1], title: m[2].trim() };
+  return { ico: fallback, title: String(tekst || '').trim() };
+}
+
+function cmdkPushEl(lijst, el, tag, fallbackIco, gezien) {
+  if (!el || el.dataset.cmdkSkip) return;
+  const kop = el.querySelector('h2');
+  const ruw = (kop ? kop.textContent : el.textContent).replace(/\s+/g, ' ').trim();
+  if (!ruw) return;
+  const p = el.querySelector('p:not(.voorbeeld)');
+  const split = cmdkSplitIco(ruw, fallbackIco);
+  const sleutel = split.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (!sleutel || gezien.has(sleutel)) return;
+  gezien.add(sleutel);
+  lijst.push({
+    ico: split.ico,
+    title: split.title,
+    sub: p ? p.textContent.replace(/\s+/g, ' ').trim().slice(0, 90) : (el.title || '').slice(0, 90),
+    tag: tag,
+    run: () => el.click()
+  });
+}
+
+function cmdkBuildIndex() {
+  const lijst = [];
+  const gezien = new Set();
+
+  CMDK_ACTIES.forEach(a => {
+    const run = a.run || (typeof window[a.fn] === 'function' ? window[a.fn] : null);
+    if (!run) return;
+    const sleutel = a.title.toLowerCase().replace(/[^a-z0-9]/g, '');
+    gezien.add(sleutel);
+    lijst.push({ ico: a.ico, title: a.title, sub: a.sub, tag: 'actie', run: run });
+  });
+
+  document.querySelectorAll('.card').forEach(el => {
+    const sec = el.closest('.section');
+    const label = sec && sec.querySelector('.section-label');
+    const tag = label ? label.textContent.replace(/[^\wÀ-ž ]/g, '').trim().toLowerCase() : 'kaart';
+    cmdkPushEl(lijst, el, tag || 'kaart', '🔗', gezien);
+  });
+  document.querySelectorAll('.header-btns .hbtn').forEach(el => cmdkPushEl(lijst, el, 'knop', '🔘', gezien));
+  document.querySelectorAll('.ss-pill').forEach(el => cmdkPushEl(lijst, el, 'checker', '🔍', gezien));
+
+  if (typeof SSP_PIPELINES !== 'undefined') {
+    Object.keys(SSP_PIPELINES).forEach(p => {
+      const pl = SSP_PIPELINES[p];
+      pl.steps.forEach((s, i) => {
+        // Labels zien eruit als "Stap 4 van 13 — Bouwer: Outline"; het stapnummer
+        // staat al in de titel, dus dat voorvoegsel eraf.
+        const naam = String(s.label || '')
+          .replace(/^\s*stap\s*\d+\s*van\s*\d+\s*[—-]\s*/i, '')
+          .replace(/^\d+\s*\/\s*\d+\s*[—-]\s*/, '')
+          .trim();
+        lijst.push({
+          ico: '›',
+          title: `${pl.label} stap ${i + 1} — ${naam}`,
+          sub: s.multiAI ? 'Meerdere AI’s' : (s.aiLabel || ''),
+          tag: 'stap',
+          run: () => { openStekkerSlimGuardian(); sspSetPipeline(p); sspGoTo(i); }
+        });
+      });
+    });
+  }
+
+  if (typeof TOOLKITS !== 'undefined') {
+    Object.keys(TOOLKITS).forEach(k => {
+      const tag = k === 'fmhy' ? 'gratis tools' : 'uitzoeken';
+      TOOLKITS[k].cats.forEach(c => {
+        const cat = String(c.naam || '').replace(/^[^\w]+\s*/u, '').trim();
+        c.items.forEach(it => {
+          lijst.push({ ico: '🧩', title: it.n, sub: `${it.d} · ${cat}`, tag: tag, url: it.u, run: () => window.open(it.u, '_blank', 'noopener') });
+        });
+      });
+    });
+  }
+
+  try {
+    (typeof dumpGet === 'function' ? dumpGet() : []).slice(0, 40).forEach(d => {
+      const tekst = String(typeof d === 'string' ? d : (d.tekst || d.text || '')).replace(/\s+/g, ' ').trim();
+      if (tekst) lijst.push({ ico: '💭', title: tekst.slice(0, 70), sub: 'uit je brain dump', tag: 'dump', run: () => openDumpInbox() });
+    });
+  } catch(e) {}
+
+  return lijst;
+}
+
+// Eerst exacte deeltreffer (hoogst), anders subsequence — losse letters die in
+// volgorde voorkomen, zoals "vslst" → "Vaste Lasten".
+function cmdkMatch(q, tekst) {
+  const t = String(tekst || '').toLowerCase();
+  if (!t) return null;
+  const pos = t.indexOf(q);
+  if (pos !== -1) {
+    let score = 130 - Math.min(pos, 40);
+    if (pos === 0) score += 45;
+    else if (/[\s\-·—/(|,.]/.test(t[pos - 1])) score += 28;
+    score += Math.round((q.length / t.length) * 30);
+    const hits = [];
+    for (let i = 0; i < q.length; i++) hits.push(pos + i);
+    return { score: score, hits: hits };
+  }
+  if (q.length < 3) return null;
+  let ti = 0, score = 0, streak = 0;
+  const hits = [];
+  for (let qi = 0; qi < q.length; qi++) {
+    let gevonden = -1;
+    while (ti < t.length) { if (t[ti] === q[qi]) { gevonden = ti; break; } ti++; }
+    if (gevonden === -1) return null;
+    const opWoordgrens = gevonden === 0 || /[\s\-·—/(|,.]/.test(t[gevonden - 1]);
+    // Zonder deze eis matcht "outl" ook op "Return YouTube Dislike": met 475
+    // items levert een losse subsequence anders meer ruis dan resultaat.
+    if (qi === 0 && !opWoordgrens) return null;
+    if (hits.length && gevonden === hits[hits.length - 1] + 1) { streak++; score += 6 + streak * 2; }
+    else { streak = 0; score += 1; }
+    if (opWoordgrens) score += 9;
+    hits.push(gevonden);
+    ti++;
+  }
+  // De letters moeten ook een beetje bij elkaar staan, niet over de hele naam verspreid.
+  if (hits[hits.length - 1] - hits[0] > q.length * 7 + 6) return null;
+  return { score: score + Math.max(0, 18 - Math.round(t.length / 6)), hits: hits };
+}
+
+function cmdkHl(tekst, hits) {
+  const s = String(tekst || '');
+  if (!hits || !hits.length) return escHtml(s);
+  const set = new Set(hits);
+  let out = '', open = false;
+  for (let i = 0; i < s.length; i++) {
+    const aan = set.has(i);
+    if (aan && !open) { out += '<b>'; open = true; }
+    if (!aan && open) { out += '</b>'; open = false; }
+    out += escHtml(s[i]);
+  }
+  return out + (open ? '</b>' : '');
+}
+
+function cmdkZoek(q) {
+  const freq = cmdkFreqLoad();
+  q = q.trim().toLowerCase();
+
+  if (!q) {
+    // Leeg veld: eerst wat je vaak gebruikt, daarna de standaardacties.
+    const metFreq = cmdkIndex
+      .map(it => ({ it: it, bonus: cmdkFreqBonus(cmdkId(it), freq) }))
+      .filter(x => x.bonus > 0)
+      .sort((a, b) => b.bonus - a.bonus)
+      .slice(0, 6)
+      .map(x => ({ ...x.it, _kop: 'Vaak gebruikt', _hits: null }));
+    const vast = cmdkIndex
+      .filter(it => it.tag === 'actie' && !metFreq.some(m => m.title === it.title))
+      .slice(0, 8)
+      .map(it => ({ ...it, _kop: 'Snel naar', _hits: null }));
+    return metFreq.concat(vast);
+  }
+
+  const uit = [];
+  for (const it of cmdkIndex) {
+    let m = cmdkMatch(q, it.title);
+    let hits = m ? m.hits : null;
+    let score = m ? m.score : -1;
+    if (!m) {
+      const ms = cmdkMatch(q, it.sub);
+      if (!ms) continue;
+      score = ms.score * 0.45;
+      hits = null;
+    }
+    if (it.tag === 'actie') score += 12;
+    if (it.tag === 'dump') score -= 8;
+    score += cmdkFreqBonus(cmdkId(it), freq);
+    uit.push({ ...it, _score: score, _hits: hits });
+  }
+  return uit.sort((a, b) => b._score - a._score).slice(0, 40);
+}
+
+function cmdkId(it) { return it.tag + '|' + it.title; }
+
+function cmdkRender() {
+  const lijst = document.getElementById('cmdk-list');
+  const teller = document.getElementById('cmdk-count');
+  if (!cmdkResults.length) {
+    lijst.innerHTML = '<div id="cmdk-empty">Niks gevonden.<br><span style="opacity:0.6;">Probeer een kortere zoekterm — losse letters mogen ook, zoals <b>vslst</b> voor Vaste Lasten.</span></div>';
+    teller.textContent = '';
+    return;
+  }
+  teller.textContent = cmdkResults.length + (cmdkResults.length === 40 ? '+' : '') + ' resultaten';
+  let html = '', vorigeKop = null;
+  cmdkResults.forEach((r, i) => {
+    if (r._kop && r._kop !== vorigeKop) { html += `<div class="cmdk-group">${escHtml(r._kop)}</div>`; vorigeKop = r._kop; }
+    html += `<div class="cmdk-row${i === cmdkSel ? ' sel' : ''}" data-i="${i}" onmousemove="cmdkHover(${i})" onclick="cmdkKies(${i})">
+      <span class="cmdk-ico">${escHtml(r.ico || '•')}</span>
+      <span class="cmdk-txt">
+        <span class="cmdk-title">${cmdkHl(r.title, r._hits)}</span>
+        ${r.sub ? `<span class="cmdk-sub">${escHtml(r.sub)}</span>` : ''}
+      </span>
+      <span class="cmdk-tag">${escHtml(r.tag || '')}</span>
+    </div>`;
+  });
+  lijst.innerHTML = html;
+  cmdkScrollNaarSel();
+}
+
+function cmdkScrollNaarSel() {
+  const el = document.querySelector('.cmdk-row.sel');
+  if (el && el.scrollIntoView) el.scrollIntoView({ block: 'nearest' });
+}
+
+function cmdkHover(i) {
+  if (i === cmdkSel) return;
+  cmdkSel = i;
+  document.querySelectorAll('.cmdk-row').forEach(el => el.classList.toggle('sel', +el.dataset.i === i));
+}
+
+function cmdkKies(i) {
+  const r = cmdkResults[i];
+  if (!r) return;
+  cmdkFreqBump(cmdkId(r));
+  cmdkClose();
+  // Na het sluiten uitvoeren, zodat een overlay die opengaat niet direct
+  // de Escape-afhandeling van de palette meekrijgt.
+  setTimeout(() => { try { r.run(); } catch(e) { console.warn('Command palette:', e); } }, 0);
+}
+
+function cmdkUpdate() {
+  cmdkResults = cmdkZoek(document.getElementById('cmdk-input').value);
+  cmdkSel = 0;
+  cmdkRender();
+}
+
+function cmdkOpen(voorvulling) {
+  const ov = document.getElementById('cmdk-overlay');
+  if (!ov) return;
+  cmdkIndex = cmdkBuildIndex();
+  const inp = document.getElementById('cmdk-input');
+  inp.value = voorvulling || '';
+  ov.classList.add('show');
+  cmdkUpdate();
+  // iOS focust niet betrouwbaar in dezelfde tick als de display-wissel.
+  setTimeout(() => { inp.focus(); inp.select(); }, 30);
+}
+
+function cmdkClose() {
+  const ov = document.getElementById('cmdk-overlay');
+  if (ov) ov.classList.remove('show');
+}
+
+function cmdkIsOpen() {
+  const ov = document.getElementById('cmdk-overlay');
+  return !!ov && ov.classList.contains('show');
+}
+
+(function cmdkBind() {
+  const inp = document.getElementById('cmdk-input');
+  if (!inp) return;
+  inp.addEventListener('input', cmdkUpdate);
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'ArrowDown' || (e.key === 'Tab' && !e.shiftKey)) {
+      e.preventDefault();
+      if (cmdkResults.length) { cmdkSel = (cmdkSel + 1) % cmdkResults.length; cmdkRender(); }
+    } else if (e.key === 'ArrowUp' || (e.key === 'Tab' && e.shiftKey)) {
+      e.preventDefault();
+      if (cmdkResults.length) { cmdkSel = (cmdkSel - 1 + cmdkResults.length) % cmdkResults.length; cmdkRender(); }
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      cmdkKies(cmdkSel);
+    }
+  });
+
+  // Capture-fase: ⌘K/Ctrl+K moet ook werken terwijl je in een tekstvak typt,
+  // en Escape moet de palette sluiten vóórdat de andere Escape-handlers draaien.
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      e.stopPropagation();
+      cmdkIsOpen() ? cmdkClose() : cmdkOpen();
+      return;
+    }
+    if (e.key === 'Escape' && cmdkIsOpen()) {
+      e.preventDefault();
+      e.stopPropagation();
+      cmdkClose();
+    }
+  }, true);
+
+  // Mac-toets tonen op Mac, Ctrl elders.
+  const isMac = /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent);
+  const glyph = document.getElementById('cmdk-glyph');
+  if (glyph) glyph.textContent = isMac ? '⌘' : '⌃';
+  if (!isMac) {
+    const btn = document.getElementById('cmdk-open-btn');
+    if (btn) btn.innerHTML = btn.innerHTML.replace('⌘K', 'Ctrl+K');
+  }
+})();
+
+sspRenderHubProgress();
 
 </script>
 

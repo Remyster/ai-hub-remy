@@ -1,5 +1,5 @@
 # Remy's AI Hub — Project Overzicht
-*Laatst bijgewerkt: 18 augustus 2026*
+*Laatst bijgewerkt: 20 augustus 2026*
 
 ## Wat is dit?
 Persoonlijk AI dashboard als single-page application (SPA) in één `index.html` bestand (~390KB). Draait via GitHub Pages op `remyster.github.io/ai-hub-remy/`. Geen framework, geen build-stap.
@@ -265,6 +265,64 @@ FMHY dekt alle wiki- en tool-secties van fmhy.net, inclusief de download-/torren
 
 **`toolkitAsk()` detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-4.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
 
+## Command Palette — ⌘K / Ctrl+K (20 augustus 2026)
+
+Eén zoekveld over de hele hub. Openen met `⌘K` / `Ctrl+K` (werkt ook terwijl je in een
+tekstvak typt) of via de knop **🔍 Zoek alles** vooraan in de header. Overlay
+`#cmdk-overlay`, box `#cmdk-box`.
+
+**Waarom:** de header telt inmiddels ~19 knoppen en de twee toolkits samen 386 tools.
+Bladeren werkt op die schaal niet meer; typen wel. De palette indexeert ~475 dingen.
+
+### Wat er in de index zit (`cmdkBuildIndex()`)
+| Bron | Aantal | Hoe |
+|------|--------|-----|
+| Vaste acties (`CMDK_ACTIES`) | 20 | handmatige lijst |
+| Kaarten (`.card`) | 25 | uit de DOM, tag = sectienaam |
+| Header-knoppen (`.hbtn`) | 12 | uit de DOM |
+| Losse AI-checkers (`.ss-pill`) | 6 | uit de DOM |
+| Pipelinestappen | 22 | uit `SSP_PIPELINES` |
+| Toolkit-tools | 387 | uit `TOOLKITS` |
+| Brain dumps | max 40 | uit `dumpGet()` |
+
+De DOM-bronnen worden bij élke `cmdkOpen()` opnieuw gescand, dus een nieuwe header-knop
+of kaart staat automatisch in de palette — niks registreren. Een element uitsluiten kan
+met `data-cmdk-skip="1"`. Uitvoeren gebeurt via `el.click()`, dus bestaande `onclick`- en
+`target="_blank"`-gedrag blijft precies hetzelfde.
+
+### Functies
+| Functie | Wat |
+|---------|-----|
+| `cmdkOpen(voorvulling)` / `cmdkClose()` | Overlay openen/sluiten, index wordt bij openen herbouwd |
+| `cmdkBuildIndex()` | Verzamelt alle doorzoekbare items |
+| `cmdkMatch(q, tekst)` | Scoort een zoekterm tegen één tekst |
+| `cmdkZoek(q)` | Sorteert alle treffers; leeg veld → "Vaak gebruikt" + "Snel naar" |
+| `cmdkKies(i)` | Voert het gekozen item uit en telt het mee in de frecency |
+
+**Zoeken:** eerst exacte deeltreffer, anders subsequence — losse letters die in volgorde
+voorkomen, zoals `vslst` → Vaste Lasten. Twee remmen op de subsequence, want zonder die
+remmen matchte `outl` ook op "Return YouTube Dislike": de eerste letter moet op een
+woordgrens staan, en de gevonden letters mogen niet te ver uit elkaar liggen. Losse
+subsequence geldt pas vanaf 3 tekens.
+
+**Frecency:** `localStorage` sleutel `cmdk_freq_v1`, max 60 items. Wat je vaak en
+recent kiest komt hoger te staan en verschijnt bij een leeg veld onder "Vaak gebruikt".
+
+---
+
+## Pipeline-voortgang op de hub-kaart (20 augustus 2026)
+
+De 🚀 AI Pipeline-kaart toont drie balkjes (blog / site / seo) met hoeveel stappen er al
+een opgeslagen antwoord hebben — `sspRenderHubProgress()` leest dat rechtstreeks uit
+localStorage. Klik op een balkje → `sspSpringNaar(p)` opent de wizard op de **eerste nog
+lege stap** van die pipeline.
+
+Gelijk houden gebeurt door `sspRender()` te wrappen: die draait na elke opslag en
+verwijdering, dus dat is het goedkoopste haakje. Nieuwe pipeline toevoegen? Zet 'm ook in
+`SSPP_KLEUR` en `SSPP_KORT`, anders valt hij terug op de standaardkleur.
+
+---
+
 ## Beveiliging — gedaan (29 juli 2026)
 
 RLS ingeschakeld op alle UNRESTRICTED tabellen:
@@ -308,6 +366,24 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 20 augustus 2026
+- **Command Palette (⌘K / Ctrl+K)** toegevoegd — één zoekveld over ~475 dingen: acties,
+  kaarten, header-knoppen, losse AI-checkers, alle 22 pipelinestappen, alle 387
+  toolkit-tools en je brain dumps. Zie de sectie "Command Palette" hierboven. Ook een
+  knop **🔍 Zoek alles** vooraan in de header, want een sneltoets die je niet ziet
+  bestaat niet.
+- **Pipeline-voortgang op de hub-kaart**: drie balkjes op de 🚀 AI Pipeline-kaart laten
+  zien hoever blog/site/seo staan, klikbaar naar de eerste nog lege stap. Voorheen moest
+  je de wizard openen en door de dots scrollen om te zien waar je gebleven was.
+- **Kapotte init gerepareerd**: de `window.addEventListener('load', …)`-handler begon met
+  `updatePomoDisplay()`, een restant van een verwijderde pomodoro-timer. Die gooide een
+  ReferenceError op de eerste regel, waardoor **de rest van de init nooit draaide** — dus
+  `syncApiKeyFromCloud()`, `syncOpenRouterKeyFromCloud()` en `fetchVoorJou()` liepen op
+  geen enkel apparaat. Op een nieuw apparaat betekende dat: geen keys uit de cloud, terwijl
+  de hele reden om ze in `app_settings` te zetten juist cross-device beschikbaarheid was.
+  Regel weg, en elke init-stap staat nu in een eigen `try/catch` zodat één kapotte aanroep
+  de rest niet meer meesleurt.
 
 ### 18 augustus 2026
 - **Pipeline "Opschonen"-knop**: bij elk antwoord-invoerveld (los en multi-AI) staat nu
