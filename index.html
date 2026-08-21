@@ -8050,6 +8050,91 @@ function luDateKey() {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
 }
 
+// ── Variatie zit in de CODE, niet in de prompt ────────────────────────────
+// Zonder harde invalshoek kwam Haiku elke dag op dezelfde drie dingen uit:
+// "doe een Google-zoekopdracht", "schrijf een blog", "plaats een bericht".
+// Nu krijgt elke kaart per dag één verplichte hoek uit een pool die netjes
+// rondgaat, plus de lijst van wat er de afgelopen dagen al stond.
+const LU_HOEKEN = {
+  verdien: [
+    'interne links: verbind twee bestaande pagina\'s die elkaar nu missen',
+    'een bestaand artikel bijwerken met cijfers/prijzen van dit jaar',
+    'een affiliate-link controleren: werkt hij nog, klopt de prijs',
+    'een titel of meta-description herschrijven voor meer clicks',
+    'een FAQ-blok toevoegen onder een bestaand artikel',
+    'een vergelijkingstabel maken van producten die je al noemt',
+    'pagina-snelheid of een technisch detail (alt-teksten, schema) fixen',
+    'een dun artikel uitbreiden met een eigen praktijkervaring',
+    'een seizoens- of nieuwshaak koppelen aan bestaande content',
+    'een call-to-action of productblok beter zichtbaar maken',
+    'een oud artikel dat niks doet: samenvoegen, herschrijven of weghalen',
+    'een concreet contentgat vullen waar je nog niks over hebt'
+  ],
+  leer: [
+    'iets over SEO dat je vandaag direct op de site kunt toepassen',
+    'iets technisch over thuisbatterijen of dynamische energiecontracten',
+    'een Claude/AI-truc die je pipeline sneller maakt',
+    'iets over Home Assistant of automatisering',
+    'iets over affiliate-marketing: regels, tarieven, netwerken',
+    'een stukje JavaScript of CSS dat de hub beter maakt',
+    'iets over Supabase, data of API\'s',
+    'een Nederlandse regel/subsidie rond energie die je moet kennen',
+    'iets over schrijven: structuur, koppen, leesbaarheid',
+    'iets over analytics: welke cijfers zeggen echt iets',
+    'een tool of workflow die je tijd bespaart bij weinig focus',
+    'iets over conversie: waarom mensen wel of niet klikken'
+  ],
+  connect: [
+    'reageer inhoudelijk op één forumvraag (Tweakers, Gathering, Reddit NL)',
+    'beantwoord een vraag in een Facebook-groep over zonnepanelen/batterijen',
+    'plaats één korte tip op X/Bluesky zonder link erbij',
+    'zoek één site die over hetzelfde schrijft en mail een linkvoorstel',
+    'zet een kort antwoord onder een YouTube-video in je niche',
+    'vraag om feedback op één pagina bij iemand die je vertrouwt',
+    'deel één concrete meting of ervaring uit je eigen huis',
+    'reageer op een blog van iemand anders met een echte aanvulling',
+    'meld je site aan bij één relevante directory of nieuwsbrief',
+    'stuur één DM naar iemand die over hetzelfde bezig is',
+    'zet een korte poll of vraag uit om te horen wat mensen zoeken',
+    'schrijf één zin die je overal kunt gebruiken om de site uit te leggen'
+  ]
+};
+const LU_HOEK_OFFSET = { verdien: 0, leer: 5, connect: 9 };
+
+// Rotatiestand: dagen sinds epoch + hoe vaak er op ↻ is gedrukt.
+// Zo geeft ↻ echt een andere hoek, niet dezelfde pool nog een keer.
+function luRotatie() {
+  const dagen = Math.floor(Date.now() / 86400000);
+  return dagen + parseInt(localStorage.getItem('lu_bump') || '0', 10);
+}
+function luHoek(cat) {
+  const pool = LU_HOEKEN[cat];
+  return pool[(luRotatie() + (LU_HOEK_OFFSET[cat] || 0)) % pool.length];
+}
+
+// Laatste ~12 suggesties, zodat de AI niet opnieuw met hetzelfde aankomt.
+function luGeschiedenis() {
+  try { return JSON.parse(localStorage.getItem('lu_hist_v1') || '[]'); } catch(e) { return []; }
+}
+function luOnthoud(parsed) {
+  const h = luGeschiedenis();
+  ['verdien','leer','connect'].forEach(k => { if (parsed[k]) h.unshift(String(parsed[k]).slice(0, 120)); });
+  localStorage.setItem('lu_hist_v1', JSON.stringify(h.slice(0, 12)));
+}
+
+// Echte staat van de pipelines meegeven — dat maakt een suggestie concreet
+// ("je blog staat op stap 5") in plaats van algemeen advies.
+function luPipelineContext() {
+  try {
+    if (typeof SSP_PIPELINES === 'undefined' || typeof sspPipelineVoortgang !== 'function') return '';
+    const delen = Object.keys(SSP_PIPELINES).map(p => {
+      const v = sspPipelineVoortgang(p);
+      return SSP_PIPELINES[p].label + ' ' + v.done + '/' + v.total;
+    });
+    return delen.length ? '\nStand van zijn pipelines op dit moment: ' + delen.join(', ') + '.' : '';
+  } catch(e) { return ''; }
+}
+
 function luRenderStreak() {
   const el = document.getElementById('lu-streak');
   if (!el) return;
@@ -8096,23 +8181,43 @@ async function luLoad(force) {
     luRender({ verdien: 'Stel je API key in (🔑 knop) voor dagelijkse suggesties.', leer: 'Stel je API key in voor dagelijkse suggesties.', connect: 'Stel je API key in voor dagelijkse suggesties.' });
     return;
   }
+  const hoekVerdien = luHoek('verdien');
+  const hoekLeer    = luHoek('leer');
+  const hoekConnect = luHoek('connect');
+  const hist = luGeschiedenis();
+  const histTekst = hist.length
+    ? '\n\nDit stond er de afgelopen dagen al — kom NIET met iets wat hier op lijkt:\n- ' + hist.join('\n- ')
+    : '';
+  const pipelineCtx = luPipelineContext();
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
-        messages: [{ role: 'user', content: `Datum: ${today}. Je genereert dagelijkse suggesties voor Remy, die StekkerSlim.nl bouwt — een Nederlandse affiliate-site over slimme energie, thuisbatterijen, zonnepanelen en domotica. Hij werkt fulltime bij een drinkwaterbedrijf, heeft ADHD (weinig tijd, snel afgeleid) en wil vooral dat StekkerSlim vooruit gaat. Geef exact 3 korte, concrete suggesties, elke dag anders (gebruik de datum als variatie-seed). Wees specifiek, geen vage tips.
+        max_tokens: 700,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{ role: 'user', content: `Datum: ${today}. Je genereert dagelijkse suggesties voor Remy, die StekkerSlim.nl bouwt — een Nederlandse affiliate-site over slimme energie, thuisbatterijen, zonnepanelen en domotica. Hij werkt fulltime bij een drinkwaterbedrijf, heeft ADHD (weinig tijd, snel afgeleid) en wil vooral dat StekkerSlim vooruit gaat.${pipelineCtx}
 
-Geef ALLEEN deze JSON, geen uitleg:
-{"verdien":"1 concrete groei-actie voor StekkerSlim.nl vandaag — bijv. een contentgat vullen, interne links fixen, een affiliate-link checken, een SEO-quickwin. Max 2 zinnen.","leer":"1 concreet ding om vandaag te leren dat StekkerSlim of de workflow (AI, HA, SEO, Supabase) vooruit helpt, met waarom het nuttig is. Max 2 zinnen.","connect":"1 kleine concrete actie van max 5 min om StekkerSlim onder de aandacht te brengen — reageren op een forum, een social post, een backlink-kansje. Max 2 zinnen."}` }]
+Kijk eerst kort op stekkerslim.nl (websearch) zodat je verwijst naar iets wat er ECHT staat — noem een bestaande pagina of onderwerp bij naam. Weet je het niet zeker, beschrijf de actie dan zonder een paginanaam te verzinnen.
+
+Elke suggestie MOET binnen de opgegeven invalshoek vallen:
+- verdien → ${hoekVerdien}
+- leer → ${hoekLeer}
+- connect → ${hoekConnect}
+
+Verboden: vaag advies ("doe onderzoek", "schrijf een blog", "plaats een bericht op social media") zonder te zeggen wát precies. Noem het onderwerp, de pagina of de plek concreet.${histTekst}
+
+Geef ALLEEN deze JSON, geen uitleg, geen markdown:
+{"verdien":"1 concrete groei-actie binnen de invalshoek, max 2 zinnen","leer":"1 concreet ding om te leren binnen de invalshoek, inclusief waarom het nuttig is, max 2 zinnen","connect":"1 actie van max 5 minuten binnen de invalshoek, max 2 zinnen"}` }]
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    const parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    const parsed = lu4ExtractJson(raw);
+    parsed.hoeken = { verdien: hoekVerdien, leer: hoekLeer, connect: hoekConnect };
+    luOnthoud(parsed);
     localStorage.setItem(cacheKey, JSON.stringify(parsed));
     // Oude cache opruimen
     Object.keys(localStorage).filter(k => k.startsWith('lu_content_') && k !== cacheKey).forEach(k => localStorage.removeItem(k));
@@ -8123,16 +8228,28 @@ Geef ALLEEN deze JSON, geen uitleg:
   }
 }
 
-function luRender(d) {
-  const v = document.getElementById('lu-verdien');
-  const l = document.getElementById('lu-leer');
-  const c = document.getElementById('lu-connect');
-  if (v) v.textContent = d.verdien || '—';
-  if (l) l.textContent = d.leer || '—';
-  if (c) c.textContent = d.connect || '—';
+// De invalshoek staat zichtbaar boven de tekst: dan zie je dat er gestuurd is,
+// en waaróm de suggestie vandaag hierover gaat.
+function luKaart(id, tekst, hoek) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const kop = hoek ? `<div style="font-size:0.88em;opacity:0.5;margin-bottom:5px;">▸ ${escHtml(hoek)}</div>` : '';
+  el.innerHTML = kop + escHtml(tekst || '—');
 }
 
-function luRefresh() { luLoad(true); lu4Load(true); }
+function luRender(d) {
+  const h = d.hoeken || {};
+  luKaart('lu-verdien', d.verdien, h.verdien);
+  luKaart('lu-leer',    d.leer,    h.leer);
+  luKaart('lu-connect', d.connect, h.connect);
+}
+
+// ↻ draait de rotatie een stap door — anders krijg je dezelfde invalshoek terug.
+function luRefresh() {
+  localStorage.setItem('lu_bump', String(parseInt(localStorage.getItem('lu_bump') || '0', 10) + 1));
+  luLoad(true);
+  lu4Load(true);
+}
 setTimeout(() => luLoad(false), 1200);
 
 // ══════════════════════════════════════════════
@@ -8161,11 +8278,38 @@ function lu4ExtractJson(raw) {
   return JSON.parse(m[0]);
 }
 
+// Zonder vast domein pakte Haiku bijna altijd ruimtevaart of AI. De hoek wordt
+// nu in code gekozen en roteert, net als bij de Level Up-kaarten.
+const LU4_DOMEINEN = [
+  'ruimtevaart of astronomie', 'biologie, dieren of natuur', 'scheikunde of materiaalkunde',
+  'energie en techniek', 'archeologie of geschiedschrijving', 'geneeskunde en gezondheid',
+  'AI, computers of internet', 'oceanen, weer of klimaat', 'psychologie of menselijk gedrag',
+  'transport en infrastructuur', 'voedsel en landbouw', 'taal, muziek of cultuur',
+  'economie en geld', 'wiskunde of natuurkunde'
+];
+
+function lu4WeetjesHistorie() {
+  try { return JSON.parse(localStorage.getItem('lu4_hist_v1') || '[]'); } catch(e) { return []; }
+}
+function lu4OnthoudWeetje(tekst) {
+  const h = lu4WeetjesHistorie();
+  h.unshift(String(tekst).slice(0, 130));
+  localStorage.setItem('lu4_hist_v1', JSON.stringify(h.slice(0, 20)));
+}
+function lu4FtmGezien() {
+  try { return JSON.parse(localStorage.getItem('lu4_ftm_hist_v1') || '[]'); } catch(e) { return []; }
+}
+
 async function lu4LoadWiki() {
   // Bewust GEEN "on this day"-historie: het weetje moet actueel zijn — iets van nu,
   // iets dat eraan komt, of een ontwikkeling van de afgelopen ~2 jaar.
   const key = getApiKey();
   if (!key) return '🌐 Stel je API key in voor het weetje van vandaag.';
+  const domein = LU4_DOMEINEN[luRotatie() % LU4_DOMEINEN.length];
+  const gehad = lu4WeetjesHistorie();
+  const gehadTekst = gehad.length
+    ? `\n\nDeze weetjes heb ik al gehad — kies iets duidelijk anders:\n- ${gehad.join('\n- ')}`
+    : '';
   try {
     const now = new Date();
     const dagMaand = now.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long' });
@@ -8178,7 +8322,11 @@ async function lu4LoadWiki() {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: `Vandaag is het ${dagMaand} ${jaarNu}. Zoek via websearch één interessant, verrassend weetje dat ACTUEEL is: iets wat nu speelt, iets wat binnenkort gaat gebeuren, of een ontwikkeling/ontdekking uit de periode ${jaarVanaf}-${jaarNu}. GEEN historische "vandaag in de geschiedenis"-feiten en niets van vóór ${jaarVanaf}. Varieer het onderwerp (wetenschap, techniek, natuur, ruimtevaart, samenleving) en kies iets dat niet in elke krantenkop staat. Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"jaar":"het jaartal of de maand+jaar waar het weetje bij hoort, als tekst","tekst":"het weetje in het Nederlands, 1 zin"}` }]
+        messages: [{ role: 'user', content: `Vandaag is het ${dagMaand} ${jaarNu}. Zoek via websearch één interessant, verrassend weetje dat ACTUEEL is: iets wat nu speelt, iets wat binnenkort gaat gebeuren, of een ontwikkeling/ontdekking uit de periode ${jaarVanaf}-${jaarNu}. GEEN historische "vandaag in de geschiedenis"-feiten en niets van vóór ${jaarVanaf}.
+
+Het onderwerp MOET vallen binnen: ${domein}. Kies daarbinnen iets dat niet in elke krantenkop staat — geen groot algemeen nieuwsverhaal.${gehadTekst}
+
+Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"jaar":"het jaartal of de maand+jaar waar het weetje bij hoort, als tekst","tekst":"het weetje in het Nederlands, 1 zin"}` }]
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -8186,6 +8334,7 @@ async function lu4LoadWiki() {
     const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
     const parsed = lu4ExtractJson(raw);
     if (!parsed.tekst) throw new Error('onvolledige respons');
+    lu4OnthoudWeetje(parsed.tekst);
     const jaar = parsed.jaar ? parsed.jaar + ': ' : '';
     return `🌐 ${jaar}${parsed.tekst}`;
   } catch(e) {
@@ -8203,21 +8352,26 @@ async function lu4LoadFtm() {
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 500,
+        max_tokens: 900,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: `Zoek het meest recente artikel op ftm.nl (Follow the Money, Nederlandse onderzoeksjournalistiek). Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"titel":"de exacte titel van het artikel","teaser":"1 zin samenvatting waarom dit interessant is","url":"de volledige url naar het artikel op ftm.nl"}` }]
+        messages: [{ role: 'user', content: `Zoek de 5 meest recente artikelen op ftm.nl (Follow the Money, Nederlandse onderzoeksjournalistiek), nieuwste eerst. Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"artikelen":[{"titel":"exacte titel","teaser":"1 zin waarom dit interessant is","url":"volledige url op ftm.nl"}]}` }]
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
     const parsed = lu4ExtractJson(raw);
-    if (!parsed.titel || !parsed.url) throw new Error('onvolledige respons');
-    lu4FtmLink = parsed.url;
-    const vorigeUrl = localStorage.getItem('lu4_last_ftm_url');
-    lu4FtmIsNew = !!(vorigeUrl && vorigeUrl !== parsed.url);
-    localStorage.setItem('lu4_last_ftm_url', parsed.url);
-    return `💰 <b>${escHtml(parsed.titel)}</b> — ${escHtml(parsed.teaser||'')}`;
+    const lijst = (parsed.artikelen || []).filter(a => a && a.titel && a.url);
+    if (!lijst.length) throw new Error('onvolledige respons');
+    // Kiezen doet de code, niet het model: pak het nieuwste artikel dat je nog
+    // niet gezien hebt. Is alles al langsgekomen, dan gewoon het nieuwste.
+    const gezien = lu4FtmGezien();
+    const art = lijst.find(a => !gezien.includes(a.url)) || lijst[0];
+    lu4FtmLink = art.url;
+    lu4FtmIsNew = !gezien.includes(art.url) && gezien.length > 0;
+    localStorage.setItem('lu4_ftm_hist_v1', JSON.stringify([art.url].concat(gezien.filter(u => u !== art.url)).slice(0, 15)));
+    localStorage.setItem('lu4_last_ftm_url', art.url);
+    return `💰 <b>${escHtml(art.titel)}</b> — ${escHtml(art.teaser||'')}`;
   } catch(e) {
     console.warn('FTM-kop laden mislukt:', e);
     lu4FtmLink = 'https://www.ftm.nl/';

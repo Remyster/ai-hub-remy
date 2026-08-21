@@ -432,6 +432,28 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 
 ## Changelog
 
+### 21 augustus 2026
+- **Daily Level Up en Vandaag Geleerd waren statisch** — beide stuurden elke dag een
+  vrijwel identieke prompt naar Haiku, zonder geheugen en zonder sturing. Gevolg:
+  groei/leer/promoot kwam neer op "doe een Google-zoekopdracht / schrijf een blog /
+  plaats een bericht", en het weetje ging bijna altijd over ruimtevaart of AI.
+  De variatie zit nu **in de code**, niet in de prompt:
+  - `LU_HOEKEN` — 3 pools van 12 concrete invalshoeken (interne links, affiliate-link
+    checken, reageren op één forumvraag…). Per dag krijgt elke kaart er één opgelegd,
+    de pool roteert. De gekozen hoek staat zichtbaar boven de tekst (`▸ …`).
+  - `luRotatie()` = dagen sinds epoch + `lu_bump`; ↻ (`luRefresh()`) verhoogt `lu_bump`,
+    dus je krijgt een échte andere hoek in plaats van dezelfde pool nog eens.
+  - `lu_hist_v1` — laatste 12 suggesties gaan mee als "kom niet met iets wat hierop lijkt".
+  - Websearch aan op de Level Up-call + `luPipelineContext()` (stand van blog/site/seo),
+    zodat een suggestie naar een echte pagina of een openstaande stap kan verwijzen.
+  - `LU4_DOMEINEN` — 14 roterende onderwerpdomeinen voor het weetje, plus `lu4_hist_v1`
+    met de laatste 20 weetjes als uitsluitlijst.
+  - FTM vraagt nu de **5** nieuwste artikelen op; de code kiest het nieuwste dat nog niet
+    in `lu4_ftm_hist_v1` (15 urls) staat, anders het nieuwste. Kiezen doet de code, niet
+    het model — anders verzint het een "nieuw" artikel als er niks nieuws is.
+  - Kosten: ~3 websearch-calls per dag i.p.v. 2, nog steeds één keer per dag door de
+    bestaande dagcache.
+
 ### 20 augustus 2026
 - **📍 Plaats-knop volledig herzien** — zie de sectie "Plaats-knop + herinneringen"
   hierboven. Belangrijkste: de oude promptregel was *"dag: alleen invullen als een dag
