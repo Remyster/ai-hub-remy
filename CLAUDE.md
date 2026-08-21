@@ -433,6 +433,18 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ## Changelog
 
 ### 21 augustus 2026
+- **Blog Pipeline stap 1: geen bestandsoutput meer** (commit `0815749`). Beide
+  sub-prompts (1A Gemini, 1B Grok) eindigden met een `## VERPLICHTE BESTANDS-OUTPUT`-blok
+  dat de AI opdroeg het volledige resultaat naar een `.txt` te schrijven en in de chat
+  alleen een downloadlink te tonen. Dat is een omweg: de output moet in stap 2 gewoon
+  doorgeplakt worden naar Perplexity. Beide geven het resultaat nu direct in de chat.
+- **Let op bij aangeleverde `index.html`-downloads**: het bestand waar deze wijziging
+  uit kwam was 84 KB *kleiner* dan de repo — een oudere basis met één nieuwe aanpassing
+  erin. Van de 9 gewijzigde regels in `SSP_PIPELINES` waren er 8 een terugdraai van de
+  fixes uit `360be2f` (cumulatieve `prevSources`, `CONTROLE VOOR HET GEKOZEN ONDERWERP`,
+  live site boven raw-URL). Alleen de stap 1-regel is overgenomen. Zulke bestanden dus
+  nooit over `index.html` heen kopiëren — eerst functienamen aan beide kanten
+  vergelijken en alleen het bedoelde blok overnemen.
 - **Daily Level Up en Vandaag Geleerd waren statisch** — beide stuurden elke dag een
   vrijwel identieke prompt naar Haiku, zonder geheugen en zonder sturing. Gevolg:
   groei/leer/promoot kwam neer op "doe een Google-zoekopdracht / schrijf een blog /
