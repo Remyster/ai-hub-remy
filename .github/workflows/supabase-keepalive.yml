@@ -23,7 +23,7 @@ jobs:
           echo "::add-mask::$SB_KEY"
 
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "$SB_URL/rest/v1/pipeline_state?select=id&limit=1" \
+            "$SB_URL/rest/v1/pipeline_state?select=key&limit=1" \
             -H "apikey: $SB_KEY" \
             -H "Authorization: Bearer $SB_KEY")
           echo "HTTP status: $STATUS"
