@@ -834,7 +834,9 @@ header h1 {
   padding:5px 11px;cursor:pointer;transition:all 0.2s;
 }
 .vl-nav-btn:hover { background:rgba(255,255,255,0.1);color:var(--text); }
+.vl-nav-btn:disabled { opacity:0.4;cursor:default; }
 .vl-maand-label { font-size:0.8em;color:var(--text);letter-spacing:0.06em;min-width:100px;text-align:center; }
+#vl-content { transition:opacity 0.15s; }
 
 /* Samenvatting balk */
 .vl-summary {
@@ -890,6 +892,7 @@ header h1 {
   text-align:right;outline:none;transition:border-color 0.2s;
 }
 .vl-bedrag-input:focus { border-color:rgba(56,189,248,0.4); }
+.vl-bedrag-input.vl-saved { border-color:#10b981; }
 .vl-betaal-btn {
   padding:5px 12px;border-radius:6px;font-family:'DM Mono',monospace;font-size:0.68em;
   cursor:pointer;transition:all 0.2s;white-space:nowrap;border:1px solid;
@@ -4330,9 +4333,9 @@ async function sbUpsert(table, body) {
     errEl.textContent = `⚠️ Opslaan mislukt (${r.status}) — check console`;
     document.body.appendChild(errEl);
     setTimeout(() => errEl.remove(), 4000);
-    return null;
+    return false;
   }
-  return null;
+  return true;
 }
 
 // ══════════════════════════════════════════════
@@ -4821,9 +4824,31 @@ function vlNextMaand() { vlMaand++; if(vlMaand>12){vlMaand=1;vlJaar++;} loadVast
 
 function euroFmt(n) { return '€' + parseFloat(n||0).toFixed(2).replace('.',',').replace(/\B(?=(\d{3})+(?!\d))/g,'.'); }
 
+let vlHeeftData = false;
+
+function vlToast(msg, kleur) {
+  const el = document.createElement('div');
+  el.style.cssText = `position:fixed;top:20px;right:20px;background:${kleur||'#f87171'};color:#fff;padding:10px 16px;border-radius:8px;font-size:0.8em;z-index:9999;font-family:"DM Mono",monospace;box-shadow:0 4px 16px rgba(0,0,0,0.25);`;
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
 async function loadVasteLasten() {
   document.getElementById('vl-maand-label').textContent = MAANDEN[vlMaand-1] + ' ' + vlJaar;
-  document.getElementById('vl-content').innerHTML = '<div class="vl-loading">Laden...</div>';
+  const content = document.getElementById('vl-content');
+  const navBtns = document.querySelectorAll('.vl-nav-btn');
+  navBtns.forEach(b => b.disabled = true);
+
+  // Eerste keer: volledige "Laden..." state. Bij maandwissel erna: oude data blijft
+  // zichtbaar (licht gedimd) i.p.v. helemaal leeg — anders voelt heen-en-weer klikken
+  // tussen maanden telkens als een harde reset.
+  if (!vlHeeftData) {
+    content.innerHTML = '<div class="vl-loading">Laden...</div>';
+  } else {
+    content.style.opacity = '0.45';
+    content.style.pointerEvents = 'none';
+  }
 
   try {
     // Haal lasten + betalingen parallel op
@@ -4840,9 +4865,18 @@ async function loadVasteLasten() {
     renderVasteLasten();
     renderSpaar();
     vlLoadTrend();
+    vlHeeftData = true;
   } catch(e) {
-    document.getElementById('vl-content').innerHTML = '<div class="vl-loading">❌ Verbinding mislukt — check Supabase setup</div>';
+    if (!vlHeeftData) {
+      content.innerHTML = '<div class="vl-loading">❌ Verbinding mislukt — check Supabase setup</div>';
+    } else {
+      vlToast('⚠️ Bijwerken mislukt — vorige gegevens blijven zichtbaar');
+    }
     console.error(e);
+  } finally {
+    content.style.opacity = '';
+    content.style.pointerEvents = '';
+    navBtns.forEach(b => b.disabled = false);
   }
 }
 
@@ -4987,7 +5021,8 @@ function renderVasteLasten() {
         </div>
         <div class="vl-bedrag-wrap">
           <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
-            id="vl-inp-${l.id}" oninput="updateTotalsLive()" onchange="updateBedrag(${l.id}, this.value)">
+            id="vl-inp-${l.id}" oninput="updateTotalsLive(); vlDebouncedSave(${l.id}, this.value)"
+            onchange="clearTimeout(vlSaveTimers[${l.id}]); updateBedrag(${l.id}, this.value)">
         </div>
         <button class="vl-betaal-btn ${isPaid?'paid':'open'}" id="vl-btn-${l.id}"
           onclick="toggleBetaald(${l.id})">
@@ -5051,9 +5086,12 @@ async function toggleBetaald(id) {
   else { vlBetalingen.push({ vaste_last_id: id, jaar: vlJaar, maand: vlMaand, betaald: nieuwBetaald, bedrag_betaald: huidigBedrag }); }
 
   // Update totalen
+  const isAutoMaandCalc = vlMaand % 2 === 1;
   let totaal=0,betaaldTot=0,nogTot=0;
   vlLasten.forEach(l => {
     if (l.categorie === 'inkomen') return;
+    if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return;
+    if (l.naam === 'Huis sparen' && isAutoMaandCalc) return;
     const b = getBetaling(l.id);
     const bedrag = parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
     totaal+=bedrag;
@@ -5065,20 +5103,34 @@ async function toggleBetaald(id) {
   updateVlSaldo();
 }
 
+// Auto-save tijdens typen — geen wegklikken meer nodig om een bedrag op te slaan
+let vlSaveTimers = {};
+function vlDebouncedSave(id, val) {
+  clearTimeout(vlSaveTimers[id]);
+  vlSaveTimers[id] = setTimeout(() => updateBedrag(id, val), 700);
+}
+
 async function updateBedrag(id, val) {
-  const bet = getBetaling(id);
   const nieuwBedrag = parseFloat(val);
+  if (isNaN(nieuwBedrag)) return;
+  const bet = getBetaling(id);
   if (bet) {
     bet.bedrag_betaald = nieuwBedrag;
   } else {
     // Nog geen betaling voor deze maand — maak hem aan (nog niet betaald, wel bedrag opgeslagen)
     vlBetalingen.push({ vaste_last_id: id, jaar: vlJaar, maand: vlMaand, betaald: false, bedrag_betaald: nieuwBedrag });
   }
-  await sbUpsert('betalingen', {
+  const result = await sbUpsert('betalingen', {
     vaste_last_id: id, jaar: vlJaar, maand: vlMaand,
     betaald: bet?.betaald || false,
     bedrag_betaald: nieuwBedrag
   });
+  // Kort groen randje als bevestiging dat het bedrag echt is opgeslagen
+  const inp = document.getElementById('vl-inp-'+id);
+  if (inp && result) {
+    inp.classList.add('vl-saved');
+    setTimeout(() => inp.classList.remove('vl-saved'), 900);
+  }
   // Update overblijft berekening
   updateVlSaldo();
 }
