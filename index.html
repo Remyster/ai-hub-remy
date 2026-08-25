@@ -1826,6 +1826,17 @@ header h1 {
   .cmdk-title { display: block; max-width: 100%; }
   .cmdk-sub { display: block; margin-top: 2px; }
 }
+
+@media (max-width: 640px) {
+  /* Smart bar: input + Plaats/Dump/Route persten anders allemaal op één rij en
+     duwen elkaar buiten beeld. Input krijgt zijn eigen volle rij, de knoppen
+     eronder verdelen zich netjes in gelijke stukken. */
+  #smart-input { flex-basis: 100%; }
+  .smart-input-row { flex-wrap: wrap; flex-basis: 100%; }
+  .smart-action-btn { flex: 1 1 auto; text-align: center; }
+  #smart-mic-btn.smart-action-btn { flex: 0 0 auto; }
+  .smart-side-btn { flex: 1 1 auto; text-align: center; }
+}
 </style>
 
 </head>
@@ -2301,6 +2312,7 @@ header h1 {
       <span class="hbtn hbtn-muted" onclick="openVault()">🔐 Kluis</span>
       <span class="hbtn" style="color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.18);" onclick="openToolkit('fmhy')" title="Gratis Tools — verzameling gratis en veilige sites en programma's: films, series, muziek, games, software, cursussen, privacy. Uitgedunde versie van FMHY.">🧰 Gratis Tools</span>
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openToolkit('osint')" title="Uitzoeken — iets of iemand natrekken: telefoonnummer, e-mail, foto controleren, bedrijf opzoeken (KVK), een website doorlichten. Uitgedunde versie van OSINT4All.">🕵️ Uitzoeken</span>
+      <span class="hbtn" style="color:#fb923c;background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.18);" onclick="openToolkit('claude')" title="Claude & GitHub tips — skills, hooks, subagents, MCP en hoe dat samenwerkt met GitHub. Kleine handgekozen greep, geen volledige docs.">🤖 Claude Tips</span>
       <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
       <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
@@ -2350,23 +2362,23 @@ header h1 {
 
 <!-- SMART BAR: Brain Dump + Agent Router + Context -->
 <div id="smart-bar" style="max-width:1160px;margin:0 auto 26px;display:flex;gap:10px;flex-wrap:wrap;animation:fadeDown 0.5s 0.1s ease both;">
-  <div style="flex:1;min-width:260px;display:flex;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:8px;box-shadow:var(--shadow-card);">
+  <div class="smart-input-row" style="flex:1;min-width:260px;display:flex;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:8px;box-shadow:var(--shadow-card);">
     <input id="smart-input" type="text" placeholder="🧠 Dump, plaats, of stel een vraag... (of praat 🎤)" autocomplete="off"
       style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;padding:6px 10px;">
-    <button id="smart-mic-btn" onclick="smartToggleMic()" title="Spraak inspreken"
+    <button id="smart-mic-btn" class="smart-action-btn" onclick="smartToggleMic()" title="Spraak inspreken"
       style="padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:11px;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎤</button>
-    <button onclick="smartAutoPlaats()" title="AI kijkt wat dit is, kiest een datum (alleen vandaag als je dat ook zegt) en zet het op de goede plek — met herinnering en agenda-knop"
+    <button class="smart-action-btn" onclick="smartAutoPlaats()" title="AI kijkt wat dit is, kiest een datum (alleen vandaag als je dat ook zegt) en zet het op de goede plek — met herinnering en agenda-knop"
       style="padding:9px 14px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:11px;color:#fbbf24;font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">📍 Plaats</button>
-    <button onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
+    <button class="smart-action-btn" onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
       style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:11px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
-    <button onclick="agentRoute()" title="AI kiest de juiste agent voor je vraag"
+    <button class="smart-action-btn" onclick="agentRoute()" title="AI kiest de juiste agent voor je vraag"
       style="padding:9px 14px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:11px;color:var(--green);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎯 Route</button>
   </div>
-  <button onclick="remOpenLijst()" id="rem-btn" title="Herinneringen"
+  <button onclick="remOpenLijst()" id="rem-btn" class="smart-side-btn" title="Herinneringen"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">🔔 <span id="rem-count" style="color:#34d399;"></span></button>
-  <button onclick="openDumpInbox()" id="dump-inbox-btn" title="Je gedumpte gedachtes"
+  <button onclick="openDumpInbox()" id="dump-inbox-btn" class="smart-side-btn" title="Je gedumpte gedachtes"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📥 Inbox <span id="dump-count" style="background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:100px;font-size:0.85em;">0</span></button>
-  <button onclick="genContextPakket()" title="Genereer context-pakket voor elke AI"
+  <button onclick="genContextPakket()" class="smart-side-btn" title="Genereer context-pakket voor elke AI"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📦 Context</button>
 </div>
 <div id="smart-result" style="max-width:1160px;margin:-16px auto 20px;display:none;"></div>
@@ -7144,6 +7156,40 @@ const TOOLKITS = {
         { n: 'MailDrop', u: 'https://maildrop.cc/', d: 'Tijdelijke inbox zonder account' },
         { n: 'Firefox Containers', u: 'https://addons.mozilla.org/firefox/addon/multi-account-containers/', d: 'Meerdere accounts naast elkaar zonder uitloggen' },
         { n: 'Fake Name Generator', u: 'https://www.fakenamegenerator.com/', d: 'Testgegevens voor formulieren die je bouwt' }
+      ]}
+    ]
+  },
+  claude: {
+    titel: '🤖 Claude & GitHub — tips & tricks',
+    sub: 'Wat dit is: een kleine, handgekozen greep uit Claude Code en Claude.ai — skills, hooks, subagents, MCP en hoe dat samenwerkt met GitHub. Geen volledige documentatie, alleen dingen die praktisch schelen als je zelf met deze hub of met Stekkerslim werkt.',
+    bron: 'https://docs.claude.com/en/docs/claude-code/overview',
+    bronNaam: 'docs.claude.com',
+    cats: [
+      { groep: 'Claude Code — CLI', naam: '⚙️ Basis & geheugen', bron: 'https://docs.claude.com/en/docs/claude-code/overview', items: [
+        { n: 'CLAUDE.md', u: 'https://docs.claude.com/en/docs/claude-code/memory', d: 'Project-geheugen dat automatisch wordt meegelezen — precies wat dit bestand hier doet' },
+        { n: 'Slash commands', u: 'https://docs.claude.com/en/docs/claude-code/slash-commands', d: 'Ingebouwde commandos zoals /clear, /compact, /init' },
+        { n: 'Plan mode', u: 'https://docs.claude.com/en/docs/claude-code/common-workflows', d: 'Eerst een plan laten voorleggen voordat er iets wordt aangepast, handig bij grotere wijzigingen' },
+        { n: 'settings.json', u: 'https://docs.claude.com/en/docs/claude-code/settings', d: 'Permissions, hooks en env-vars vastleggen zodat je niet steeds hetzelfde hoeft goed te keuren' },
+        { n: 'Kosten & context', u: 'https://docs.claude.com/en/docs/claude-code/costs', d: 'Hoe token-verbruik en context-compressie werken' }
+      ]},
+      { groep: 'Claude Code — CLI', naam: '🧩 Skills, hooks & subagents', bron: 'https://docs.claude.com/en/docs/claude-code/overview', items: [
+        { n: 'Skills', u: 'https://docs.claude.com/en/docs/claude-code/skills', d: 'Herbruikbare, herroepbare taken — zoals de pipeline-stappen in deze hub, maar dan voor Claude Code zelf' },
+        { n: 'Subagents', u: 'https://docs.claude.com/en/docs/claude-code/sub-agents', d: 'Losse agent met eigen context voor onderzoek, zodat het hoofdgesprek niet volloopt' },
+        { n: 'Hooks', u: 'https://docs.claude.com/en/docs/claude-code/hooks', d: 'Automatisch een shell-commando draaien bij bv. elke tool-call of elke commit' },
+        { n: 'MCP servers', u: 'https://docs.claude.com/en/docs/claude-code/mcp', d: 'Externe tools koppelen (Supabase, Notion, Drive) — precies hoe de connectors in deze hub werken' }
+      ]},
+      { groep: 'GitHub + Claude', naam: '🐙 Samen met GitHub', bron: 'https://docs.claude.com/en/docs/claude-code/github-actions', items: [
+        { n: 'Claude Code GitHub Action', u: 'https://docs.claude.com/en/docs/claude-code/github-actions', d: '@claude taggen in een issue of PR-comment laat Claude direct in de repo werken' },
+        { n: 'gh CLI', u: 'https://cli.github.com/', d: 'PRs en issues vanuit de terminal, Claude kan dit zelf aanroepen' },
+        { n: 'Claude Code GitHub App', u: 'https://github.com/apps/claude', d: 'De officiele app om @claude-mentions te activeren op een repo' },
+        { n: 'sync-drive.yml patroon', u: 'https://docs.github.com/actions', d: 'Zoals in Stekkerslim: push naar main triggert een Action die extern iets bijwerkt' }
+      ]},
+      { groep: 'Claude.ai', naam: '💬 Web & app', bron: 'https://claude.ai', items: [
+        { n: 'Projects', u: 'https://claude.ai', d: 'Vaste instructies + kennis per project — zo werken StekkerPen en Stekkerslim Bouwen hier' },
+        { n: 'Artifacts', u: 'https://docs.claude.com/en/docs/build-with-claude/tool-use/computer-use-tool', d: 'Losstaand document/code/HTML naast het gesprek, direct te downloaden of delen' },
+        { n: 'Extended thinking', u: 'https://docs.claude.com/en/docs/build-with-claude/extended-thinking', d: 'Langer laten nadenken voor lastige vraagstukken, kost meer tokens' },
+        { n: 'Prompt caching', u: 'https://docs.claude.com/en/docs/build-with-claude/prompt-caching', d: 'Herhaalde context (zoals een lange systeemprompt) goedkoper hergebruiken' },
+        { n: 'Prompt engineering overview', u: 'https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview', d: 'Officiele basis: wat werkt wel/niet in een prompt' }
       ]}
     ]
   }
