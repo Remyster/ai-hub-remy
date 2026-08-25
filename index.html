@@ -2895,11 +2895,18 @@ function sspRenderOutputContainer(step) {
           ) : '')
         + '<textarea id="ssp-mout-'+i+'" oninput="sspAutoSaveMulti('+i+')" placeholder="Plak antwoord van '+ai.label+'..." style="width:100%;height:120px;background:rgba(0,0,0,0.2);border:1px solid rgba(56,189,248,0.2);border-radius:9px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.67em;padding:9px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;"></textarea>'
         + '<div style="display:flex;gap:6px;margin-top:7px;">'
+        + '<button onclick="sspImportBestand('+i+')" style="padding:8px 10px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.28);border-radius:9px;color:#fbbf24;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;" title="Antwoord als artifact of bestand gekregen? Download het daar en kies het hier">&#128206;</button>'
         + '<button onclick="sspCleanupMulti('+i+')" style="padding:8px 10px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.28);border-radius:9px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>'
         + '<button onclick="sspSaveMulti('+i+')" style="flex:1;padding:8px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.28);border-radius:9px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128190; Opslaan</button>'
         + '<button onclick="sspDeleteMulti('+i+')" style="padding:8px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:9px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128465;</button>'
         + '</div></div>';
     });
+    // Wis alles staat ook hier, zodat de knop op elke stap bereikbaar is —
+    // ook op de multi-AI stappen (blog 1, 9 en 11).
+    html += '<div style="display:flex;gap:8px;margin-top:4px;">'
+      + '<button onclick="sspClearAll()" style="flex:1;padding:11px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>'
+      + '<button onclick="sspOpenArchive()" style="flex:1;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>'
+      + '</div>';
     c.innerHTML = html;
     step.ais.forEach((ai,i) => {
       const saved=sspDecode(localStorage.getItem(sspMultiKey(sspPipeline,sspStepIdx,ai.key))||'');
@@ -2912,12 +2919,13 @@ function sspRenderOutputContainer(step) {
     const curStep=SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
     const _allSteps=SSP_PIPELINES[sspPipeline].steps;
     const _isEdge=(sspStepIdx===0||sspStepIdx===_allSteps.length-1);
-    const clearAllBtn=_isEdge?'<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline">&#128465; Wis alles</button>':'';
+    const clearAllBtn='<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>';
     const archiveBtn=_isEdge?'<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>':'';
     const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':''; const driveBtn=curStep.driveUrl?'<button onclick="sspOpenDrive()" style="flex:1;min-width:90px;padding:11px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;color:#10b981;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128194; Open Drive-map</button>':'';
     c.innerHTML='<div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Antwoord van AI <span id="ssp-saved-badge" style="color:#10b981;font-size:0.9em;"></span></div>'
       +'<textarea id="ssp-output" placeholder="Plak hier het volledige antwoord van de AI..." style="width:100%;height:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.22);border-radius:11px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>'
       +'<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;flex-wrap:wrap;">'
+      +'<button onclick="sspImportBestand(null)" style="flex:1;min-width:90px;padding:11px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:10px;color:#fbbf24;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Gaf de AI het antwoord als artifact of bestand? Download het daar en kies het hier — de inhoud komt in dit veld te staan">&#128206; Bestand</button>'
       +'<button onclick="sspCleanup()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>'
       +'<button onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
       +'<button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>'
@@ -2966,6 +2974,34 @@ async function sspCleanupMulti(i) {
   } catch(e) {
     sspStatus('⚠ Opschonen mislukt: ' + e.message, '#f87171');
   }
+}
+
+// Claude levert een volledige HTML-blog (stap 8, 10, 12) bijna altijd als artifact of
+// als downloadbaar bestand — dan valt er niets te kopieren naar het antwoordveld.
+// Deze knop leest zo'n gedownload bestand rechtstreeks in.
+function sspImportBestand(i) {
+  const ta = document.getElementById(i === null ? 'ssp-output' : 'ssp-mout-' + i);
+  if (!ta) return;
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.html,.htm,.txt,.md,.json,text/html,text/plain,text/markdown';
+  inp.onchange = () => {
+    const f = inp.files && inp.files[0];
+    if (!f) return;
+    const rdr = new FileReader();
+    rdr.onload = () => {
+      const tekst = String(rdr.result || '');
+      if (!tekst.trim()) { sspStatus('⚠ ' + f.name + ' is leeg.', '#fbbf24'); return; }
+      if (ta.value.trim() && !confirm('Er staat al een antwoord in dit veld.\n\nVervangen door ' + f.name + '?')) return;
+      ta.value = tekst;
+      if (i !== null) sspAutoSaveMulti(i);
+      const kb = Math.max(1, Math.round(tekst.length / 1024));
+      sspStatus('✓ ' + f.name + ' ingelezen (' + kb + ' KB) — controleer en klik Opslaan.', '#10b981');
+    };
+    rdr.onerror = () => sspStatus('⚠ Kon ' + f.name + ' niet lezen.', '#f87171');
+    rdr.readAsText(f, 'utf-8');
+  };
+  inp.click();
 }
 
 function sspDownloadPromptFile() {
@@ -3085,6 +3121,10 @@ async function sspClearAll() {
   }
   const prefix = 'ssp_' + sspPipeline + '_';
   Object.keys(localStorage).filter(k => k.startsWith(prefix)).forEach(k => localStorage.removeItem(k));
+  // Ook uit de cloud halen, anders zet sspLoadFromCloud() alles bij de volgende
+  // keer openen gewoon weer terug. Archieven (ssp_archive_*) en de projectnaam
+  // (ssp_projectname_*) beginnen met een ander voorvoegsel en blijven staan.
+  await sspWisPipelineUitCloud(sspPipeline);
   sspRender();
   sspStatus(antwoorden.length ? '✓ Alle antwoorden gewist (archiefkopie opgeslagen).' : '✓ Alle antwoorden gewist.', '#f87171');
 }
@@ -6118,6 +6158,72 @@ sspDeleteMulti = function(i) {
   if (step && step.multiAI) sspDeleteFromCloud(sspMultiKey(sspPipeline, sspStepIdx, step.ais[i].key));
   _sspDeleteMultiOrig(i);
 };
+// Wist alle antwoorden van een pipeline in een keer uit de cloud-tabel.
+// * wordt door PostgREST als jokerteken gelezen, dus ssp_blog_* raakt precies de
+// stap-antwoorden en niet ssp_archive_blog_* of ssp_projectname_blog.
+async function sspWisPipelineUitCloud(p) {
+  if (!_sspCloudAvailable) return;
+  try {
+    await fetch(`${SS_SBURL}/rest/v1/pipeline_state?key=like.ssp_${p}_*`, { method: 'DELETE', headers: SS_POST_HDR });
+  } catch(e) { console.warn('Cloud wissen mislukt:', e); }
+}
+
+// ── Automatisch opschonen bij Opslaan ──────────────────────────────────────
+// Opschonen laat een geplakt AI-antwoord door Haiku lopen om bronstatus- en
+// connector-ruis te verwijderen. Dat is prima voor gewone tekst, maar niet voor
+// een HTML-blog (stap 8, 10, 12): daar zou het model stukken kunnen inkorten of
+// de opmaak aanpassen, terwijl juist die HTML ongewijzigd door moet. Vandaar de
+// twee remmen hieronder — die staan in de code, niet in de prompt.
+const SSP_AUTOCLEAN_MAX = 15000;
+function sspIsHtmlAntwoord(t) {
+  return /<!DOCTYPE\s+html|<html[\s>]|<head[\s>]|<article[\s>]|<body[\s>]/i.test(t);
+}
+function sspAutoCleanReden(t) {
+  if (!t) return 'leeg';
+  if (sspIsHtmlAntwoord(t)) return 'html';
+  if (t.length > SSP_AUTOCLEAN_MAX) return 'lang';
+  return null;
+}
+// Schoont het veld op als dat mag. Geeft terug wat er gebeurd is, zodat de
+// statusregel na het opslaan kan laten zien dat er bijgestuurd is.
+async function sspAutoCleanVeld(ta) {
+  const ruw = ta ? ta.value.trim() : '';
+  const reden = sspAutoCleanReden(ruw);
+  if (reden) return reden;
+  sspStatus('🧹 Automatisch opschonen…', '#38bdf8');
+  try {
+    const schoon = (await sspCleanupText(ruw) || '').trim();
+    if (!schoon) return 'mislukt';
+    ta.value = schoon;
+    return 'opgeschoond';
+  } catch(e) {
+    console.warn('Automatisch opschonen mislukt, ruwe antwoord wordt opgeslagen:', e);
+    return 'mislukt';
+  }
+}
+function sspAutoCleanStatus(reden) {
+  if (reden === 'opgeschoond') sspStatus('✓ Opgeslagen en automatisch opgeschoond.', '#10b981');
+  else if (reden === 'html')    sspStatus('✓ Opgeslagen — HTML ongewijzigd gelaten, niet opgeschoond.', '#10b981');
+  else if (reden === 'lang')    sspStatus('✓ Opgeslagen — te lang om automatisch op te schonen, gebruik 🧹 zelf.', '#fbbf24');
+  else if (reden === 'mislukt') sspStatus('✓ Opgeslagen — opschonen lukte niet, ruwe antwoord bewaard.', '#fbbf24');
+}
+// Om de cloud-sync heen wrappen (niet eronder), zodat Supabase de opgeschoonde
+// tekst krijgt en niet de ruwe versie.
+const _sspSaveVoorAutoClean = sspSave;
+sspSave = async function() {
+  const ta = document.getElementById('ssp-output');
+  const reden = await sspAutoCleanVeld(ta);
+  _sspSaveVoorAutoClean();
+  sspAutoCleanStatus(reden);
+};
+const _sspSaveMultiVoorAutoClean = sspSaveMulti;
+sspSaveMulti = async function(i) {
+  const ta = document.getElementById('ssp-mout-' + i);
+  const reden = await sspAutoCleanVeld(ta);
+  _sspSaveMultiVoorAutoClean(i);
+  sspAutoCleanStatus(reden);
+};
+
 // Cloud state laden bij openen pipeline
 const _openSSGOrig = openStekkerSlimGuardian;
 openStekkerSlimGuardian = async function() {

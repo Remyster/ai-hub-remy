@@ -432,6 +432,36 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 
 ## Changelog
 
+### 25 augustus 2026
+- **📎 Bestand-knop bij elk antwoordveld** (`sspImportBestand(i)`). Claude levert een
+  volledige HTML-blog (stap 8, 10, 12) vrijwel altijd als artifact of downloadbaar
+  bestand — er valt dan niets te selecteren en te plakken in het antwoordveld, dus liep
+  de pipeline daar vast. Nu: in Claude het artifact downloaden, in de hub op 📎 klikken,
+  bestand kiezen. Leest `.html/.htm/.txt/.md/.json` als UTF-8, vraagt bevestiging als
+  het veld al gevuld is. Staat bij het losse veld als `📎 Bestand` en compact als `📎`
+  per AI-vak op de multi-AI stappen. De prompts zijn *niet* aangepast — het artifact
+  mag blijven, het is alleen geen blokkade meer.
+- **"Wis alles" staat nu op elke stap**, ook op de multi-AI stappen (blog 1, 9, 11) waar
+  hij helemaal ontbrak. Stond eerder alleen op stap 1 en de laatste stap, waardoor je
+  hem middenin een pipeline nooit zag.
+- **Bug: "Wis alles" wiste alleen localStorage, niet de cloud.** `sspDelete` en
+  `sspDeleteMulti` zijn gewrapt met `sspDeleteFromCloud()`, maar `sspClearAll()` niet.
+  Gevolg: alles leeg, en bij de volgende `openStekkerSlimGuardian()` zette
+  `sspLoadFromCloud()` de hele pipeline weer terug. Nieuwe `sspWisPipelineUitCloud(p)`
+  doet één DELETE op `key=like.ssp_<p>_*`. Archieven (`ssp_archive_*`) en projectnaam
+  (`ssp_projectname_*`) hebben een ander voorvoegsel en blijven staan.
+- **Automatisch opschonen bij Opslaan.** `sspSave`/`sspSaveMulti` zijn gewrapt *boven*
+  de cloud-sync-wrapper, zodat Supabase de opgeschoonde tekst krijgt en niet de ruwe.
+  Twee remmen, en die staan **in de code** (`sspAutoCleanReden()`), niet in de prompt:
+  - Ziet het antwoord eruit als HTML (`<!DOCTYPE html`, `<html`, `<head`, `<article`,
+    `<body`)? Dan niet opschonen. Haiku zou een blog van 40 KB kunnen inkorten of de
+    opmaak aanpassen, terwijl juist die HTML ongewijzigd door moet naar de volgende stap.
+  - Langer dan `SSP_AUTOCLEAN_MAX` (15.000 tekens)? Ook niet — verwijst door naar de
+    handmatige 🧹-knop.
+  Mislukt de call (geen key, geen internet), dan wordt het ruwe antwoord gewoon
+  opgeslagen. De statusregel zegt telkens wat er gebeurd is, dus je ziet dát er is
+  bijgestuurd. De 🧹-knop blijft bestaan om vooraf te kijken.
+
 ### 21 augustus 2026
 - **Blog Pipeline stap 1: geen bestandsoutput meer** (commit `0815749`). Beide
   sub-prompts (1A Gemini, 1B Grok) eindigden met een `## VERPLICHTE BESTANDS-OUTPUT`-blok
