@@ -2312,12 +2312,11 @@ header h1 {
     <h1>🧠 Remy AI Hub</h1>
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
-      <span class="hbtn" id="cmdk-open-btn" data-cmdk-skip="1" onclick="cmdkOpen()" title="Zoek alles in de hub — agents, tools, knoppen, pipelinestappen" style="color:#a5b4fc;background:rgba(129,140,248,0.1);border-color:rgba(129,140,248,0.28);font-weight:700;">🔍 Zoek alles <span style="opacity:0.55;font-family:'DM Mono',monospace;font-size:0.9em;">⌘K</span></span>
+      <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
       <span class="hbtn" style="color:rgba(102,126,234,1);background:rgba(102,126,234,0.08);border-color:rgba(102,126,234,0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
-      <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
       <span class="hbtn" style="color:#a78bfa;background:rgba(167,139,250,0.08);border-color:rgba(167,139,250,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.18);" onclick="openWerk()">💼 Werk</span>
       <a href="https://github.com/Remyster" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🐙 GitHub</a>
@@ -2326,14 +2325,21 @@ header h1 {
       <a href="https://photos.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📸 Photos</a>
       <a href="https://supabase.com/dashboard" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🗄️ Supabase</a>
       <span class="hbtn hbtn-muted" onclick="openVault()">🔐 Kluis</span>
-      <span class="hbtn" style="color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.18);" onclick="openToolkit('fmhy')" title="Gratis Tools — verzameling gratis en veilige sites en programma's: films, series, muziek, games, software, cursussen, privacy. Uitgedunde versie van FMHY.">🧰 Gratis Tools</span>
-      <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openToolkit('osint')" title="Uitzoeken — iets of iemand natrekken: telefoonnummer, e-mail, foto controleren, bedrijf opzoeken (KVK), een website doorlichten. Uitgedunde versie van OSINT4All.">🕵️ Uitzoeken</span>
-      <span class="hbtn" style="color:#fb923c;background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.18);" onclick="openToolkit('claude')" title="Claude & GitHub tips — skills, hooks, subagents, MCP en hoe dat samenwerkt met GitHub. Kleine handgekozen greep, geen volledige docs.">🤖 Claude Tips</span>
       <span class="hbtn" style="color:#facc15;background:rgba(250,204,21,0.08);border-color:rgba(250,204,21,0.18);" onclick="openOrakel()" title="Vraagbaak — omschrijf je taak en krijg te horen welke AI (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM) daar het beste bij past.">🤔 Welke AI?</span>
       <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
       <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
   </header>
+
+<div id="toolzoek-bar" style="max-width:1160px;margin:14px auto 0;display:flex;gap:8px;flex-wrap:wrap;">
+  <input id="toolzoek-input" type="text" placeholder="🔎 Wat wil je? of wat zoek je? (bijv: muziek downloaden, adblocker, telefoonnummer natrekken)" autocomplete="off"
+    style="flex:1;min-width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;box-shadow:var(--shadow-card);"
+    onkeydown="if(event.key==='Enter')toolzoekAsk()">
+  <button id="toolzoek-btn" onclick="toolzoekAsk()" style="padding:10px 16px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:12px;color:#34d399;font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;cursor:pointer;white-space:nowrap;">✨ Zoeken</button>
+  <span onclick="openToolkit('alles')" style="padding:10px 12px;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.78em;cursor:pointer;white-space:nowrap;" title="Alle categorieën zelf doorbladeren">📂 blader alles</span>
+</div>
+<div id="toolzoek-answer" style="display:none;max-width:1160px;margin:10px auto 0;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:14px 16px;"></div>
+<div id="toolzoek-error" style="display:none;max-width:1160px;margin:10px auto 0;color:#f87171;font-family:'Inter',sans-serif;font-size:0.78em;"></div>
 
 <div id="hero-strip">
   <div id="hero-datum">—</div>
@@ -2348,7 +2354,6 @@ header h1 {
 <div id="levelup-strip" style="max-width:1160px;margin:0 auto 26px;animation:fadeDown 0.6s ease both;">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
     <span style="font-family:'Inter',sans-serif;font-size:0.66em;font-weight:700;letter-spacing:0.16em;color:var(--muted);text-transform:uppercase;">⚡ Daily Level Up</span>
-    <span id="lu-streak" style="font-family:'Inter',sans-serif;font-size:0.68em;font-weight:700;color:var(--amber);"></span>
     <button onclick="luRefresh()" title="Nieuwe suggesties" style="margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;transition:color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻</button>
   </div>
   <div id="lu-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
@@ -2360,19 +2365,10 @@ header h1 {
       <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--blue);margin-bottom:6px;font-family:'Inter',sans-serif;">🧠 LEER</div>
       <div id="lu-leer" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
     </div>
-    <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(124,111,240,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);position:relative;">
-      <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--accent);margin-bottom:6px;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:space-between;">
-        <span>📣 PROMOOT</span>
-        <label style="display:flex;align-items:center;gap:5px;cursor:pointer;font-size:0.95em;color:var(--muted);font-weight:600;">
-          <input type="checkbox" id="lu-connect-done" onchange="luToggleDone(this.checked)" style="accent-color:var(--accent);cursor:pointer;"> gedaan
-        </label>
-      </div>
-      <div id="lu-connect" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
-    </div>
     <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(52,211,153,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
       <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--green);margin-bottom:6px;font-family:'Inter',sans-serif;">📚 VANDAAG GELEERD</div>
       <div id="lu-wiki" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;margin-bottom:8px;"><span style="opacity:0.5;">Laden…</span></div>
-      <div id="lu-ftm" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;padding-top:8px;border-top:1px solid var(--border);"><span style="opacity:0.5;">Laden…</span></div>
+      <div id="lu-nieuws" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;padding-top:8px;border-top:1px solid var(--border);"><span style="opacity:0.5;">Laden…</span></div>
     </div>
   </div>
 </div>
@@ -7175,43 +7171,19 @@ const TOOLKITS = {
         { n: 'Fake Name Generator', u: 'https://www.fakenamegenerator.com/', d: 'Testgegevens voor formulieren die je bouwt' }
       ]}
     ]
-  },
-  claude: {
-    titel: '🤖 Claude & GitHub — tips & tricks',
-    sub: 'Wat dit is: een kleine, handgekozen greep uit Claude Code en Claude.ai — skills, hooks, subagents, MCP en hoe dat samenwerkt met GitHub. Geen volledige documentatie, alleen dingen die praktisch schelen als je zelf met deze hub of met Stekkerslim werkt.',
-    bron: 'https://docs.claude.com/en/docs/claude-code/overview',
-    bronNaam: 'docs.claude.com',
-    cats: [
-      { groep: 'Claude Code — CLI', naam: '⚙️ Basis & geheugen', bron: 'https://docs.claude.com/en/docs/claude-code/overview', items: [
-        { n: 'CLAUDE.md', u: 'https://docs.claude.com/en/docs/claude-code/memory', d: 'Project-geheugen dat automatisch wordt meegelezen — precies wat dit bestand hier doet' },
-        { n: 'Slash commands', u: 'https://docs.claude.com/en/docs/claude-code/slash-commands', d: 'Ingebouwde commandos zoals /clear, /compact, /init' },
-        { n: 'Plan mode', u: 'https://docs.claude.com/en/docs/claude-code/common-workflows', d: 'Eerst een plan laten voorleggen voordat er iets wordt aangepast, handig bij grotere wijzigingen' },
-        { n: 'settings.json', u: 'https://docs.claude.com/en/docs/claude-code/settings', d: 'Permissions, hooks en env-vars vastleggen zodat je niet steeds hetzelfde hoeft goed te keuren' },
-        { n: 'Kosten & context', u: 'https://docs.claude.com/en/docs/claude-code/costs', d: 'Hoe token-verbruik en context-compressie werken' }
-      ]},
-      { groep: 'Claude Code — CLI', naam: '🧩 Skills, hooks & subagents', bron: 'https://docs.claude.com/en/docs/claude-code/overview', items: [
-        { n: 'Skills', u: 'https://docs.claude.com/en/docs/claude-code/skills', d: 'Herbruikbare, herroepbare taken — zoals de pipeline-stappen in deze hub, maar dan voor Claude Code zelf' },
-        { n: 'Subagents', u: 'https://docs.claude.com/en/docs/claude-code/sub-agents', d: 'Losse agent met eigen context voor onderzoek, zodat het hoofdgesprek niet volloopt' },
-        { n: 'Hooks', u: 'https://docs.claude.com/en/docs/claude-code/hooks', d: 'Automatisch een shell-commando draaien bij bv. elke tool-call of elke commit' },
-        { n: 'MCP servers', u: 'https://docs.claude.com/en/docs/claude-code/mcp', d: 'Externe tools koppelen (Supabase, Notion, Drive) — precies hoe de connectors in deze hub werken' }
-      ]},
-      { groep: 'GitHub + Claude', naam: '🐙 Samen met GitHub', bron: 'https://docs.claude.com/en/docs/claude-code/github-actions', items: [
-        { n: 'Claude Code GitHub Action', u: 'https://docs.claude.com/en/docs/claude-code/github-actions', d: '@claude taggen in een issue of PR-comment laat Claude direct in de repo werken' },
-        { n: 'gh CLI', u: 'https://cli.github.com/', d: 'PRs en issues vanuit de terminal, Claude kan dit zelf aanroepen' },
-        { n: 'Claude Code GitHub App', u: 'https://github.com/apps/claude', d: 'De officiele app om @claude-mentions te activeren op een repo' },
-        { n: 'sync-drive.yml patroon', u: 'https://docs.github.com/actions', d: 'Zoals in Stekkerslim: push naar main triggert een Action die extern iets bijwerkt' }
-      ]},
-      { groep: 'Claude.ai', naam: '💬 Web & app', bron: 'https://claude.ai', items: [
-        { n: 'Projects', u: 'https://claude.ai', d: 'Vaste instructies + kennis per project — zo werken StekkerPen en Stekkerslim Bouwen hier' },
-        { n: 'Artifacts', u: 'https://docs.claude.com/en/docs/build-with-claude/tool-use/computer-use-tool', d: 'Losstaand document/code/HTML naast het gesprek, direct te downloaden of delen' },
-        { n: 'Extended thinking', u: 'https://docs.claude.com/en/docs/build-with-claude/extended-thinking', d: 'Langer laten nadenken voor lastige vraagstukken, kost meer tokens' },
-        { n: 'Prompt caching', u: 'https://docs.claude.com/en/docs/build-with-claude/prompt-caching', d: 'Herhaalde context (zoals een lange systeemprompt) goedkoper hergebruiken' },
-        { n: 'Prompt engineering overview', u: 'https://docs.claude.com/en/docs/build-with-claude/prompt-engineering/overview', d: 'Officiele basis: wat werkt wel/niet in een prompt' }
-      ]}
-    ]
   }
 };
-let TOOLKIT_ACTIEF = 'fmhy';
+// Gecombineerde lijst voor de ene zoekbalk onder de header — dezelfde tools
+// als Gratis Tools + Uitzoeken, maar dan zonder dat je eerst hoeft te kiezen
+// in welke van de twee je moet zoeken.
+TOOLKITS.alles = {
+  titel: '🧰 Tools & Uitzoeken',
+  sub: 'Wat dit is: alles uit Gratis Tools (FMHY) en Uitzoeken (OSINT4All) bij elkaar — precies wat de zoekbalk boven de pagina doorzoekt.',
+  bron: 'https://fmhy.net/',
+  bronNaam: 'fmhy.net + OSINT4All',
+  cats: TOOLKITS.fmhy.cats.concat(TOOLKITS.osint.cats)
+};
+let TOOLKIT_ACTIEF = 'alles';
 
 function openToolkit(key) {
   TOOLKIT_ACTIEF = key;
@@ -7291,6 +7263,60 @@ async function toolkitAsk() {
   const lijst = tk.cats.map(c => c.naam + '\n' + c.items.map(i => `- ${i.n} | ${i.u} | ${i.d}`).join('\n')).join('\n\n');
 
   const btn = document.getElementById('toolkit-ask-btn');
+  const oudeTekst = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Zoeken...';
+  outEl.style.display = 'block';
+  outEl.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">⏳ Bezig...</span>';
+
+  const systemPrompt = 'Je bent een toolkit-gids voor Remy. Hij heeft ADHD en raakt overweldigd door lange lijsten, dus je bent meedogenloos kort. Je kiest ALTIJD maximaal 3 tools, nooit meer. Je verzint nooit tools die niet in de lijst staan. Antwoord in het Nederlands, in dit exacte format per tool en verder niets:\n\nNAAM | URL | een zin waarom dit past bij zijn vraag\n\nGeen inleiding, geen afsluiting, geen kopjes. Als niets in de lijst echt past, antwoord dan met precies een regel: GEEN | | korte uitleg wat hij beter kan zoeken.';
+  const userMsg = `Beschikbare tools:\n\n${lijst}\n\nRemy vraagt: "${vraag}"\n\nKies de 3 beste (of minder als er minder passen).`;
+
+  try {
+    const text = await callOpenRouter(TOOLKIT_ASK_MODEL, systemPrompt, userMsg, 30000);
+    const regels = text.split('\n').map(r => r.trim()).filter(r => r.includes('|'));
+    let html = '';
+    if (!regels.length || regels[0].startsWith('GEEN')) {
+      const uitleg = regels.length ? regels[0].split('|').slice(2).join('|').trim() : text;
+      html = `<div style="font-size:0.8em;color:var(--text-dim);line-height:1.6;">🤷 Hier zit niks passends bij. ${escHtml(uitleg)}</div>`;
+    } else {
+      html = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">✨ Dit zou ik pakken</div>
+        <div style="display:flex;flex-direction:column;gap:4px;">` +
+        regels.slice(0, 3).map(r => {
+          const [naam, url, waarom] = r.split('|').map(s => (s || '').trim());
+          const veilig = /^https?:\/\//.test(url) ? url : null;
+          return toolkitItemHtml({ n: naam.replace(/^[-*\d.\s]+/, ''), u: veilig || tk.bron, d: waarom || '' });
+        }).join('') + '</div>';
+    }
+    outEl.innerHTML = html;
+  } catch (e) {
+    outEl.style.display = 'none';
+    errEl.textContent = '❌ ' + (e.message || 'onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = oudeTekst;
+  }
+}
+
+// ── "Wat wil je? / wat zoek je?"-balk onder de header ─────────────
+// Zelfde aanpak als toolkitAsk(), maar altijd tegen de gecombineerde
+// TOOLKITS.alles-lijst, zodat je niet eerst hoeft te kiezen tussen
+// Gratis Tools en Uitzoeken.
+async function toolzoekAsk() {
+  const vraag = document.getElementById('toolzoek-input').value.trim();
+  const errEl = document.getElementById('toolzoek-error');
+  const outEl = document.getElementById('toolzoek-answer');
+  errEl.style.display = 'none';
+  if (!vraag) { document.getElementById('toolzoek-input').focus(); return; }
+  if (!getOpenRouterKey()) {
+    errEl.textContent = '❌ Geen OpenRouter key. Zet die eerst in het API Key-scherm.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const tk = TOOLKITS.alles;
+  const lijst = tk.cats.map(c => c.naam + '\n' + c.items.map(i => `- ${i.n} | ${i.u} | ${i.d}`).join('\n')).join('\n\n');
+
+  const btn = document.getElementById('toolzoek-btn');
   const oudeTekst = btn.textContent;
   btn.disabled = true; btn.textContent = '⏳ Zoeken...';
   outEl.style.display = 'block';
@@ -8393,23 +8419,9 @@ const LU_HOEKEN = {
     'iets over analytics: welke cijfers zeggen echt iets',
     'een tool of workflow die je tijd bespaart bij weinig focus',
     'iets over conversie: waarom mensen wel of niet klikken'
-  ],
-  connect: [
-    'reageer inhoudelijk op één forumvraag (Tweakers, Gathering, Reddit NL)',
-    'beantwoord een vraag in een Facebook-groep over zonnepanelen/batterijen',
-    'plaats één korte tip op X/Bluesky zonder link erbij',
-    'zoek één site die over hetzelfde schrijft en mail een linkvoorstel',
-    'zet een kort antwoord onder een YouTube-video in je niche',
-    'vraag om feedback op één pagina bij iemand die je vertrouwt',
-    'deel één concrete meting of ervaring uit je eigen huis',
-    'reageer op een blog van iemand anders met een echte aanvulling',
-    'meld je site aan bij één relevante directory of nieuwsbrief',
-    'stuur één DM naar iemand die over hetzelfde bezig is',
-    'zet een korte poll of vraag uit om te horen wat mensen zoeken',
-    'schrijf één zin die je overal kunt gebruiken om de site uit te leggen'
   ]
 };
-const LU_HOEK_OFFSET = { verdien: 0, leer: 5, connect: 9 };
+const LU_HOEK_OFFSET = { verdien: 0, leer: 5 };
 
 // Rotatiestand: dagen sinds epoch + hoe vaak er op ↻ is gedrukt.
 // Zo geeft ↻ echt een andere hoek, niet dezelfde pool nog een keer.
@@ -8428,7 +8440,7 @@ function luGeschiedenis() {
 }
 function luOnthoud(parsed) {
   const h = luGeschiedenis();
-  ['verdien','leer','connect'].forEach(k => { if (parsed[k]) h.unshift(String(parsed[k]).slice(0, 120)); });
+  ['verdien','leer'].forEach(k => { if (parsed[k]) h.unshift(String(parsed[k]).slice(0, 120)); });
   localStorage.setItem('lu_hist_v1', JSON.stringify(h.slice(0, 12)));
 }
 
@@ -8445,55 +8457,21 @@ function luPipelineContext() {
   } catch(e) { return ''; }
 }
 
-function luRenderStreak() {
-  const el = document.getElementById('lu-streak');
-  if (!el) return;
-  const streak = parseInt(localStorage.getItem('lu_streak') || '0', 10);
-  el.textContent = streak > 0 ? '🔥 ' + streak + ' dag' + (streak === 1 ? '' : 'en') + ' streak' : '';
-}
-
-function luToggleDone(checked) {
-  const today = luDateKey();
-  const lastDone = localStorage.getItem('lu_last_done') || '';
-  let streak = parseInt(localStorage.getItem('lu_streak') || '0', 10);
-  if (checked) {
-    if (lastDone !== today) {
-      const yesterday = new Date(Date.now() - 86400000);
-      const yKey = yesterday.getFullYear() + '-' + String(yesterday.getMonth()+1).padStart(2,'0') + '-' + String(yesterday.getDate()).padStart(2,'0');
-      streak = (lastDone === yKey) ? streak + 1 : 1;
-      localStorage.setItem('lu_streak', String(streak));
-      localStorage.setItem('lu_last_done', today);
-    }
-  } else {
-    if (lastDone === today) {
-      streak = Math.max(0, streak - 1);
-      localStorage.setItem('lu_streak', String(streak));
-      localStorage.setItem('lu_last_done', '');
-    }
-  }
-  luRenderStreak();
-}
-
 async function luLoad(force) {
   const today = luDateKey();
   const cacheKey = 'lu_content_' + today;
   const cached = force ? null : localStorage.getItem(cacheKey);
-  const doneToday = localStorage.getItem('lu_last_done') === today;
-  const cb = document.getElementById('lu-connect-done');
-  if (cb) cb.checked = doneToday;
-  luRenderStreak();
 
   if (cached) {
     try { luRender(JSON.parse(cached)); return; } catch(e) {}
   }
   const key = getApiKey();
   if (!key) {
-    luRender({ verdien: 'Stel je API key in (🔑 knop) voor dagelijkse suggesties.', leer: 'Stel je API key in voor dagelijkse suggesties.', connect: 'Stel je API key in voor dagelijkse suggesties.' });
+    luRender({ verdien: 'Stel je API key in (🔑 knop) voor dagelijkse suggesties.', leer: 'Stel je API key in voor dagelijkse suggesties.' });
     return;
   }
   const hoekVerdien = luHoek('verdien');
   const hoekLeer    = luHoek('leer');
-  const hoekConnect = luHoek('connect');
   const hist = luGeschiedenis();
   const histTekst = hist.length
     ? '\n\nDit stond er de afgelopen dagen al — kom NIET met iets wat hier op lijkt:\n- ' + hist.join('\n- ')
@@ -8514,19 +8492,18 @@ Kijk eerst kort op stekkerslim.nl (websearch) zodat je verwijst naar iets wat er
 Elke suggestie MOET binnen de opgegeven invalshoek vallen:
 - verdien → ${hoekVerdien}
 - leer → ${hoekLeer}
-- connect → ${hoekConnect}
 
 Verboden: vaag advies ("doe onderzoek", "schrijf een blog", "plaats een bericht op social media") zonder te zeggen wát precies. Noem het onderwerp, de pagina of de plek concreet.${histTekst}
 
 Geef ALLEEN deze JSON, geen uitleg, geen markdown:
-{"verdien":"1 concrete groei-actie binnen de invalshoek, max 2 zinnen","leer":"1 concreet ding om te leren binnen de invalshoek, inclusief waarom het nuttig is, max 2 zinnen","connect":"1 actie van max 5 minuten binnen de invalshoek, max 2 zinnen"}` }]
+{"verdien":"1 concrete groei-actie binnen de invalshoek, max 2 zinnen","leer":"1 concreet ding om te leren binnen de invalshoek, inclusief waarom het nuttig is, max 2 zinnen"}` }]
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
     const parsed = lu4ExtractJson(raw);
-    parsed.hoeken = { verdien: hoekVerdien, leer: hoekLeer, connect: hoekConnect };
+    parsed.hoeken = { verdien: hoekVerdien, leer: hoekLeer };
     luOnthoud(parsed);
     localStorage.setItem(cacheKey, JSON.stringify(parsed));
     // Oude cache opruimen
@@ -8534,7 +8511,7 @@ Geef ALLEEN deze JSON, geen uitleg, geen markdown:
     luRender(parsed);
   } catch(e) {
     console.warn('Level Up laden mislukt:', e);
-    luRender({ verdien: 'Kon niet laden — check je API key of probeer ↻', leer: '—', connect: '—' });
+    luRender({ verdien: 'Kon niet laden — check je API key of probeer ↻', leer: '—' });
   }
 }
 
@@ -8551,7 +8528,6 @@ function luRender(d) {
   const h = d.hoeken || {};
   luKaart('lu-verdien', d.verdien, h.verdien);
   luKaart('lu-leer',    d.leer,    h.leer);
-  luKaart('lu-connect', d.connect, h.connect);
 }
 
 // ↻ draait de rotatie een stap door — anders krijg je dezelfde invalshoek terug.
@@ -8563,10 +8539,8 @@ function luRefresh() {
 setTimeout(() => luLoad(false), 1200);
 
 // ══════════════════════════════════════════════
-// VANDAAG GELEERD — Wikipedia "on this day" + FTM-kop via Haiku+websearch
+// VANDAAG GELEERD — Wikipedia "on this day" + nu.nl kop via Haiku+websearch
 // ══════════════════════════════════════════════
-var lu4FtmLink = 'https://www.ftm.nl/';
-var lu4FtmIsNew = false;
 async function lu4Load(force) {
   const today = luDateKey();
   const cacheKey = 'lu4_content_' + today;
@@ -8574,8 +8548,8 @@ async function lu4Load(force) {
   if (cached) {
     try { lu4Render(JSON.parse(cached)); return; } catch(e) {}
   }
-  const [wiki, ftm] = await Promise.all([lu4LoadWiki(), lu4LoadFtm()]);
-  const result = { wiki, ftm, ftmLink: lu4FtmLink, ftmNew: lu4FtmIsNew };
+  const [wiki, nieuws] = await Promise.all([lu4LoadWiki(), lu4LoadNieuws()]);
+  const result = { wiki, nieuws };
   localStorage.setItem(cacheKey, JSON.stringify(result));
   Object.keys(localStorage).filter(k => k.startsWith('lu4_content_') && k !== cacheKey).forEach(k => localStorage.removeItem(k));
   lu4Render(result);
@@ -8605,9 +8579,6 @@ function lu4OnthoudWeetje(tekst) {
   const h = lu4WeetjesHistorie();
   h.unshift(String(tekst).slice(0, 130));
   localStorage.setItem('lu4_hist_v1', JSON.stringify(h.slice(0, 20)));
-}
-function lu4FtmGezien() {
-  try { return JSON.parse(localStorage.getItem('lu4_ftm_hist_v1') || '[]'); } catch(e) { return []; }
 }
 
 async function lu4LoadWiki() {
@@ -8653,9 +8624,16 @@ Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"jaar":"het jaartal of de ma
   }
 }
 
-async function lu4LoadFtm() {
+// Belangrijk nieuws + 1 goednieuws-bericht van nu.nl, zelfde Haiku+websearch
+// patroon als het Wikipedia-weetje hierboven.
+// Let op: nu.nl's eigen voorpagina is met websearch niet betrouwbaar te vinden
+// (getest: geeft alleen YouTube/Wikipedia-treffers terug, geen artikelen) en
+// een rechtstreekse RSS-fetch vanuit de browser loopt vast op CORS — daarom
+// mag het model een willekeurige betrouwbare NL-nieuwsbron gebruiken (in de
+// praktijk komt dat meestal op nos.nl uit).
+async function lu4LoadNieuws() {
   const key = getApiKey();
-  if (!key) return '💰 Stel je API key in voor de FTM-kop van vandaag.';
+  if (!key) return { belangrijk: null, goed: null, fout: '📰 Stel je API key in voor het nieuws van vandaag.' };
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -8664,39 +8642,41 @@ async function lu4LoadFtm() {
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 900,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
-        messages: [{ role: 'user', content: `Zoek de 5 meest recente artikelen op ftm.nl (Follow the Money, Nederlandse onderzoeksjournalistiek), nieuwste eerst. Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"artikelen":[{"titel":"exacte titel","teaser":"1 zin waarom dit interessant is","url":"volledige url op ftm.nl"}]}` }]
+        messages: [{ role: 'user', content: `Zoek via websearch naar het belangrijkste Nederlandse nieuws van vandaag, en apart naar één positief/leuk nieuwsbericht van de afgelopen dagen uit Nederland. Gebruik een betrouwbare Nederlandse nieuwsbron (nu.nl, nos.nl, bnr.nl of vergelijkbaar) — welke dan ook, als het maar een concreet artikel met titel en url oplevert. Geen zwaar of naar nieuws bij "goed".
+
+Geef ALLEEN deze JSON, geen uitleg, geen markdown: {"belangrijk":{"titel":"exacte titel","teaser":"1 zin samenvatting","url":"volledige url","bron":"naam van de site"},"goed":{"titel":"exacte titel","teaser":"1 zin samenvatting","url":"volledige url","bron":"naam van de site"}}` }]
       })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const raw = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
     const parsed = lu4ExtractJson(raw);
-    const lijst = (parsed.artikelen || []).filter(a => a && a.titel && a.url);
-    if (!lijst.length) throw new Error('onvolledige respons');
-    // Kiezen doet de code, niet het model: pak het nieuwste artikel dat je nog
-    // niet gezien hebt. Is alles al langsgekomen, dan gewoon het nieuwste.
-    const gezien = lu4FtmGezien();
-    const art = lijst.find(a => !gezien.includes(a.url)) || lijst[0];
-    lu4FtmLink = art.url;
-    lu4FtmIsNew = !gezien.includes(art.url) && gezien.length > 0;
-    localStorage.setItem('lu4_ftm_hist_v1', JSON.stringify([art.url].concat(gezien.filter(u => u !== art.url)).slice(0, 15)));
-    localStorage.setItem('lu4_last_ftm_url', art.url);
-    return `💰 <b>${escHtml(art.titel)}</b> — ${escHtml(art.teaser||'')}`;
+    if (!parsed.belangrijk && !parsed.goed) throw new Error('onvolledige respons');
+    return { belangrijk: parsed.belangrijk || null, goed: parsed.goed || null };
   } catch(e) {
-    console.warn('FTM-kop laden mislukt:', e);
-    lu4FtmLink = 'https://www.ftm.nl/';
-    lu4FtmIsNew = false;
-    return '💰 Kon FTM-kop niet laden — <a href="https://www.ftm.nl/" target="_blank" rel="noopener noreferrer" style="color:var(--green);">bekijk ftm.nl direct</a>';
+    console.warn('Nieuws laden mislukt:', e);
+    return { belangrijk: null, goed: null, fout: '📰 Kon nieuws niet laden — <a href="https://www.nu.nl/" target="_blank" rel="noopener noreferrer" style="color:var(--green);">bekijk nu.nl direct</a>' };
   }
+}
+
+function lu4NieuwsRegel(ico, item) {
+  if (!item || !item.titel) return '';
+  const link = item.url ? ` <a href="${item.url}" target="_blank" rel="noopener noreferrer" style="color:var(--green);white-space:nowrap;">→ lees${item.bron ? ' (' + escHtml(item.bron) + ')' : ''}</a>` : '';
+  return `<div>${ico} <b>${escHtml(item.titel)}</b> — ${escHtml(item.teaser||'')}${link}</div>`;
 }
 
 function lu4Render(d) {
   const w = document.getElementById('lu-wiki');
-  const f = document.getElementById('lu-ftm');
+  const n = document.getElementById('lu-nieuws');
   if (w) w.textContent = d.wiki || '—';
-  const link = d.ftmLink || lu4FtmLink;
-  const badge = d.ftmNew ? ' <span style="background:rgba(52,211,153,0.18);color:var(--green);font-size:0.68em;font-weight:700;padding:1px 6px;border-radius:8px;white-space:nowrap;">🆕 nieuw</span>' : '';
-  if (f) f.innerHTML = (d.ftm || '—') + badge + (link ? ` <a href="${link}" target="_blank" rel="noopener noreferrer" style="color:var(--green);white-space:nowrap;">→ lees</a>` : '');
+  if (n) {
+    const nieuws = d.nieuws || {};
+    if (nieuws.fout) {
+      n.innerHTML = nieuws.fout;
+    } else {
+      n.innerHTML = lu4NieuwsRegel('📰', nieuws.belangrijk) + lu4NieuwsRegel('😊', nieuws.goed) || '—';
+    }
+  }
 }
 function lu4Refresh() { lu4Load(true); }
 setTimeout(() => lu4Load(false), 1400);
@@ -8843,9 +8823,8 @@ const CMDK_ACTIES = [
   { ico: '💼', title: 'Werk',                   sub: 'Werklinks en KM-registratie',                 fn: 'openWerk' },
   { ico: '📥', title: 'Brain Dump Inbox',       sub: 'Je gedumpte gedachtes sorteren',              fn: 'openDumpInbox' },
   { ico: '📅', title: 'Agenda',                 sub: 'Afspraak toevoegen',                          fn: 'openAgendaModal' },
-  { ico: '🧰', title: 'Gratis Tools (FMHY)',    sub: 'Films, muziek, software, privacy',            run: () => openToolkit('fmhy') },
-  { ico: '🕵️', title: 'Uitzoeken (OSINT)',      sub: 'Nummer, e-mail, foto of bedrijf natrekken',   run: () => openToolkit('osint') },
-  { ico: '🎲', title: 'Verras me met 3 tools',  sub: 'Willekeurige greep uit de toolkit',           run: () => { openToolkit('fmhy'); setTimeout(toolkitSurprise, 60); } },
+  { ico: '🧰', title: 'Tools & Uitzoeken',      sub: 'Gratis tools + OSINT bij elkaar doorbladeren', run: () => openToolkit('alles') },
+  { ico: '🎲', title: 'Verras me met 3 tools',  sub: 'Willekeurige greep uit de toolkit',           run: () => { openToolkit('alles'); setTimeout(toolkitSurprise, 60); } },
   { ico: '🗂️', title: 'Pipeline archief',       sub: 'Oude pipeline-runs terughalen',               fn: 'sspOpenArchive' },
   { ico: '📦', title: 'Context-pakket maken',   sub: 'Korte briefing voor een andere AI',           fn: 'genContextPakket' },
   { ico: '🔑', title: 'API keys',               sub: 'Claude- en OpenRouter-sleutel',               fn: 'openApiKeyModal' },

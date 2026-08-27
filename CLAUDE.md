@@ -242,28 +242,34 @@ Zelfde patroon als Claude key: opgeslagen in `app_settings` (`setting_key: 'open
 
 ---
 
-## Toolkits — FMHY + OSINT4All (16 augustus 2026)
+## Toolkits — FMHY + OSINT4All (16 augustus 2026, samengevoegd 27 augustus 2026)
 
-Twee kleine knoppen in de **header** (`🧰 Gratis Tools` en `🕵️ Uitzoeken`) openen dezelfde overlay (`toolkit-overlay`) via `openToolkit('fmhy')` / `openToolkit('osint')`. Stonden tot 17 augustus 2026 als kaart in Tools & Platforms.
+Sinds 27 augustus 2026 **één zoekbalk** (`#toolzoek-bar`, direct onder de header) in plaats van twee aparte knoppen. Typ wat je zoekt ("muziek downloaden", "adblocker", "telefoonnummer natrekken") en `toolzoekAsk()` doorzoekt de gecombineerde lijst. Een tekstlinkje "📂 blader alles" ernaast opent nog steeds de volledige `toolkit-overlay` (dichtgeklapte categorieën) via `openToolkit('alles')`.
 
-**Waarom zo:** beide bronsites zijn onbruikbaar groot. De hub bevat een *handgeschreven, ingedikte* kopie in de constante `TOOLKITS` — geen scrape, geen sync. Categorieën staan standaard dichtgeklapt (`<details>`), zodat je nooit een muur tekst ziet.
+**Waarom zo:** de twee losse knoppen (`🧰 Gratis Tools`, `🕵️ Uitzoeken`) dwongen je eerst te kiezen in welke van de twee je moest zoeken, terwijl de meeste vragen sowieso maar in één van beide thuishoren. Eén zoekvak dat zelf uitzoekt waar het antwoord zit is simpeler.
+
+De hub bevat een *handgeschreven, ingedikte* kopie in de constante `TOOLKITS` — geen scrape, geen sync. Categorieën staan standaard dichtgeklapt (`<details>`), zodat je nooit een muur tekst ziet.
 
 | | Categorieën | Tools |
 |---|---|---|
 | `fmhy` | 22 (groepen Wiki + Tools) | 282 |
 | `osint` | 11 (groepen Checken/Zoeken/Controleren) | 104 |
+| `alles` | 33 (fmhy + osint samengevoegd) | 386 |
 
 FMHY dekt alle wiki- en tool-secties van fmhy.net, inclusief de download-/torrent-kant. Non-English is overgeslagen (geen Nederlandse sectie). OSINT4All is teruggebracht tot wat praktisch is: de Amerikaanse people-search en fake-ID-generators zijn eruit, er zijn NL-bronnen (KVK, CBS, PDOK, Kadaster, Rechtspraak) en een categorie "🔧 Je eigen site doorlichten" bij gezet voor StekkerSlim.
+
+De losse `fmhy`/`osint` keys in `TOOLKITS` bestaan nog (o.a. omdat `alles` zijn `cats` array uit die twee samenstelt), maar hebben zelf geen knop meer. Een losse `claude`-key (Claude & GitHub tips, toegevoegd 25 augustus) is 27 augustus weer verwijderd — bleek niet te zijn wat Remy ermee bedoelde.
 
 ### Functies
 | Functie | Wat |
 |---------|-----|
-| `openToolkit(key)` / `closeToolkit()` | Overlay openen op `fmhy` of `osint` |
+| `openToolkit(key)` / `closeToolkit()` | Overlay openen op `fmhy`, `osint` of `alles` |
 | `toolkitRenderCats()` | Tekent groepskoppen + dichtgeklapte categorieën |
-| `toolkitAsk()` | "Wat heb je nodig?" → Haiku via OpenRouter, max 3 tools terug |
+| `toolkitAsk()` | Zoekfunctie binnen de overlay zelf (legacy pad, nog gebruikt door `🎲 Verras me` uit de Command Palette) |
+| `toolzoekAsk()` | De hoofd-zoekbalk onder de header — zelfde aanpak als `toolkitAsk()` maar altijd tegen `TOOLKITS.alles` |
 | `toolkitSurprise()` | 3 willekeurige tools, geen API-call — puur om op ideeën te komen |
 
-**`toolkitAsk()` detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-4.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
+**Zoek-detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-4.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
 
 ## 📍 Plaats-knop + herinneringen (20 augustus 2026)
 
@@ -333,8 +339,11 @@ van de nieuwe rij bekend is. Let op: weekplanner-id's zijn **getallen**, maar vi
 ## Command Palette — ⌘K / Ctrl+K (20 augustus 2026)
 
 Eén zoekveld over de hele hub. Openen met `⌘K` / `Ctrl+K` (werkt ook terwijl je in een
-tekstvak typt) of via de knop **🔍 Zoek alles** vooraan in de header. Overlay
-`#cmdk-overlay`, box `#cmdk-box`.
+tekstvak typt). Overlay `#cmdk-overlay`, box `#cmdk-box`.
+
+De knop **🔍 Zoek alles** die hiervoor in de header stond is 27 augustus 2026 verwijderd
+(Remy gebruikte 'm niet) — de sneltoets blijft gewoon werken, alleen de zichtbare knop
+is weg. Vaste Lasten staat sindsdien op die plek vooraan in de header.
 
 **Waarom:** de header telt inmiddels ~19 knoppen en de twee toolkits samen 386 tools.
 Bladeren werkt op die schaal niet meer; typen wel. De palette indexeert ~475 dingen.
@@ -431,6 +440,40 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 27 augustus 2026
+- **🤔 AI Orakel toegevoegd**: header-knop opent een overlay waar je omschrijft
+  waar je hulp bij zoekt, en Haiku (via OpenRouter, zelfde patroon als
+  `toolkitAsk()`) kiest uit de vaste lijst AI's (Claude, Perplexity, ChatGPT,
+  Grok, Gemini, DeepSeek, Kimi, NotebookLM, Copilot) welke het beste past, met
+  een korte reden.
+- **Plaats-knop resultaatpaneel verdween te snel**: `smartFlash('Even
+  bepalen...')` zette een 3.5s auto-hide timer die bleef lopen nadat
+  `smartToonResultaat()` het echte resultaat al had ingeladen. Timer wordt nu
+  geannuleerd zodra het resultaatpaneel (of de herinneringenlijst) getoond
+  wordt.
+- **Header opgeruimd**: `🔍 Zoek alles`-knop weg (Ctrl+K blijft werken, alleen
+  de knop is weg), `🤖 Claude Tips` weg (bleek niet te zijn wat Remy ermee
+  bedoelde), `💶 Vaste Lasten` verplaatst naar de eerste positie.
+- **`🧰 Gratis Tools` + `🕵️ Uitzoeken` samengevoegd tot één zoekbalk**
+  (`#toolzoek-bar`, `toolzoekAsk()`) direct onder de header — zie sectie
+  "Toolkits" hierboven. De twee losse knoppen dwongen je eerst te kiezen in
+  welke van de twee lijsten je moest zoeken; nu zoekt één balk in beide.
+- **📣 Promoot-kaart uit Daily Level Up verwijderd** (met de bijbehorende
+  `connect`-invalshoeken, de dagstreak en het "gedaan"-vinkje). Reden: de
+  suggesties gingen ervan uit dat er toevallig een passende vraag klaarstond
+  om te beantwoorden ("beantwoord een vraag in een Facebook-groep over
+  zonnepanelen") — puur verzonnen, Remy deed er nooit iets mee. Level Up toont
+  nu alleen nog Stekkerslim Groei + Leer.
+- **FTM-kop in "Vandaag Geleerd" vervangen door NL-nieuws** (`lu4LoadNieuws()`):
+  1 belangrijk nieuwsbericht + 1 goednieuws-bericht via Haiku+websearch.
+  Getest dat een directe koppeling met nu.nl niet werkt: de websearch-tool
+  indexeert nu.nl's eigen voorpagina niet betrouwbaar (gaf alleen
+  YouTube/Wikipedia-treffers terug, geen artikelen) en een rechtstreekse
+  RSS-fetch vanuit de browser loopt vast op CORS (`Failed to fetch`, ook
+  buiten deze SPA getest). Het model mag daarom een willekeurige betrouwbare
+  NL-nieuwsbron gebruiken (nu.nl, nos.nl, bnr.nl) — in de praktijk komt dat
+  meestal op nos.nl uit, wat wél goed werkt.
 
 ### 25 augustus 2026
 - **📎 Bestand-knop bij elk antwoordveld** (`sspImportBestand(i)`). Claude levert een
