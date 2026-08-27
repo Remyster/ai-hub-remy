@@ -1994,6 +1994,22 @@ header h1 {
   </div>
 </div>
 
+<div id="orakel-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div id="orakel-modal" style="background:#0d0e18;border:1px solid rgba(102,126,234,0.2);border-radius:22px;padding:32px 28px 24px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+    <div class="pb-title">🤔 Welke AI?</div>
+    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent, en de vraagbaak zegt welke AI uit je eigen lijstje daar het beste bij past — en waarom.</div>
+
+    <span class="pb-label">💬 Waar wil je hulp bij?</span>
+    <input id="orakel-input" placeholder="bijv: ik wil weten of een contract eerlijk is" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')orakelAsk()">
+    <button class="pb-generate" id="orakel-ask-btn" onclick="orakelAsk()" style="margin-top:10px;">✨ Welke AI past hierbij?</button>
+
+    <div class="pb-error" id="orakel-error"></div>
+    <div id="orakel-answer" style="display:none;margin-top:16px;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:16px;"></div>
+
+    <button class="pb-close-btn" onclick="closeOrakel()">✕ Sluiten</button>
+  </div>
+</div>
+
 <!-- ══ VASTE LASTEN MODAL ══ -->
 <div id="vl-overlay">
   <div id="vl-modal">
@@ -2313,6 +2329,7 @@ header h1 {
       <span class="hbtn" style="color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.18);" onclick="openToolkit('fmhy')" title="Gratis Tools — verzameling gratis en veilige sites en programma's: films, series, muziek, games, software, cursussen, privacy. Uitgedunde versie van FMHY.">🧰 Gratis Tools</span>
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openToolkit('osint')" title="Uitzoeken — iets of iemand natrekken: telefoonnummer, e-mail, foto controleren, bedrijf opzoeken (KVK), een website doorlichten. Uitgedunde versie van OSINT4All.">🕵️ Uitzoeken</span>
       <span class="hbtn" style="color:#fb923c;background:rgba(251,146,60,0.08);border-color:rgba(251,146,60,0.18);" onclick="openToolkit('claude')" title="Claude & GitHub tips — skills, hooks, subagents, MCP en hoe dat samenwerkt met GitHub. Kleine handgekozen greep, geen volledige docs.">🤖 Claude Tips</span>
+      <span class="hbtn" style="color:#facc15;background:rgba(250,204,21,0.08);border-color:rgba(250,204,21,0.18);" onclick="openOrakel()" title="Vraagbaak — omschrijf je taak en krijg te horen welke AI (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM) daar het beste bij past.">🤔 Welke AI?</span>
       <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
       <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
@@ -7296,6 +7313,91 @@ async function toolkitAsk() {
           const [naam, url, waarom] = r.split('|').map(s => (s || '').trim());
           const veilig = /^https?:\/\//.test(url) ? url : null;
           return toolkitItemHtml({ n: naam.replace(/^[-*\d.\s]+/, ''), u: veilig || tk.bron, d: waarom || '' });
+        }).join('') + '</div>';
+    }
+    outEl.innerHTML = html;
+  } catch (e) {
+    outEl.style.display = 'none';
+    errEl.textContent = '❌ ' + (e.message || 'onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false; btn.textContent = oudeTekst;
+  }
+}
+
+// ══════════════════════════════════════════════
+// AI ORAKEL — "welke AI kan mij hier het beste mee helpen?"
+// ══════════════════════════════════════════════
+// Zelfde opzet als toolkitAsk(): de hele lijst past in één prompt, dus geen
+// zoekindex nodig. Haiku kiest uit de vaste set AI's die Remy al gebruikt
+// (zie de Algemeen-sectie) — geen StekkerSlim-agents, dat is een andere vraag.
+const ORAKEL_LIJST = [
+  { n: 'Claude', u: 'https://claude.ai/new', d: 'Beste in schrijven & code — lange, precieze teksten, moeilijke dingen simpel uitgelegd, documenten uitpluizen' },
+  { n: 'Perplexity', u: 'https://www.perplexity.ai/', d: 'Beste voor actuele feiten met bronvermelding — nieuws, prijzen, regels, wetten, "klopt dit nog?"' },
+  { n: 'ChatGPT', u: 'https://chatgpt.com/', d: 'Allrounder — foto\'s, spraakgesprekken, plaatjes maken, Excel-lijstjes doorrekenen' },
+  { n: 'Grok', u: 'https://grok.com/', d: 'Beste voor wat nú op X speelt — meningen, hypes, rellen, direct en ongefilterd' },
+  { n: 'Gemini', u: 'https://gemini.google.com/u/0/app', d: 'Beste bij lange documenten & Google-spullen — dikke PDF\'s en video\'s samenvatten, werkt mee in Gmail/Drive/Docs' },
+  { n: 'DeepSeek', u: 'https://chat.deepseek.com/', d: 'Beste in redeneren, wiskunde & code — denkt stap voor stap, gratis onbeperkt' },
+  { n: 'Kimi', u: 'https://www.kimi.com/', d: 'Beste bij enorme lappen tekst — een heel boek, contract of hele codebase in één keer erin' },
+  { n: 'NotebookLM', u: 'https://notebooklm.google.com/?pli=1', d: 'Beste om jóúw eigen documenten uit te vragen — verzint niks bij, alleen antwoord uit wat je uploadt' },
+  { n: 'Copilot', u: 'https://copilot.microsoft.com/', d: 'Geïntegreerd in Windows en Microsoft 365 — handig als het werk al in Word/Excel/Outlook zit' }
+];
+const ORAKEL_MODEL = 'anthropic/claude-haiku-4.5';
+
+function openOrakel() {
+  document.getElementById('orakel-input').value = '';
+  document.getElementById('orakel-answer').style.display = 'none';
+  document.getElementById('orakel-error').style.display = 'none';
+  document.getElementById('orakel-overlay').style.display = 'flex';
+  document.getElementById('orakel-input').focus();
+}
+function closeOrakel() {
+  document.getElementById('orakel-overlay').style.display = 'none';
+}
+document.getElementById('orakel-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeOrakel();
+});
+
+async function orakelAsk() {
+  const vraag = document.getElementById('orakel-input').value.trim();
+  const errEl = document.getElementById('orakel-error');
+  const outEl = document.getElementById('orakel-answer');
+  errEl.style.display = 'none';
+  if (!vraag) { document.getElementById('orakel-input').focus(); return; }
+  if (!getOpenRouterKey()) {
+    errEl.textContent = '❌ Geen OpenRouter key. Zet die eerst in het API Key-scherm.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  const lijst = ORAKEL_LIJST.map(a => `- ${a.n} | ${a.u} | ${a.d}`).join('\n');
+  const btn = document.getElementById('orakel-ask-btn');
+  const oudeTekst = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Denken...';
+  outEl.style.display = 'block';
+  outEl.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">⏳ Bezig...</span>';
+
+  const systemPrompt = 'Je helpt Remy kiezen welke AI-tool het beste past bij een taak of vraag. Kies ALTIJD uit de meegegeven lijst, verzin nooit een andere AI. Kies meestal precies 1 AI; noem een 2e alleen als het echt gelijk opgaat. Antwoord in het Nederlands, in dit exacte format en verder niets:\n\nNAAM | URL | reden in maximaal 2 korte zinnen\n\nGeen inleiding, geen afsluiting, geen kopjes. Als er een 2e optie is, zet die op een nieuwe regel in hetzelfde format.';
+  const userMsg = `Beschikbare AI's:\n${lijst}\n\nRemy vraagt: "${vraag}"\n\nWelke past het beste?`;
+
+  try {
+    const text = await callOpenRouter(ORAKEL_MODEL, systemPrompt, userMsg, 30000);
+    const regels = text.split('\n').map(r => r.trim()).filter(r => r.includes('|'));
+    let html = '';
+    if (!regels.length) {
+      html = `<div style="font-size:0.8em;color:var(--text-dim);line-height:1.6;">${escHtml(text)}</div>`;
+    } else {
+      html = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🤔 Dit zou ik pakken</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">` +
+        regels.slice(0, 2).map(r => {
+          const [naam, url, reden] = r.split('|').map(s => (s || '').trim());
+          const bekend = ORAKEL_LIJST.find(a => a.n.toLowerCase() === naam.toLowerCase().replace(/^[-*\d.\s]+/, ''));
+          const veilig = /^https?:\/\//.test(url) ? url : (bekend ? bekend.u : null);
+          if (!veilig) return `<div style="padding:8px 10px;font-size:0.8em;color:var(--text-dim);">${escHtml(naam)} — ${escHtml(reden || '')}</div>`;
+          return `<a href="${veilig}" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 12px;border-radius:9px;text-decoration:none;background:rgba(255,255,255,0.02);">
+            <span style="color:var(--text);font-size:0.86em;font-weight:600;">${escHtml(bekend ? bekend.n : naam)}</span>
+            <span style="color:var(--muted);font-size:0.78em;display:block;margin-top:3px;line-height:1.5;">${escHtml(reden || '')}</span>
+          </a>`;
         }).join('') + '</div>';
     }
     outEl.innerHTML = html;
