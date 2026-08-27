@@ -441,6 +441,21 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 
 ## Changelog
 
+### 27 augustus 2026 (deel 2)
+- **Herinneringen ook voor taken die niet via de Plaats-knop gingen**
+  (`heroSyncHerinneringen()`, aangeroepen vanuit `heroLoadTaak()`). Tot nu toe
+  kreeg alleen een taak die via 📍 Plaats werd aangemaakt automatisch een
+  herinnering (`smartZetHerinnering`); iets wat rechtstreeks in de Week
+  Planner stond, via een GoodNotes-foto-import binnenkwam, of via CSV — kreeg
+  nooit een melding, terwijl `remTick()`/`Notification` allang draaien. Elk
+  item van vandaag met een tijdstip krijgt nu bij het laden van de hero-strip
+  automatisch een herinnering in `hub_herinneringen_v1` als het er nog niet
+  in staat (60 min voor een afspraak, 30 voor sport, 15 voor de rest — zelfde
+  staffel als bij Plaats). `heroToggleTaak()` verwijdert 'm weer zodra je een
+  taak afvinkt. Herinneringen ouder dan 12 uur worden nooit meer gemeld
+  (bestaand gedrag van `remOpschonen()`), dus dit vult alleen taken die nog
+  moeten komen.
+
 ### 27 augustus 2026
 - **🤔 AI Orakel toegevoegd**: header-knop opent een overlay waar je omschrijft
   waar je hulp bij zoekt, en Haiku (via OpenRouter, zelfde patroon als

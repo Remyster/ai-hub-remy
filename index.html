@@ -7477,11 +7477,35 @@ async function heroLoadTaak() {
         <input type="checkbox" ${t.klaar ? 'checked' : ''} onchange="heroToggleTaak(${t.id}, this.checked, this)">
         <span>${t.tijd ? '<b>' + t.tijd.slice(0,5) + '</b> ' : ''}${escHtml(t.tekst)}</span>
       </label>`).join('');
+    heroSyncHerinneringen(items);
   } catch(e) { el.innerHTML = '<span style="opacity:.6;">Klik 🗓️ Week voor je planning</span>'; }
 }
 async function heroToggleTaak(id, checked, cb) {
   cb.closest('.hero-taak-row').classList.toggle('klaar', checked);
   await sbPatch('weekplanner_items', `id=eq.${id}`, { klaar: checked });
+  if (checked) { smartHerinneringVerwijder(id); remRenderKnop(); }
+}
+
+// Elk taak/afspraak/sport-item van vandaag met een tijdstip krijgt automatisch
+// een herinnering, ongeacht hoe het erin is gekomen (Plaats-knop, Week Planner
+// zelf, GoodNotes-foto-import). Voorheen kreeg alleen wat via de Plaats-knop
+// liep een herinnering — een taak die je rechtstreeks in de planner zette gaf
+// nooit een melding, terwijl remTick()/Notification allang draaien.
+function heroSyncHerinneringen(items) {
+  const lijst = remLaad();
+  const heeftAl = new Set(lijst.filter(r => !r.klaar).map(r => String(r.id)));
+  let gewijzigd = false;
+  items.forEach(t => {
+    if (!t.tijd || t.klaar || heeftAl.has(String(t.id))) return;
+    const categorie = t.categorie || 'taak';
+    const herinnerMin = categorie === 'afspraak' ? 60 : categorie === 'sport' ? 30 : 15;
+    lijst.push({
+      id: t.id, tekst: t.tekst, datum: t.datum, tijd: t.tijd.slice(0, 5),
+      categorie, herinnerMin, gemeldVoor: false, gemeldExact: false, klaar: false
+    });
+    gewijzigd = true;
+  });
+  if (gewijzigd) { remBewaar(lijst); remRenderKnop(); }
 }
 heroLoadTaak();
 
