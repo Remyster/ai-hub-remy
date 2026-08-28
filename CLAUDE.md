@@ -28,15 +28,22 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **Project ID:** `dezyzzkuqkpljhprcbrg`
 - **URL:** `https://dezyzzkuqkpljhprcbrg.supabase.co`
 - **Variabelen in code:** `SS_SBURL`, `SS_SBKEY`
-- **Key type:** `anon`
+- **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
 - **Tabellen:** `pipeline_state`, `ss_assets`, `ss_pipeline_steps`, `ss_project_assets`, `ss_projects`, `ss_site_pages`, `werk_links`, `km_registratie`, `km_defaults`
 
 ### Project B — Vaste Lasten / Weekplanner
 - **Project ID:** `mdslvdrsggpksqrbtwci`
 - **URL:** `https://mdslvdrsggpksqrbtwci.supabase.co`
 - **Variabelen in code:** `SB_URL`, `SB_KEY`
-- **Key type:** `anon`
+- **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
 - **Tabellen:** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `app_settings`, `weekplanner_items`, `brain_dumps`, `context_blocks`
+
+**Let op:** Supabase heeft de oude `anon`/`service_role` JWT-keys vervangen door
+`publishable`/`secret` keys (nieuw format, onafhankelijk te roteren, betere
+beveiliging). RLS-policies met `TO anon` blijven werken — de publishable key
+mapt server-side nog steeds naar de `anon` Postgres-rol. Check bij rotatie
+altijd via `get_publishable_keys` of de legacy key `disabled: true` is geworden
+voordat je 'm laat staan.
 
 ---
 
@@ -440,6 +447,14 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 28 augustus 2026
+- **Supabase legacy anon keys vervangen door publishable keys**: de oude JWT
+  `anon`-keys (`SS_SBKEY`, `SB_KEY`) bleken door Supabase **disabled** te zijn
+  gezet — de hub deed dus stille 401's op alle Supabase-calls op beide
+  projecten. Vervangen door de nieuwe `sb_publishable_...`-keys via de
+  Supabase MCP `get_publishable_keys`. RLS-policies (`TO anon`) hoefden niet
+  aangepast — de publishable key mapt nog naar dezelfde Postgres-rol.
 
 ### 27 augustus 2026 (deel 2)
 - **Herinneringen ook voor taken die niet via de Plaats-knop gingen**
