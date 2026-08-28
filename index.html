@@ -7673,18 +7673,73 @@ async function openDumpInbox() {
 function closeDumpInbox() { document.getElementById('dump-overlay').style.display = 'none'; }
 document.getElementById('dump-overlay').addEventListener('click', function(e) { if (e.target === this) closeDumpInbox(); });
 
+const DUMP_CAT_INFO = {
+  'WEEKPLANNER-TAAK': { label: '📅 Taak',    kleur: '#34d399' },
+  'BLOG-IDEE':        { label: '✍️ Blog',    kleur: '#f472b6' },
+  'STEKKERSLIM-SITE': { label: '🔌 Site',    kleur: '#f472b6' },
+  'AI-HUB':           { label: '🤖 Hub',     kleur: '#7c6ff0' },
+  'NOTITIE':          { label: '📝 Notitie', kleur: '#94a3b8' }
+};
+
 function dumpRenderList() {
   const list = document.getElementById('dump-list');
   const arr = dumpGet();
   if (!arr.length) { list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">Leeg! Dump gedachtes via de balk bovenaan de hub.</div>'; return; }
-  list.innerHTML = arr.map((d, i) => `
+  list.innerHTML = arr.map((d, i) => {
+    const cat = d.categorie && DUMP_CAT_INFO[d.categorie];
+    const badge = cat ? `<span style="display:inline-block;padding:2px 8px;border-radius:8px;background:${cat.kleur}22;color:${cat.kleur};font-size:0.62em;font-weight:700;margin-bottom:4px;">${cat.label}</span>` : '';
+    const actie = d.actie ? `<div style="font-size:0.68em;color:var(--muted);margin-top:2px;">→ ${escHtml(d.actie)}</div>` : '';
+    let actionBtn = '';
+    if (d.categorie === 'WEEKPLANNER-TAAK') {
+      actionBtn = `<button onclick="dumpNaarWeekplanner(${i})" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);border-radius:8px;color:#34d399;font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;">📅 Naar planner</button>`;
+    } else if (cat) {
+      actionBtn = `<button onclick="dumpKopieer(${i})" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;">📋 Kopieer</button>`;
+    }
+    return `
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;">
       <div style="flex:1;">
+        ${badge}
         <div style="font-family:Inter,sans-serif;font-size:0.78em;color:var(--text);line-height:1.5;">${escHtml(d.text)}</div>
+        ${actie}
         <div style="font-size:0.62em;color:var(--muted);margin-top:4px;">${new Date(d.ts).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
       </div>
-      <button onclick="dumpDelete(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;">✕</button>
-    </div>`).join('');
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
+        ${actionBtn}
+        <button onclick="dumpDelete(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Zet een gedachte direct als taak in de weekplanner (morgen, geen tijd) en haalt 'm uit de dump.
+async function dumpNaarWeekplanner(i) {
+  const arr = dumpGet();
+  const d = arr[i];
+  if (!d) return;
+  const datum = wpFmtDate(wpAddDays(new Date(), 1));
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items`, {
+      method: 'POST', headers: SB_POST_HDR,
+      body: JSON.stringify({ datum, tekst: d.text, tijd: null, tijd_eind: null, categorie: 'taak', klaar: false, volgorde: 0 })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    smartFlash('✅ Naar weekplanner gezet — morgen.');
+    await dumpDelete(i);
+  } catch(e) {
+    smartFlash('⚠️ Zetten in weekplanner mislukt: ' + e.message);
+  }
+}
+
+async function dumpKopieer(i) {
+  const arr = dumpGet();
+  const d = arr[i];
+  if (!d) return;
+  try {
+    await navigator.clipboard.writeText(d.text);
+    smartFlash('📋 Gekopieerd naar klembord.');
+  } catch(e) {
+    smartFlash('⚠️ Kopiëren mislukt.');
+  }
 }
 async function dumpDelete(i) {
   const arr = dumpGet();
@@ -7715,19 +7770,35 @@ async function dumpSorteer() {
 Gedachtes:
 ${arr.map((d,i) => (i+1) + '. ' + d.text).join('\n')}
 
-Geef per gedachte EXACT dit format:
-[nummer] → [WEEKPLANNER-TAAK / BLOG-IDEE / STEKKERSLIM-SITE / AI-HUB / NOTITIE] — korte actie-omschrijving
+Antwoord ALLEEN met geldige JSON, geen andere tekst, exact dit formaat:
+{"items":[{"n":1,"categorie":"WEEKPLANNER-TAAK","actie":"korte actie-omschrijving"}],"snelste_win":"[nummer] — waarom dit het makkelijkst vandaag nog kan"}
 
-Eindig met: "SNELSTE WIN: [welke van deze het makkelijkst vandaag nog kan]"`;
+categorie is exact één van: WEEKPLANNER-TAAK, BLOG-IDEE, STEKKERSLIM-SITE, AI-HUB, NOTITIE. Eén item per gedachte, zelfde volgorde als de nummering hierboven.`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
-    resEl.innerHTML = '<div style="background:var(--accent-soft);border:1px solid rgba(124,111,240,0.25);border-radius:12px;padding:12px;white-space:pre-wrap;">' + escHtml(text) + '</div>';
+    const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    (json.items || []).forEach(it => {
+      const d = arr[it.n - 1];
+      if (!d || !DUMP_CAT_INFO[it.categorie]) return;
+      d.categorie = it.categorie;
+      d.actie = it.actie || '';
+      if (d.id) {
+        fetch(`${SB_URL}/rest/v1/brain_dumps?id=eq.${d.id}`, {
+          method: 'PATCH', headers: SB_POST_HDR, body: JSON.stringify({ categorie: it.categorie })
+        }).catch(e => console.error('Categorie opslaan mislukt:', e));
+      }
+    });
+    _dumpCache = arr; dumpSaveLocal(arr);
+    dumpRenderList();
+    resEl.innerHTML = json.snelste_win
+      ? '<div style="background:var(--accent-soft);border:1px solid rgba(124,111,240,0.25);border-radius:12px;padding:12px;">⚡ Snelste win: ' + escHtml(json.snelste_win) + '</div>'
+      : '';
   } catch(err) {
     resEl.textContent = '⚠ Sorteren mislukt: ' + err.message;
   } finally {
