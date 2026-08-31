@@ -1361,6 +1361,9 @@ input[type="time"], input[type="date"], input[type="number"],
   .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important; gap: 8px !important; }
   .card { padding: 12px 13px 11px !important; }
   #hero-strip { padding: 16px 16px; }
+  /* iOS Safari zoomt automatisch in op een input met font-size <16px bij focus —
+     dat zoomen laat de Kluis-modal (position:fixed) van het scherm lijken te verdwijnen. */
+  .vlt-input, .vlt-textarea { font-size: 16px !important; }
 }
 
 </style>
@@ -5062,6 +5065,23 @@ function renderVasteLasten() {
   document.getElementById('vl-content').innerHTML = html;
 }
 
+// Spaarrekening die bij een vaste-lastnaam hoort — alleen voor categorie 'sparen', anders matcht
+// de losse naam-check ook bijv. "Autoverzekering" of "Huisverzekering" op de "Auto"/"Huis"-spaarpot.
+function vlFindSpaarMatch(last) {
+  if (!last || last.categorie !== 'sparen') return null;
+  return vlSpaar.find(s =>
+    last.naam.toLowerCase().includes(s.naam.toLowerCase()) ||
+    s.naam.toLowerCase().includes(last.naam.toLowerCase())
+  ) || null;
+}
+async function vlAdjustSpaarSaldo(spaarMatch, delta) {
+  if (!spaarMatch || !delta) return;
+  const nieuwSaldo = Math.max(0, parseFloat(spaarMatch.saldo||0) + delta);
+  await sbPatch('spaarrekeningen', `id=eq.${spaarMatch.id}`, { saldo: nieuwSaldo, updated_at: new Date().toISOString() });
+  spaarMatch.saldo = nieuwSaldo;
+  renderSpaar();
+}
+
 async function toggleBetaald(id) {
   const bet = getBetaling(id);
   const last = vlLasten.find(l => l.id === id);
@@ -5092,19 +5112,11 @@ async function toggleBetaald(id) {
     btn.textContent = nieuwBetaald ? '✓ Betaald' : '○ Betalen';
   }
 
-  // Spaarrekening ophogen als het een spaarpot is
-  if (nieuwBetaald && last) {
-    const spaarMatch = vlSpaar.find(s =>
-      last.naam.toLowerCase().includes(s.naam.toLowerCase()) ||
-      s.naam.toLowerCase().includes(last.naam.toLowerCase())
-    );
-    if (spaarMatch) {
-      const nieuwSaldo = parseFloat(spaarMatch.saldo||0) + huidigBedrag;
-      await sbPatch('spaarrekeningen', `id=eq.${spaarMatch.id}`, { saldo: nieuwSaldo, updated_at: new Date().toISOString() });
-      spaarMatch.saldo = nieuwSaldo;
-      renderSpaar();
-    }
-  }
+  // Spaarrekening bijwerken — alleen voor echte spaarposten (categorie 'sparen').
+  // Op ✓ Betaald: bedrag erbij. Op terug naar ○ Betalen (mistoetsen ongedaan maken): bedrag er weer af,
+  // anders bleef het saldo staan alsof er nog een keer gestort was.
+  const spaarMatch = vlFindSpaarMatch(last);
+  if (spaarMatch) await vlAdjustSpaarSaldo(spaarMatch, nieuwBetaald ? huidigBedrag : -huidigBedrag);
 
   // Ververs betalingen lokaal
   if (bet) { bet.betaald = nieuwBetaald; bet.bedrag_betaald = huidigBedrag; }
@@ -5139,6 +5151,7 @@ async function updateBedrag(id, val) {
   const nieuwBedrag = parseFloat(val);
   if (isNaN(nieuwBedrag)) return;
   const bet = getBetaling(id);
+  const oudBedrag = parseFloat(bet?.bedrag_betaald || 0);
   if (bet) {
     bet.bedrag_betaald = nieuwBedrag;
   } else {
@@ -5155,6 +5168,13 @@ async function updateBedrag(id, val) {
   if (inp && result) {
     inp.classList.add('vl-saved');
     setTimeout(() => inp.classList.remove('vl-saved'), 900);
+  }
+  // Al ✓ Betaald en het bedrag wordt achteraf nog gewijzigd? Trek het verschil door naar de
+  // gekoppelde spaarrekening — anders klopt het spaarsaldo niet meer met wat er echt gestort is.
+  if (bet?.betaald && oudBedrag !== nieuwBedrag) {
+    const last = vlLasten.find(l => l.id === id);
+    const spaarMatch = vlFindSpaarMatch(last);
+    if (spaarMatch) await vlAdjustSpaarSaldo(spaarMatch, nieuwBedrag - oudBedrag);
   }
   // Update overblijft berekening
   updateVlSaldo();
