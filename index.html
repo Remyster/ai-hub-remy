@@ -7810,9 +7810,9 @@ categorie is exact één van: WEEKPLANNER-TAAK, BLOG-IDEE, STEKKERSLIM-SITE, AI-
 // AGENT ROUTER — AI kiest de juiste agent
 // ══════════════════════════════════════════════
 const ROUTER_AGENTS = [
+  // Nova R&D en Atlas zijn puur voor PWN-werk (drinkwater) — bewust niet in deze
+  // lijst, anders krijg je ze voorgesteld bij privé-vragen die er niks mee te maken hebben.
   { name: 'Dr. NeuroCut', desc: 'medische vragen, ADHD, medicatie, gewicht, gezondheid', url: 'https://claude.ai/project/019c8aa5-f843-7141-b663-cb017a540215' },
-  { name: 'Nova R&D', desc: 'werk PWN, drinkwater, onderzoek, metingen, lab', url: 'https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79' },
-  { name: 'Atlas', desc: 'algemeen onderzoek en development', url: 'https://claude.ai/project/019d67ec-4c14-70ac-ab15-d0ef584df5fe' },
   { name: 'Voltex Coder', desc: 'code, Home Assistant, Tuya, Excel, programmeren, debuggen', url: 'https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6' },
   { name: 'AI Hubby', desc: 'alles over de AI Hub zelf, features, aanpassingen aan het dashboard', url: 'https://claude.ai/project/019d8198-c3d7-7004-a846-5221dd83acb1' },
   { name: 'Stekkerslim Bouwen', desc: 'StekkerSlim.nl site bouwen, HTML aanpassen, keuren, publiceren', url: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1' },
@@ -7829,28 +7829,39 @@ async function agentRoute() {
   if (!key) { openApiKeyModal(); return; }
   smartFlash('🎯 Even kijken wie dit het beste kan...');
   try {
-    const prompt = `Kies de beste agent voor deze vraag van Remy. Antwoord met ALLEEN de exacte agent-naam, niets anders.
+    const prompt = `Kies de beste agent voor deze vraag/notitie van Remy en herschrijf 'm tot een duidelijke, volledige vraag.
 
 Agents:
 ${ROUTER_AGENTS.map(a => a.name + ': ' + a.desc).join('\n')}
 
-Vraag: "${vraag}"`;
+Wat Remy typte: "${vraag}"
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{"agent":"exacte agent-naam uit de lijst","vraag":"herschreven, volledige vraag"}
+
+Voor "vraag": maak van wat Remy typte (vaak kort, telegramstijl, of een half zinnetje) een
+nette, volledige vraag zoals je 'm aan de agent zou stellen — behoud de bedoeling en alle
+concrete details (namen, getallen, situatie), maar vul 'm aan tot een leesbare zin. Geen
+letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 50, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     const antwoord = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
-    const agent = ROUTER_AGENTS.find(a => antwoord.toLowerCase().includes(a.name.toLowerCase()));
+    let parsed = null;
+    try { parsed = JSON.parse(antwoord.replace(/```json|```/g, '').trim()); } catch(e) {}
+    const agent = parsed && ROUTER_AGENTS.find(a => (parsed.agent||'').toLowerCase().includes(a.name.toLowerCase()));
     if (!agent) { smartFlash('🤔 Geen duidelijke match — probeer je vraag specifieker te maken.'); return; }
-    // Kopieer de vraag naar klembord
-    const tmp = document.createElement('textarea'); tmp.value = vraag; tmp.style.cssText='position:fixed;opacity:0;';
+    const nettevraag = (parsed.vraag || vraag).trim();
+    // Kopieer de herschreven vraag naar klembord
+    const tmp = document.createElement('textarea'); tmp.value = nettevraag; tmp.style.cssText='position:fixed;opacity:0;';
     document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
     try { document.execCommand('copy'); } catch(e) {}
     document.body.removeChild(tmp);
-    smartFlash('🎯 <b style="color:var(--accent);">' + escHtml(agent.name) + '</b> is de juiste — je vraag staat op je klembord. <a href="' + agent.url + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open agent →</a>', true);
+    smartFlash('🎯 <b style="color:var(--accent);">' + escHtml(agent.name) + '</b> is de juiste — je vraag staat op je klembord: "' + escHtml(nettevraag) + '" <a href="' + agent.url + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open agent →</a>', true);
     inp.value = '';
   } catch(err) {
     smartFlash('⚠ Router mislukt: ' + err.message);
