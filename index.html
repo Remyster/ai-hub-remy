@@ -1887,6 +1887,7 @@ header h1 {
       <button class="pb-type" data-type="code">💻 Code</button>
       <button class="pb-type" data-type="analyse">🔬 Analyse</button>
       <button class="pb-type" data-type="roleplay">🎭 Roleplay</button>
+      <button class="pb-type" data-type="leren">🎓 Leren</button>
     </div>
     <div id="pb-type-hint" style="font-size:0.68em;color:#cc785c;background:rgba(204,120,92,0.07);border:1px solid rgba(204,120,92,0.18);border-radius:8px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
 
@@ -1915,6 +1916,13 @@ header h1 {
         <button class="pb-again" onclick="generatePrompt()">↻ Andere versie</button>
         <button class="pb-copy" style="background:rgba(56,189,248,0.12);border-color:rgba(56,189,248,0.28);color:#38bdf8;" onclick="pblibSaveCurrentPrompt()">💾 Bewaar</button>
         <button id="pb-send-council" class="pb-copy" style="display:none;background:rgba(251,191,36,0.14);border-color:rgba(251,191,36,0.3);color:#fbbf24;" onclick="pbSendToCouncil()">🏛️ Stuur naar Council</button>
+      </div>
+      <div style="font-size:0.6em;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-top:12px;margin-bottom:6px;">Niet helemaal goed? Verfijn 'm</div>
+      <div class="pb-actions" id="pb-refine-actions">
+        <button class="pb-copy" onclick="pbRefine('korter')">✂️ Korter</button>
+        <button class="pb-copy" onclick="pbRefine('specifieker')">🔍 Specifieker</button>
+        <button class="pb-copy" onclick="pbRefine('voorbeeld')">💡 +Voorbeeld</button>
+        <button class="pb-copy" onclick="pbRefine('stappen')">🪜 In stappen</button>
       </div>
     </div>
 
@@ -2677,6 +2685,7 @@ header h1 {
     </div>
     <div id="ssp-dots" style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;"></div>
     <div id="ssp-prompt-block">
+    <div id="ssp-prevsrc-status" style="display:none;font-size:0.66em;padding:7px 10px;border-radius:8px;margin-bottom:8px;line-height:1.5;"></div>
     <div style="margin-bottom:10px;">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
         <span style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;flex:1;">Prompt — aanpasbaar, kopieer en plak in de AI</span>
@@ -2733,7 +2742,7 @@ const SSP_PIPELINES = {
       { label: 'Stap 10 van 13 \u2014 StekkerPen: Verwerk commentaar', aiLabel: 'Claude StekkerPen', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf', driveButton: true, prevSources: [{ stepIdx: 7, placeholder: '[PLAK HIER DE BLOG UIT STAP 8]' }, { stepIdx: 8, placeholder: '[PLAK HIER ALLE COMMENTAREN UIT STAP 9]', isMulti: true }], prompt: "# STEKKERSLIM BLOG PIPELINE\n# STAP 10 VAN 13 — CLAUDE: VERWERK COMMENTAAR + VERBETERDE BLOG\n\n## VERIFICATIEPLICHT — GEEN BESTANDSNAMEN OF LINKS UIT GEHEUGEN\n\nVoordat je een bestandsnaam, interne link of pad in je output gebruikt, haal je die op.\n\nHoe je verifieert, in deze volgorde:\n1. GitHub-connector: github.com/Remyster/stekkerslim (als die aanstaat)\n2. De live site: https://stekkerslim.nl/[bestandsnaam]\n3. Raw-URL: https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestandsnaam]\n\nVastliggende namen — deze zijn geverifieerd en veranderen niet:\n- OG-afbeelding: og-image.png (MET streepje)\n- Canonical: https://stekkerslim.nl/[slug].html\n\nHarde regels:\n- Lukt geen van deze drie? Schrijf dan letterlijk \"NIET GEVERIFIEERD — Remy controleren\"\n  achter die link. Schrijf NOOIT \"BESTAAT\" op basis van een kennisbankbestand,\n  een eerdere pipeline-stap of omdat de naam logisch klinkt.\n  Een Google-zoeklink (google.com/search?q=...) is GEEN geverifieerde link en mag\n  nooit als URL in de output staan.\n- Zeg nooit dat je iets hebt gecontroleerd als je dat niet echt hebt gedaan.\n  Een link die logisch klinkt is geen bestaande link.\n- Lukt geen enkele bron? Meld dat expliciet en gebruik alleen links die al in de\n  vorige pipeline-stap als geverifieerd zijn doorgegeven.\n\nRapporteer onderaan je antwoord kort:\n- Geverifieerde links: [lijst]\n- Niet te verifieren: [lijst, met reden]\n\n---\n\n## ROL\n\nJe bent Claude, eindredacteur van StekkerSlim.nl.\n\n---\n\n## CONTEXT\n\nJe hebt in stap 8 een volledige HTML-blog geschreven. Die blog is in stap 9 door meerdere AI's beoordeeld. Je krijgt nu alle commentaren binnen en verwerkt die tot een verbeterde versie.\n\n---\n\n## BESTANDSVERIFICATIE\nVoeg je een interne link toe die nog niet in de blog stond? Haal die eerst op via\nhttps://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestand].html\nKrijg je een 404, gebruik de link dan niet. og-image.png is MET streepje.\nNeem een reviewer nooit op zijn woord over een bestandsnaam — controleer zelf.\n\n## WERKWIJZE\n\n1. Lees alle commentaren zorgvuldig\n2. Beslis per punt of je het verwerkt of niet — en noteer waarom\n3. Pas de blog aan op basis van wat logisch, correct en in lijn is met StekkerSlim\n4. Lever een volledig bijgewerkte HTML-blog op\n\n**Wat je altijd verwerkt:**\n- Feitelijke fouten of niet-verifieerbare claims\n- Toon die klinkt als AI of als marketingtekst\n- Ontbrekende interne links naar logische StekkerSlim-pagina's\n- Verkeerd geplaatste of ontbrekende affiliate links\n- Title/meta die te lang zijn of het zoekwoord missen\n\n**Wat je kritisch beoordeelt:**\n- Structuursuggesties — alleen verwerken als ze de lezer echt helpen\n- Woordkeuze-suggesties — alleen als ze de tekst eerlijker of duidelijker maken\n- Extra secties — alleen toevoegen als ze relevant zijn voor de doelgroep\n\n**Wat je negeert:**\n- Suggesties die de toon formeler of meer als een brochure maken\n- Suggesties die Product/Offer/price aan schema toevoegen — StekkerSlim is geen webshop\n- Suggesties die de blog langer maken zonder toegevoegde waarde\n- Tegenstrijdige suggesties van verschillende AI's — kies de logischste\n\n---\n\n## OUTPUT FORMAT\n\nBegin verplicht met:\n\n```\nCHANGELOG STAP 10\n- Verwerkt: [per punt kort wat je gedaan hebt]\n- Niet verwerkt: [per punt wat je hebt overgeslagen en waarom]\n- Resterende controlepunten voor Remy: [feiten/prijzen die handmatig gecheckt moeten worden]\n```\n\nDaarna direct de volledig bijgewerkte HTML-blog.\n\n---\n\n## REGELS\n\n- Geen nieuwe ongecontroleerde feiten toevoegen\n- Toon blijft nuchter en direct — geen promotietaal\n- Alle interne links zijn bestaande stekkerslim.nl-pagina's (geen verzinsels)\n- JSON-LD schema: alleen Article + BreadcrumbList + FAQPage — nooit Product/Offer/price\n- Affiliate links altijd met `rel=\"noopener sponsored\"`\n\n---\n\n## INPUT\n\nPlak hieronder eerst de originele blog uit stap 8, dan alle commentaren uit stap 9:\n\n**ORIGINELE BLOG:**\n[PLAK HIER DE BLOG UIT STAP 8]\n\n**COMMENTAREN:**\n[PLAK HIER ALLE COMMENTAREN UIT STAP 9]\n\n---\n\n*StekkerSlim Blog Pipeline — Stap 10 van 11 — Claude revisie*" },
       { label: 'Stap 11 van 13 \u2014 Alle AI\u2019s: Finaal oordeel', multiAI: true, ais: MULTI_AIS, prevSources: [{ stepIdx: 9, placeholder: '[PLAK HIER DE DEFINITIEVE BLOG UIT STAP 10]' }], prompt: "# STEKKERSLIM BLOG PIPELINE\n# STAP 11 VAN 13 — ALLE AI's: FINAAL EINDOORDEEL\n\n---\n\n## ROL\n\nJe bent een laatste kwaliteitscheck voor StekkerSlim.nl-content voordat Remy publiceert.\n\n---\n\n## CONTEXT\n\nDit is de definitieve versie van de blog na twee rondes schrijven en revisie. Remy publiceert dit op een statische HTML-site (GitHub Pages). Jouw taak is niet om de blog opnieuw te herschrijven, maar om een eerlijk eindoordeel te geven.\n\n---\n\n## JOUW TAAK\n\nGeef een helder eindoordeel op deze 5 punten. Wees kort en direct — geen lange uitleg, alleen wat er toe doet.\n\n**1. Publiceerbaar? Ja / Nee / Ja met kleine fix**\nGeef één van deze drie antwoorden en motiveer in maximaal 2 zinnen.\n\n**2. Fatale fouten (blokkers)**\nIs er iets wat absoluut niet gepubliceerd kan worden? Denk aan: aantoonbaar onjuiste claim, misleidende belofte over besparing, kapotte link, ontbrekende canonical tag, verkeerde schema.\nAntwoord: geen / ja → dan exact wat en waar.\n\n**3. Laatste verbeterpuntjes (optioneel)**\nMaximaal 3 kleine dingen die beter kunnen maar geen blokker zijn. Per punt: één zin wat en waarom.\n\n**4. Sterkste element**\nWat maakt deze blog goed voor de doelgroep van StekkerSlim? Één concrete reden.\n\n**5. Zwakste element**\nWat is het minste van dit artikel? Één concrete reden — geen algemeenheden.\n\n---\n\n## WAT NIET HOEFT\n\n- Geen herschrijven\n- Geen volledige SEO-analyse\n- Geen herhaling van wat al beoordeeld is in stap 9\n- Geen complimenten zonder onderbouwing\n- Geen suggesties die Product/Offer/price aan schema toevoegen — StekkerSlim is een doorverwijssite, geen webshop\n\n---\n\n## HARDE REGELS TEGEN VERZINSELS\n\n- Noem je een bestandsnaam in verbeterpunten of bronnen? Bevestig eerst dat die pagina\n  daadwerkelijk bestaat op stekkerslim.nl. Noem nooit een paginanaam die je alleen\n  herinnert uit eerdere brainstormstappen.\n- Gebruik platte, leesbare bronvermeldingen. Geen interne citatie-tags zoals [cite: 1, 3].\n- HTML-entities (&oacute; &uuml; &eacute;) zijn correct, geen fout.\n\n---\n\n## INPUT\n\nPlak hieronder de definitieve HTML-blog uit stap 10:\n\n[PLAK HIER DE DEFINITIEVE BLOG UIT STAP 10]\n\n---\n\n*StekkerSlim Blog Pipeline — Stap 11 van 13 — Finale kwaliteitscheck*" },
       { label: 'Stap 12 van 13 \u2014 StekkerPen: Finale HTML', aiLabel: 'Claude StekkerPen', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf', prevSources: [{ stepIdx: 9, placeholder: '[PLAK HIER DE BLOG UIT STAP 10]' }, { stepIdx: 10, placeholder: '[PLAK HIER ALLE EINDOORDELEN UIT STAP 11]', isMulti: true }], prompt: "STEKKERSLIM BLOG PIPELINE\nSTAP 12 VAN 13 — CLAUDE (StekkerPen): FINALE HTML\n\n## VERIFICATIEPLICHT — GEEN BESTANDSNAMEN OF LINKS UIT GEHEUGEN\n\nVoordat je een bestandsnaam, interne link of pad in je output gebruikt, haal je die op.\n\nHoe je verifieert, in deze volgorde:\n1. GitHub-connector: github.com/Remyster/stekkerslim (als die aanstaat)\n2. De live site: https://stekkerslim.nl/[bestandsnaam]\n3. Raw-URL: https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestandsnaam]\n\nVastliggende namen — deze zijn geverifieerd en veranderen niet:\n- OG-afbeelding: og-image.png (MET streepje)\n- Canonical: https://stekkerslim.nl/[slug].html\n\nHarde regels:\n- Lukt geen van deze drie? Schrijf dan letterlijk \"NIET GEVERIFIEERD — Remy controleren\"\n  achter die link. Schrijf NOOIT \"BESTAAT\" op basis van een kennisbankbestand,\n  een eerdere pipeline-stap of omdat de naam logisch klinkt.\n  Een Google-zoeklink (google.com/search?q=...) is GEEN geverifieerde link en mag\n  nooit als URL in de output staan.\n- Zeg nooit dat je iets hebt gecontroleerd als je dat niet echt hebt gedaan.\n  Een link die logisch klinkt is geen bestaande link.\n- Lukt geen enkele bron? Meld dat expliciet en gebruik alleen links die al in de\n  vorige pipeline-stap als geverifieerd zijn doorgegeven.\n\nRapporteer onderaan je antwoord kort:\n- Geverifieerde links: [lijst]\n- Niet te verifieren: [lijst, met reden]\n\nKENNISBANK (verplicht, altijd als eerste actie):\nHaal affiliate-regels.md op via\nhttps://raw.githubusercontent.com/Remyster/stekkerslim/main/Kennisbank/affiliate-regels.md\nter laatste controle op de schema-regels.\n\nROL\nJe bent Claude (StekkerPen), eindredacteur van StekkerSlim.nl.\n\nDOEL\nLever de definitieve, publicatieklare HTML op basis van stap 10 + eindoordelen stap 11.\n\n## BESTANDSVERIFICATIE — VERPLICHT VOOR JE SCHRIJFT\n\nElke bestandsnaam en interne link die je gebruikt moet je eerst ophalen.\nNiet uit geheugen, niet uit een eerdere stap, niet uit CLAUDE.md.\n\nOphalen doe je zo:\n- Interne pagina: https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestand].html\n- Afbeelding of asset: zelfde pad met de exacte bestandsnaam\n\nBekend en vastgelegd (niet zelf aanpassen):\n- og-image.png  — MET streepje. Dit is geverifieerd. Schrijf nooit ogimage.png.\n\nRegels:\n- Krijg je een 404 of kun je het bestand niet ophalen, gebruik die link dan NIET.\n  Meld hem in plaats daarvan onderaan onder \"Niet geverifieerd\".\n- Een link die logisch klinkt is geen bestaande link. Een naam uit een brainstorm\n  van stap 1 is geen bestaande pagina.\n- Spreekt een eerdere stap of een instructiebestand een opgehaalde bestandsnaam\n  tegen? Dan wint wat je zelf hebt opgehaald.\n\nSluit je antwoord af met:\n\n## GEVERIFIEERDE LINKS\n| Link | Status |\n|---|---|\n| [bestand].html | bestaat / 404 / niet kunnen ophalen |\n\nWERKWIJZE\n1. Neem de bijgewerkte blog uit stap 10 als basis\n2. Verwerk alleen punten uit stap 11 die:\n   - Aantoonbare feitelijke fouten oplossen\n   - Technische issues fixen (canonical, schema, meta, kapotte links)\n   - Leesbaarheid verbeteren zonder de blog langer te maken\n3. Negeer wat al verwerkt is in stap 10 of strijdig is met het affiliate-model\n\nCONTROLE VOOR OPLEVEREN\n- Exact ÉÉN <div class=\"page-hero\"> en ÉÉN <h1>\n- Canonical tag aanwezig\n- OG-tags: og:title, og:description, og:image=og-image.png (MET streepje)\n- JSON-LD: alleen Article + BreadcrumbList + FAQPage — NOOIT Product/Offer/price\n- Affiliate links: altijd rel=\"noopener sponsored\"\n- Alle interne links wijzen naar bestaande stekkerslim.nl-pagina's\n\nOUTPUT FORMAT — STRIKT\nRegel 1: BESTANDSNAAM: [slug, kleine letters, a-z 0-9 en koppeltekens, max 50 tekens, GEEN .html]\nDaarna: de volledige HTML en niets anders — geen uitleg, geen markdown, geen codeblokken\n\nLever de HTML ook als downloadbaar .html-bestand zodat het als bijlage door kan naar stap 13.\n\nINPUT BLOG (stap 10):\n[PLAK HIER DE BLOG UIT STAP 10]\n\nEINDOORDELEN (stap 11):\n[PLAK HIER ALLE EINDOORDELEN UIT STAP 11]" },
-      { label: 'Stap 13 van 13 \u2014 Stekkerslim Bouwen: Publicatiecheck', aiLabel: 'Stekkerslim Bouwen', url: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1', driveUrl: 'https://drive.google.com/drive/folders/1HASk0JMB27Ja7_MbjbWr4cm7dUAuzIw6', prevSources: [{ stepIdx: 11, placeholder: '[PLAK HIER DE FINALE HTML UIT STAP 12]' }], prompt: "STEKKERSLIM BLOG PIPELINE\nSTAP 13 VAN 13 — STEKKERSLIM BOUWEN: PUBLICATIECHECK + KENNISBANK BIJWERKEN\n\n## VERIFICATIEPLICHT — GEEN BESTANDSNAMEN OF LINKS UIT GEHEUGEN\n\nVoordat je een bestandsnaam, interne link of pad in je output gebruikt, haal je die op.\n\nHoe je verifieert, in deze volgorde:\n1. GitHub-connector: github.com/Remyster/stekkerslim (als die aanstaat)\n2. De live site: https://stekkerslim.nl/[bestandsnaam]\n3. Raw-URL: https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestandsnaam]\n\nVastliggende namen — deze zijn geverifieerd en veranderen niet:\n- OG-afbeelding: og-image.png (MET streepje)\n- Canonical: https://stekkerslim.nl/[slug].html\n\nHarde regels:\n- Lukt geen van deze drie? Schrijf dan letterlijk \"NIET GEVERIFIEERD — Remy controleren\"\n  achter die link. Schrijf NOOIT \"BESTAAT\" op basis van een kennisbankbestand,\n  een eerdere pipeline-stap of omdat de naam logisch klinkt.\n  Een Google-zoeklink (google.com/search?q=...) is GEEN geverifieerde link en mag\n  nooit als URL in de output staan.\n- Zeg nooit dat je iets hebt gecontroleerd als je dat niet echt hebt gedaan.\n  Een link die logisch klinkt is geen bestaande link.\n- Lukt geen enkele bron? Meld dat expliciet en gebruik alleen links die al in de\n  vorige pipeline-stap als geverifieerd zijn doorgegeven.\n\nRapporteer onderaan je antwoord kort:\n- Geverifieerde links: [lijst]\n- Niet te verifieren: [lijst, met reden]\n\nROL\nJe bent Stekkerslim Bouwen — de technische poortwachter vóór publicatie.\nJij hebt toegang tot GitHub én Google Drive. Gebruik die.\n\nDEEL 1 — PUBLICATIECHECK\n\nControleer de HTML uit stap 12 tegen de echte repo:\n1. Bestaat elke interne link daadwerkelijk als bestand in github.com/Remyster/stekkerslim?\n   Haal elke link echt op via\n   https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestand].html\n   Noem per link: BESTAAT / 404 / NIET KUNNEN OPHALEN.\n   Baseer dit nooit op geheugen of op wat een eerdere stap beweerde.\n2. Exact één <div class=\"page-hero\"> en één <h1>? (meer = blokker)\n3. Canonical correct en uniek?\n4. OG-image verwijst naar og-image.png (MET streepje)?\n5. JSON-LD bevat alleen Article / BreadcrumbList / FAQPage — geen Product/Offer/price?\n6. Alle affiliate links hebben rel=\"noopener sponsored\"?\n7. Nav en footer identiek aan de rest van de site?\n8. Slug conflicteert niet met een bestaand bestand?\n\nOORDEEL\n- ONLINE: ja / nee / ja na fix\n- Blokkers: exact wat en waar\n- Als er fixes nodig zijn: lever de volledige gecorrigeerde HTML\n\nDEEL 2 — KENNISBANK BIJWERKEN (alleen bij ONLINE = ja)\n\nWerk in Google Drive map \"StekkerSlim Kennisbank\" het bestand blogs-gepubliceerd.md bij.\nVoeg bovenaan de lijst toe:\n\n## [Titel van de blog]\n- **Slug:** [bestandsnaam].html\n- **URL:** https://stekkerslim.nl/[bestandsnaam].html\n- **Gepubliceerd:** [datum van vandaag]\n- **Primair zoekwoord:** [hoofdzoekwoord]\n- **Onderwerp:** [1 zin waar de blog over gaat]\n- **Interne links uit:** [lijst URLs waar deze blog naar linkt]\n- **Gewenste links in:** [pagina's die naar deze blog zouden moeten linken]\n- **Affiliate partners:** [welke partners/producten]\n- **Laatste feitcheck:** [datum van vandaag]\n\nHaal daarnaast de regel voor deze blog weg uit blogs-in-progress.md als die er staat.\n\nBevestig expliciet welke bestanden je hebt bijgewerkt.\n\nDEEL 3 — WAT REMY NOG MOET DOEN\n\nGeef een korte checklist:\n- [ ] HTML-bestand naar GitHub repo pushen\n- [ ] Toevoegen aan sitemap.xml\n- [ ] Toevoegen aan blog.html overzicht\n- [ ] Interne links terugplaatsen vanuit de genoemde pagina's\n- [ ] Search Console: sitemap resubmit + URL-inspectie\n- [ ] Affiliate links testen\n(GitHub Action synct de Drive-kennisbank automatisch terug naar de repo)\n\nINPUT — HTML UIT STAP 12:\n[PLAK HIER DE FINALE HTML UIT STAP 12]" }
+      { label: 'Stap 13 van 13 \u2014 Stekkerslim Bouwen: Publicatiecheck', aiLabel: 'Stekkerslim Bouwen', url: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1', prevSources: [{ stepIdx: 11, placeholder: '[PLAK HIER DE FINALE HTML UIT STAP 12]' }], prompt: "STEKKERSLIM BLOG PIPELINE\nSTAP 13 VAN 13 — STEKKERSLIM BOUWEN: PUBLICATIECHECK + KENNISBANK BIJWERKEN\n\n## VERIFICATIEPLICHT — GEEN BESTANDSNAMEN OF LINKS UIT GEHEUGEN\n\nVoordat je een bestandsnaam, interne link of pad in je output gebruikt, haal je die op.\n\nHoe je verifieert, in deze volgorde:\n1. GitHub-connector: github.com/Remyster/stekkerslim (als die aanstaat)\n2. De live site: https://stekkerslim.nl/[bestandsnaam]\n3. Raw-URL: https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestandsnaam]\n\nVastliggende namen — deze zijn geverifieerd en veranderen niet:\n- OG-afbeelding: og-image.png (MET streepje)\n- Canonical: https://stekkerslim.nl/[slug].html\n\nHarde regels:\n- Lukt geen van deze drie? Schrijf dan letterlijk \"NIET GEVERIFIEERD — Remy controleren\"\n  achter die link. Schrijf NOOIT \"BESTAAT\" op basis van een kennisbankbestand,\n  een eerdere pipeline-stap of omdat de naam logisch klinkt.\n  Een Google-zoeklink (google.com/search?q=...) is GEEN geverifieerde link en mag\n  nooit als URL in de output staan.\n- Zeg nooit dat je iets hebt gecontroleerd als je dat niet echt hebt gedaan.\n  Een link die logisch klinkt is geen bestaande link.\n- Lukt geen enkele bron? Meld dat expliciet en gebruik alleen links die al in de\n  vorige pipeline-stap als geverifieerd zijn doorgegeven.\n\nRapporteer onderaan je antwoord kort:\n- Geverifieerde links: [lijst]\n- Niet te verifieren: [lijst, met reden]\n\nROL\nJe bent Stekkerslim Bouwen — de technische poortwachter vóór publicatie.\nJij hebt toegang tot GitHub én Google Drive. Gebruik die.\n\nDEEL 1 — PUBLICATIECHECK\n\nControleer de HTML uit stap 12 tegen de echte repo:\n1. Bestaat elke interne link daadwerkelijk als bestand in github.com/Remyster/stekkerslim?\n   Haal elke link echt op via\n   https://raw.githubusercontent.com/Remyster/stekkerslim/main/[bestand].html\n   Noem per link: BESTAAT / 404 / NIET KUNNEN OPHALEN.\n   Baseer dit nooit op geheugen of op wat een eerdere stap beweerde.\n2. Exact één <div class=\"page-hero\"> en één <h1>? (meer = blokker)\n3. Canonical correct en uniek?\n4. OG-image verwijst naar og-image.png (MET streepje)?\n5. JSON-LD bevat alleen Article / BreadcrumbList / FAQPage — geen Product/Offer/price?\n6. Alle affiliate links hebben rel=\"noopener sponsored\"?\n7. Nav en footer identiek aan de rest van de site?\n8. Slug conflicteert niet met een bestaand bestand?\n\nOORDEEL\n- ONLINE: ja / nee / ja na fix\n- Blokkers: exact wat en waar\n- Als er fixes nodig zijn: lever de volledige gecorrigeerde HTML\n\nDEEL 2 — KENNISBANK BIJWERKEN (alleen bij ONLINE = ja)\n\nWerk in Google Drive map \"StekkerSlim Kennisbank\" het bestand blogs-gepubliceerd.md bij.\nVoeg bovenaan de lijst toe:\n\n## [Titel van de blog]\n- **Slug:** [bestandsnaam].html\n- **URL:** https://stekkerslim.nl/[bestandsnaam].html\n- **Gepubliceerd:** [datum van vandaag]\n- **Primair zoekwoord:** [hoofdzoekwoord]\n- **Onderwerp:** [1 zin waar de blog over gaat]\n- **Interne links uit:** [lijst URLs waar deze blog naar linkt]\n- **Gewenste links in:** [pagina's die naar deze blog zouden moeten linken]\n- **Affiliate partners:** [welke partners/producten]\n- **Laatste feitcheck:** [datum van vandaag]\n\nHaal daarnaast de regel voor deze blog weg uit blogs-in-progress.md als die er staat.\n\nBevestig expliciet welke bestanden je hebt bijgewerkt.\n\nDEEL 3 — WAT REMY NOG MOET DOEN\n\nGeef een korte checklist:\n- [ ] HTML-bestand naar GitHub repo pushen\n- [ ] Toevoegen aan sitemap.xml\n- [ ] Toevoegen aan blog.html overzicht\n- [ ] Interne links terugplaatsen vanuit de genoemde pagina's\n- [ ] Search Console: sitemap resubmit + URL-inspectie\n- [ ] Affiliate links testen\n(GitHub Action synct de Drive-kennisbank automatisch terug naar de repo)\n\nINPUT — HTML UIT STAP 12:\n[PLAK HIER DE FINALE HTML UIT STAP 12]" }
     ]
   },
   // ── SITE GUARDIAN PIPELINE ────────────────────────────────────
@@ -2784,11 +2793,15 @@ let sspStepIdx  = 0;
 function sspKey(p, i) { return 'ssp_' + p + '_' + i; }
 function sspMultiKey(p, i, k) { return 'ssp_' + p + '_' + i + '_' + k; }
 function sspDecode(t) { if (!t) return ''; try { return decodeURIComponent(t.replace(/\+/g,' ')); } catch(e) { return t; } }
-function sspStatus(msg, color) {
+let _sspStatusTimer = null;
+function sspStatus(msg, color, persist) {
   const el = document.getElementById('ssp-status');
   if (!el) return;
+  if (_sspStatusTimer) { clearTimeout(_sspStatusTimer); _sspStatusTimer = null; }
   el.style.color = color||'#10b981'; el.textContent = msg;
-  setTimeout(() => { if(el) el.textContent=''; }, 3200);
+  if (!persist) {
+    _sspStatusTimer = setTimeout(() => { if(el) el.textContent=''; _sspStatusTimer=null; }, 3200);
+  }
 }
 
 // ═══════ PROMPT BUILDER ═══════
@@ -2833,6 +2846,41 @@ function sspGetPrompt(p, idx) {
   return sspAddSelfCheck(prompt);
 }
 
+// Laat zien hoeveel van de AI-antwoorden uit een multi-AI stap er daadwerkelijk
+// in de huidige prompt zijn meegenomen — anders is bij bijv. 4 AI's in stap 9
+// niet te zien of alle 4 zijn opgeslagen vóórdat je door naar stap 10 gaat.
+function sspPrevSourcesSummary(p, idx) {
+  const step = SSP_PIPELINES[p].steps[idx];
+  const items = [];
+  const check = (stepIdx) => {
+    const srcStep = SSP_PIPELINES[p].steps[stepIdx];
+    if (!srcStep || !srcStep.multiAI) return;
+    const missing = srcStep.ais.filter(ai => !localStorage.getItem(sspMultiKey(p, stepIdx, ai.key)));
+    items.push({ stepIdx, total: srcStep.ais.length, done: srcStep.ais.length - missing.length, missingLabels: missing.map(ai => ai.label) });
+  };
+  if (step.prevSources) step.prevSources.forEach(src => { if (src.isMulti) check(src.stepIdx); });
+  else if (step.hasPrev) check(idx - 1);
+  return items;
+}
+function sspRenderPrevSourceStatus(p, idx) {
+  const el = document.getElementById('ssp-prevsrc-status');
+  if (!el) return;
+  const items = sspPrevSourcesSummary(p, idx);
+  if (!items.length) { el.style.display = 'none'; return; }
+  const parts = items.map(it => {
+    const stapNr = it.stepIdx + 1;
+    if (it.done === it.total) return '✓ Alle ' + it.total + ' AI-antwoorden uit stap ' + stapNr + ' zitten in deze prompt.';
+    const werkwoord = it.missingLabels.length === 1 ? 'ontbreekt' : 'ontbreken';
+    return '⚠ ' + it.done + '/' + it.total + ' AI-antwoorden uit stap ' + stapNr + ' zitten in deze prompt — ' + it.missingLabels.join(', ') + ' ' + werkwoord + ' nog.';
+  });
+  const allDone = items.every(it => it.done === it.total);
+  el.style.display = '';
+  el.style.color = allDone ? '#10b981' : '#fbbf24';
+  el.style.background = allDone ? 'rgba(16,185,129,0.08)' : 'rgba(251,191,36,0.08)';
+  el.style.border = '1px solid ' + (allDone ? 'rgba(16,185,129,0.25)' : 'rgba(251,191,36,0.25)');
+  el.innerHTML = parts.join('<br>');
+}
+
 // ═══════ RENDER ═══════
 function sspRender() {
   const steps = SSP_PIPELINES[sspPipeline].steps;
@@ -2851,6 +2899,7 @@ function sspRender() {
   if (aiBtn) { const hide=step.multiAI; aiBtn.style.display = hide ? 'none' : ''; if(!hide) aiBtn.textContent = '\uD83D\uDD17 ' + step.aiLabel; }
   const promptEl = document.getElementById('ssp-prompt');
   if (promptEl) promptEl.value = sspGetPrompt(sspPipeline, sspStepIdx);
+  sspRenderPrevSourceStatus(sspPipeline, sspStepIdx);
   sspUpdateCharCount();
   const pblock = document.getElementById('ssp-prompt-block');
   if (pblock) pblock.style.display = step.promptPerAI ? 'none' : '';
@@ -2928,7 +2977,7 @@ function sspRenderOutputContainer(step) {
         + '<div style="display:flex;gap:6px;margin-top:7px;">'
         + '<button onclick="sspImportBestand('+i+')" style="padding:8px 10px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.28);border-radius:9px;color:#fbbf24;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;" title="Antwoord als artifact of bestand gekregen? Download het daar en kies het hier">&#128206;</button>'
         + '<button onclick="sspCleanupMulti('+i+')" style="padding:8px 10px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.28);border-radius:9px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>'
-        + '<button onclick="sspSaveMulti('+i+')" style="flex:1;padding:8px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.28);border-radius:9px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128190; Opslaan</button>'
+        + '<button id="ssp-save-btn-'+i+'" onclick="sspSaveMulti('+i+')" style="flex:1;padding:8px;background:rgba(56,189,248,0.1);border:1px solid rgba(56,189,248,0.28);border-radius:9px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128190; Opslaan</button>'
         + '<button onclick="sspDeleteMulti('+i+')" style="padding:8px 12px;background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:9px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.68em;cursor:pointer;">&#128465;</button>'
         + '</div></div>';
     });
@@ -2952,16 +3001,16 @@ function sspRenderOutputContainer(step) {
     const _isEdge=(sspStepIdx===0||sspStepIdx===_allSteps.length-1);
     const clearAllBtn='<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(251,146,60,0.1);border:1px solid rgba(251,146,60,0.3);border-radius:10px;color:#fb923c;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>';
     const archiveBtn=_isEdge?'<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>':'';
-    const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':''; const driveBtn=curStep.driveUrl?'<button onclick="sspOpenDrive()" style="flex:1;min-width:90px;padding:11px;background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:10px;color:#10b981;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128194; Open Drive-map</button>':'';
+    const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':'';
     c.innerHTML='<div style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:5px;">Antwoord van AI <span id="ssp-saved-badge" style="color:#10b981;font-size:0.9em;"></span></div>'
       +'<textarea id="ssp-output" placeholder="Plak hier het volledige antwoord van de AI..." style="width:100%;height:180px;background:rgba(255,255,255,0.03);border:1px solid rgba(56,189,248,0.22);border-radius:11px;color:var(--text);font-family:\'DM Mono\',monospace;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>'
       +'<div style="display:flex;gap:8px;margin-top:8px;margin-bottom:4px;flex-wrap:wrap;">'
       +'<button onclick="sspImportBestand(null)" style="flex:1;min-width:90px;padding:11px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:10px;color:#fbbf24;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Gaf de AI het antwoord als artifact of bestand? Download het daar en kies het hier — de inhoud komt in dit veld te staan">&#128206; Bestand</button>'
       +'<button onclick="sspCleanup()" style="flex:1;min-width:90px;padding:11px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.3);border-radius:10px;color:#a78bfa;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>'
-      +'<button onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
+      +'<button id="ssp-save-btn" onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.32);border-radius:10px;color:#38bdf8;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
       +'<button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>'
       +'<button onclick="sspDelete()" style="flex:1;min-width:90px;padding:11px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.22);border-radius:10px;color:#f87171;font-family:\'DM Mono\',monospace;font-size:0.72em;cursor:pointer;">&#128465; Verwijderen</button>'
-      +driveBtn+downloadBtn+clearAllBtn+archiveBtn+'</div>';
+      +downloadBtn+clearAllBtn+archiveBtn+'</div>';
     const ta=document.getElementById('ssp-output'); if(ta) ta.value=saved;
     const badge=document.getElementById('ssp-saved-badge'); if(badge) badge.textContent=saved?'\u2713 opgeslagen':'';
   }
@@ -2987,9 +3036,10 @@ async function sspCleanupText(rawText) {
 async function sspCleanup() {
   const ta = document.getElementById('ssp-output');
   if (!ta || !ta.value.trim()) { sspStatus('Niks om op te schonen.', '#fbbf24'); return; }
-  sspStatus('🧹 Opschonen…', '#38bdf8');
+  sspStatus('🧹 Opschonen…', '#38bdf8', true);
   try {
     ta.value = await sspCleanupText(ta.value.trim());
+    ta.dataset.sspOpgeschoond = ta.value;
     sspStatus('✓ Opgeschoond — controleer en klik daarna Opslaan.', '#10b981');
   } catch(e) {
     sspStatus('⚠ Opschonen mislukt: ' + e.message, '#f87171');
@@ -2998,9 +3048,10 @@ async function sspCleanup() {
 async function sspCleanupMulti(i) {
   const ta = document.getElementById('ssp-mout-' + i);
   if (!ta || !ta.value.trim()) { sspStatus('Niks om op te schonen.', '#fbbf24'); return; }
-  sspStatus('🧹 Opschonen…', '#38bdf8');
+  sspStatus('🧹 Opschonen…', '#38bdf8', true);
   try {
     ta.value = await sspCleanupText(ta.value.trim());
+    ta.dataset.sspOpgeschoond = ta.value;
     sspStatus('✓ Opgeschoond — controleer en klik daarna Opslaan.', '#10b981');
   } catch(e) {
     sspStatus('⚠ Opschonen mislukt: ' + e.message, '#f87171');
@@ -3241,8 +3292,7 @@ function sspDownloadGenHtml() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=filename+'.html';
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  sspStatus('\u2713 '+filename+'.html gedownload \u2014 Drive opent zo.','#7c7ff2');
-  setTimeout(() => window.open(SSP_PIPELINES[sspPipeline].steps[sspStepIdx].driveUrl,'_blank','noopener'), 800);
+  sspStatus('\u2713 '+filename+'.html gedownload.','#7c7ff2');
 }
 function sspCopyGenHtml() {
   const html = localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_html') || '';
@@ -3272,18 +3322,6 @@ function sspDownloadHtml() {
   const a=document.createElement('a'); a.href=url; a.download='stekkerslim-blog-final.html';
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   sspStatus('\u2713 .html bestand gedownload \u2014 hernoem naar de juiste slug en push naar GitHub.','#a78bfa');
-}
-function sspOpenDrive() {
-  const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
-  if (step && step.driveUrl) window.open(step.driveUrl, '_blank', 'noopener');
-}
-function sspCopyForDrive() {
-  const outEl=document.getElementById('ssp-output'); if(!outEl||!outEl.value.trim()) { sspStatus('\u26A0 Sla eerst op.','#f87171'); return; }
-  const tmp=document.createElement('textarea'); tmp.value=outEl.value.trim(); tmp.style.cssText='position:fixed;top:0;left:0;opacity:0;';
-  document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
-  try { document.execCommand('copy'); } catch(e) {}
-  document.body.removeChild(tmp);
-  sspStatus('\u2713 Gekopieerd! Plak in Google Drive \u2192 StekkerSlim map als nieuw doc.','#10b981');
 }
 function openStekkerSlimGuardian() { const el=document.getElementById('ssp-overlay'); if(el) { el.style.display='block'; sspRender(); } }
 function closeSSP() { const el=document.getElementById('ssp-overlay'); if(el) el.style.display='none'; }
@@ -5855,7 +5893,8 @@ const PB_TYPES = {
   beeld: 'Het gaat om beeldgeneratie (afbeeldingen, illustraties, foto-stijlen, Stable Diffusion, Midjourney, Imagen, etc.) — geef extra aandacht aan stijl, compositie, sfeer, lichtval, en technische parameters.',
   code: 'Het gaat om code schrijven of debuggen (geef aan welke taal, wat het moet doen, edge cases, gewenste structuur).',
   analyse: 'Het gaat om analyse (data interpreteren, conclusies trekken, vergelijken, beoordelen, voor- en nadelen).',
-  roleplay: 'Het gaat om roleplay of persona (de AI speelt een rol, karakter of expert — geef persona, stijl, grenzen en context).'
+  roleplay: 'Het gaat om roleplay of persona (de AI speelt een rol, karakter of expert — geef persona, stijl, grenzen en context).',
+  leren: 'Het gaat om iets zelf leren of onder de knie krijgen (een vaardigheid, een tool, een concept) — niet om de AI het meteen voor je te laten doen. Bouw de prompt volgens dit stappenpatroon: (1) benoem het einddoel in gewone taal, niet de technische methode; (2) vraag de AI om EERST de volledige routekaart/stappenlijst te geven zonder te beginnen; (3) vraag om daarna alleen stap 1 te tonen en te wachten tot de gebruiker die zelf heeft uitgevoerd voordat stap 2 volgt; (4) instrueer expliciet dat de AI de exacte handeling laat zien maar het de gebruiker zelf laat uitvoeren, niet het voor hem doet; (5) bouw in dat de gebruiker "klaar" kan zeggen om door te gaan of om herhaling kan vragen als iets onduidelijk is; (6) sluit af met een vraag om een kort onthoud-regeltje zodat de gebruiker het later zelf kan herhalen zonder de AI.'
 };
 
 let pbPlatform = 'claude';
@@ -5931,7 +5970,8 @@ const PB_TYPE_HINTS = {
   beeld:    '🎨 Beeld — voor AI-beeldgeneratie (Stable Diffusion, Midjourney, Imagen). De prompt builder voegt automatisch stijl, compositie, belichting en technische parameters toe.',
   code:     '💻 Code — voor code schrijven, debuggen of uitleggen. Geef de taal, wat het moet doen en eventuele edge cases — de builder structureert het als een heldere technische opdracht.',
   analyse:  '🔬 Analyse — voor data interpreteren, situaties beoordelen, vergelijken, voor- en nadelen afwegen of conclusies trekken uit tekst of cijfers.',
-  roleplay: '🎭 Roleplay — voor een persona, karakter of expert-rol. De AI speelt een specifieke rol; de builder definieert de persona, stijl, grenzen en context voor je.'
+  roleplay: '🎭 Roleplay — voor een persona, karakter of expert-rol. De AI speelt een specifieke rol; de builder definieert de persona, stijl, grenzen en context voor je.',
+  leren: '🎓 Leren — als je iets zelf wil snappen of kunnen, niet gewoon af wil laten maken. De builder bouwt een prompt die eerst de volledige routekaart laat zien, dan één stap tegelijk, waarbij jij de handeling zelf uitvoert en pas verdergaat als jij "klaar" zegt.'
 };
 document.querySelectorAll('.pb-type').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -5973,13 +6013,17 @@ ${platform.instructie}
 TYPE: ${typeContext}
 
 REGELS:
+- Bouw de prompt op langs dit vaste skelet, voor zover relevant (niet letterlijk als labels tonen, wel deze volgorde en volledigheid aanhouden): Rol (wie moet de AI zijn) → Context (achtergrond, doelgroep, randvoorwaarden) → Taak (concreet wat er moet gebeuren) → Format (hoe de output eruit moet zien) → Toon (stijl, optioneel)
 - Schrijf ALLEEN de geoptimaliseerde prompt zelf — geen uitleg, geen inleiding, geen afsluiting
 - De prompt moet direct kopieerbaar en bruikbaar zijn
 - Schrijf in het Nederlands tenzij het onderwerp specifiek om Engels vraagt
-- Maak de prompt concreet, specifiek en volledig
+- Maak de prompt concreet, specifiek en volledig — geen vage vraag zoals "help me met X", maar een opdracht met exacte aantallen (bijv. "20 hooks", "3 tiers", "40 items verdeeld over 3 fases") en een expliciete lijst van wat de output moet bevatten
+- Vraag altijd om een concreet eindformat (lijst, tabel, stappenplan, aantal secties) — laat de AI dat niet zelf verzinnen
+- Waar een deel van de prompt bij hergebruik telkens anders is (een onderwerp, product, doelgroep, URL), zet dat als placeholder tussen blokhaken in hoofdletters (bijv. [ONDERWERP], [PRODUCT], [DOELGROEP]) zodat de gebruiker de prompt later kan hergebruiken door alleen die placeholder te vervangen
 - Voeg relevante context toe die de gebruiker misschien vergeten is
 - Bij beeld: voeg altijd stijl, compositie en sfeer parameters toe
-- Bij code: voeg taalspecificatie en outputformat toe`;
+- Bij code: voeg taalspecificatie en outputformat toe
+- Bij leren: volg het stappenpatroon uit het TYPE-blok hierboven letterlijk, schrijf geen enkele-losse-taak-prompt`;
 
   const ctxText = ctxSelectedText();
   const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER (gebruik dit om de prompt persoonlijk en relevant te maken):\n${ctxText}\n\n` : '') +
@@ -6024,6 +6068,61 @@ REGELS:
     pbLoading = false;
     genBtn.disabled = false;
     genBtn.textContent = '✦ Genereer prompt';
+  }
+}
+
+// Verfijn-knoppen onder een gegenereerde prompt — bakt de "iterate"-stap uit de
+// Claude cheatsheets in als vaste knop, zodat die stap niet vergeten wordt.
+const PB_REFINE_INSTRUCTIES = {
+  korter:      'Maak deze prompt korter en compacter, zonder de kern te verliezen.',
+  specifieker: 'Maak deze prompt specifieker: voeg concrete aantallen, eisen aan de output en eventuele randvoorwaarden toe die nu nog ontbreken.',
+  voorbeeld:   'Voeg een concreet voorbeeld of few-shot voorbeeld toe aan deze prompt, zodat de AI precies ziet wat voor soort antwoord gewenst is.',
+  stappen:     'Herschrijf deze prompt zodat de AI expliciet stap voor stap te werk gaat (denk hardop, redeneer eerst, geef dan pas het antwoord).'
+};
+async function pbRefine(soort) {
+  const ta = document.getElementById('pb-output');
+  const huidig = ta.value.trim();
+  if (!huidig) return;
+  const instructie = PB_REFINE_INSTRUCTIES[soort];
+  if (!instructie) return;
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  const wrap = document.getElementById('pb-refine-actions');
+  const btns = wrap.querySelectorAll('button');
+  btns.forEach(b => b.disabled = true);
+  const target = event && event.target;
+  const origHtml = target ? target.innerHTML : null;
+  if (target) target.innerHTML = '⏳...';
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        system: 'Je krijgt een bestaande prompt. Pas hem aan volgens de instructie. Geef ALLEEN de aangepaste prompt terug, geen uitleg, geen aanhalingstekens eromheen.',
+        messages: [{ role: 'user', content: `PROMPT:\n${huidig}\n\nINSTRUCTIE: ${instructie}` }]
+      })
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'API fout'}`);
+    }
+    const data = await res.json();
+    const output = data.content?.[0]?.text?.trim() || '';
+    if (output) ta.value = output;
+  } catch(e) {
+    const errEl = document.getElementById('pb-error');
+    errEl.textContent = '❌ Verfijnen mislukt: ' + (e.message || 'onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    btns.forEach(b => b.disabled = false);
+    if (target) target.innerHTML = origHtml;
   }
 }
 
@@ -6130,6 +6229,11 @@ async function generateMultiPrompt(ruwIdee) {
       const systeemPrompt = `Je bent een expert prompt engineer. Schrijf een perfecte, direct bruikbare prompt geoptimaliseerd voor ${platform.naam}. Type taak: ${typeOmschrijving}
 
 ${platform.instructie}
+
+REGELS:
+- Maak de prompt concreet en specifiek: exacte aantallen (bijv. "20 hooks", "3 tiers") en een expliciete lijst van wat de output moet bevatten, geen vage vraag
+- Vraag om een concreet eindformat (lijst, tabel, stappenplan)
+- Herbruikbare delen (onderwerp, product, doelgroep, URL) als placeholder tussen blokhaken in hoofdletters, bijv. [ONDERWERP]
 
 Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens eromheen.`;
       const ctxText = ctxSelectedText();
@@ -6286,8 +6390,9 @@ function sspAutoCleanReden(t) {
 async function sspAutoCleanVeld(ta) {
   const ruw = ta ? ta.value.trim() : '';
   const reden = sspAutoCleanReden(ruw);
+  if (reden === 'lang' && ta && ta.dataset.sspOpgeschoond === ta.value) return 'lang-al-schoon';
   if (reden) return reden;
-  sspStatus('🧹 Automatisch opschonen…', '#38bdf8');
+  sspStatus('🧹 Bezig met automatisch opschonen…', '#38bdf8', true);
   try {
     const schoon = (await sspCleanupText(ruw) || '').trim();
     if (!schoon) return 'mislukt';
@@ -6302,23 +6407,39 @@ function sspAutoCleanStatus(reden) {
   if (reden === 'opgeschoond') sspStatus('✓ Opgeslagen en automatisch opgeschoond.', '#10b981');
   else if (reden === 'html')    sspStatus('✓ Opgeslagen — HTML ongewijzigd gelaten, niet opgeschoond.', '#10b981');
   else if (reden === 'lang')    sspStatus('✓ Opgeslagen — te lang om automatisch op te schonen, gebruik 🧹 zelf.', '#fbbf24');
+  else if (reden === 'lang-al-schoon') sspStatus('✓ Opgeslagen — al handmatig opgeschoond.', '#10b981');
   else if (reden === 'mislukt') sspStatus('✓ Opgeslagen — opschonen lukte niet, ruwe antwoord bewaard.', '#fbbf24');
 }
 // Om de cloud-sync heen wrappen (niet eronder), zodat Supabase de opgeschoonde
 // tekst krijgt en niet de ruwe versie.
+function sspZetKnopBezig(btn) {
+  if (!btn || btn.disabled) return null;
+  const origHtml = btn.innerHTML, origCursor = btn.style.cursor;
+  btn.disabled = true;
+  btn.style.cursor = 'wait';
+  btn.style.opacity = '0.65';
+  btn.innerHTML = '&#8987; Bezig…';
+  return () => { btn.disabled = false; btn.style.cursor = origCursor; btn.style.opacity = ''; btn.innerHTML = origHtml; };
+}
 const _sspSaveVoorAutoClean = sspSave;
 sspSave = async function() {
   const ta = document.getElementById('ssp-output');
-  const reden = await sspAutoCleanVeld(ta);
-  _sspSaveVoorAutoClean();
-  sspAutoCleanStatus(reden);
+  const herstel = sspZetKnopBezig(document.getElementById('ssp-save-btn'));
+  try {
+    const reden = await sspAutoCleanVeld(ta);
+    _sspSaveVoorAutoClean();
+    sspAutoCleanStatus(reden);
+  } finally { if (herstel) herstel(); }
 };
 const _sspSaveMultiVoorAutoClean = sspSaveMulti;
 sspSaveMulti = async function(i) {
   const ta = document.getElementById('ssp-mout-' + i);
-  const reden = await sspAutoCleanVeld(ta);
-  _sspSaveMultiVoorAutoClean(i);
-  sspAutoCleanStatus(reden);
+  const herstel = sspZetKnopBezig(document.getElementById('ssp-save-btn-' + i));
+  try {
+    const reden = await sspAutoCleanVeld(ta);
+    _sspSaveMultiVoorAutoClean(i);
+    sspAutoCleanStatus(reden);
+  } finally { if (herstel) herstel(); }
 };
 
 // Cloud state laden bij openen pipeline
