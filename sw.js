@@ -3,13 +3,14 @@
 // Cache-strategie: network-first voor index.html (altijd nieuwste proberen),
 // met fallback naar cache zodra er geen verbinding is. Icons/manifest: cache-first.
 
-const CACHE_NAAM = 'ai-hub-v1';
+const CACHE_NAAM = 'ai-hub-v2';
 const CACHE_BESTANDEN = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './icon-maskable-512.png'
 ];
 
 self.addEventListener('install', (event) => {

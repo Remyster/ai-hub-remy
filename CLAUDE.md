@@ -1,5 +1,5 @@
 # Remy's AI Hub — Project Overzicht
-*Laatst bijgewerkt: 20 augustus 2026*
+*Laatst bijgewerkt: 3 september 2026*
 
 ## Wat is dit?
 Persoonlijk AI dashboard als single-page application (SPA) in één `index.html` bestand (~390KB). Draait via GitHub Pages op `remyster.github.io/ai-hub-remy/`. Geen framework, geen build-stap.
@@ -447,6 +447,52 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 ---
 
 ## Changelog
+
+### 3 september 2026 (deel 2)
+- **Prompt Builder: gegenereerde prompt werd afgekapt.** `max_tokens: 800` op alle drie
+  de Claude-calls (genereren, verfijnen, multi-platform) was te laag zodra de prompt de
+  regels uit de systeemprompt zelf volgde (exacte aantallen, meerdere secties,
+  placeholders) — Claude stopte dan midden in een zin. Verhoogd naar `2500` op alle drie.
+  Los daarvan ook de invoer-textarea (`#pb-input`) van 100px naar 180px min-height gezet.
+- **Route-knop stuurde privé/actuele vragen naar StekkerDesk.** `agentRoute()` (smart
+  bar, "Route") koos altijd uit `ROUTER_AGENTS` — 7 StekkerSlim/PWN-werkprojecten — ook
+  als de vraag daar niks mee te maken had ("welke AI kan me helpen bij plastic zeil voor
+  een werkblad, met realtime zoeken"). Eerste poging (doorschakelen naar de Orakel) was
+  een dubbele, onnodig betaalde OpenRouter-call — teruggedraaid. Nu krijgt de bestaande
+  ene Claude-call zowel `ROUTER_AGENTS` als `ORAKEL_LIJST` (dezelfde 9 algemene AI's als
+  bij "Welke AI?") te zien en kiest er in één keer uit, met een korte reden als het een
+  algemene AI wordt.
+- **PWA-iconen + head-opschoning + kaartkleuren**, na een externe review (Opus) van de
+  GitHub-repo die ik zelf geverifieerd heb voordat ik 'm doorvoerde:
+  - Oude iconen waren JPEG met `"purpose": "any maskable"` gecombineerd — een cirkel-logo
+    dat tot de rand van het canvas liep, werd daardoor op Android afgesneden door de
+    maskable-safe-zone-crop. Nieuwe set: PNG, losse `any`/`maskable`-varianten, glyph
+    binnen de veilige zone (`icon-192.png`, `icon-512.png`, `icon-maskable-512.png`,
+    `apple-touch-icon.png`, `icon.svg`). Oude `.jpeg`-bestanden verwijderd.
+  - `manifest.json` bijgewerkt naar de 3 nieuwe iconen; `background_color`/`theme_color`
+    op één waarde gezet (`#0d1017`, matcht de echte `--bg` uit de CSS — voorheen 3
+    verschillende, geen enkele kloppend).
+  - `sw.js`: `CACHE_NAAM` naar `ai-hub-v2` zodat de service worker de nieuwe iconen ook
+    echt oppikt i.p.v. de oude te blijven serveren; maskable-icoon toegevoegd aan de
+    precache-lijst.
+  - `index.html` `<head>`: `<meta charset>` stond ná `<title>` (moet andersom, charset
+    hoort in de eerste 1024 bytes); dubbele `<meta name="theme-color">` (2 verschillende
+    waarden) teruggebracht naar 1; kapotte favicon-data-URI (SVG zonder `viewBox`/
+    afmetingen, rendert niet overal) vervangen door `<link rel="icon" href="icon.svg">`.
+  - `.card.project` en `.card.marketing` hadden dezelfde randkleur (`rgba(251,113,133)`)
+    op de regel die won van de eerdere, wél verschillende kleuren — nu weer apart
+    (`244,114,182` vs `251,113,133`).
+  - **Bubbels 3.0**: nieuw, allerlaatste `<style>`-blok vóór `</head>` — emoji uit de
+    kaarttitel gehaald en in een eigen gekleurd tegeltje gezet (`.card-ico`, per
+    categorie een kleur via `--c-agent`/`--c-general`/etc.), kaarten ronder (18px), het
+    magere randstreepje weg, kleurgloed alleen bij hover, en op mobiel 2 kaarten per rij
+    i.p.v. 1 kolom. Puur uiterlijk, geen bestaande functie aangeraakt.
+  - **Nog niet gedaan, bewust apart gehouden**: de 3 concurrerende `<style>`-blokken
+    (basis, "DESIGN 2.0 OBSIDIAN", en een derde) samenvoegen tot één. Ze overschrijven
+    elkaar nu met `!important` (71 stuks alleen al in blok 2), zo'n 300-400 regels CSS
+    doen dus nooit iets — werkt, maar zoekt lastig bij toekomstige aanpassingen. Grotere,
+    risicovollere klus (raakt de hele visuele laag), expres niet meegenomen met deze
+    ronde.
 
 ### 28 augustus 2026
 - **Supabase legacy anon keys vervangen door publishable keys**: de oude JWT

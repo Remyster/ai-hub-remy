@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<title>Remy AI Hub</title>
 <meta charset="UTF-8">
+<title>Remy AI Hub</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0a0b1e">
+  <meta name="theme-color" content="#0d1017">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="AI Hub">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="theme-color" content="#07080f">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg'><text y='32' font-size='32'>🧠</text></svg>">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
@@ -688,7 +687,7 @@ header h1 {
   background: rgba(255,255,255,0.04); border: 1px solid var(--border);
   border-radius: 12px; color: var(--text);
   font-family: 'DM Mono', monospace; font-size: 0.85em; line-height: 1.6;
-  resize: vertical; outline: none; min-height: 100px; transition: border-color 0.2s;
+  resize: vertical; outline: none; min-height: 180px; transition: border-color 0.2s;
 }
 #pb-input:focus { border-color: rgba(102,126,234,0.4); }
 #pb-input::placeholder { color: var(--muted); }
@@ -1575,7 +1574,7 @@ main, .section { max-width: 1160px; margin-left: auto; margin-right: auto; }
 .card.general   { border-left: 2px solid rgba(56,189,248,0.4) !important; }
 .card.affiliate { border-left: 2px solid rgba(251,191,36,0.4) !important; }
 .card.tool      { border-left: 2px solid rgba(52,211,153,0.4) !important; }
-.card.project   { border-left: 2px solid rgba(251,113,133,0.4) !important; }
+.card.project   { border-left: 2px solid rgba(244,114,182,0.4) !important; }
 .card.marketing { border-left: 2px solid rgba(251,113,133,0.4) !important; }
 
 /* ─── DETAILS/SUMMARY (checkers-lade) ─── */
@@ -1667,7 +1666,7 @@ header h1 {
 .card.general   { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(56,189,248,0.35); }
 .card.affiliate { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(251,191,36,0.35); }
 .card.tool      { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(52,211,153,0.35); }
-.card.project   { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(251,113,133,0.35); }
+.card.project   { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(244,114,182,0.35); }
 .card.marketing { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(251,113,133,0.35); }
 
 /* ─── MOBILE ─── */
@@ -1841,6 +1840,139 @@ header h1 {
   .smart-side-btn { flex: 1 1 auto; text-align: center; }
 }
 </style>
+
+<!-- ══════════════════════════════════════════════════════════
+     AI HUB — BUBBELS 3.0
+     Moet ná alle andere <style>-blokken staan, anders wint die.
+     Niets functioneels aangeraakt, puur uiterlijk.
+     ══════════════════════════════════════════════════════════ -->
+<style>
+:root{
+  --c-agent:124,111,240;
+  --c-general:56,189,248;
+  --c-affiliate:251,191,36;
+  --c-tool:52,211,153;
+  --c-project:244,114,182;
+  --c-marketing:251,113,133;
+}
+
+/* ── de bubbel zelf ── */
+.grid{ gap:12px !important; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)) !important; }
+
+.card{
+  --c:255,255,255;
+  border:1px solid rgba(255,255,255,0.07) !important;
+  border-left:1px solid rgba(255,255,255,0.07) !important;   /* streepje weg */
+  border-radius:18px !important;
+  padding:15px 16px 14px !important;
+  background:
+    linear-gradient(165deg, rgba(var(--c),0.10), rgba(var(--c),0.02) 42%),
+    linear-gradient(165deg, rgba(255,255,255,0.045), rgba(255,255,255,0.012)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.07),
+    0 1px 2px rgba(0,0,0,0.4),
+    0 10px 26px -14px rgba(0,0,0,0.7) !important;
+  isolation:isolate;
+}
+.card.agent{--c:var(--c-agent);} .card.general{--c:var(--c-general);}
+.card.affiliate{--c:var(--c-affiliate);} .card.tool{--c:var(--c-tool);}
+.card.project{--c:var(--c-project);} .card.marketing{--c:var(--c-marketing);}
+
+/* zachte kleurgloed die alleen bij hover opkomt */
+.card::before{
+  content:'' !important; display:block !important;
+  position:absolute; inset:-1px; border-radius:inherit;
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,0%), rgba(var(--c),0.16), transparent 62%);
+  opacity:0; transition:opacity .22s; pointer-events:none; z-index:-1;
+}
+.card:hover::before{ opacity:1; }
+.card:hover{
+  transform:translateY(-3px) !important;
+  border-color:rgba(var(--c),0.42) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.10),
+    0 6px 16px rgba(0,0,0,0.45),
+    0 18px 44px -18px rgba(var(--c),0.55) !important;
+}
+.card:active{ transform:translateY(-1px) scale(0.985) !important; }
+.card:focus-visible{ outline:2px solid rgba(var(--c),0.8); outline-offset:3px; }
+
+/* ── emoji-chip: haalt de emoji uit de titel en zet 'm in een tegeltje ── */
+.card-ico{
+  width:34px; height:34px; flex:0 0 34px;
+  display:grid; place-items:center;
+  font-size:17px; line-height:1;
+  border-radius:11px;
+  background:rgba(var(--c),0.14);
+  border:1px solid rgba(var(--c),0.26);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.10);
+  transition:transform .22s cubic-bezier(.34,1.4,.64,1), background .22s;
+}
+.card:hover .card-ico{ transform:scale(1.09) rotate(-4deg); background:rgba(var(--c),0.22); }
+.card-head{ display:flex; align-items:center; gap:10px; margin-bottom:7px; }
+.card-head h2{ margin:0 !important; font-size:0.86em !important; line-height:1.25 !important; }
+.card p{ font-size:0.685em !important; line-height:1.5 !important; }
+.card p.voorbeeld{ margin-top:6px !important; opacity:.72; }
+
+/* recent-pill iets rustiger */
+.recent-tag{
+  position:absolute; top:12px; right:12px; margin:0 !important;
+  background:rgba(var(--c),0.16) !important; color:rgba(var(--c),1) !important;
+  font-size:0.5em !important; padding:3px 7px !important;
+}
+
+/* ── header-pillen: glas i.p.v. plat ── */
+.hbtn{
+  border-radius:100px !important;
+  padding:7px 13px !important;
+  font-size:0.66em !important;
+  background-image:linear-gradient(180deg,rgba(255,255,255,0.07),rgba(255,255,255,0)) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.08), 0 1px 2px rgba(0,0,0,0.3) !important;
+}
+.hbtn:hover{ transform:translateY(-1px) !important; filter:brightness(1.18); }
+.header-btns{ gap:7px !important; }
+
+/* ── rustiger voor wie geen animaties wil ── */
+@media (prefers-reduced-motion:reduce){
+  .card, .card-ico, .hbtn{ transition:none !important; }
+  .card:hover{ transform:none !important; }
+}
+
+/* ── mobiel: 2 op een rij i.p.v. 1 lange kolom ── */
+@media (max-width:640px){
+  .grid{ grid-template-columns:repeat(auto-fill,minmax(150px,1fr)) !important; gap:9px !important; }
+  .card{ padding:12px 12px 11px !important; border-radius:16px !important; }
+  .card-ico{ width:29px; height:29px; flex-basis:29px; font-size:15px; border-radius:9px; }
+  .card p.voorbeeld{ display:none !important; }
+}
+</style>
+
+<script>
+/* Zet de eerste emoji van elke kaarttitel in een eigen chip.
+   Draait één keer na het laden. Verandert niks aan de links of de data. */
+(function(){
+  const EMO = /^\s*(\p{Extended_Pictographic}(?:️)?(?:‍\p{Extended_Pictographic}(?:️)?)*)\s*/u;
+  function run(){
+    document.querySelectorAll('.card > h2').forEach(h2 => {
+      if (h2.closest('.card-head')) return;
+      const m = h2.textContent.match(EMO);
+      if (!m) return;
+      h2.textContent = h2.textContent.replace(EMO, '');
+      const chip = document.createElement('span');
+      chip.className = 'card-ico';
+      chip.setAttribute('aria-hidden','true');
+      chip.textContent = m[1];
+      const head = document.createElement('div');
+      head.className = 'card-head';
+      h2.parentNode.insertBefore(head, h2);
+      head.appendChild(chip);
+      head.appendChild(h2);
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
+  else run();
+})();
+</script>
 
 </head>
 <body>
@@ -6040,7 +6172,7 @@ REGELS:
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
+        max_tokens: 2500,
         system: systeemPrompt,
         messages: [{ role: 'user', content: userMsg }]
       })
@@ -6104,7 +6236,7 @@ async function pbRefine(soort) {
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
+        max_tokens: 2500,
         system: 'Je krijgt een bestaande prompt. Pas hem aan volgens de instructie. Geef ALLEEN de aangepaste prompt terug, geen uitleg, geen aanhalingstekens eromheen.',
         messages: [{ role: 'user', content: `PROMPT:\n${huidig}\n\nINSTRUCTIE: ${instructie}` }]
       })
@@ -6240,7 +6372,7 @@ Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens erom
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 800,
+        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2500,
           system: systeemPrompt,
           messages: [{ role: 'user', content: (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + `Ruw idee: ${ruwIdee}` }]
         })
@@ -7970,18 +8102,26 @@ async function agentRoute() {
   if (!key) { openApiKeyModal(); return; }
   smartFlash('🎯 Even kijken wie dit het beste kan...');
   try {
-    const prompt = `Kies de beste agent voor deze vraag/notitie van Remy en herschrijf 'm tot een duidelijke, volledige vraag.
+    // Eén call, twee opties: een specifiek werk-project van Remy, óf — als de vraag daar niet
+    // bij past — een algemene AI. Bewust NIET doorschakelen naar de Orakel (die roept OpenRouter
+    // aan, dus dubbele kosten voor iets wat deze ene Claude-call ook gewoon kan beslissen).
+    const prompt = `Kies wat het beste past bij deze vraag/notitie van Remy: één van zijn specifieke
+werk-projecten, of — als geen daarvan past — een algemene AI. Herschrijf de vraag ook tot een
+duidelijke, volledige vraag.
 
-Agents:
-${ROUTER_AGENTS.map(a => a.name + ': ' + a.desc).join('\n')}
+WERK-PROJECTEN (alleen kiezen als de vraag daadwerkelijk over dit specifieke domein gaat):
+${ROUTER_AGENTS.map(a => '- ' + a.name + ': ' + a.desc).join('\n')}
+
+ALGEMENE AI'S (kiezen bij een gewone, actuele of privé-vraag die bij geen werk-project past):
+${ORAKEL_LIJST.map(a => '- ' + a.n + ': ' + a.d).join('\n')}
 
 Wat Remy typte: "${vraag}"
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{"agent":"exacte agent-naam uit de lijst","vraag":"herschreven, volledige vraag"}
+{"naam":"exacte naam uit een van beide lijsten hierboven","reden":"bij een algemene AI: max 1 korte zin waarom deze; bij een werk-project: leeg laten","vraag":"herschreven, volledige vraag"}
 
 Voor "vraag": maak van wat Remy typte (vaak kort, telegramstijl, of een half zinnetje) een
-nette, volledige vraag zoals je 'm aan de agent zou stellen — behoud de bedoeling en alle
+nette, volledige vraag zoals je 'm zou stellen — behoud de bedoeling en alle
 concrete details (namen, getallen, situatie), maar vul 'm aan tot een leesbare zin. Geen
 letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -7994,15 +8134,22 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     const antwoord = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
     let parsed = null;
     try { parsed = JSON.parse(antwoord.replace(/```json|```/g, '').trim()); } catch(e) {}
-    const agent = parsed && ROUTER_AGENTS.find(a => (parsed.agent||'').toLowerCase().includes(a.name.toLowerCase()));
-    if (!agent) { smartFlash('🤔 Geen duidelijke match — probeer je vraag specifieker te maken.'); return; }
+    const naam = parsed && parsed.naam ? String(parsed.naam).toLowerCase() : '';
+    const agent = naam && ROUTER_AGENTS.find(a => naam.includes(a.name.toLowerCase()));
+    const algemeen = !agent && naam && ORAKEL_LIJST.find(a => naam.includes(a.n.toLowerCase()));
+    if (!agent && !algemeen) { smartFlash('🤔 Geen duidelijke match — probeer je vraag specifieker te maken.'); return; }
     const nettevraag = (parsed.vraag || vraag).trim();
     // Kopieer de herschreven vraag naar klembord
     const tmp = document.createElement('textarea'); tmp.value = nettevraag; tmp.style.cssText='position:fixed;opacity:0;';
     document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
     try { document.execCommand('copy'); } catch(e) {}
     document.body.removeChild(tmp);
-    smartFlash('🎯 <b style="color:var(--accent);">' + escHtml(agent.name) + '</b> is de juiste — je vraag staat op je klembord: "' + escHtml(nettevraag) + '" <a href="' + agent.url + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open agent →</a>', true);
+    if (agent) {
+      smartFlash('🎯 <b style="color:var(--accent);">' + escHtml(agent.name) + '</b> is de juiste — je vraag staat op je klembord: "' + escHtml(nettevraag) + '" <a href="' + agent.url + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open agent →</a>', true);
+    } else {
+      const reden = (parsed.reden || '').trim();
+      smartFlash('🤔 <b style="color:var(--accent);">' + escHtml(algemeen.n) + '</b> past hier beter dan je eigen agents' + (reden ? ' — ' + escHtml(reden) : '') + '. Je vraag staat op je klembord: "' + escHtml(nettevraag) + '" <a href="' + algemeen.u + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open ' + escHtml(algemeen.n) + ' →</a>', true);
+    }
     inp.value = '';
   } catch(err) {
     smartFlash('⚠ Router mislukt: ' + err.message);
