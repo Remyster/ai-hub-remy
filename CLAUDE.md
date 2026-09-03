@@ -448,6 +448,96 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 
 ## Changelog
 
+### 3 september 2026 (deel 6)
+- **Skeleton-loaders i.p.v. "Laden..."-tekst.** Nieuwe herbruikbare `.skel-bar`-CSS
+  (shimmer-animatie, 4 breedtes) + JS-helper `skelBars(n)` (bij `escHtml`, hoofdstijlen
+  in het Bubbels 3.0-blok). Toegepast op de meest zichtbare laadmomenten: hero-taken,
+  de 3 Daily Level Up-kaarten, Vaste Lasten (content + spaarrekeningen, zowel de
+  statische eerste-load-HTML als de JS-herlaad-states), Kosten-modal, pipeline-archief,
+  Werk-links en de Brain Dump-inbox. Bewust **niet** overal — kleine 1-regelige labels
+  (klok, maand-/weeklabel, spaarrekening-geschiedenis-uitklapper) blijven gewone tekst,
+  een shimmer-balkje voor 1 woord oogt onrustiger dan het oplost.
+- Losstaand van deze ronde: een externe melding klopte dat de `anon_all`-RLS-policies
+  op `vaste_lasten`/`betalingen`/`spaarrekeningen`/`vault_items` nog actief zijn — zelf
+  geverifieerd via Supabase (`execute_sql`), niet gewijzigd. Ligt bij Remy of dit
+  acceptabel risico is (zelfde soort afweging als de Claude API key in `app_settings`)
+  of dat er ooit een auth-laag bij moet. Zie project-memory voor het volledige gesprek.
+  Bijvangst: `spaarrekeningen` ontbreekt in `BACKUP_TABELLEN` (de 💾 Backup-knop) —
+  niet gefixt, alleen gesignaleerd.
+
+### 3 september 2026 (deel 5)
+- **Header: 8 externe links naar één "🔗 Links"-dropdown.** De header was 17 pillen
+  over 3 regels in een sticky balk. Nieuw script (`.hb-menu-wrap`/`#hb-menu`, vlak vóór
+  `</head>`, ná Bubbels 3.0) verplaatst alle `<a class="hbtn">`-elementen (StekkerSlim,
+  GitHub, Drive, Gmail, Photos, Supabase, Twitch, Home Assistant) uit `.header-btns` in
+  een dropdown — verplaatst, niet gekopieerd, dus bestaande hrefs/handlers ongewijzigd.
+  Actieknoppen (Vaste Lasten, Welke AI?, API Key, Backup, Kosten, Week, Werk, Kluis —
+  allemaal `<span onclick>`) blijven gewoon in de hoofdbalk staan, nu 1 rij i.p.v. 3.
+- **`alert()` → toast rechtsonder.** 14 `alert()`-aanroepen waren op mobiel (Magic V3)
+  een systeempopup die alles blokkeert tot wegtikken. Nieuw `window.hubToast()`
+  overschrijft `window.alert` — melding rechtsonder, kleur op basis van de emoji waar
+  het bericht mee begint (❌/⛔/🚫 of "mislukt/fout" → rood, ⚠️ → geel, ✅/💾/🎉 → groen),
+  automatisch weg na 3-9s (op tekstlengte), klik = direct weg, hover = pauzeert de timer.
+  Geen van de 14 bestaande `alert(...)`-regels hoefde aangepast — puur een override.
+  **Bewust niet gedaan:** de 9 `confirm()`-aanroepen (o.a. `sspClearAll`, CSV-import,
+  vault-delete) blijven de systeem-popup. `confirm()` geeft synchroon true/false terug;
+  een toast kan dat niet nabootsen zonder alle 9 aanroepen naar async patterns om te
+  bouwen — aparte, grotere klus.
+- Beide patches kwamen als kant-en-klare `.html`-snippets van Remy (2 bestanden in een
+  zip), inhoud eerst gelezen en de claims (aantal links, aantal alert/confirm-calls)
+  geverifieerd tegen de actuele `index.html` vóórdat ze geplakt zijn — klopten allebei
+  exact. Getest in een lokale server + Chrome: dropdown bevat alle 8 links, hoofdbalk
+  bevat er 0 meer, `hubToast` bestaat en vangt `alert()` correct af.
+
+### 3 september 2026 (deel 4)
+- **Prompt Builder: variabelen-injectie.** `{{tags}}` in het idee-veld worden live
+  gedetecteerd (`pbVarsDetect`) en tonen losse invoervelden eronder (`pbVarsRender`).
+  `pbCompiledIdee()` vervangt de tags door de ingevulde waarden (of `[TAG]` als een
+  veld leeg blijft) vlak vóór het genereren — geen apart "compileer"-knopje nodig,
+  gebeurt automatisch bij op Genereren klikken. `generatePrompt()` gebruikt nu
+  `pbCompiledIdee()` in plaats van de rauwe textarea-waarde.
+- **Prompt Builder: zoekveld in "Opgeslagen prompts".** De bibliotheek
+  (`pblibGet`/`pblibAdd`/localStorage, bestond al sinds eerder) had geen filter — bij
+  veel bewaarde prompts moest je scrollen. `pblibRender()` filtert nu op tekst of
+  platform via `#pb-lib-search`.
+- **Prompt Builder: ketting-prompts (chain-of-thought).** Nieuwe knop "🔗 3 stappen"
+  naast "Genereer prompt" (`pbChainSplit`) — hakt het idee via 1 Claude-call op in 3
+  losse, ná elkaar te plakken prompts (Analyseer → Outline → Schrijf), elk met eigen
+  kopieerknop. Reden voor 3 vaste stappen i.p.v. een AI-bepaald aantal: voorspelbare
+  UI (drie kaarten renderen), en dit dekt het gangbare patroon voor complexere taken.
+- **Vaste Lasten: wat-als scenario-calculator.** Elke niet-inkomen rij heeft nu een
+  vinkje (`vlWatAlsToggle`) om 'm tijdelijk uit de berekening te halen — bijv. "wat als
+  ik Netflix deze maand niet betaal". Een apart paars blok (`#vl-watals-box`,
+  `vlWatAlsBereken`) toont het fictieve "nog te betalen" en "besteedbaar" zonder de
+  echte cijfers (`vl-nog`/`vl-over`) aan te raken. Puur UI-state (`vlWatAlsUit`, een
+  Set), nergens opgeslagen — reset automatisch bij elke echte data-herlaad (openen of
+  maand wisselen, via `renderVasteLasten()`). Diagram/Chart.js bewust **niet**
+  meegenomen op Remy's verzoek (eerste externe library zou het geweest zijn in deze
+  hele single-file, dependency-vrije hub).
+- Alle vier hierboven getest via een lokale server + Chrome (variabelen-substitutie,
+  zoekfilter, chain-render, wat-als-rekensom) vóór opleveren.
+
+### 3 september 2026 (deel 3)
+- **"Welke AI?" en "Route" samengevoegd tot 1 knop.** Bleken >90% hetzelfde: de
+  header-knop 🤔 Welke AI? (`openOrakel`/`orakelAsk`) koos alleen uit `ORAKEL_LIJST`
+  (9 algemene AI's) via OpenRouter; de smart-bar-knop 🎯 Route (`agentRoute`) koos
+  daaruit én uit `ROUTER_AGENTS` (eigen werk-projecten) via een directe Claude-call.
+  `orakelAsk()` doet nu wat `agentRoute()` deed (beide lijsten, 1 Claude-call, vraag
+  herschrijven + op klembord zetten), `agentRoute()` en de bijbehorende Enter-toets-
+  binding op de smart-input zijn verwijderd. De knop heet nu 🎯 Welke AI?, staat
+  meteen naast 💶 Vaste Lasten in de header, en heeft dezelfde soort prominente
+  gradient/schaduw-styling (`.hbtn-orakel`, zelfde patroon als
+  `.hbtn[onclick*="openVasteLasten"]`). Smart bar heeft nu alleen nog 📍 Plaats en
+  💭 Dump.
+- **Prompt Builder: type-knoppen (Tekst/Beeld/Code/Analyse/Roleplay/Leren) als
+  "bubbels"** — eigen kleur per type + emoji in een los tegeltje (`.pb-type-ico`),
+  zelfde visuele taal als de kaart-bubbels op de hub zelf (`--c`-variabele per type,
+  vergelijkbaar met `--c-agent`/`--c-general` etc.).
+- **Concrete voorbeeldzinnen toegevoegd aan Tekst, Code, Analyse en Leren** — zowel
+  in `PB_TYPES` (gaat mee de prompt in) als `PB_TYPE_HINTS` (het hintje onder de
+  knoppenrij). Beeld en Roleplay ongewijzigd gelaten (Remy gaf aan die zelf al
+  duidelijk te vinden).
+
 ### 3 september 2026 (deel 2)
 - **Prompt Builder: gegenereerde prompt werd afgekapt.** `max_tokens: 800` op alle drie
   de Claude-calls (genereren, verfijnen, multi-platform) was te laag zodra de prompt de

@@ -670,16 +670,33 @@ header h1 {
 .pb-pill[data-platform="council"].active,
 .pb-pill[data-platform="multi"].active { box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
 
-/* Type pills */
-.pb-types { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+/* Type pills — bubbels: eigen kleur per type, emoji in een los tegeltje zoals de kaarten op de hub */
+.pb-types { display: flex; flex-wrap: wrap; gap: 9px; margin-bottom: 20px; }
 .pb-type {
-  padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border);
+  --c: 204,120,92;
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px 6px 6px; border-radius: 100px; border: 1px solid var(--border);
   background: none; color: var(--muted);
   font-family: 'DM Mono', monospace; font-size: 0.68em; letter-spacing: 0.06em;
   cursor: pointer; transition: all 0.18s;
 }
-.pb-type:hover { border-color: rgba(204,120,92,0.4); color: var(--text); }
-.pb-type.active { background: rgba(204,120,92,0.1); border-color: rgba(204,120,92,0.5); color: #cc785c; }
+.pb-type-ico {
+  width: 24px; height: 24px; flex: 0 0 24px;
+  display: grid; place-items: center; border-radius: 8px;
+  font-size: 13px; line-height: 1;
+  background: rgba(var(--c),0.14); border: 1px solid rgba(var(--c),0.24);
+  transition: transform .18s, background .18s;
+}
+.pb-type[data-type="tekst"] { --c: 124,111,240; }
+.pb-type[data-type="beeld"] { --c: 244,114,182; }
+.pb-type[data-type="code"] { --c: 52,211,153; }
+.pb-type[data-type="analyse"] { --c: 56,189,248; }
+.pb-type[data-type="roleplay"] { --c: 251,146,60; }
+.pb-type[data-type="leren"] { --c: 250,204,21; }
+.pb-type:hover { border-color: rgba(var(--c),0.4); color: var(--text); }
+.pb-type:hover .pb-type-ico { transform: scale(1.08); }
+.pb-type.active { background: rgba(var(--c),0.1); border-color: rgba(var(--c),0.5); color: rgb(var(--c)); }
+.pb-type.active .pb-type-ico { background: rgba(var(--c),0.26); }
 
 /* Textarea */
 #pb-input {
@@ -883,6 +900,9 @@ header h1 {
 .vl-row.betaald:hover { background:rgba(16,185,129,0.1); }
 .vl-naam { font-size:0.82em;color:var(--text); }
 .vl-row.betaald .vl-naam { color:rgba(16,185,129,0.9);text-decoration:line-through;text-decoration-color:rgba(16,185,129,0.4); }
+.vl-watals-cb { flex:0 0 auto;width:15px;height:15px;accent-color:#a78bfa;cursor:pointer; }
+.vl-row.vl-watals-uit { opacity:0.4; }
+.vl-row.vl-watals-uit .vl-naam { text-decoration:line-through;text-decoration-color:rgba(167,139,250,0.5); }
 .vl-incasso { font-size:0.65em;color:var(--muted); }
 .vl-bedrag-wrap { display:flex;align-items:center;gap:6px; }
 .vl-bedrag-input {
@@ -1241,6 +1261,16 @@ header h1 {
   box-shadow: 0 2px 12px rgba(56,189,248,0.35);
 }
 .hbtn[onclick*="openVasteLasten"]:hover { box-shadow: 0 4px 20px rgba(56,189,248,0.5); transform: translateY(-1px); }
+
+/* Welke AI? = samengevoegde "welke AI/agent past hier"-knop → net zo prominent als Vaste Lasten */
+.hbtn-orakel {
+  color: #1a1a1a !important;
+  background: linear-gradient(135deg, #facc15, #f59e0b) !important;
+  border-color: transparent !important;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(250,204,21,0.35);
+}
+.hbtn-orakel:hover { box-shadow: 0 4px 20px rgba(250,204,21,0.5); transform: translateY(-1px); }
 
 /* ── SECTIONS ── */
 .section { margin-bottom: 34px; animation: secIn 0.45s ease both; }
@@ -1945,6 +1975,19 @@ header h1 {
   .card-ico{ width:29px; height:29px; flex-basis:29px; font-size:15px; border-radius:9px; }
   .card p.voorbeeld{ display:none !important; }
 }
+
+/* ── skeleton-loaders: shimmerende balkjes i.p.v. "Laden..."-tekst ── */
+@keyframes skelShine{ 0%{background-position:-200% 0;} 100%{background-position:200% 0;} }
+.skel-bar{
+  height:11px; border-radius:6px; margin:7px 0;
+  background:linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.11) 37%, rgba(255,255,255,0.05) 63%);
+  background-size:400% 100%;
+  animation:skelShine 1.4s ease-in-out infinite;
+}
+.skel-bar:first-child{ margin-top:0; }
+.skel-bar:last-child{ margin-bottom:0; }
+.skel-bar.w100{ width:100%; } .skel-bar.w80{ width:80%; } .skel-bar.w60{ width:60%; } .skel-bar.w40{ width:40%; }
+@media (prefers-reduced-motion:reduce){ .skel-bar{ animation:none; background:rgba(255,255,255,0.06); } }
 </style>
 
 <script>
@@ -1971,6 +2014,227 @@ header h1 {
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', run);
   else run();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     AI HUB — HEADER OPGERUIMD
+     De 8 externe link-pillen (GitHub, Drive, Gmail, Photos, Supabase,
+     Twitch, Home Assistant, StekkerSlim) gaan in één "Links" dropdown.
+     Actieknoppen blijven gewoon staan. Er wordt niks verwijderd — de
+     elementen worden alleen verplaatst (niet gekopieerd), hrefs en
+     handlers blijven intact.
+     ══════════════════════════════════════════════════════════ -->
+<style>
+.hb-menu-wrap{ position:relative; display:inline-flex; }
+#hb-menu{
+  position:absolute; top:calc(100% + 8px); right:0; z-index:950;
+  min-width:210px; padding:7px;
+  display:none; flex-direction:column; gap:3px;
+  background:rgba(14,16,24,0.96);
+  backdrop-filter:blur(20px) saturate(1.4);
+  -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:14px;
+  box-shadow:0 12px 40px -8px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
+  transform-origin:top right;
+}
+#hb-menu.open{ display:flex; animation:hbPop .16s cubic-bezier(.34,1.4,.64,1) both; }
+@keyframes hbPop{ from{opacity:0; transform:scale(.94) translateY(-4px);} to{opacity:1; transform:none;} }
+
+#hb-menu .hbtn{
+  display:flex !important; align-items:center; gap:9px;
+  width:100%; margin:0 !important;
+  border-radius:9px !important;
+  border-color:transparent !important;
+  background:transparent !important;
+  background-image:none !important;
+  box-shadow:none !important;
+  text-align:left; justify-content:flex-start;
+  padding:8px 10px !important;
+  font-size:0.68em !important;
+}
+#hb-menu .hbtn:hover{
+  background:rgba(255,255,255,0.07) !important;
+  transform:none !important; filter:none;
+}
+#hb-menu-label{
+  font-size:0.55em; font-weight:700; letter-spacing:0.14em;
+  text-transform:uppercase; color:var(--muted);
+  padding:5px 10px 3px;
+}
+#hb-toggle.open{ filter:brightness(1.3); }
+#hb-toggle .hb-caret{ display:inline-block; transition:transform .18s; margin-left:2px; font-size:0.8em; }
+#hb-toggle.open .hb-caret{ transform:rotate(180deg); }
+</style>
+
+<script>
+(function(){
+  function build(){
+    const bar = document.querySelector('.header-btns');
+    if (!bar || document.getElementById('hb-menu')) return;
+
+    // Alle externe links (<a class="hbtn">) verhuizen naar het menu.
+    const links = [...bar.querySelectorAll('a.hbtn')];
+    if (links.length < 3) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'hb-menu-wrap';
+
+    const toggle = document.createElement('span');
+    toggle.className = 'hbtn hbtn-muted';
+    toggle.id = 'hb-toggle';
+    toggle.setAttribute('role','button');
+    toggle.setAttribute('tabindex','0');
+    toggle.setAttribute('aria-haspopup','true');
+    toggle.setAttribute('aria-expanded','false');
+    toggle.innerHTML = '🔗 Links <span class="hb-caret">▾</span>';
+
+    const menu = document.createElement('div');
+    menu.id = 'hb-menu';
+    const label = document.createElement('div');
+    label.id = 'hb-menu-label';
+    label.textContent = 'Snel naar';
+    menu.appendChild(label);
+
+    bar.appendChild(wrap);
+    wrap.appendChild(toggle);
+    wrap.appendChild(menu);
+    links.forEach(a => menu.appendChild(a));   // verplaatsen, niet kopiëren
+
+    function setOpen(v){
+      menu.classList.toggle('open', v);
+      toggle.classList.toggle('open', v);
+      toggle.setAttribute('aria-expanded', v ? 'true' : 'false');
+    }
+    toggle.addEventListener('click', e => { e.stopPropagation(); setOpen(!menu.classList.contains('open')); });
+    toggle.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!menu.classList.contains('open')); }
+    });
+    document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+    menu.addEventListener('click', () => setOpen(false));
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
+  else build();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════════════════
+     AI HUB — TOASTS IN PLAATS VAN alert()
+     Vervangt de alert()-popups door meldingen die rechtsonder opkomen
+     en vanzelf weggaan. Niks anders aangeraakt.
+
+     LET OP: confirm() blijft de systeem-popup. Die geeft direct
+     true/false terug en dat kan een toast niet nadoen zonder alle
+     aanroepen te herschrijven naar async. Aparte klus.
+     ══════════════════════════════════════════════════════════ -->
+<style>
+#hub-toasts{
+  position:fixed; right:16px; bottom:16px; z-index:4000;
+  display:flex; flex-direction:column; gap:8px;
+  max-width:min(360px, calc(100vw - 32px));
+  pointer-events:none;
+}
+.hub-toast{
+  --tc:124,111,240;
+  pointer-events:auto;
+  display:flex; align-items:flex-start; gap:10px;
+  padding:12px 14px;
+  border-radius:14px;
+  background:rgba(14,16,24,0.95);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid rgba(var(--tc),0.32);
+  border-left:3px solid rgba(var(--tc),0.9);
+  box-shadow:0 10px 34px -10px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.06);
+  font-family:'Inter', sans-serif; font-size:0.78em; line-height:1.55;
+  color:#eef0f6;
+  animation:hubToastIn .26s cubic-bezier(.34,1.4,.64,1) both;
+  cursor:pointer;
+}
+.hub-toast.ok   { --tc:52,211,153; }
+.hub-toast.warn { --tc:251,191,36; }
+.hub-toast.err  { --tc:248,113,113; }
+.hub-toast.out  { animation:hubToastOut .2s ease forwards; }
+.hub-toast-txt{ flex:1; white-space:pre-wrap; word-break:break-word; }
+.hub-toast-bar{
+  position:absolute; left:0; bottom:0; height:2px;
+  background:rgba(var(--tc),0.7); border-radius:0 0 0 14px;
+  animation:hubToastBar linear forwards;
+}
+@keyframes hubToastIn { from{opacity:0; transform:translateX(16px) scale(.96);} to{opacity:1; transform:none;} }
+@keyframes hubToastOut{ to{opacity:0; transform:translateX(16px) scale(.96); margin-bottom:-8px;} }
+@keyframes hubToastBar{ from{width:100%;} to{width:0%;} }
+
+@media (max-width:640px){
+  #hub-toasts{ right:10px; left:10px; bottom:10px; max-width:none; }
+}
+@media (prefers-reduced-motion:reduce){
+  .hub-toast, .hub-toast-bar{ animation:none !important; }
+}
+</style>
+
+<script>
+(function(){
+  let box;
+  function getBox(){
+    if (!box){
+      box = document.createElement('div');
+      box.id = 'hub-toasts';
+      box.setAttribute('role','status');
+      box.setAttribute('aria-live','polite');
+      document.body.appendChild(box);
+    }
+    return box;
+  }
+
+  // Kleur raden uit de tekst zelf — jouw meldingen beginnen al met een emoji.
+  function soortVan(txt){
+    if (/^\s*(❌|⛔|🚫)/.test(txt) || /mislukt|fout|error|ongeldig/i.test(txt)) return 'err';
+    if (/^\s*(⚠️?|🔶)/.test(txt)) return 'warn';
+    if (/^\s*(✅|✓|💾|🎉|👍)/.test(txt)) return 'ok';
+    return '';
+  }
+
+  window.hubToast = function(msg, soort, ms){
+    msg = String(msg == null ? '' : msg);
+    soort = soort || soortVan(msg);
+    ms = ms || Math.min(9000, Math.max(3000, msg.length * 55));
+
+    const t = document.createElement('div');
+    t.className = 'hub-toast' + (soort ? ' ' + soort : '');
+    t.style.position = 'relative';
+    t.style.overflow = 'hidden';
+
+    const txt = document.createElement('div');
+    txt.className = 'hub-toast-txt';
+    txt.textContent = msg;
+    t.appendChild(txt);
+
+    const bar = document.createElement('div');
+    bar.className = 'hub-toast-bar';
+    bar.style.animationDuration = ms + 'ms';
+    t.appendChild(bar);
+
+    getBox().appendChild(t);
+
+    let timer = setTimeout(close, ms);
+    function close(){
+      clearTimeout(timer);
+      t.classList.add('out');
+      setTimeout(() => t.remove(), 220);
+    }
+    t.addEventListener('click', close);           // wegklikken
+    t.addEventListener('mouseenter', () => { clearTimeout(timer); bar.style.animationPlayState = 'paused'; });
+    t.addEventListener('mouseleave', () => { timer = setTimeout(close, 1500); bar.style.animationPlayState = 'running'; });
+    return close;
+  };
+
+  // Vang alle bestaande alert()-aanroepen op.
+  const origAlert = window.alert.bind(window);
+  window.alert = function(msg){ window.hubToast(msg); };
+  window.hubNativeAlert = origAlert;   // voor als je 'm ooit tóch nodig hebt
 })();
 </script>
 
@@ -2014,12 +2278,12 @@ header h1 {
 
     <span class="pb-label">⚡ Type</span>
     <div class="pb-types">
-      <button class="pb-type active" data-type="tekst">📝 Tekst</button>
-      <button class="pb-type" data-type="beeld">🎨 Beeld</button>
-      <button class="pb-type" data-type="code">💻 Code</button>
-      <button class="pb-type" data-type="analyse">🔬 Analyse</button>
-      <button class="pb-type" data-type="roleplay">🎭 Roleplay</button>
-      <button class="pb-type" data-type="leren">🎓 Leren</button>
+      <button class="pb-type active" data-type="tekst"><span class="pb-type-ico">📝</span>Tekst</button>
+      <button class="pb-type" data-type="beeld"><span class="pb-type-ico">🎨</span>Beeld</button>
+      <button class="pb-type" data-type="code"><span class="pb-type-ico">💻</span>Code</button>
+      <button class="pb-type" data-type="analyse"><span class="pb-type-ico">🔬</span>Analyse</button>
+      <button class="pb-type" data-type="roleplay"><span class="pb-type-ico">🎭</span>Roleplay</button>
+      <button class="pb-type" data-type="leren"><span class="pb-type-ico">🎓</span>Leren</button>
     </div>
     <div id="pb-type-hint" style="font-size:0.68em;color:#cc785c;background:rgba(204,120,92,0.07);border:1px solid rgba(204,120,92,0.18);border-radius:8px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
 
@@ -2035,10 +2299,18 @@ header h1 {
     </div>
     <button type="button" id="pb-ctx-addbtn" onclick="ctxShowAddForm()" style="background:none;border:1px dashed var(--border);color:var(--muted);border-radius:8px;padding:6px 10px;font-size:0.68em;cursor:pointer;margin-bottom:12px;">+ Nieuw context-blok</button>
 
-    <span class="pb-label">💡 Jouw idee (hoe ruwer hoe beter)</span>
-    <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af..."></textarea>
+    <span class="pb-label">💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(167,139,250,0.12);color:#a78bfa;padding:1px 5px;border-radius:5px;">{{tags}}</code> voor herbruikbare stukken</span>
+    <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af... (of met tags: schrijf een e-mail naar {{naam}} over {{onderwerp}})"></textarea>
 
-    <button class="pb-generate" id="pb-gen-btn" onclick="generatePrompt()">✦ Genereer prompt</button>
+    <div id="pb-vars-wrap" style="display:none;margin-top:-10px;margin-bottom:16px;background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.18);border-radius:10px;padding:10px 12px;">
+      <div style="font-size:0.64em;color:#a78bfa;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🧩 Variabelen gevonden — vul in, worden automatisch verwerkt bij genereren</div>
+      <div id="pb-vars-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="pb-generate" id="pb-gen-btn" onclick="generatePrompt()" style="flex:1;">✦ Genereer prompt</button>
+      <button class="pb-generate" id="pb-chain-btn" onclick="pbChainSplit()" title="Hakt je idee op in 3 losse prompts die je ná elkaar plakt: Analyseer → Outline → Schrijf" style="flex:0 0 auto;width:auto;padding:14px 16px;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.3);color:#a78bfa;white-space:nowrap;">🔗 3 stappen</button>
+    </div>
 
     <div id="pb-output-wrap">
       <div class="pb-output-label">✓ Geoptimaliseerde prompt</div>
@@ -2058,8 +2330,14 @@ header h1 {
       </div>
     </div>
 
+    <div id="pb-chain-wrap" style="display:none;margin-top:18px;">
+      <div class="pb-output-label">🔗 Ketting-prompts — plak na elkaar, wacht telkens op het antwoord</div>
+      <div id="pb-chain-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+
     <details id="pb-lib" style="margin-top:14px;">
       <summary style="font-size:0.68em;color:var(--muted);cursor:pointer;letter-spacing:0.06em;padding:4px 0;" onclick="setTimeout(pblibRender, 50)">💾 Opgeslagen prompts (<span id="pb-lib-count">0</span>)</summary>
+      <input id="pb-lib-search" type="text" placeholder="🔎 zoek op tekst of platform..." oninput="pblibRender()" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.72em;margin-top:8px;">
       <div id="pb-lib-list" style="margin-top:8px;display:flex;flex-direction:column;gap:8px;max-height:280px;overflow-y:auto;"></div>
     </details>
 
@@ -2139,8 +2417,8 @@ header h1 {
 
 <div id="orakel-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
   <div id="orakel-modal" style="background:#0d0e18;border:1px solid rgba(102,126,234,0.2);border-radius:22px;padding:32px 28px 24px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
-    <div class="pb-title">🤔 Welke AI?</div>
-    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent, en de vraagbaak zegt welke AI uit je eigen lijstje daar het beste bij past — en waarom.</div>
+    <div class="pb-title">🎯 Welke AI?</div>
+    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent. Kijkt eerst of één van je eigen werk-agents (Stekkerslim, Voltex Coder, Dr. NeuroCut, ...) past, en anders welke algemene AI — met de vraag meteen op je klembord.</div>
 
     <span class="pb-label">💬 Waar wil je hulp bij?</span>
     <input id="orakel-input" placeholder="bijv: ik wil weten of een contract eerlijk is" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')orakelAsk()">
@@ -2188,6 +2466,17 @@ header h1 {
       </div>
     </div>
 
+    <div id="vl-watals-box" style="display:none;margin-bottom:16px;background:rgba(167,139,250,0.06);border:1px solid rgba(167,139,250,0.3);border-radius:14px;padding:12px 16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+        <div style="font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:#a78bfa;">🧪 Wat-als — <span id="vl-watals-count">0</span> uitgezet</div>
+        <button onclick="vlWatAlsReset()" style="background:none;border:1px solid rgba(167,139,250,0.35);color:#a78bfa;border-radius:8px;padding:4px 10px;font-size:0.68em;cursor:pointer;">↺ Alles weer aan</button>
+      </div>
+      <div style="display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;">
+        <div><div style="font-size:0.62em;color:var(--muted);">Fictief nog te betalen</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1em;color:#a78bfa;" id="vl-watals-nog">€0</div></div>
+        <div><div style="font-size:0.62em;color:var(--muted);">Fictief besteedbaar</div><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1em;color:#a78bfa;" id="vl-watals-over">€0</div></div>
+      </div>
+    </div>
+
     <div id="vl-trend" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:16px;"></div>
 
     <div class="vl-import-row">
@@ -2212,12 +2501,12 @@ header h1 {
       </div>
     </div>
 
-    <div id="vl-content"><div class="vl-loading">Verbinden met Supabase...</div></div>
+    <div id="vl-content"><div class="vl-loading" style="text-align:left;"><div class="skel-bar w100"></div><div class="skel-bar w80"></div><div class="skel-bar w100"></div><div class="skel-bar w60"></div></div></div>
 
     <!-- SPAARREKENINGEN -->
     <div class="vl-cat">
       <div class="vl-cat-header">💰 Spaarrekeningen</div>
-      <div id="vl-spaar-grid"><div class="vl-loading">laden...</div></div>
+      <div id="vl-spaar-grid"><div class="vl-loading" style="text-align:left;"><div class="skel-bar w80"></div><div class="skel-bar w60"></div></div></div>
     </div>
 
     <!-- REKENMACHINE -->
@@ -2364,7 +2653,7 @@ header h1 {
   <div id="kosten-box">
     <h3>💳 AI-kosten deze maand</h3>
     <div class="kosten-sub" id="kosten-maand-label">—</div>
-    <div id="kosten-rows"><span style="opacity:0.5;font-size:0.8em;">Laden…</span></div>
+    <div id="kosten-rows"><div class="skel-bar w100"></div><div class="skel-bar w80"></div><div class="skel-bar w60"></div></div>
     <div class="kosten-note">Claude-kosten zijn exact berekend uit de token-usage van elke API-call. OpenRouter-kosten (AI Council) zijn een schatting per call — OpenRouter geeft geen token-detail terug in de browser-response.</div>
     <button class="kosten-close" onclick="closeKostenModal()">Sluiten</button>
   </div>
@@ -2375,7 +2664,7 @@ header h1 {
   <div id="ssp-archive-box">
     <h3>📁 Pipeline-archief</h3>
     <div class="ssp-arch-sub">Automatisch opgeslagen bij "Wis alles" — klik Bekijk voor de volledige antwoorden.</div>
-    <div id="ssp-archive-list"><span style="opacity:0.5;font-size:0.8em;">Laden…</span></div>
+    <div id="ssp-archive-list"><div class="skel-bar w100"></div><div class="skel-bar w80"></div></div>
     <button class="kosten-close ssp-arch-close" onclick="closeSspArchive()">Sluiten</button>
   </div>
 </div>
@@ -2456,6 +2745,7 @@ header h1 {
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
+      <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen of één van je eigen werk-agents past, of anders welke algemene AI (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM).">🎯 Welke AI?</span>
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
@@ -2468,7 +2758,6 @@ header h1 {
       <a href="https://photos.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📸 Photos</a>
       <a href="https://supabase.com/dashboard" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🗄️ Supabase</a>
       <span class="hbtn hbtn-muted" onclick="openVault()">🔐 Kluis</span>
-      <span class="hbtn" style="color:#facc15;background:rgba(250,204,21,0.08);border-color:rgba(250,204,21,0.18);" onclick="openOrakel()" title="Vraagbaak — omschrijf je taak en krijg te horen welke AI (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM) daar het beste bij past.">🤔 Welke AI?</span>
       <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
       <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
@@ -2488,7 +2777,7 @@ header h1 {
   <div id="hero-datum">—</div>
   <div id="hero-taak">
     <span class="hero-badge">📋 vandaag</span>
-    <div id="hero-taken-lijst"><span style="opacity:.55;">Taken laden…</span></div>
+    <div id="hero-taken-lijst"><div class="skel-bar w100"></div><div class="skel-bar w80"></div><div class="skel-bar w60"></div></div>
   </div>
   <div id="hero-weer" title="Weer op je huidige locatie">🌡️ —</div>
   <div id="hero-klok">--:--</div>
@@ -2502,24 +2791,24 @@ header h1 {
   <div id="lu-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;">
     <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(251,191,36,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
       <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--amber);margin-bottom:6px;font-family:'Inter',sans-serif;">⚡ STEKKERSLIM GROEI</div>
-      <div id="lu-verdien" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
+      <div id="lu-verdien" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><div class="skel-bar w100"></div><div class="skel-bar w60"></div></div>
     </div>
     <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(56,189,248,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
       <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--blue);margin-bottom:6px;font-family:'Inter',sans-serif;">🧠 LEER</div>
-      <div id="lu-leer" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><span style="opacity:0.5;">Laden…</span></div>
+      <div id="lu-leer" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;"><div class="skel-bar w100"></div><div class="skel-bar w60"></div></div>
     </div>
     <div class="lu-card" style="background:var(--bg-card);border:1px solid var(--border);border-left:2px solid rgba(52,211,153,0.5);border-radius:14px;padding:14px;box-shadow:var(--shadow-card);">
       <div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--green);margin-bottom:6px;font-family:'Inter',sans-serif;">📚 VANDAAG GELEERD</div>
-      <div id="lu-wiki" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;margin-bottom:8px;"><span style="opacity:0.5;">Laden…</span></div>
-      <div id="lu-nieuws" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;padding-top:8px;border-top:1px solid var(--border);"><span style="opacity:0.5;">Laden…</span></div>
+      <div id="lu-wiki" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;margin-bottom:8px;"><div class="skel-bar w100"></div><div class="skel-bar w80"></div></div>
+      <div id="lu-nieuws" style="font-size:0.74em;color:var(--text-dim);line-height:1.55;font-family:'Inter',sans-serif;padding-top:8px;border-top:1px solid var(--border);"><div class="skel-bar w100"></div><div class="skel-bar w80"></div></div>
     </div>
   </div>
 </div>
 
-<!-- SMART BAR: Brain Dump + Agent Router + Context -->
+<!-- SMART BAR: Brain Dump + Plaatsen (Agent Router zit nu bij de 🎯 Welke AI?-knop in de header) -->
 <div id="smart-bar" style="max-width:1160px;margin:0 auto 26px;display:flex;gap:10px;flex-wrap:wrap;animation:fadeDown 0.5s 0.1s ease both;">
   <div class="smart-input-row" style="flex:1;min-width:260px;display:flex;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:8px;box-shadow:var(--shadow-card);">
-    <input id="smart-input" type="text" placeholder="🧠 Dump, plaats, of stel een vraag... (of praat 🎤)" autocomplete="off"
+    <input id="smart-input" type="text" placeholder="🧠 Dump of plaats een gedachte... (of praat 🎤)" autocomplete="off"
       style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;padding:6px 10px;">
     <button id="smart-mic-btn" class="smart-action-btn" onclick="smartToggleMic()" title="Spraak inspreken"
       style="padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:11px;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎤</button>
@@ -2527,8 +2816,6 @@ header h1 {
       style="padding:9px 14px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:11px;color:#fbbf24;font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">📍 Plaats</button>
     <button class="smart-action-btn" onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
       style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:11px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
-    <button class="smart-action-btn" onclick="agentRoute()" title="AI kiest de juiste agent voor je vraag"
-      style="padding:9px 14px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:11px;color:var(--green);font-family:'Inter',sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎯 Route</button>
   </div>
   <button onclick="remOpenLijst()" id="rem-btn" class="smart-side-btn" title="Herinneringen"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">🔔 <span id="rem-count" style="color:#34d399;"></span></button>
@@ -3345,7 +3632,7 @@ async function sspClearAll() {
 // ── Pipeline-archief: bekijk/herstel/verwijder oude runs ──
 async function sspOpenArchive() {
   const list = document.getElementById('ssp-archive-list');
-  list.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">Laden…</span>';
+  list.innerHTML = skelBars(3);
   document.getElementById('ssp-archive-overlay').classList.add('show');
   try {
     const r = await fetch(`${SS_SBURL}/rest/v1/pipeline_state?select=key,value,updated_at&key=like.ssp_archive_${sspPipeline}_*&order=updated_at.desc`, { headers: SS_GET_HDR });
@@ -3462,6 +3749,15 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeSSP(); });
 
 <script>
 function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// Skeleton-loader: shimmerende balkjes i.p.v. "Laden..."-tekst tijdens fetches.
+function skelBars(n) {
+  n = n || 3;
+  const w = ['w100','w80','w60','w40'];
+  let html = '';
+  for (let i = 0; i < n; i++) html += `<div class="skel-bar ${w[i % w.length]}"></div>`;
+  return html;
+}
 function fetchAI() { fetchVoorJou(false); }
 
 function openBlogCheck() {
@@ -4046,7 +4342,7 @@ document.getElementById('werk-overlay').addEventListener('click', function(e) { 
 
 async function werkLoadLinks() {
   const list = document.getElementById('werk-links-list');
-  list.innerHTML = '<div style="opacity:.5;font-size:0.78em;padding:8px 0;">Laden…</div>';
+  list.innerHTML = skelBars(3);
   try {
     werkLinksCache = await sbGet('werk_links', 'select=*&order=volgorde.asc.nullslast,created_at.asc');
     werkRenderLinks();
@@ -5005,6 +5301,9 @@ const MAANDEN = ['Januari','Februari','Maart','April','Mei','Juni','Juli','Augus
 const CAT_LABELS = { inkomen:'💚 Inkomen', onvoorzien:'⚠️ Onvoorzien', wonen:'🏠 Wonen', abonnement:'📱 Abonnementen', verzekering:'🛡️ Verzekeringen', auto:'🚗 Auto', belasting:'🏛️ Belasting', overig:'📦 Overig', sparen:'💰 Sparen' };
 
 let vlJaar, vlMaand, vlLasten=[], vlBetalingen=[], vlSpaar=[];
+// Wat-als: id's van vaste lasten die tijdelijk buiten de berekening gehouden worden.
+// Puur UI-state, niet persistent — reset bij elke echte data-herlaad (open/maandwissel).
+let vlWatAlsUit = new Set();
 
 function openVasteLasten() {
   const nu = new Date();
@@ -5042,7 +5341,7 @@ async function loadVasteLasten() {
   // zichtbaar (licht gedimd) i.p.v. helemaal leeg — anders voelt heen-en-weer klikken
   // tussen maanden telkens als een harde reset.
   if (!vlHeeftData) {
-    content.innerHTML = '<div class="vl-loading">Laden...</div>';
+    content.innerHTML = `<div class="vl-loading" style="text-align:left;">${skelBars(5)}</div>`;
   } else {
     content.style.opacity = '0.45';
     content.style.pointerEvents = 'none';
@@ -5089,7 +5388,7 @@ async function vlLoadTrend() {
     while (mm < 1) { mm += 12; jj -= 1; }
     maanden.push({ jaar: jj, maand: mm });
   }
-  el.innerHTML = '<span style="opacity:0.5;font-size:0.72em;">Trend laden…</span>';
+  el.innerHTML = skelBars(1);
   try {
     const orFilter = maanden.map(x => `and(jaar.eq.${x.jaar},maand.eq.${x.maand})`).join(',');
     const rows = await sbGet('betalingen', `or=(${orFilter})&select=jaar,maand,bedrag_betaald,vaste_last_id`);
@@ -5132,6 +5431,9 @@ function vlRenderTrend(maanden, perMaand) {
 function getBetaling(id) { return vlBetalingen.find(b => b.vaste_last_id === id); }
 
 function renderVasteLasten() {
+  vlWatAlsUit.clear();
+  document.getElementById('vl-watals-box').style.display = 'none';
+
   const cats = {};
   vlLasten.forEach(l => {
     if (!cats[l.categorie]) cats[l.categorie] = [];
@@ -5212,10 +5514,13 @@ function renderVasteLasten() {
         </div>`;
         return;
       }
-      html += `<div class="vl-row ${isPaid?'betaald':''}" id="vl-row-${l.id}">
-        <div>
-          <div class="vl-naam">${escHtml(l.naam)}${alterBadge}</div>
-          ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
+      html += `<div class="vl-row ${isPaid?'betaald':''}${vlWatAlsUit.has(l.id)?' vl-watals-uit':''}" id="vl-row-${l.id}">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" class="vl-watals-cb" id="vl-watals-${l.id}" ${vlWatAlsUit.has(l.id)?'':'checked'} onchange="vlWatAlsToggle(${l.id})" title="Wat-als: reken deze uitgave er even niet bij">
+          <div>
+            <div class="vl-naam">${escHtml(l.naam)}${alterBadge}</div>
+            ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
+          </div>
         </div>
         <div class="vl-bedrag-wrap">
           <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
@@ -5546,6 +5851,49 @@ function updateVlSaldo() {
   if (labelEl) labelEl.style.color = kleur;
   overEl.closest('.vl-sum-box').style.borderColor = over >= 0 ? 'rgba(16,185,129,0.25)' : 'rgba(248,113,113,0.25)';
   overEl.closest('.vl-sum-box').style.background = over >= 0 ? 'rgba(16,185,129,0.05)' : 'rgba(248,113,113,0.05)';
+  vlWatAlsBereken();
+}
+
+// ══════════════════════════════════════════════
+// WAT-ALS SCENARIO — vinkjes per vaste last om 'm tijdelijk uit de berekening te
+// halen ("wat als ik dit abonnement deze maand niet betaal"). Puur lokale UI-state,
+// wordt nergens opgeslagen en reset bij elke echte data-herlaad (zie renderVasteLasten).
+// ══════════════════════════════════════════════
+function vlWatAlsToggle(id) {
+  if (vlWatAlsUit.has(id)) vlWatAlsUit.delete(id); else vlWatAlsUit.add(id);
+  document.getElementById('vl-row-'+id)?.classList.toggle('vl-watals-uit', vlWatAlsUit.has(id));
+  vlWatAlsBereken();
+}
+function vlWatAlsReset() {
+  vlWatAlsUit.forEach(id => {
+    document.getElementById('vl-row-'+id)?.classList.remove('vl-watals-uit');
+    const cb = document.getElementById('vl-watals-'+id);
+    if (cb) cb.checked = true;
+  });
+  vlWatAlsUit.clear();
+  vlWatAlsBereken();
+}
+function vlWatAlsBereken() {
+  const box = document.getElementById('vl-watals-box');
+  if (!box) return;
+  if (!vlWatAlsUit.size) { box.style.display = 'none'; return; }
+
+  const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
+  const isAutoMaandCalc = vlMaand % 2 === 1;
+  const nogFictief = vlLasten.reduce((sum, l) => {
+    if (l.categorie === 'inkomen') return sum;
+    if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return sum;
+    if (l.naam === 'Huis sparen' && isAutoMaandCalc) return sum;
+    if (vlWatAlsUit.has(l.id)) return sum;
+    const b = getBetaling(l.id);
+    if (b?.betaald) return sum;
+    return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
+  }, 0);
+
+  document.getElementById('vl-watals-count').textContent = vlWatAlsUit.size;
+  document.getElementById('vl-watals-nog').textContent = euroFmt(nogFictief);
+  document.getElementById('vl-watals-over').textContent = saldo ? euroFmt(saldo - nogFictief) : 'Vul saldo in ↑';
+  box.style.display = 'block';
 }
 
 function loadVlSaldo() {
@@ -6021,12 +6369,12 @@ const PB_PLATFORMS = {
 };
 
 const PB_TYPES = {
-  tekst: 'Het gaat om tekst genereren (schrijven, samenvatten, uitleggen, vertalen, emails, etc.)',
+  tekst: 'Het gaat om tekst genereren (schrijven, samenvatten, uitleggen, vertalen, emails, etc.) — bijv. "schrijf een e-mail naar de verhuurder over de kapotte cv-ketel", "vat dit contract samen in 5 bullets", "leg uit wat brutomarge is alsof ik 12 ben".',
   beeld: 'Het gaat om beeldgeneratie (afbeeldingen, illustraties, foto-stijlen, Stable Diffusion, Midjourney, Imagen, etc.) — geef extra aandacht aan stijl, compositie, sfeer, lichtval, en technische parameters.',
-  code: 'Het gaat om code schrijven of debuggen (geef aan welke taal, wat het moet doen, edge cases, gewenste structuur).',
-  analyse: 'Het gaat om analyse (data interpreteren, conclusies trekken, vergelijken, beoordelen, voor- en nadelen).',
+  code: 'Het gaat om code schrijven of debuggen — bijv. "schrijf een Python-script dat CSV-bestanden samenvoegt", "waarom geeft deze JavaScript-functie undefined terug", "leg deze regex uit". Geef aan welke taal, wat het moet doen, edge cases, gewenste structuur.',
+  analyse: 'Het gaat om analyse (data interpreteren, conclusies trekken, vergelijken, beoordelen, voor- en nadelen) — bijv. "vergelijk deze 3 offertes op prijs en garantie", "wat zeggen deze cijfers over de kliks in augustus", "is dit een goede deal voor een tweedehands auto".',
   roleplay: 'Het gaat om roleplay of persona (de AI speelt een rol, karakter of expert — geef persona, stijl, grenzen en context).',
-  leren: 'Het gaat om iets zelf leren of onder de knie krijgen (een vaardigheid, een tool, een concept) — niet om de AI het meteen voor je te laten doen. Bouw de prompt volgens dit stappenpatroon: (1) benoem het einddoel in gewone taal, niet de technische methode; (2) vraag de AI om EERST de volledige routekaart/stappenlijst te geven zonder te beginnen; (3) vraag om daarna alleen stap 1 te tonen en te wachten tot de gebruiker die zelf heeft uitgevoerd voordat stap 2 volgt; (4) instrueer expliciet dat de AI de exacte handeling laat zien maar het de gebruiker zelf laat uitvoeren, niet het voor hem doet; (5) bouw in dat de gebruiker "klaar" kan zeggen om door te gaan of om herhaling kan vragen als iets onduidelijk is; (6) sluit af met een vraag om een kort onthoud-regeltje zodat de gebruiker het later zelf kan herhalen zonder de AI.'
+  leren: 'Het gaat om iets zelf leren of onder de knie krijgen (een vaardigheid, een tool, een concept) — bijv. "ik wil leren hoe ik in Excel een draaitabel maak", "leg me stap voor stap uit hoe DNS werkt" — niet om de AI het meteen voor je te laten doen. Bouw de prompt volgens dit stappenpatroon: (1) benoem het einddoel in gewone taal, niet de technische methode; (2) vraag de AI om EERST de volledige routekaart/stappenlijst te geven zonder te beginnen; (3) vraag om daarna alleen stap 1 te tonen en te wachten tot de gebruiker die zelf heeft uitgevoerd voordat stap 2 volgt; (4) instrueer expliciet dat de AI de exacte handeling laat zien maar het de gebruiker zelf laat uitvoeren, niet het voor hem doet; (5) bouw in dat de gebruiker "klaar" kan zeggen om door te gaan of om herhaling kan vragen als iets onduidelijk is; (6) sluit af met een vraag om een kort onthoud-regeltje zodat de gebruiker het later zelf kan herhalen zonder de AI.'
 };
 
 let pbPlatform = 'claude';
@@ -6036,8 +6384,51 @@ let pbLoading = false;
 function openPromptBuilder() {
   document.getElementById('pb-overlay').classList.add('show');
   document.getElementById('pb-output-wrap').style.display = 'none';
+  document.getElementById('pb-chain-wrap').style.display = 'none';
   document.getElementById('pb-error').style.display = 'none';
+  pbVarsValues = {};
+  pbVarsRender();
   ctxLoad();
+}
+
+// ══════════════════════════════════════════════
+// VARIABELEN-INJECTIE — {{tags}} in het idee worden losse invoervelden,
+// gecompileerd tot 1 tekst vlak vóór het genereren.
+// ══════════════════════════════════════════════
+let pbVarsValues = {};
+function pbVarsDetect(tekst) {
+  const re = /\{\{\s*([a-zA-Z0-9_]+)\s*\}\}/g;
+  const seen = new Set(); const tags = [];
+  let m;
+  while ((m = re.exec(tekst||''))) { if (!seen.has(m[1])) { seen.add(m[1]); tags.push(m[1]); } }
+  return tags;
+}
+function pbVarsRender() {
+  const inp = document.getElementById('pb-input');
+  const wrap = document.getElementById('pb-vars-wrap');
+  const list = document.getElementById('pb-vars-list');
+  if (!inp || !wrap || !list) return;
+  const tags = pbVarsDetect(inp.value);
+  if (!tags.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  list.innerHTML = tags.map(tag => `
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span style="font-family:'DM Mono',monospace;font-size:0.68em;color:#a78bfa;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{${escHtml(tag)}}}</span>
+      <input type="text" data-tag="${escHtml(tag)}" value="${escHtml(pbVarsValues[tag]||'')}" oninput="pbVarsValues[this.dataset.tag]=this.value" placeholder="waarde..."
+        style="flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:6px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.75em;">
+    </div>`).join('');
+}
+document.getElementById('pb-input').addEventListener('input', pbVarsRender);
+function pbCompiledIdee() {
+  const raw = document.getElementById('pb-input').value.trim();
+  const tags = pbVarsDetect(raw);
+  if (!tags.length) return raw;
+  let out = raw;
+  tags.forEach(tag => {
+    const val = (pbVarsValues[tag]||'').trim();
+    out = out.split(`{{${tag}}}`).join(val || `[${tag.toUpperCase()}]`);
+  });
+  return out;
 }
 function closePromptBuilder() {
   document.getElementById('pb-overlay').classList.remove('show');
@@ -6098,12 +6489,12 @@ document.querySelectorAll('.pb-pill').forEach(btn => {
 
 // Type pills
 const PB_TYPE_HINTS = {
-  tekst:    '📝 Tekst — voor schrijven, samenvatten, uitleggen, e-mails, blogposts, sociale posts, vertalingen en alles met woorden.',
+  tekst:    '📝 Tekst — voor schrijven, samenvatten, uitleggen, e-mails, blogposts, sociale posts, vertalingen en alles met woorden. Bijv.: "schrijf een e-mail naar de verhuurder over de kapotte cv-ketel" · "vat dit contract samen in 5 bullets" · "leg uit wat brutomarge is alsof ik 12 ben".',
   beeld:    '🎨 Beeld — voor AI-beeldgeneratie (Stable Diffusion, Midjourney, Imagen). De prompt builder voegt automatisch stijl, compositie, belichting en technische parameters toe.',
-  code:     '💻 Code — voor code schrijven, debuggen of uitleggen. Geef de taal, wat het moet doen en eventuele edge cases — de builder structureert het als een heldere technische opdracht.',
-  analyse:  '🔬 Analyse — voor data interpreteren, situaties beoordelen, vergelijken, voor- en nadelen afwegen of conclusies trekken uit tekst of cijfers.',
+  code:     '💻 Code — voor code schrijven, debuggen of uitleggen. Bijv.: "schrijf een Python-script dat CSV-bestanden samenvoegt" · "waarom geeft deze JavaScript-functie undefined terug" · "leg deze regex uit". Geef de taal, wat het moet doen en eventuele edge cases — de builder structureert het als een heldere technische opdracht.',
+  analyse:  '🔬 Analyse — voor data interpreteren, situaties beoordelen, vergelijken, voor- en nadelen afwegen of conclusies trekken uit tekst of cijfers. Bijv.: "vergelijk deze 3 offertes op prijs en garantie" · "wat zeggen deze cijfers over de kliks in augustus" · "is dit een goede deal voor een tweedehands auto".',
   roleplay: '🎭 Roleplay — voor een persona, karakter of expert-rol. De AI speelt een specifieke rol; de builder definieert de persona, stijl, grenzen en context voor je.',
-  leren: '🎓 Leren — als je iets zelf wil snappen of kunnen, niet gewoon af wil laten maken. De builder bouwt een prompt die eerst de volledige routekaart laat zien, dan één stap tegelijk, waarbij jij de handeling zelf uitvoert en pas verdergaat als jij "klaar" zegt.'
+  leren: '🎓 Leren — als je iets zelf wil snappen of kunnen, niet gewoon af wil laten maken. Bijv.: "ik wil leren hoe ik in Excel een draaitabel maak" · "leg me stap voor stap uit hoe DNS werkt". De builder bouwt een prompt die eerst de volledige routekaart laat zien, dan één stap tegelijk, waarbij jij de handeling zelf uitvoert en pas verdergaat als jij "klaar" zegt.'
 };
 document.querySelectorAll('.pb-type').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -6120,7 +6511,7 @@ document.querySelectorAll('.pb-type').forEach(btn => {
 
 async function generatePrompt() {
   if (pbLoading) return;
-  const ruwIdee = document.getElementById('pb-input').value.trim();
+  const ruwIdee = pbCompiledIdee();
   if (!ruwIdee) { document.getElementById('pb-input').focus(); return; }
   if (pbMultiMode) { await generateMultiPrompt(ruwIdee); return; }
 
@@ -6201,6 +6592,103 @@ REGELS:
     genBtn.disabled = false;
     genBtn.textContent = '✦ Genereer prompt';
   }
+}
+
+// ══════════════════════════════════════════════
+// KETTING-PROMPTS — hakt het idee op in 3 prompts die je ná elkaar in hetzelfde
+// gesprek plakt (Analyseer → Outline → Schrijf), zodat een AI de taak in stappen
+// aanpakt i.p.v. alles in 1 keer te moeten doen.
+// ══════════════════════════════════════════════
+let pbChainData = [];
+async function pbChainSplit() {
+  if (pbLoading) return;
+  const ruwIdee = pbCompiledIdee();
+  if (!ruwIdee) { document.getElementById('pb-input').focus(); return; }
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+
+  pbLoading = true;
+  const btn = document.getElementById('pb-chain-btn');
+  const oud = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Opdelen...';
+  document.getElementById('pb-error').style.display = 'none';
+  document.getElementById('pb-chain-wrap').style.display = 'none';
+
+  const platform = PB_PLATFORMS[pbPlatform] || PB_PLATFORMS.claude;
+  const typeContext = PB_TYPES[pbType];
+
+  const systeemPrompt = `Je bent een expert prompt engineer. Hak de taak van de gebruiker op in 3 opeenvolgende prompts voor ${platform.naam}, bedoeld om ná elkaar in hetzelfde gesprek te plakken — elke stap bouwt voort op het antwoord van de vorige:
+1. ANALYSEER — laat de AI eerst de situatie/het onderwerp grondig analyseren, nog niet schrijven
+2. OUTLINE — laat de AI op basis van het vorige antwoord een concrete structuur/outline maken
+3. SCHRIJF — laat de AI op basis van de vorige twee antwoorden het eindresultaat schrijven
+
+TYPE: ${typeContext}
+
+Elke prompt moet op zichzelf direct kopieerbaar en bruikbaar zijn, kort en concreet, en stap 2 en 3 moeten expliciet verwijzen naar "je vorige antwoord". Schrijf in het Nederlands tenzij het onderwerp om Engels vraagt.
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{"analyseer":"...","outline":"...","schrijf":"..."}`;
+
+  const ctxText = ctxSelectedText();
+  const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + `Taak: "${ruwIdee}"`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2500,
+        system: systeemPrompt,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'API fout'}`);
+    }
+    const data = await res.json();
+    const text = data.content?.[0]?.text?.trim() || '';
+    let parsed = null;
+    try { parsed = JSON.parse(text.replace(/```json|```/g, '').trim()); } catch(e) {}
+    if (!parsed || !parsed.analyseer || !parsed.outline || !parsed.schrijf) throw new Error('Kon de stappen niet uitlezen — probeer opnieuw');
+
+    pbChainData = [
+      { label: '1. Analyseer', tekst: parsed.analyseer },
+      { label: '2. Outline', tekst: parsed.outline },
+      { label: '3. Schrijf', tekst: parsed.schrijf }
+    ];
+    const list = document.getElementById('pb-chain-list');
+    list.innerHTML = pbChainData.map((s, i) => `
+      <div style="background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.2);border-radius:12px;padding:12px 14px;">
+        <div style="font-size:0.66em;color:#a78bfa;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;">${escHtml(s.label)}</div>
+        <div style="font-size:0.78em;color:var(--text);line-height:1.6;white-space:pre-wrap;margin-bottom:8px;">${escHtml(s.tekst)}</div>
+        <button class="pb-copy" style="width:100%;" onclick="pbChainCopy(${i})">📋 Kopieer stap ${i+1}</button>
+      </div>`).join('');
+    document.getElementById('pb-chain-wrap').style.display = 'block';
+    document.getElementById('pb-chain-wrap').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(err) {
+    const errEl = document.getElementById('pb-error');
+    errEl.textContent = '❌ ' + (err.message || 'Onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    pbLoading = false;
+    btn.disabled = false;
+    btn.textContent = oud;
+  }
+}
+function pbChainCopy(i) {
+  const s = pbChainData[i];
+  if (!s) return;
+  const tmp = document.createElement('textarea'); tmp.value = s.tekst; tmp.style.cssText = 'position:fixed;opacity:0;';
+  document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0, 99999);
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(tmp);
 }
 
 // Verfijn-knoppen onder een gegenereerde prompt — bakt de "iterate"-stap uit de
@@ -6634,7 +7122,12 @@ function pblibRender() {
   const lib = pblibGet();
   if (cnt) cnt.textContent = lib.length;
   if (!lib.length) { list.innerHTML = '<div style="font-size:0.7em;color:var(--muted);padding:8px;">Nog niks bewaard — genereer een prompt en klik 💾 Bewaar.</div>'; return; }
-  list.innerHTML = lib.map((p, i) => `
+  const q = (document.getElementById('pb-lib-search')?.value || '').trim().toLowerCase();
+  const gefilterd = q ? lib.filter(p => p.text.toLowerCase().includes(q) || (p.platform||'').toLowerCase().includes(q)) : lib;
+  if (!gefilterd.length) { list.innerHTML = `<div style="font-size:0.7em;color:var(--muted);padding:8px;">Niks gevonden voor "${escHtml(q)}".</div>`; return; }
+  list.innerHTML = gefilterd.map((p) => {
+    const i = lib.indexOf(p);
+    return `
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;">
       <div style="font-size:0.66em;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;">
         <span>${p.platform||'algemeen'} · ${new Date(p.ts).toLocaleDateString('nl-NL')}</span>
@@ -6644,7 +7137,8 @@ function pblibRender() {
         </span>
       </div>
       <div style="font-size:0.7em;color:var(--text);line-height:1.5;max-height:60px;overflow:hidden;white-space:pre-wrap;">${escHtml(p.text.slice(0, 220))}${p.text.length > 220 ? '…' : ''}</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function pblibCopy(i) {
   const lib = pblibGet();
@@ -7641,7 +8135,6 @@ const ORAKEL_LIJST = [
   { n: 'NotebookLM', u: 'https://notebooklm.google.com/?pli=1', d: 'Beste om jóúw eigen documenten uit te vragen — verzint niks bij, alleen antwoord uit wat je uploadt' },
   { n: 'Copilot', u: 'https://copilot.microsoft.com/', d: 'Geïntegreerd in Windows en Microsoft 365 — handig als het werk al in Word/Excel/Outlook zit' }
 ];
-const ORAKEL_MODEL = 'anthropic/claude-haiku-4.5';
 
 function openOrakel() {
   document.getElementById('orakel-input').value = '';
@@ -7657,49 +8150,83 @@ document.getElementById('orakel-overlay').addEventListener('click', function(e) 
   if (e.target === this) closeOrakel();
 });
 
+// Combineert wat vroeger 2 losse dingen waren: de "Welke AI?"-vraagbaak (koos alleen uit
+// ORAKEL_LIJST, via OpenRouter) en de smart-bar "Route"-knop (koos ook uit je eigen
+// werk-agents, via Claude). Overlapten voor >90% — nu 1 knop, 1 call, allebei de lijsten.
 async function orakelAsk() {
-  const vraag = document.getElementById('orakel-input').value.trim();
+  const inp = document.getElementById('orakel-input');
+  const vraag = inp.value.trim();
   const errEl = document.getElementById('orakel-error');
   const outEl = document.getElementById('orakel-answer');
   errEl.style.display = 'none';
-  if (!vraag) { document.getElementById('orakel-input').focus(); return; }
-  if (!getOpenRouterKey()) {
-    errEl.textContent = '❌ Geen OpenRouter key. Zet die eerst in het API Key-scherm.';
-    errEl.style.display = 'block';
-    return;
-  }
+  if (!vraag) { inp.focus(); return; }
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
 
-  const lijst = ORAKEL_LIJST.map(a => `- ${a.n} | ${a.u} | ${a.d}`).join('\n');
   const btn = document.getElementById('orakel-ask-btn');
   const oudeTekst = btn.textContent;
   btn.disabled = true; btn.textContent = '⏳ Denken...';
   outEl.style.display = 'block';
   outEl.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">⏳ Bezig...</span>';
 
-  const systemPrompt = 'Je helpt Remy kiezen welke AI-tool het beste past bij een taak of vraag. Kies ALTIJD uit de meegegeven lijst, verzin nooit een andere AI. Kies meestal precies 1 AI; noem een 2e alleen als het echt gelijk opgaat. Antwoord in het Nederlands, in dit exacte format en verder niets:\n\nNAAM | URL | reden in maximaal 2 korte zinnen\n\nGeen inleiding, geen afsluiting, geen kopjes. Als er een 2e optie is, zet die op een nieuwe regel in hetzelfde format.';
-  const userMsg = `Beschikbare AI's:\n${lijst}\n\nRemy vraagt: "${vraag}"\n\nWelke past het beste?`;
-
   try {
-    const text = await callOpenRouter(ORAKEL_MODEL, systemPrompt, userMsg, 30000);
-    const regels = text.split('\n').map(r => r.trim()).filter(r => r.includes('|'));
-    let html = '';
-    if (!regels.length) {
-      html = `<div style="font-size:0.8em;color:var(--text-dim);line-height:1.6;">${escHtml(text)}</div>`;
-    } else {
-      html = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🤔 Dit zou ik pakken</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">` +
-        regels.slice(0, 2).map(r => {
-          const [naam, url, reden] = r.split('|').map(s => (s || '').trim());
-          const bekend = ORAKEL_LIJST.find(a => a.n.toLowerCase() === naam.toLowerCase().replace(/^[-*\d.\s]+/, ''));
-          const veilig = /^https?:\/\//.test(url) ? url : (bekend ? bekend.u : null);
-          if (!veilig) return `<div style="padding:8px 10px;font-size:0.8em;color:var(--text-dim);">${escHtml(naam)} — ${escHtml(reden || '')}</div>`;
-          return `<a href="${veilig}" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 12px;border-radius:9px;text-decoration:none;background:rgba(255,255,255,0.02);">
-            <span style="color:var(--text);font-size:0.86em;font-weight:600;">${escHtml(bekend ? bekend.n : naam)}</span>
-            <span style="color:var(--muted);font-size:0.78em;display:block;margin-top:3px;line-height:1.5;">${escHtml(reden || '')}</span>
-          </a>`;
-        }).join('') + '</div>';
+    // Eén call, twee opties: een specifiek werk-project van Remy, óf — als de vraag daar niet
+    // bij past — een algemene AI. Bewust geen 2e (betaalde) call naar OpenRouter erbij.
+    const prompt = `Kies wat het beste past bij deze vraag/notitie van Remy: één van zijn specifieke
+werk-projecten, of — als geen daarvan past — een algemene AI. Herschrijf de vraag ook tot een
+duidelijke, volledige vraag.
+
+WERK-PROJECTEN (alleen kiezen als de vraag daadwerkelijk over dit specifieke domein gaat):
+${ROUTER_AGENTS.map(a => '- ' + a.name + ': ' + a.desc).join('\n')}
+
+ALGEMENE AI'S (kiezen bij een gewone, actuele of privé-vraag die bij geen werk-project past):
+${ORAKEL_LIJST.map(a => '- ' + a.n + ': ' + a.d).join('\n')}
+
+Wat Remy typte: "${vraag}"
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{"naam":"exacte naam uit een van beide lijsten hierboven","reden":"max 1 korte zin waarom deze past","vraag":"herschreven, volledige vraag"}
+
+Voor "vraag": maak van wat Remy typte (vaak kort, telegramstijl, of een half zinnetje) een
+nette, volledige vraag zoals je 'm zou stellen — behoud de bedoeling en alle
+concrete details (namen, getallen, situatie), maar vul 'm aan tot een leesbare zin. Geen
+letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const antwoord = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
+    let parsed = null;
+    try { parsed = JSON.parse(antwoord.replace(/```json|```/g, '').trim()); } catch(e) {}
+    const naam = parsed && parsed.naam ? String(parsed.naam).toLowerCase() : '';
+    const agent = naam && ROUTER_AGENTS.find(a => naam.includes(a.name.toLowerCase()));
+    const algemeen = !agent && naam && ORAKEL_LIJST.find(a => naam.includes(a.n.toLowerCase()));
+    if (!agent && !algemeen) {
+      outEl.style.display = 'none';
+      errEl.textContent = '🤔 Geen duidelijke match — probeer je vraag specifieker te maken.';
+      errEl.style.display = 'block';
+      return;
     }
-    outEl.innerHTML = html;
+    const nettevraag = (parsed.vraag || vraag).trim();
+    const reden = (parsed.reden || '').trim();
+    // Kopieer de herschreven vraag naar klembord
+    const tmp = document.createElement('textarea'); tmp.value = nettevraag; tmp.style.cssText='position:fixed;opacity:0;';
+    document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
+    try { document.execCommand('copy'); } catch(e) {}
+    document.body.removeChild(tmp);
+
+    const gekozen = agent ? { naam: agent.name, url: agent.url, tag: 'jouw werk-agent' } : { naam: algemeen.n, url: algemeen.u, tag: 'algemene AI' };
+    outEl.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🎯 Dit zou ik pakken</div>
+      <a href="${gekozen.url}" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 12px;border-radius:9px;text-decoration:none;background:rgba(255,255,255,0.02);margin-bottom:10px;">
+        <span style="color:var(--text);font-size:0.86em;font-weight:600;">${escHtml(gekozen.naam)}</span>
+        <span style="color:var(--muted);font-size:0.68em;text-transform:uppercase;letter-spacing:0.05em;margin-left:8px;">${escHtml(gekozen.tag)}</span>
+        ${reden ? `<span style="color:var(--muted);font-size:0.78em;display:block;margin-top:3px;line-height:1.5;">${escHtml(reden)}</span>` : ''}
+      </a>
+      <div style="font-size:0.76em;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px 11px;">📋 Je vraag staat op je klembord: "${escHtml(nettevraag)}"</div>`;
+    inp.value = '';
   } catch (e) {
     outEl.style.display = 'none';
     errEl.textContent = '❌ ' + (e.message || 'onbekende fout');
@@ -7931,7 +8458,7 @@ function smartFlash(msg, isHtml) {
 async function openDumpInbox() {
   document.getElementById('dump-overlay').style.display = 'flex';
   const list = document.getElementById('dump-list');
-  if (list) list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">⏳ Laden…</div>';
+  if (list) list.innerHTML = `<div style="padding:8px 4px;">${skelBars(3)}</div>`;
   const res = await dumpLoadCloud();
   if (!res.ok && list) {
     list.innerHTML = '<div style="padding:14px;color:#f87171;font-family:Inter,sans-serif;font-size:0.74em;line-height:1.6;">⚠️ Kan dumps niet laden' +
@@ -8080,7 +8607,7 @@ categorie is exact één van: WEEKPLANNER-TAAK, BLOG-IDEE, STEKKERSLIM-SITE, AI-
 }
 
 // ══════════════════════════════════════════════
-// AGENT ROUTER — AI kiest de juiste agent
+// AGENT ROUTER — lijst werk-agents voor de 🎯 Welke AI?-knop (orakelAsk, hierboven)
 // ══════════════════════════════════════════════
 const ROUTER_AGENTS = [
   // Nova R&D en Atlas zijn puur voor PWN-werk (drinkwater) — bewust niet in deze
@@ -8093,73 +8620,6 @@ const ROUTER_AGENTS = [
   { name: 'StekkerBoost', desc: 'Facebook ads, marketing campagnes StekkerSlim', url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9' },
   { name: 'StekkerDesk', desc: 'bezoekersvragen en support StekkerSlim', url: 'https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8' }
 ];
-
-async function agentRoute() {
-  const inp = document.getElementById('smart-input');
-  const vraag = inp.value.trim();
-  if (!vraag) { inp.focus(); smartFlash('Typ eerst je vraag, dan kies ik de agent.'); return; }
-  const key = getApiKey();
-  if (!key) { openApiKeyModal(); return; }
-  smartFlash('🎯 Even kijken wie dit het beste kan...');
-  try {
-    // Eén call, twee opties: een specifiek werk-project van Remy, óf — als de vraag daar niet
-    // bij past — een algemene AI. Bewust NIET doorschakelen naar de Orakel (die roept OpenRouter
-    // aan, dus dubbele kosten voor iets wat deze ene Claude-call ook gewoon kan beslissen).
-    const prompt = `Kies wat het beste past bij deze vraag/notitie van Remy: één van zijn specifieke
-werk-projecten, of — als geen daarvan past — een algemene AI. Herschrijf de vraag ook tot een
-duidelijke, volledige vraag.
-
-WERK-PROJECTEN (alleen kiezen als de vraag daadwerkelijk over dit specifieke domein gaat):
-${ROUTER_AGENTS.map(a => '- ' + a.name + ': ' + a.desc).join('\n')}
-
-ALGEMENE AI'S (kiezen bij een gewone, actuele of privé-vraag die bij geen werk-project past):
-${ORAKEL_LIJST.map(a => '- ' + a.n + ': ' + a.d).join('\n')}
-
-Wat Remy typte: "${vraag}"
-
-Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{"naam":"exacte naam uit een van beide lijsten hierboven","reden":"bij een algemene AI: max 1 korte zin waarom deze; bij een werk-project: leeg laten","vraag":"herschreven, volledige vraag"}
-
-Voor "vraag": maak van wat Remy typte (vaak kort, telegramstijl, of een half zinnetje) een
-nette, volledige vraag zoals je 'm zou stellen — behoud de bedoeling en alle
-concrete details (namen, getallen, situatie), maar vul 'm aan tot een leesbare zin. Geen
-letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const antwoord = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('').trim();
-    let parsed = null;
-    try { parsed = JSON.parse(antwoord.replace(/```json|```/g, '').trim()); } catch(e) {}
-    const naam = parsed && parsed.naam ? String(parsed.naam).toLowerCase() : '';
-    const agent = naam && ROUTER_AGENTS.find(a => naam.includes(a.name.toLowerCase()));
-    const algemeen = !agent && naam && ORAKEL_LIJST.find(a => naam.includes(a.n.toLowerCase()));
-    if (!agent && !algemeen) { smartFlash('🤔 Geen duidelijke match — probeer je vraag specifieker te maken.'); return; }
-    const nettevraag = (parsed.vraag || vraag).trim();
-    // Kopieer de herschreven vraag naar klembord
-    const tmp = document.createElement('textarea'); tmp.value = nettevraag; tmp.style.cssText='position:fixed;opacity:0;';
-    document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
-    try { document.execCommand('copy'); } catch(e) {}
-    document.body.removeChild(tmp);
-    if (agent) {
-      smartFlash('🎯 <b style="color:var(--accent);">' + escHtml(agent.name) + '</b> is de juiste — je vraag staat op je klembord: "' + escHtml(nettevraag) + '" <a href="' + agent.url + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open agent →</a>', true);
-    } else {
-      const reden = (parsed.reden || '').trim();
-      smartFlash('🤔 <b style="color:var(--accent);">' + escHtml(algemeen.n) + '</b> past hier beter dan je eigen agents' + (reden ? ' — ' + escHtml(reden) : '') + '. Je vraag staat op je klembord: "' + escHtml(nettevraag) + '" <a href="' + algemeen.u + '" target="_blank" rel="noopener" style="color:var(--green);font-weight:600;">Open ' + escHtml(algemeen.n) + ' →</a>', true);
-    }
-    inp.value = '';
-  } catch(err) {
-    smartFlash('⚠ Router mislukt: ' + err.message);
-  }
-}
-
-// Enter in smart-input = route
-document.getElementById('smart-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') agentRoute();
-});
 
 // ══════════════════════════════════════════════
 // AUTO-PLAATS — AI bepaalt waar een dumptje hoort
