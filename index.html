@@ -2783,6 +2783,12 @@ header h1 {
   <div id="hero-klok">--:--</div>
 </div>
 
+<div id="briefing-strip" style="max-width:1160px;margin:14px auto 0;background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:12px 16px;box-shadow:var(--shadow-card);display:flex;gap:10px;align-items:flex-start;">
+  <div style="font-size:1.1em;line-height:1.3;">🌅</div>
+  <div id="briefing-tekst" style="flex:1;font-family:'Inter',sans-serif;font-size:0.78em;color:var(--text-dim);line-height:1.6;"><div class="skel-bar w100"></div><div class="skel-bar w80"></div></div>
+  <button onclick="briefingRefresh()" title="Nieuwe ochtendbrief" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;flex-shrink:0;transition:color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻</button>
+</div>
+
 <div id="levelup-strip" style="max-width:1160px;margin:0 auto 26px;animation:fadeDown 0.6s ease both;">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
     <span style="font-family:'Inter',sans-serif;font-size:0.66em;font-weight:700;letter-spacing:0.16em;color:var(--muted);text-transform:uppercase;">⚡ Daily Level Up</span>
@@ -8367,6 +8373,100 @@ async function heroLoadWeer() {
   } catch(e) { el.textContent = ''; /* stil falen, weer is decoratief */ }
 }
 heroLoadWeer();
+
+// ══════════════════════════════════════════════
+// DAILY BRIEFING — persoonlijke ochtendbrief bij hub-opening
+// Combineert taken van vandaag + Vaste Lasten-status tot 1 lopende alinea
+// (max 2 zinnen). 1x per dag gecached in localStorage, ↻ forceert een nieuwe.
+// ══════════════════════════════════════════════
+const BRIEFING_KEY = 'remy_briefing_v1';
+const BRIEFING_MODEL = 'claude-haiku-4-5-20251001';
+
+async function briefingVlSamenvatting() {
+  try {
+    const nu = new Date();
+    const jaar = nu.getFullYear(), maand = nu.getMonth() + 1;
+    const [lasten, betalingen] = await Promise.all([
+      sbGet('vaste_lasten', 'actief=eq.true&order=volgorde.asc'),
+      sbGet('betalingen', `jaar=eq.${jaar}&maand=eq.${maand}`)
+    ]);
+    const betalingenById = {};
+    (Array.isArray(betalingen) ? betalingen : []).forEach(b => { betalingenById[b.vaste_last_id] = b; });
+    const isAutoMaand = maand % 2 === 1; // zelfde alternerende-spaarpot-regel als renderVasteLasten()
+    let nogTot = 0, aantalNog = 0;
+    (Array.isArray(lasten) ? lasten : []).forEach(l => {
+      if (l.categorie === 'inkomen') return;
+      if (l.naam === 'Auto sparen' && !isAutoMaand) return;
+      if (l.naam === 'Huis sparen' && isAutoMaand) return;
+      const b = betalingenById[l.id];
+      if (b && b.betaald) return;
+      nogTot += parseFloat((b && b.bedrag_betaald) ?? l.bedrag ?? 0);
+      aantalNog++;
+    });
+    return { nogTot, aantalNog };
+  } catch(e) {
+    console.warn('Briefing: Vaste Lasten samenvatting mislukt:', e);
+    return null;
+  }
+}
+
+async function briefingTaken() {
+  try {
+    const items = await sbGet('weekplanner_items', `datum=eq.${heroVandaagIso()}&order=klaar,tijd&limit=8`);
+    return Array.isArray(items) ? items : [];
+  } catch(e) { return []; }
+}
+
+function briefingRender(tekst) {
+  const el = document.getElementById('briefing-tekst');
+  if (el) el.textContent = tekst;
+}
+
+async function briefingGenereer() {
+  const key = getApiKey();
+  if (!key) { briefingRender('Vul je Claude API key in (🔑) voor een persoonlijke ochtendbrief.'); return; }
+  const [taken, vl] = await Promise.all([briefingTaken(), briefingVlSamenvatting()]);
+  const open = taken.filter(t => !t.klaar);
+  const takenTekst = open.length
+    ? open.map(t => (t.tijd ? t.tijd.slice(0,5) + ' ' : '') + t.tekst).join('; ')
+    : 'geen taken gepland';
+  const vlTekst = vl
+    ? (vl.aantalNog > 0 ? `nog ${vl.aantalNog} vaste lasten open deze maand, samen ${euroFmt(vl.nogTot)}` : 'alle vaste lasten deze maand al betaald')
+    : 'onbekend';
+  const prompt = `Schrijf een korte persoonlijke ochtendbrief voor Remy — maximaal 2 zinnen, informele directe toon, geen aanhef en geen afsluiting, gewoon lopende tekst.
+
+Taken vandaag: ${takenTekst}
+Vaste lasten deze maand: ${vlTekst}
+
+Noem kort wat er vandaag speelt, en als er nog vaste lasten open staan, noem dat er kort bij (anders niet). Geen opsomming, geen emoji, geen "Hoi Remy".`;
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: BRIEFING_MODEL, max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const tekst = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    localStorage.setItem(BRIEFING_KEY, JSON.stringify({ datum: heroVandaagIso(), tekst }));
+    briefingRender(tekst);
+  } catch(e) {
+    briefingRender('⚠️ Ochtendbrief maken mislukt: ' + e.message);
+  }
+}
+
+function briefingLoad() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(BRIEFING_KEY) || 'null');
+    if (cached && cached.datum === heroVandaagIso() && cached.tekst) { briefingRender(cached.tekst); return; }
+  } catch(e) {}
+  briefingGenereer();
+}
+function briefingRefresh() {
+  briefingRender('⏳ Nieuwe ochtendbrief...');
+  briefingGenereer();
+}
+briefingLoad();
 
 setTimeout(() => { if (typeof dumpLoadCloud === 'function') dumpLoadCloud(); }, 600);
 
