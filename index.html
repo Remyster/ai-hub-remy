@@ -8495,6 +8495,8 @@ function dumpRenderList() {
     } else if (cat) {
       actionBtn = `<button onclick="dumpKopieer(${i})" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;">📋 Kopieer</button>`;
     }
+    const structKey = d.id != null ? d.id : 'i' + i;
+    const structBtn = `<button id="dump-struct-btn-${i}" onclick="dumpStructureer(${i})" style="background:rgba(124,111,240,0.12);border:1px solid rgba(124,111,240,0.3);border-radius:8px;color:#a78bfa;font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;" title="Zet deze gedachte om in samenvatting, bullets en actiepunten">🧩 Structuur</button>`;
     return `
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;">
       <div style="flex:1;">
@@ -8502,13 +8504,98 @@ function dumpRenderList() {
         <div style="font-family:Inter,sans-serif;font-size:0.78em;color:var(--text);line-height:1.5;">${escHtml(d.text)}</div>
         ${actie}
         <div style="font-size:0.62em;color:var(--muted);margin-top:4px;">${new Date(d.ts).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
+        <div id="dump-struct-${i}">${dumpStructRenderHtml(structKey, i)}</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;">
         ${actionBtn}
+        ${structBtn}
         <button onclick="dumpDelete(${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;">✕</button>
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Notitie-Stroomlijner: 1 dump-item omzetten in samenvatting + bullets + actiepunten ──
+const DUMP_STRUCT_MODEL = 'claude-haiku-4-5-20251001';
+let _dumpStructCache = {}; // key (item.id of 'i'+index) -> {samenvatting, bullets:[], acties:[]}
+
+function dumpStructRenderHtml(structKey, i) {
+  const s = _dumpStructCache[structKey];
+  if (!s) return '';
+  const bullets = (s.bullets || []).map(b => `<li style="margin-bottom:2px;">${escHtml(b)}</li>`).join('');
+  const acties = (s.acties || []).map((a, ai) =>
+    `<div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
+      <span style="flex:1;">▸ ${escHtml(a)}</span>
+      <button onclick="dumpActieNaarPlanner(${i},${ai})" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);border-radius:7px;color:#34d399;font-size:0.62em;font-weight:600;padding:2px 7px;cursor:pointer;white-space:nowrap;">📅 Planner</button>
+    </div>`
+  ).join('');
+  return `<div style="margin-top:8px;padding:9px 11px;background:rgba(124,111,240,0.06);border:1px solid rgba(124,111,240,0.2);border-radius:10px;font-family:Inter,sans-serif;font-size:0.72em;color:var(--text-dim);line-height:1.6;">
+    <div style="font-weight:700;color:var(--text);margin-bottom:4px;">${escHtml(s.samenvatting || '')}</div>
+    ${bullets ? `<ul style="margin:0 0 4px 16px;padding:0;">${bullets}</ul>` : ''}
+    ${acties}
+  </div>`;
+}
+
+async function dumpStructureer(i) {
+  const arr = dumpGet();
+  const d = arr[i];
+  if (!d) return;
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+  const btn = document.getElementById('dump-struct-btn-' + i);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ ...'; }
+  try {
+    const prompt = `Zet deze chaotische gedachte van Remy om in structuur.
+
+Gedachte:
+"""${d.text}"""
+
+Antwoord ALLEEN met geldige JSON, geen andere tekst, exact dit formaat:
+{"samenvatting":"1 zin die de kern samenvat","bullets":["kort bulletpoint","kort bulletpoint"],"acties":["concreet uitvoerbaar actiepunt"]}
+
+"acties" bevat alleen dingen die je letterlijk als taak in een planner zou kunnen zetten (concrete, uitvoerbare stappen) — laat leeg als de gedachte geen actie bevat.`;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: DUMP_STRUCT_MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const text = (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+    const json = JSON.parse(text.slice(text.indexOf('{'), text.lastIndexOf('}') + 1));
+    const structKey = d.id != null ? d.id : 'i' + i;
+    _dumpStructCache[structKey] = json;
+    const el = document.getElementById('dump-struct-' + i);
+    if (el) el.innerHTML = dumpStructRenderHtml(structKey, i);
+  } catch (e) {
+    smartFlash('⚠️ Structuur maken mislukt: ' + e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🧩 Structuur'; }
+  }
+}
+
+async function dumpActieNaarPlanner(i, ai) {
+  const arr = dumpGet();
+  const d = arr[i];
+  if (!d) return;
+  const structKey = d.id != null ? d.id : 'i' + i;
+  const s = _dumpStructCache[structKey];
+  const actie = s && s.acties && s.acties[ai];
+  if (!actie) return;
+  const datum = wpFmtDate(wpAddDays(new Date(), 1));
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items`, {
+      method: 'POST', headers: SB_POST_HDR,
+      body: JSON.stringify({ datum, tekst: actie, tijd: null, tijd_eind: null, categorie: 'taak', klaar: false, volgorde: 0 })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    smartFlash('✅ Actiepunt naar weekplanner gezet — morgen.');
+    s.acties.splice(ai, 1);
+    const el = document.getElementById('dump-struct-' + i);
+    if (el) el.innerHTML = dumpStructRenderHtml(structKey, i);
+  } catch (e) {
+    smartFlash('⚠️ Zetten in weekplanner mislukt: ' + e.message);
+  }
 }
 
 // Zet een gedachte direct als taak in de weekplanner (morgen, geen tijd) en haalt 'm uit de dump.
