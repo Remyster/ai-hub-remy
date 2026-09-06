@@ -1962,6 +1962,21 @@ header h1 {
 .hbtn:hover{ transform:translateY(-1px) !important; filter:brightness(1.18); }
 .header-btns{ gap:7px !important; }
 
+/* accent-pillen houden hun eigen kleurverloop.
+   De glas-laag hierboven zet background-image !important en wist daarmee het
+   gradient dat .hbtn-orakel / Vaste Lasten via de background-shorthand zetten —
+   die shorthand zet background-color meteen op transparent, dus wat overbleef
+   was een doorzichtige knop. Bij Welke AI? (donkere tekst #1a1a1a) betekende dat
+   zwarte letters op een zwarte achtergrond: onleesbaar. */
+.hbtn[onclick*="openVasteLasten"]{
+  background-image:linear-gradient(135deg,#38bdf8,#2f7ff2) !important;
+  background-color:#2f7ff2 !important; color:#fff !important;
+}
+.hbtn-orakel{
+  background-image:linear-gradient(135deg,#facc15,#f59e0b) !important;
+  background-color:#f59e0b !important; color:#1a1a1a !important;
+}
+
 /* ── rustiger voor wie geen animaties wil ── */
 @media (prefers-reduced-motion:reduce){
   .card, .card-ico, .hbtn{ transition:none !important; }
@@ -2457,9 +2472,12 @@ header h1 {
     <span class="pb-label">🔎 Wat zoek je?</span>
     <input id="dealfinder-input" placeholder="bijv: Marstek Venus E 3.0 in de aanbieding, of: waar koop ik een HomeWizard P1 meter meteen" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')dealfinderAsk()">
     <button class="pb-generate" id="dealfinder-ask-btn" onclick="dealfinderAsk()" style="margin-top:10px;">✨ Zoek actuele prijzen</button>
+    <button onclick="dealfinderAchtergrond()" style="width:100%;margin-top:8px;padding:11px 14px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:12px;color:#34d399;font-family:'Inter',sans-serif;font-size:0.78em;font-weight:600;cursor:pointer;">🔔 Zoek op de achtergrond — geef me een seintje</button>
+    <div style="font-size:0.66em;color:var(--muted);margin-top:6px;line-height:1.5;">Zoeken op de achtergrond sluit dit venster en meldt zich als het klaar is. Werkt zolang de hub ergens openstaat (tab of PWA) — er is geen server, dus e-mail of een melding met alles dicht kan niet.</div>
 
     <div class="pb-error" id="dealfinder-error"></div>
     <div id="dealfinder-answer" style="display:none;margin-top:16px;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:16px;font-size:0.82em;color:var(--text);line-height:1.7;white-space:pre-wrap;"></div>
+    <div id="dealfinder-hist"></div>
 
     <button class="pb-close-btn" onclick="closeDealfinder()">✕ Sluiten</button>
   </div>
@@ -2808,10 +2826,10 @@ header h1 {
 <div id="toolzoek-error" style="display:none;max-width:1160px;margin:10px auto 0;color:#f87171;font-family:'Inter',sans-serif;font-size:0.78em;"></div>
 
 <div id="dealfinder-bar" style="max-width:1160px;margin:8px auto 0;display:flex;gap:8px;flex-wrap:wrap;">
-  <input id="dealfinder-bar-input" type="text" placeholder="🛒 Prijs/aanbieding zoeken (bijv: HomeWizard P1 meter, waar koop ik dit meteen)" autocomplete="off"
+  <input id="dealfinder-bar-input" type="text" placeholder="🛒 Prijs/aanbieding zoeken in NL — je krijgt een seintje als het klaar is" autocomplete="off"
     style="flex:1;min-width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;box-shadow:var(--shadow-card);"
     onkeydown="if(event.key==='Enter')dealfinderBarAsk()">
-  <button onclick="dealfinderBarAsk()" style="padding:10px 16px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:12px;color:#34d399;font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;cursor:pointer;white-space:nowrap;">🛒 Zoek live</button>
+  <button onclick="dealfinderBarAsk()" style="padding:10px 16px;background:rgba(52,211,153,0.1);border:1px solid rgba(52,211,153,0.3);border-radius:12px;color:#34d399;font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;cursor:pointer;white-space:nowrap;" title="Zoekt op de achtergrond en meldt zich als het klaar is — je hoeft niet te wachten.">🛒 Zoek &amp; meld</button>
 </div>
 
 <div id="hero-strip">
@@ -8373,7 +8391,27 @@ async function socraticSend() {
 // AI Council/toolkitAsk, niet de gewone (niet-grounded) Claude-calls hierboven.
 // ══════════════════════════════════════════════
 const DEALFINDER_MODEL = 'x-ai/grok-4.5:online';
-const DEALFINDER_SYSPROMPT = "Je helpt Remy actuele prijzen en aanbiedingen vinden via live websearch. Zoek de huidige prijs, of waar iets in de aanbieding is, of waar hij het product nu direct kan kopen. Geef ALTIJD concrete winkelnamen en, indien mogelijk, een directe productlink. Verzin nooit een prijs of link — als je iets niet met zekerheid kunt vinden, zeg dat expliciet in plaats van te gokken.\n\nGeef ALLEEN het eindresultaat terug, in platte tekst zonder markdown-opmaak (geen **, geen [links](...)) — per relevante winkel één regel met winkelnaam, prijs en de kale URL. Geen inleiding, geen beschrijving van je zoekstappen (\"ik ga zoeken naar...\", \"ik check ook...\"), geen samenvattende slotzin. Maximaal circa 120 woorden.";
+const DEALFINDER_SYSPROMPT = "Je helpt Remy actuele prijzen en aanbiedingen vinden via live websearch. Zoek de huidige prijs, of waar iets in de aanbieding is, of waar hij het product nu direct kan kopen. Geef ALTIJD concrete winkelnamen en, indien mogelijk, een directe productlink. Verzin nooit een prijs of link — als je iets niet met zekerheid kunt vinden, zeg dat expliciet in plaats van te gokken.\n\nLAND — dit is een harde eis. Remy woont in Nederland. Neem UITSLUITEND winkels op die (a) in Nederland gevestigd zijn, of (b) aantoonbaar naar Nederland verzenden. Prijzen altijd in euro's, inclusief btw zoals een Nederlandse klant ze betaalt. Een buitenlandse winkel die niet naar Nederland levert laat je volledig weg — noem 'm niet, ook niet als vergelijking. Verzendt een winkel wel naar NL maar zit hij in het buitenland, zet dan achter die regel: (verzendt naar NL). Vind je in Nederland niets, zeg dat dan gewoon in plaats van uit te wijken naar buitenlandse winkels.\n\nTAAL — antwoord altijd in het Nederlands.\n\nGeef ALLEEN het eindresultaat terug, in platte tekst zonder markdown-opmaak (geen **, geen [links](...)) — per relevante winkel één regel met winkelnaam, prijs en de kale URL. Geen inleiding, geen beschrijving van je zoekstappen (\"ik ga zoeken naar...\", \"ik check ook...\"), geen samenvattende slotzin. Maximaal circa 120 woorden.";
+
+// De NL-eis staat ook hier, niet alleen in de prompt: het model mag zich
+// vergissen, maar een .de/.co.uk-link is in de tekst gewoon te zien. Deze
+// controle verwijdert niks (misschien verzenden ze wél naar NL) maar zet er
+// zichtbaar een waarschuwing onder.
+const DEALFINDER_BUITENLAND_TLDS = ['de','co.uk','uk','fr','it','es','pl','se','dk','no','fi','cz','at','ch','us','ca','cn','jp','au','ie','pt','hu','ro','gr'];
+function dealfinderBuitenlandseHosts(tekst) {
+  const hosts = new Set();
+  (tekst.match(/https?:\/\/[^\s)\]",]+/gi) || []).forEach(u => {
+    let h; try { h = new URL(u).hostname.toLowerCase().replace(/^www\./, ''); } catch (e) { return; }
+    if (DEALFINDER_BUITENLAND_TLDS.some(t => h.endsWith('.' + t))) hosts.add(h);
+  });
+  return [...hosts];
+}
+function dealfinderMetNlCheck(tekst) {
+  const vreemd = dealfinderBuitenlandseHosts(tekst);
+  if (!vreemd.length) return tekst;
+  return tekst + '\n\n⚠️ Buitenlandse winkel(s) in dit antwoord: ' + vreemd.join(', ') +
+         ' — check zelf even of ze naar Nederland verzenden voordat je bestelt.';
+}
 
 function openDealfinder(prefill) {
   document.getElementById('dealfinder-overlay').style.display = 'flex';
@@ -8382,6 +8420,7 @@ function openDealfinder(prefill) {
   const inp = document.getElementById('dealfinder-input');
   if (prefill != null) inp.value = prefill;
   inp.focus();
+  dealfinderRenderHistorie();
   if (prefill) dealfinderAsk();
 }
 function closeDealfinder() {
@@ -8391,12 +8430,14 @@ document.getElementById('dealfinder-overlay').addEventListener('click', function
   if (e.target === this) closeDealfinder();
 });
 
-// Ingang vanuit de bar direct onder de header — opent de overlay met de vraag al ingevuld
+// Ingang vanuit de bar direct onder de header — zoekt meteen op de achtergrond,
+// zodat je niet bij een draaiend rondje hoeft te blijven wachten.
 function dealfinderBarAsk() {
-  const val = document.getElementById('dealfinder-bar-input').value.trim();
+  const el = document.getElementById('dealfinder-bar-input');
+  const val = el.value.trim();
   if (!val) return;
-  openDealfinder(val);
-  document.getElementById('dealfinder-bar-input').value = '';
+  el.value = '';
+  dealfinderAchtergrond(val);
 }
 
 async function dealfinderAsk() {
@@ -8414,8 +8455,10 @@ async function dealfinderAsk() {
   outEl.textContent = '⏳ Bezig met live zoeken...';
 
   try {
-    const text = await callOpenRouter(DEALFINDER_MODEL, DEALFINDER_SYSPROMPT, vraag, 45000);
+    const text = dealfinderMetNlCheck(await callOpenRouter(DEALFINDER_MODEL, DEALFINDER_SYSPROMPT, vraag, 45000));
     outEl.textContent = text;
+    dealfinderBewaar(vraag, text);
+    dealfinderRenderHistorie();
   } catch (e) {
     outEl.style.display = 'none';
     errEl.textContent = '❌ ' + (e.message || 'onbekende fout');
@@ -8423,6 +8466,79 @@ async function dealfinderAsk() {
   } finally {
     btn.disabled = false; btn.textContent = oudeTekst;
   }
+}
+
+// ── Achtergrond-modus ──────────────────────────────────────────────
+// Er is geen server, dus geen echte push of e-mail: de fetch loopt gewoon door
+// in deze tab/PWA en meldt zich als hij klaar is. Doe je de hub helemaal dicht,
+// dan wordt het zoeken afgebroken — dat staat ook in de melding op het scherm.
+const DEALFINDER_HIST_KEY = 'dealfinder_resultaten_v1';
+
+function dealfinderHistGet() {
+  try { return JSON.parse(localStorage.getItem(DEALFINDER_HIST_KEY) || '[]'); } catch (e) { return []; }
+}
+function dealfinderBewaar(vraag, antwoord) {
+  const lijst = dealfinderHistGet();
+  lijst.unshift({ id: Date.now(), vraag: vraag, antwoord: antwoord, op: new Date().toISOString() });
+  try { localStorage.setItem(DEALFINDER_HIST_KEY, JSON.stringify(lijst.slice(0, 10))); } catch (e) {}
+}
+
+async function dealfinderAchtergrond(vraagArg) {
+  const inp = document.getElementById('dealfinder-input');
+  const vraag = (vraagArg != null ? vraagArg : inp.value).trim();
+  if (!vraag) { inp.focus(); return; }
+
+  // Toestemming vragen mag alleen vanuit een echte klik — dit ís er een.
+  remVraagToestemming();
+
+  closeDealfinder();
+  hubToast('🔎 Ik zoek "' + vraag.slice(0, 40) + '" op de achtergrond op — je krijgt een melding zodra het klaar is. Laat de hub wel openstaan.');
+
+  let tekst, fout = null;
+  try {
+    tekst = dealfinderMetNlCheck(await callOpenRouter(DEALFINDER_MODEL, DEALFINDER_SYSPROMPT, vraag, 90000));
+  } catch (e) {
+    fout = e.message || 'onbekende fout';
+  }
+
+  if (fout) {
+    hubToast('❌ Prijszoeken mislukt (' + vraag.slice(0, 30) + '): ' + fout);
+    return;
+  }
+
+  dealfinderBewaar(vraag, tekst);
+  const kop = '🛒 Prijzen gevonden: ' + vraag.slice(0, 50);
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    try {
+      const n = new Notification(kop, { body: tekst.slice(0, 180), icon: './icon-192.png', tag: 'hub-deal-' + Date.now() });
+      n.onclick = () => { window.focus(); openDealfinder(); dealfinderToon(0); n.close(); };
+    } catch (e) { /* per installatie verschillend; de toast hieronder komt altijd */ }
+  }
+  hubToast('✅ ' + kop + ' — klik op 🛒 Prijzen & Aanbiedingen om het te lezen.');
+}
+
+// Bewaarde resultaten onderin de overlay
+function dealfinderRenderHistorie() {
+  const box = document.getElementById('dealfinder-hist');
+  if (!box) return;
+  const lijst = dealfinderHistGet();
+  if (!lijst.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div style="font-size:0.7em;color:var(--muted);margin:14px 0 6px;">📋 Eerder gezocht</div>' +
+    lijst.map((r, i) => {
+      const d = new Date(r.op);
+      const wanneer = String(d.getDate()).padStart(2, '0') + '-' + String(d.getMonth() + 1).padStart(2, '0') + ' ' +
+                      String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+      return '<div onclick="dealfinderToon(' + i + ')" style="cursor:pointer;padding:7px 10px;margin-bottom:5px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;font-size:0.74em;color:var(--text);">' +
+             escHtml(r.vraag) + ' <span style="color:var(--muted);">· ' + wanneer + '</span></div>';
+    }).join('');
+}
+function dealfinderToon(i) {
+  const r = dealfinderHistGet()[i];
+  if (!r) return;
+  const outEl = document.getElementById('dealfinder-answer');
+  document.getElementById('dealfinder-input').value = r.vraag;
+  outEl.style.display = 'block';
+  outEl.textContent = r.antwoord;
 }
 
 // Scroll-to-top zichtbaarheid
