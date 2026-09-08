@@ -2302,6 +2302,28 @@ header h1 {
     </div>
     <div id="pb-type-hint" style="font-size:0.68em;color:#cc785c;background:rgba(204,120,92,0.07);border:1px solid rgba(204,120,92,0.18);border-radius:8px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
 
+    <span class="pb-label">🧭 Situatie</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+      <button type="button" id="pb-modus-nieuw" onclick="pbSetModus('nieuw')" style="flex:1;min-width:130px;background:rgba(204,120,92,0.18);border:1px solid rgba(204,120,92,0.45);color:#cc785c;border-radius:10px;padding:9px 12px;font-size:0.74em;font-family:'Inter',sans-serif;cursor:pointer;">✦ Nieuw idee</button>
+      <button type="button" id="pb-modus-lopend" onclick="pbSetModus('lopend')" style="flex:1;min-width:130px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:9px 12px;font-size:0.74em;font-family:'Inter',sans-serif;cursor:pointer;">🔄 Loopt al / bestaat al</button>
+    </div>
+
+    <div id="pb-project-wrap" style="display:none;background:rgba(56,189,248,0.05);border:1px solid rgba(56,189,248,0.2);border-radius:12px;padding:12px;margin-bottom:14px;">
+      <div style="font-size:0.64em;color:#38bdf8;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">📂 Project — waar bouwen we op voort?</div>
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:8px;">
+        <select id="pb-project-sel" onchange="pbProjectKies(this.value)" style="flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.74em;"></select>
+        <button type="button" onclick="pbProjectNieuw()" title="Nieuw project beginnen" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.3);color:#34d399;border-radius:8px;padding:7px 11px;font-size:0.8em;cursor:pointer;">+</button>
+        <button type="button" onclick="pbProjectVerwijder()" title="Dit project verwijderen" style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.28);color:#f87171;border-radius:8px;padding:7px 10px;font-size:0.8em;cursor:pointer;">✕</button>
+      </div>
+      <input id="pb-project-naam" placeholder="Naam van het project (bv. StekkerSlim blogs)" oninput="pbProjectDirty()" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.74em;margin-bottom:6px;">
+      <input id="pb-project-oms" placeholder="Waar gaat het over? (1 regel)" oninput="pbProjectDirty()" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.74em;margin-bottom:6px;">
+      <textarea id="pb-project-status" rows="3" placeholder="Waar staat het nu? Wat is al af, wat ligt er klaar, waar loopt het vast?" oninput="pbProjectDirty()" style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.74em;resize:vertical;margin-bottom:8px;"></textarea>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;">
+        <span id="pb-project-meta" style="font-size:0.63em;color:var(--muted);flex:1;min-width:120px;"></span>
+        <button type="button" id="pb-project-save" onclick="pbProjectOpslaan()" style="background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.3);color:#38bdf8;border-radius:8px;padding:6px 12px;font-size:0.7em;cursor:pointer;">💾 Bewaar project</button>
+      </div>
+    </div>
+
     <span class="pb-label">🧠 Context meesturen (optioneel)</span>
     <div id="pb-ctx-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:6px;"></div>
     <div id="pb-ctx-addform" style="display:none;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:8px;gap:6px;flex-direction:column;">
@@ -2314,7 +2336,7 @@ header h1 {
     </div>
     <button type="button" id="pb-ctx-addbtn" onclick="ctxShowAddForm()" style="background:none;border:1px dashed var(--border);color:var(--muted);border-radius:8px;padding:6px 10px;font-size:0.68em;cursor:pointer;margin-bottom:12px;">+ Nieuw context-blok</button>
 
-    <span class="pb-label">💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(167,139,250,0.12);color:#a78bfa;padding:1px 5px;border-radius:5px;">{{tags}}</code> voor herbruikbare stukken</span>
+    <span class="pb-label" id="pb-idee-label">💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(167,139,250,0.12);color:#a78bfa;padding:1px 5px;border-radius:5px;">{{tags}}</code> voor herbruikbare stukken</span>
     <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af... (of met tags: schrijf een e-mail naar {{naam}} over {{onderwerp}})"></textarea>
 
     <div id="pb-vars-wrap" style="display:none;margin-top:-10px;margin-bottom:16px;background:rgba(167,139,250,0.05);border:1px solid rgba(167,139,250,0.18);border-radius:10px;padding:10px 12px;">
@@ -2324,8 +2346,20 @@ header h1 {
 
     <div style="display:flex;gap:8px;">
       <button class="pb-generate" id="pb-gen-btn" onclick="generatePrompt()" style="flex:1;">✦ Genereer prompt</button>
+      <button class="pb-generate" id="pb-vraag-btn" onclick="pbVraagMeUit()" title="Claude stelt je eerst 1 tot 4 korte vragen, en schrijft daarna pas de prompt" style="flex:0 0 auto;width:auto;padding:14px 16px;background:rgba(52,211,153,0.1);border-color:rgba(52,211,153,0.3);color:#34d399;white-space:nowrap;">🎤 Vraag me uit</button>
       <button class="pb-generate" id="pb-chain-btn" onclick="pbChainSplit()" title="Hakt je idee op in 3 losse prompts die je ná elkaar plakt: Analyseer → Outline → Schrijf" style="flex:0 0 auto;width:auto;padding:14px 16px;background:rgba(167,139,250,0.1);border-color:rgba(167,139,250,0.3);color:#a78bfa;white-space:nowrap;">🔗 3 stappen</button>
     </div>
+
+    <div id="pb-vragen-wrap" style="display:none;margin-top:14px;background:rgba(52,211,153,0.05);border:1px solid rgba(52,211,153,0.22);border-radius:12px;padding:12px;">
+      <div style="font-size:0.64em;color:#34d399;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">🎤 Even scherp krijgen — antwoord kort, leeg laten mag</div>
+      <div id="pb-vragen-list" style="display:flex;flex-direction:column;gap:12px;"></div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button type="button" onclick="pbVragenKlaar()" style="flex:1;background:rgba(52,211,153,0.14);border:1px solid rgba(52,211,153,0.35);color:#34d399;border-radius:10px;padding:9px;font-size:0.74em;font-family:'Inter',sans-serif;cursor:pointer;">✦ Nu de prompt maken</button>
+        <button type="button" onclick="pbVragenAnnuleer()" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:9px 14px;font-size:0.74em;font-family:'Inter',sans-serif;cursor:pointer;">Overslaan</button>
+      </div>
+    </div>
+
+    <div id="pb-antw-badge" style="display:none;margin-top:10px;font-size:0.66em;color:#34d399;background:rgba(52,211,153,0.07);border:1px solid rgba(52,211,153,0.2);border-radius:8px;padding:7px 10px;line-height:1.45;"></div>
 
     <div id="pb-output-wrap">
       <div class="pb-output-label">✓ Geoptimaliseerde prompt</div>
@@ -6453,8 +6487,12 @@ function openPromptBuilder() {
   document.getElementById('pb-output-wrap').style.display = 'none';
   document.getElementById('pb-chain-wrap').style.display = 'none';
   document.getElementById('pb-error').style.display = 'none';
+  document.getElementById('pb-vragen-wrap').style.display = 'none';
   pbVarsValues = {};
   pbVarsRender();
+  pbAntwWissen();
+  pbSetModus(pbModus);
+  pbProjectenLoad();
   ctxLoad();
 }
 
@@ -6613,10 +6651,12 @@ REGELS:
 - Voeg relevante context toe die de gebruiker misschien vergeten is
 - Bij beeld: voeg altijd stijl, compositie en sfeer parameters toe
 - Bij code: voeg taalspecificatie en outputformat toe
-- Bij leren: volg het stappenpatroon uit het TYPE-blok hierboven letterlijk, schrijf geen enkele-losse-taak-prompt`;
+- Bij leren: volg het stappenpatroon uit het TYPE-blok hierboven letterlijk, schrijf geen enkele-losse-taak-prompt` +
+  (pbModus === 'lopend' ? PB_LOPEND_REGELS : '');
 
   const ctxText = ctxSelectedText();
   const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER (gebruik dit om de prompt persoonlijk en relevant te maken):\n${ctxText}\n\n` : '') +
+    pbExtraContext() +
     `Ruw idee van de gebruiker: "${ruwIdee}"\n\nSchrijf hier de geoptimaliseerde prompt voor:`;
 
   try {
@@ -6694,10 +6734,11 @@ TYPE: ${typeContext}
 Elke prompt moet op zichzelf direct kopieerbaar en bruikbaar zijn, kort en concreet, en stap 2 en 3 moeten expliciet verwijzen naar "je vorige antwoord". Schrijf in het Nederlands tenzij het onderwerp om Engels vraagt.
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{"analyseer":"...","outline":"...","schrijf":"..."}`;
+{"analyseer":"...","outline":"...","schrijf":"..."}` +
+  (pbModus === 'lopend' ? PB_LOPEND_REGELS : '');
 
   const ctxText = ctxSelectedText();
-  const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + `Taak: "${ruwIdee}"`;
+  const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + pbExtraContext() + `Taak: "${ruwIdee}"`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -6922,14 +6963,15 @@ REGELS:
 - Vraag om een concreet eindformat (lijst, tabel, stappenplan)
 - Herbruikbare delen (onderwerp, product, doelgroep, URL) als placeholder tussen blokhaken in hoofdletters, bijv. [ONDERWERP]
 
-Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens eromheen.`;
+Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens eromheen.` +
+  (pbModus === 'lopend' ? PB_LOPEND_REGELS : '');
       const ctxText = ctxSelectedText();
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
         body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2500,
           system: systeemPrompt,
-          messages: [{ role: 'user', content: (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + `Ruw idee: ${ruwIdee}` }]
+          messages: [{ role: 'user', content: (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + pbExtraContext() + `Ruw idee: ${ruwIdee}` }]
         })
       });
       const data = await resp.json();
@@ -7161,22 +7203,311 @@ const _sspGoToOrig = sspGoTo;
 sspGoTo = function(i) { _sspGoToOrig(i); sspSyncPositie(); };
 
 // ══════════════════════════════════════════════
+// LOPENDE PROJECTEN + UITVRAAG (Prompt Builder)
+// Twee dingen die samenwerken:
+//  1. modus 'lopend' — er ligt al werk, de prompt moet erop voortbouwen i.p.v.
+//     vanaf nul te beginnen. Projecten staan in Supabase (tabel pb_projecten),
+//     zodat de stand van zaken op elk apparaat hetzelfde is.
+//  2. 🎤 Vraag me uit — Claude stelt eerst 1 tot 4 vragen, jij beantwoordt ze,
+//     en pas daarna wordt de prompt geschreven. Twee API-calls, maar dat is
+//     inherent aan uitvragen: je kunt niet vragen en antwoorden in één call.
+// ══════════════════════════════════════════════
+let PB_PROJECTEN = [];
+let pbModus = 'nieuw';
+let pbProjectId = null;
+let pbInterviewTekst = '';
+const PB_PROJ_SEL_KEY = 'pb_laatste_project_v1';
+
+const PB_LABEL_NIEUW  = '💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(167,139,250,0.12);color:#a78bfa;padding:1px 5px;border-radius:5px;">{{tags}}</code> voor herbruikbare stukken';
+const PB_LABEL_LOPEND = '🎯 Wat moet er nu gebeuren? (de volgende stap, niet het hele project opnieuw)';
+const PB_PLH_NIEUW    = 'bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af... (of met tags: schrijf een e-mail naar {{naam}} over {{onderwerp}})';
+const PB_PLH_LOPEND   = 'bijv: de conclusie is slap en er staan geen interne links in, maak dat af zonder de rest te herschrijven';
+
+function pbSetModus(m) {
+  pbModus = m;
+  const bN = document.getElementById('pb-modus-nieuw');
+  const bL = document.getElementById('pb-modus-lopend');
+  const aan = { nieuw: 'rgba(204,120,92,0.18)|rgba(204,120,92,0.45)|#cc785c', lopend: 'rgba(56,189,248,0.18)|rgba(56,189,248,0.45)|#38bdf8' };
+  [['nieuw', bN], ['lopend', bL]].forEach(([k, b]) => {
+    if (!b) return;
+    if (k === m) { const [bg, br, kl] = aan[k].split('|'); b.style.background = bg; b.style.borderColor = br; b.style.color = kl; }
+    else { b.style.background = 'rgba(255,255,255,0.03)'; b.style.borderColor = 'var(--border)'; b.style.color = 'var(--muted)'; }
+  });
+  const wrap = document.getElementById('pb-project-wrap');
+  if (wrap) wrap.style.display = (m === 'lopend') ? 'block' : 'none';
+  const lbl = document.getElementById('pb-idee-label');
+  if (lbl) lbl.innerHTML = (m === 'lopend') ? PB_LABEL_LOPEND : PB_LABEL_NIEUW;
+  const inp = document.getElementById('pb-input');
+  if (inp) inp.placeholder = (m === 'lopend') ? PB_PLH_LOPEND : PB_PLH_NIEUW;
+  if (m === 'lopend' && !PB_PROJECTEN.length) pbProjectenLoad();
+}
+
+async function pbProjectenLoad() {
+  try {
+    PB_PROJECTEN = await sbGet('pb_projecten', 'select=id,naam,omschrijving,status,updated_at&order=updated_at.desc');
+  } catch (e) { console.error('Projecten laden mislukt:', e); PB_PROJECTEN = []; }
+  const bewaard = Number(localStorage.getItem(PB_PROJ_SEL_KEY) || 0);
+  if (bewaard && PB_PROJECTEN.some(p => p.id === bewaard)) pbProjectId = bewaard;
+  pbProjectRender();
+}
+
+function pbProjectRender() {
+  const sel = document.getElementById('pb-project-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— nieuw / niet opgeslagen —</option>' +
+    PB_PROJECTEN.map(p => `<option value="${p.id}" ${p.id === pbProjectId ? 'selected' : ''}>${escHtml(p.naam)}</option>`).join('');
+  const p = PB_PROJECTEN.find(x => x.id === pbProjectId);
+  document.getElementById('pb-project-naam').value   = p ? (p.naam || '') : '';
+  document.getElementById('pb-project-oms').value    = p ? (p.omschrijving || '') : '';
+  document.getElementById('pb-project-status').value = p ? (p.status || '') : '';
+  pbProjectMeta();
+}
+
+function pbProjectMeta(tekst) {
+  const el = document.getElementById('pb-project-meta');
+  if (!el) return;
+  if (tekst) { el.textContent = tekst; return; }
+  const p = PB_PROJECTEN.find(x => x.id === pbProjectId);
+  if (!p) { el.textContent = 'Vul in en bewaar, dan onthoudt de hub dit project.'; return; }
+  const eerder = pbProjectPrompts(p.naam).length;
+  const dt = p.updated_at ? new Date(p.updated_at).toLocaleDateString('nl-NL') : '';
+  el.textContent = `Bijgewerkt ${dt}${eerder ? ` · ${eerder} eerdere prompt${eerder === 1 ? '' : 's'} in dit project` : ''}`;
+}
+
+function pbProjectDirty() { pbProjectMeta('Niet opgeslagen — klik 💾 Bewaar project.'); }
+
+function pbProjectKies(v) {
+  pbProjectId = v ? Number(v) : null;
+  try { localStorage.setItem(PB_PROJ_SEL_KEY, String(pbProjectId || '')); } catch {}
+  pbProjectRender();
+}
+
+function pbProjectNieuw() {
+  pbProjectId = null;
+  try { localStorage.removeItem(PB_PROJ_SEL_KEY); } catch {}
+  pbProjectRender();
+  const n = document.getElementById('pb-project-naam');
+  if (n) n.focus();
+}
+
+async function pbProjectOpslaan() {
+  const naam  = document.getElementById('pb-project-naam').value.trim();
+  const oms   = document.getElementById('pb-project-oms').value.trim();
+  const status= document.getElementById('pb-project-status').value.trim();
+  if (!naam) { alert('⚠️ Geef het project eerst een naam.'); return; }
+  try {
+    if (pbProjectId) {
+      await sbPatch('pb_projecten', `id=eq.${pbProjectId}`, { naam, omschrijving: oms, status, updated_at: new Date().toISOString() });
+    } else {
+      await sbPost('pb_projecten', { naam, omschrijving: oms, status, updated_at: new Date().toISOString() });
+    }
+    const vorige = pbProjectId;
+    await pbProjectenLoad();
+    if (!vorige) {
+      const nieuw = PB_PROJECTEN.find(p => p.naam === naam);
+      if (nieuw) pbProjectKies(nieuw.id);
+    }
+    pbProjectMeta('✅ Opgeslagen.');
+  } catch (e) {
+    pbProjectMeta('❌ Opslaan mislukt: ' + (e.message || 'onbekende fout'));
+  }
+}
+
+async function pbProjectVerwijder() {
+  if (!pbProjectId) { pbProjectNieuw(); return; }
+  const p = PB_PROJECTEN.find(x => x.id === pbProjectId);
+  if (!confirm(`Project "${p ? p.naam : ''}" verwijderen? De bewaarde prompts blijven staan.`)) return;
+  await fetch(`${SB_URL}/rest/v1/pb_projecten?id=eq.${pbProjectId}`, { method: 'DELETE', headers: SB_POST_HDR });
+  pbProjectId = null;
+  try { localStorage.removeItem(PB_PROJ_SEL_KEY); } catch {}
+  await pbProjectenLoad();
+}
+
+// Naam van het project zoals het nu in de velden staat (ook als het nog niet bewaard is)
+function pbProjectNaam() {
+  if (pbModus !== 'lopend') return '';
+  return (document.getElementById('pb-project-naam')?.value || '').trim();
+}
+
+function pbProjectPrompts(naam) {
+  if (!naam) return [];
+  return pblibGet().filter(x => (x.project || '') === naam);
+}
+
+// Het blok dat aan élke generatie-call wordt meegegeven (los, ketting én multi)
+function pbProjectBlok() {
+  if (pbModus !== 'lopend') return '';
+  const naam = pbProjectNaam();
+  const oms  = (document.getElementById('pb-project-oms')?.value || '').trim();
+  const st   = (document.getElementById('pb-project-status')?.value || '').trim();
+  if (!naam && !oms && !st) return '';
+  let t = 'LOPEND PROJECT — dit werk bestaat al. De prompt moet hierop VOORTBOUWEN, niet opnieuw beginnen:\n';
+  if (naam) t += `Project: ${naam}\n`;
+  if (oms)  t += `Waar het over gaat: ${oms}\n`;
+  if (st)   t += `Stand van zaken nu: ${st}\n`;
+  const eerder = pbProjectPrompts(naam).slice(0, 3);
+  if (eerder.length) {
+    t += 'Eerder in dit project gevraagd (dit is al gedaan, vraag het niet nog eens):\n' +
+         eerder.map(e => '- ' + e.text.slice(0, 160).replace(/\s+/g, ' ')).join('\n') + '\n';
+  }
+  return t + '\n';
+}
+
+const PB_LOPEND_REGELS = `
+
+LET OP — DIT WORDT EEN VERVOLGPROMPT (het project loopt al):
+- De prompt mag NIET vragen om iets vanaf nul op te zetten. Er ligt al werk; de opdracht is de volgende stap daarin.
+- Zet bovenaan een kort blok met de stand van zaken, en een placeholder [HUIDIGE VERSIE] waar de gebruiker het bestaande materiaal (tekst, code, pagina, cijfers) inplakt.
+- Laat de AI EERST in maximaal 3 regels samenvatten wat er ligt en wat er volgens de opdracht moet veranderen, en pas daarna aan de slag gaan, zodat een misverstand meteen zichtbaar wordt.
+- Benoem expliciet wat ONGEWIJZIGD moet blijven (bestaande structuur, toon, werkende code) en dat alleen het gevraagde deel verandert.
+- Vraag om alleen het gewijzigde deel terug te geven als het bestaande materiaal lang is, tenzij de opdracht juist om een volledige herschrijving vraagt.`;
+
+// Alles wat bovenop het ruwe idee aan de user-message wordt geplakt
+function pbExtraContext() {
+  return pbProjectBlok() + (pbInterviewTekst ? pbInterviewTekst + '\n' : '');
+}
+
+// ── 🎤 Uitvraag ──────────────────────────────
+let pbVragenData = [];
+let pbVragenAntw = {};
+
+async function pbVraagMeUit() {
+  if (pbLoading) return;
+  const ruwIdee = pbCompiledIdee();
+  if (!ruwIdee) { document.getElementById('pb-input').focus(); return; }
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+
+  pbLoading = true;
+  const btn = document.getElementById('pb-vraag-btn');
+  const oud = btn.textContent;
+  btn.disabled = true; btn.textContent = '⏳ Nadenken...';
+  document.getElementById('pb-error').style.display = 'none';
+
+  const systeem = `Je bent een prompt engineer die eerst uitvraagt voordat hij schrijft. De gebruiker (Remy, Nederlands) geeft een ruw idee. Jij stelt de vragen die je écht nodig hebt om er daarna een perfecte prompt van te maken.
+
+REGELS:
+- Minimaal 1, maximaal 4 vragen. Liever 2 goede dan 4 slappe.
+- Stel alleen vragen waarvan het antwoord de prompt daadwerkelijk verandert (doel, doelgroep, omvang, format, wat er al ligt, wat juist niet mag veranderen).
+- Stel NOOIT een vraag waarvan het antwoord al in het idee of de meegegeven context staat.
+- Korte vragen in gewone taal, geen jargon, geen meerdere vragen in één zin.
+- Geef bij elke vraag 2 tot 4 waarschijnlijke antwoorden als 'opties' zodat de gebruiker kan klikken in plaats van typen. Zijn die er niet zinnig, geef dan een lege lijst.
+- 'waarom' is één korte zin: wat je met dat antwoord gaat doen in de prompt.
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{"vragen":[{"vraag":"...","waarom":"...","opties":["...","..."]}]}`;
+
+  const ctxText = ctxSelectedText();
+  const userMsg = (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') +
+    pbProjectBlok() +
+    `Type taak: ${PB_TYPES[pbType] || ''}\nDoelplatform: ${(PB_PLATFORMS[pbPlatform] || {}).naam || 'Claude'}\n\nRuw idee: "${ruwIdee}"`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, system: systeem, messages: [{ role: 'user', content: userMsg }] })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
+    const tekst = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    let parsed = null;
+    try { parsed = JSON.parse(tekst); } catch {
+      const m = tekst.match(/\{[\s\S]*\}/);
+      if (m) { try { parsed = JSON.parse(m[0]); } catch {} }
+    }
+    const vragen = (parsed && Array.isArray(parsed.vragen)) ? parsed.vragen.filter(v => v && v.vraag).slice(0, 4) : [];
+    if (!vragen.length) throw new Error('Kon de vragen niet uitlezen — probeer opnieuw of genereer direct');
+    pbVragenData = vragen;
+    pbVragenAntw = {};
+    pbVragenRender();
+  } catch (err) {
+    const errEl = document.getElementById('pb-error');
+    errEl.textContent = '❌ ' + (err.message || 'Onbekende fout');
+    errEl.style.display = 'block';
+  } finally {
+    pbLoading = false;
+    btn.disabled = false; btn.textContent = oud;
+  }
+}
+
+function pbVragenRender() {
+  const wrap = document.getElementById('pb-vragen-wrap');
+  const list = document.getElementById('pb-vragen-list');
+  if (!wrap || !list) return;
+  list.innerHTML = pbVragenData.map((v, i) => {
+    const opties = Array.isArray(v.opties) ? v.opties.filter(o => o && String(o).trim()).slice(0, 4) : [];
+    return `
+    <div>
+      <div style="font-size:0.76em;color:var(--text);font-weight:600;margin-bottom:3px;">${i + 1}. ${escHtml(v.vraag)}</div>
+      ${v.waarom ? `<div style="font-size:0.64em;color:var(--muted);margin-bottom:6px;">${escHtml(v.waarom)}</div>` : ''}
+      ${opties.length ? `<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;">${opties.map(o =>
+        `<button type="button" onclick="pbVraagOptie(${i}, this.dataset.val)" data-val="${escHtml(String(o))}" style="background:rgba(52,211,153,0.09);border:1px solid rgba(52,211,153,0.25);color:#34d399;border-radius:20px;padding:4px 10px;font-size:0.66em;font-family:'Inter',sans-serif;cursor:pointer;">${escHtml(String(o))}</button>`
+      ).join('')}</div>` : ''}
+      <input type="text" id="pb-vraag-antw-${i}" value="${escHtml(pbVragenAntw[i] || '')}" oninput="pbVragenAntw[${i}]=this.value" placeholder="jouw antwoord..."
+        style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:7px 9px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.74em;">
+    </div>`;
+  }).join('');
+  wrap.style.display = 'block';
+  wrap.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function pbVraagOptie(i, val) {
+  const inp = document.getElementById(`pb-vraag-antw-${i}`);
+  if (!inp) return;
+  inp.value = inp.value.trim() ? inp.value.trim() + ', ' + val : val;
+  pbVragenAntw[i] = inp.value;
+}
+
+function pbVragenKlaar() {
+  const regels = pbVragenData.map((v, i) => {
+    const a = (pbVragenAntw[i] || '').trim();
+    return a ? `V: ${v.vraag}\nA: ${a}` : null;
+  }).filter(Boolean);
+  pbInterviewTekst = regels.length ? 'ANTWOORDEN VAN DE GEBRUIKER OP JE VRAGEN (verwerk deze in de prompt, vraag er niet nogmaals naar):\n' + regels.join('\n') : '';
+  document.getElementById('pb-vragen-wrap').style.display = 'none';
+  pbAntwBadge();
+  generatePrompt();
+}
+
+function pbVragenAnnuleer() {
+  document.getElementById('pb-vragen-wrap').style.display = 'none';
+  pbVragenData = []; pbVragenAntw = {};
+}
+
+function pbAntwBadge() {
+  const el = document.getElementById('pb-antw-badge');
+  if (!el) return;
+  if (!pbInterviewTekst) { el.style.display = 'none'; return; }
+  const n = (pbInterviewTekst.match(/(^|\n)V: /g) || []).length;
+  el.innerHTML = `🎤 ${n} beantwoorde ${n === 1 ? 'vraag zit' : 'vragen zitten'} in deze prompt verwerkt. <a href="#" onclick="pbAntwWissen();return false;" style="color:#34d399;text-decoration:underline;">wissen</a>`;
+  el.style.display = 'block';
+}
+
+function pbAntwWissen() {
+  pbInterviewTekst = '';
+  pbVragenData = []; pbVragenAntw = {};
+  pbAntwBadge();
+}
+
+// ══════════════════════════════════════════════
 // PROMPT BIBLIOTHEEK (Prompt Builder)
 // ══════════════════════════════════════════════
 const PBLIB_KEY = 'remy_prompt_library_v1';
 function pblibGet() { try { return JSON.parse(localStorage.getItem(PBLIB_KEY)||'[]'); } catch { return []; } }
 function pblibSave(arr) { try { localStorage.setItem(PBLIB_KEY, JSON.stringify(arr.slice(0,50))); } catch {} }
-function pblibAdd(promptText, platform) {
+function pblibAdd(promptText, platform, project) {
   if (!promptText || !promptText.trim()) return;
   const lib = pblibGet();
-  lib.unshift({ text: promptText.trim(), platform: platform||'', ts: Date.now() });
+  lib.unshift({ text: promptText.trim(), platform: platform||'', project: project||'', ts: Date.now() });
   pblibSave(lib);
 }
 function pblibSaveCurrentPrompt() {
   const out = document.getElementById('pb-output');
   if (!out || !out.value.trim()) return;
-  pblibAdd(out.value, pbPlatform);
+  pblibAdd(out.value, pbPlatform, pbProjectNaam());
   pblibRender();
+  pbProjectMeta();
   const cnt = document.getElementById('pb-lib-count');
   if (cnt) cnt.textContent = pblibGet().length;
   const lib = document.getElementById('pb-lib');
@@ -7190,14 +7521,14 @@ function pblibRender() {
   if (cnt) cnt.textContent = lib.length;
   if (!lib.length) { list.innerHTML = '<div style="font-size:0.7em;color:var(--muted);padding:8px;">Nog niks bewaard — genereer een prompt en klik 💾 Bewaar.</div>'; return; }
   const q = (document.getElementById('pb-lib-search')?.value || '').trim().toLowerCase();
-  const gefilterd = q ? lib.filter(p => p.text.toLowerCase().includes(q) || (p.platform||'').toLowerCase().includes(q)) : lib;
+  const gefilterd = q ? lib.filter(p => p.text.toLowerCase().includes(q) || (p.platform||'').toLowerCase().includes(q) || (p.project||'').toLowerCase().includes(q)) : lib;
   if (!gefilterd.length) { list.innerHTML = `<div style="font-size:0.7em;color:var(--muted);padding:8px;">Niks gevonden voor "${escHtml(q)}".</div>`; return; }
   list.innerHTML = gefilterd.map((p) => {
     const i = lib.indexOf(p);
     return `
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;">
       <div style="font-size:0.66em;color:var(--muted);margin-bottom:5px;display:flex;justify-content:space-between;">
-        <span>${p.platform||'algemeen'} · ${new Date(p.ts).toLocaleDateString('nl-NL')}</span>
+        <span>${p.project ? '📂 ' + escHtml(p.project) + ' · ' : ''}${p.platform||'algemeen'} · ${new Date(p.ts).toLocaleDateString('nl-NL')}</span>
         <span>
           <button onclick="pblibCopy(${i})" style="background:none;border:none;color:#10b981;cursor:pointer;font-size:1em;padding:0 4px;" title="Kopieer">📋</button>
           <button onclick="pblibDelete(${i})" style="background:none;border:none;color:#f87171;cursor:pointer;font-size:1em;padding:0 4px;" title="Verwijder">✕</button>

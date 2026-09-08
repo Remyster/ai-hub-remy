@@ -36,7 +36,7 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **URL:** `https://mdslvdrsggpksqrbtwci.supabase.co`
 - **Variabelen in code:** `SB_URL`, `SB_KEY`
 - **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
-- **Tabellen:** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `app_settings`, `weekplanner_items`, `brain_dumps`, `context_blocks`
+- **Tabellen:** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `app_settings`, `weekplanner_items`, `brain_dumps`, `context_blocks`, `pb_projecten`
 
 **Let op:** Supabase heeft de oude `anon`/`service_role` JWT-keys vervangen door
 `publishable`/`secret` keys (nieuw format, onafhankelijk te roteren, betere
@@ -446,7 +446,59 @@ Permissive policies zijn bewust — app gebruikt anon keys zonder user auth.
 
 ---
 
+## Prompt Builder — lopende projecten + uitvraag (8 september 2026)
+
+De builder schreef altijd een "vanaf nul"-prompt. Er zijn nu twee dingen bij die samenwerken.
+
+### 1. Situatie: ✦ Nieuw idee / 🔄 Loopt al
+Schakelaar boven de context-blokken (`pbSetModus`). Bij **Loopt al** verandert er drie dingen:
+- Het 📂 Project-blok verschijnt.
+- Het idee-label wordt "Wat moet er nu gebeuren? (de volgende stap, niet het hele project opnieuw)".
+- `PB_LOPEND_REGELS` wordt aan de systeemprompt geplakt van álle drie de generatie-paden
+  (los, 🔗 3 stappen, 🔀 Multi). Die regels dwingen af: niet vanaf nul, een placeholder
+  `[HUIDIGE VERSIE]` waar het bestaande materiaal in gaat, eerst in max 3 regels laten
+  samenvatten wat er ligt en wat er verandert, en expliciet benoemen wat ongewijzigd blijft.
+
+### 2. Projecten (tabel `pb_projecten`, Project B)
+`id, naam, omschrijving, status, volgorde, created_at, updated_at` — RLS aan met de
+gebruikelijke `anon_all`-policy. CRUD via `pbProjectenLoad()` / `pbProjectOpslaan()` /
+`pbProjectVerwijder()`, zelfde patroon als `context_blocks`. Laatst gekozen project staat
+in localStorage (`pb_laatste_project_v1`) zodat de builder er weer op openstaat.
+
+`pbProjectBlok()` bouwt het contextblok dat aan elke generatie meegaat: naam, waar het over
+gaat, stand van zaken, plus de laatste 3 prompts die je onder dat project bewaarde ("dit is
+al gedaan, vraag het niet nog eens"). Die komen uit de bestaande localStorage-bibliotheek —
+`pblibAdd()` heeft er een `project`-veld bij gekregen, geen tweede tabel.
+
+**Waarom Supabase en niet localStorage:** de status van een project is precies het soort
+ding dat je op de telefoon bijwerkt en op de pc weer nodig hebt. De prompt-bibliotheek zelf
+blijft wél lokaal (was al zo).
+
+### 3. 🎤 Vraag me uit
+Knop naast Genereer. Eén Haiku-call geeft JSON terug met **1 tot 4** vragen, elk met een
+`waarom` (één zin: wat er met dat antwoord gebeurt) en 2–4 klikbare `opties`, zodat je vaak
+niet hoeft te typen. Je antwoorden gaan als `V:/A:`-blok mee in de generatie-call. Een groene
+badge onder de knoppen laat zien dat de antwoorden in de prompt verwerkt zitten, met een
+wis-link. "↻ Andere versie" hergebruikt dezelfde antwoorden.
+
+**Dit zijn bewust 2 betaalde calls** (vragen, dan prompt) — dat is inherent aan uitvragen,
+geen fallback-constructie zoals de dubbele call die eerder is teruggedraaid. Wie het niet
+nodig heeft klikt gewoon Genereer en betaalt één call.
+
+De uitvraag krijgt het projectblok ook mee, dus hij vraagt niet naar dingen die al in de
+status staan.
+
+---
+
 ## Changelog
+
+### 8 september 2026
+- **Prompt Builder uitgebreid naar lopende projecten** — zie de sectie hierboven. Nieuwe
+  tabel `pb_projecten` (Project B, RLS aan), modusschakelaar, en de 🎤-uitvraag die eerst
+  1–4 vragen stelt voordat de prompt geschreven wordt. Getest via lokale server + Chrome:
+  project opslaan/herladen/kiezen, uitvraag met echte Haiku-call, en de gegenereerde
+  vervolgprompt (bevatte netjes `[HUIDIGE VERSIE]` + samenvat-eerst-stap). Testproject en
+  test-prompt daarna weer opgeruimd.
 
 ### 3 september 2026 (deel 6)
 - **Skeleton-loaders i.p.v. "Laden..."-tekst.** Nieuwe herbruikbare `.skel-bar`-CSS
