@@ -492,6 +492,18 @@ status staan.
 
 ## Changelog
 
+### 8 september 2026 (deel 2)
+- **🎯 Welke AI? kiest weer alleen uit algemene AI's.** Sinds de samenvoeging met de oude
+  "Route"-knop (3 sep, deel 3) kreeg `orakelAsk()` zowel `ROUTER_AGENTS` (eigen
+  Claude-projecten) als `ORAKEL_LIJST` mee, waardoor een vraag als "blog schrijven" of
+  "Facebook-ads maken" StekkerPen/StekkerBoost/Stekkerslim Bouwen opleverde. Maar de vraag
+  achter deze knop is "welke AI van álle AI's kan dit het beste?", niet "welk eigen project".
+  `ROUTER_AGENTS` is verwijderd (nergens anders gebruikt), de prompt en de match-code kennen
+  alleen nog `ORAKEL_LIJST`, en de "algemene AI"-tag in de uitslag is weg (overbodig nu er
+  maar één soort uitkomst is). Uitleg in de modal en de header-tooltip aangepast. Getest via
+  lokale server + Chrome met twee echte calls: "blog schrijven over zonnepanelen" → Claude,
+  "ads maken voor Facebook" → ChatGPT (voorheen StekkerPen resp. StekkerBoost).
+
 ### 8 september 2026
 - **Prompt Builder uitgebreid naar lopende projecten** — zie de sectie hierboven. Nieuwe
   tabel `pb_projecten` (Project B, RLS aan), modusschakelaar, en de 🎤-uitvraag die eerst

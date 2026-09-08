@@ -2467,7 +2467,7 @@ header h1 {
 <div id="orakel-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
   <div id="orakel-modal" style="background:#0d0e18;border:1px solid rgba(102,126,234,0.2);border-radius:22px;padding:32px 28px 24px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title">🎯 Welke AI?</div>
-    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent. Kijkt eerst of één van je eigen werk-agents (Stekkerslim, Voltex Coder, Dr. NeuroCut, ...) past, en anders welke algemene AI — met de vraag meteen op je klembord.</div>
+    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent en hoor welke AI dit het beste kan — Claude, Perplexity, ChatGPT, Grok, Gemini, DeepSeek, Kimi, NotebookLM of Copilot. Met de vraag meteen op je klembord. (Gaat niet over je eigen Claude-projecten; die staan gewoon op de hub.)</div>
 
     <span class="pb-label">💬 Waar wil je hulp bij?</span>
     <input id="orakel-input" placeholder="bijv: ik wil weten of een contract eerlijk is" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')orakelAsk()">
@@ -2831,7 +2831,7 @@ header h1 {
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
-      <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen of één van je eigen werk-agents past, of anders welke algemene AI (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM).">🎯 Welke AI?</span>
+      <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen welke AI dit het beste kan (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM).">🎯 Welke AI?</span>
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
@@ -8548,9 +8548,11 @@ document.getElementById('orakel-overlay').addEventListener('click', function(e) 
   if (e.target === this) closeOrakel();
 });
 
-// Combineert wat vroeger 2 losse dingen waren: de "Welke AI?"-vraagbaak (koos alleen uit
-// ORAKEL_LIJST, via OpenRouter) en de smart-bar "Route"-knop (koos ook uit je eigen
-// werk-agents, via Claude). Overlapten voor >90% — nu 1 knop, 1 call, allebei de lijsten.
+// Kiest ALLEEN uit de algemene AI's (ORAKEL_LIJST). De eigen Claude-projecten
+// (StekkerPen/Boost/Desk, Stekkerslim Bouwen, Voltex, AI Hubby) stonden hier eerder ook in,
+// via de samenvoeging met de oude "Route"-knop — maar dan kreeg je op de vraag "welke AI kan
+// dit het beste?" je eigen project terug, terwijl de vraag juist over het hele AI-landschap
+// gaat. 8 september 2026 er weer uit gehaald; dit is bewust, niet per ongeluk.
 async function orakelAsk() {
   const inp = document.getElementById('orakel-input');
   const vraag = inp.value.trim();
@@ -8568,22 +8570,17 @@ async function orakelAsk() {
   outEl.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">⏳ Bezig...</span>';
 
   try {
-    // Eén call, twee opties: een specifiek werk-project van Remy, óf — als de vraag daar niet
-    // bij past — een algemene AI. Bewust geen 2e (betaalde) call naar OpenRouter erbij.
-    const prompt = `Kies wat het beste past bij deze vraag/notitie van Remy: één van zijn specifieke
-werk-projecten, of — als geen daarvan past — een algemene AI. Herschrijf de vraag ook tot een
-duidelijke, volledige vraag.
+    // Eén call: welke van de algemene AI's kan dit het beste, plus de vraag netjes herschreven.
+    const prompt = `Welke AI kan Remy hier het beste mee helpen? Kies uit onderstaande lijst met
+algemene AI-tools. Herschrijf de vraag ook tot een duidelijke, volledige vraag.
 
-WERK-PROJECTEN (alleen kiezen als de vraag daadwerkelijk over dit specifieke domein gaat):
-${ROUTER_AGENTS.map(a => '- ' + a.name + ': ' + a.desc).join('\n')}
-
-ALGEMENE AI'S (kiezen bij een gewone, actuele of privé-vraag die bij geen werk-project past):
+AI'S OM UIT TE KIEZEN:
 ${ORAKEL_LIJST.map(a => '- ' + a.n + ': ' + a.d).join('\n')}
 
 Wat Remy typte: "${vraag}"
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
-{"naam":"exacte naam uit een van beide lijsten hierboven","reden":"max 1 korte zin waarom deze past","vraag":"herschreven, volledige vraag"}
+{"naam":"exacte naam uit de lijst hierboven","reden":"max 1 korte zin waarom deze het beste past","vraag":"herschreven, volledige vraag"}
 
 Voor "vraag": maak van wat Remy typte (vaak kort, telegramstijl, of een half zinnetje) een
 nette, volledige vraag zoals je 'm zou stellen — behoud de bedoeling en alle
@@ -8600,9 +8597,8 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     let parsed = null;
     try { parsed = JSON.parse(antwoord.replace(/```json|```/g, '').trim()); } catch(e) {}
     const naam = parsed && parsed.naam ? String(parsed.naam).toLowerCase() : '';
-    const agent = naam && ROUTER_AGENTS.find(a => naam.includes(a.name.toLowerCase()));
-    const algemeen = !agent && naam && ORAKEL_LIJST.find(a => naam.includes(a.n.toLowerCase()));
-    if (!agent && !algemeen) {
+    const algemeen = naam && ORAKEL_LIJST.find(a => naam.includes(a.n.toLowerCase()));
+    if (!algemeen) {
       outEl.style.display = 'none';
       errEl.textContent = '🤔 Geen duidelijke match — probeer je vraag specifieker te maken.';
       errEl.style.display = 'block';
@@ -8616,11 +8612,11 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     try { document.execCommand('copy'); } catch(e) {}
     document.body.removeChild(tmp);
 
-    const gekozen = agent ? { naam: agent.name, url: agent.url, tag: 'jouw werk-agent' } : { naam: algemeen.n, url: algemeen.u, tag: 'algemene AI' };
+    const gekozen = { naam: algemeen.n, url: algemeen.u, tag: '' };
     outEl.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🎯 Dit zou ik pakken</div>
       <a href="${gekozen.url}" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 12px;border-radius:9px;text-decoration:none;background:rgba(255,255,255,0.02);margin-bottom:10px;">
         <span style="color:var(--text);font-size:0.86em;font-weight:600;">${escHtml(gekozen.naam)}</span>
-        <span style="color:var(--muted);font-size:0.68em;text-transform:uppercase;letter-spacing:0.05em;margin-left:8px;">${escHtml(gekozen.tag)}</span>
+        ${gekozen.tag ? `<span style="color:var(--muted);font-size:0.68em;text-transform:uppercase;letter-spacing:0.05em;margin-left:8px;">${escHtml(gekozen.tag)}</span>` : ''}
         ${reden ? `<span style="color:var(--muted);font-size:0.78em;display:block;margin-top:3px;line-height:1.5;">${escHtml(reden)}</span>` : ''}
       </a>
       <div style="font-size:0.76em;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px 11px;">📋 Je vraag staat op je klembord: "${escHtml(nettevraag)}"</div>`;
@@ -9421,20 +9417,9 @@ categorie is exact één van: WEEKPLANNER-TAAK, BLOG-IDEE, STEKKERSLIM-SITE, AI-
   }
 }
 
-// ══════════════════════════════════════════════
-// AGENT ROUTER — lijst werk-agents voor de 🎯 Welke AI?-knop (orakelAsk, hierboven)
-// ══════════════════════════════════════════════
-const ROUTER_AGENTS = [
-  // Nova R&D en Atlas zijn puur voor PWN-werk (drinkwater) — bewust niet in deze
-  // lijst, anders krijg je ze voorgesteld bij privé-vragen die er niks mee te maken hebben.
-  { name: 'Dr. NeuroCut', desc: 'medische vragen, ADHD, medicatie, gewicht, gezondheid', url: 'https://claude.ai/project/019c8aa5-f843-7141-b663-cb017a540215' },
-  { name: 'Voltex Coder', desc: 'code, Home Assistant, Tuya, Excel, programmeren, debuggen', url: 'https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6' },
-  { name: 'AI Hubby', desc: 'alles over de AI Hub zelf, features, aanpassingen aan het dashboard', url: 'https://claude.ai/project/019d8198-c3d7-7004-a846-5221dd83acb1' },
-  { name: 'Stekkerslim Bouwen', desc: 'StekkerSlim.nl site bouwen, HTML aanpassen, keuren, publiceren', url: 'https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1' },
-  { name: 'StekkerPen', desc: 'blogs schrijven, Pinterest content voor StekkerSlim', url: 'https://claude.ai/project/019d81ab-821e-759d-ab21-47cb923f03cf' },
-  { name: 'StekkerBoost', desc: 'Facebook ads, marketing campagnes StekkerSlim', url: 'https://claude.ai/project/019d81ab-2911-729d-93f0-64301e8be8e9' },
-  { name: 'StekkerDesk', desc: 'bezoekersvragen en support StekkerSlim', url: 'https://claude.ai/project/019d81ab-d45b-7540-bcf1-4e20c00d75d8' }
-];
+// ROUTER_AGENTS (de lijst eigen werk-projecten) stond hier — 8 september 2026 verwijderd
+// samen met het gebruik ervan in orakelAsk(). De 🎯 Welke AI?-knop gaat over het hele
+// AI-landschap, niet over je eigen Claude-projecten. Die staan gewoon op de hub-kaarten.
 
 // ══════════════════════════════════════════════
 // AUTO-PLAATS — AI bepaalt waar een dumptje hoort
