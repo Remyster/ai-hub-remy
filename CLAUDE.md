@@ -490,7 +490,57 @@ status staan.
 
 ---
 
+## AI-infokaarten (`AI_INFO`, 8 september 2026)
+
+`AI_INFO` is de **enige** plek waar per AI staat wat hij is, waar je 'm voor pakt en waar de
+grens ligt. Drie dingen leunen erop, zodat ze niet uit elkaar kunnen lopen:
+
+1. de infokaart-overlay (`openAiInfo(key)` / `#aiinfo-overlay`) achter elke kaart in de
+   Algemeen-sectie — klikken opent eerst uitleg, de knop "→ Open X" gaat pas naar de site
+   (de `href` blijft staan, dus middenklik/nieuw tabblad gaat nog rechtstreeks)
+2. `ORAKEL_LIJST` — wordt uit `AI_INFO` afgeleid (`routerD`-veld), niet apart onderhouden
+3. de knop "ℹ️ Wat kan X precies?" in de uitslag van 🎯 Welke AI?
+
+Velden per AI: `emoji, naam, url, kort, routerD, waarvoor, scenarios[], jouw, letop`.
+
+**Naam-matching:** `aiInfoKeyVoorNaam()` sorteert op langste naam eerst — anders wint
+"Gemini" van "Gemini Notebook", want die bevat het woord Gemini. Losse alias voor de oude
+naam "NotebookLM". Deze functie doet ook de match in `orakelAsk()`.
+
+**Toon van de teksten:** geen "de beste in X" — dat is in 2026 niet meer waar en verandert
+per taak. Wel: waar pak je 'm concreet voor, wat doe ík ermee, en wat is de grens. Elke AI
+heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te stellig waren
+(bijv. "NotebookLM verzint niks bij" — het verzint minder, niet niks).
+
+---
+
 ## Changelog
+
+### 8 september 2026 (deel 3)
+- **AI-infokaarten toegevoegd** — zie de sectie hierboven. Klik op een AI-kaart opent nu een
+  paneel met "waar je 'm voor pakt / bij mij / let op" en pas daarna de site. Ook bereikbaar
+  vanuit de uitslag van 🎯 Welke AI?.
+- **Feitelijke correcties in de AI-teksten**, na een externe review die Remy aanleverde en
+  die ik heb nagetrokken:
+  - `Claude / Dex` → `Claude`. "Dex" is geen Anthropic-tool (het is een personal-CRM-app);
+    stond zowel op de kaart als in `PB_PLATFORMS.claude.naam`.
+  - `NotebookLM` → `Gemini Notebook`. Google heeft de tool op 16 juli 2026 hernoemd; zelfde
+    product, zelfde adres (notebooklm.google). Geverifieerd via blog.google en 9to5google.
+  - Kimi-URL `www.kimi.com` → `www.kimi.ai`. Beide werken, maar `.com` opent in het Chinees
+    en `.ai` in het Engels — dat was Remy's klacht.
+  - Copilot heeft nu ook een kaart (stond alleen in `ORAKEL_LIJST`, dus je kon 'm nergens
+    aanklikken).
+  - Alle "beste in X"-claims afgezwakt, en de te stellige beloftes weg: DeepSeek rekent niet
+    "zonder fouten", Grok toont "wat er op X gezegd wordt" en niet "de publieke opinie",
+    Gemini Notebook verzint minder maar niet niks, ChatGPT is meer dan foto's en sport.
+- **Prompt Builder: `PB_GROOT_REGEL`.** Uit een door Remy aangeleverde Gemini-systeemprompt
+  was één regel echt nieuw t.o.v. wat de builder al deed: bij een groot project moet de
+  gegenereerde prompt de AI eerst een genummerd werkplan laten voorleggen en dan pas fase
+  voor fase uitvoeren, in plaats van alles in één antwoord proppen. Toegevoegd aan het losse
+  en het multi-platform pad (het 🔗 3 stappen-pad faseert al). De rest van die prompt
+  (XML voor Claude, few-shot voor ChatGPT, zoekgericht voor Perplexity) stond al in
+  `PB_PLATFORMS`; de markdown-code-block-eis is bewust *niet* overgenomen — de hub heeft een
+  kopieerknop, dan zijn backticks in het tekstvak alleen maar ruis.
 
 ### 8 september 2026 (deel 2)
 - **🎯 Welke AI? kiest weer alleen uit algemene AI's.** Sinds de samenvoeging met de oude

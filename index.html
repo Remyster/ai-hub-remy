@@ -2003,6 +2003,29 @@ header h1 {
 .skel-bar:last-child{ margin-bottom:0; }
 .skel-bar.w100{ width:100%; } .skel-bar.w80{ width:80%; } .skel-bar.w60{ width:60%; } .skel-bar.w40{ width:40%; }
 @media (prefers-reduced-motion:reduce){ .skel-bar{ animation:none; background:rgba(255,255,255,0.06); } }
+
+/* ── AI-infokaart (openAiInfo): uitleg vóór je doorklikt naar de AI zelf ── */
+.aiinfo-kop{
+  font-size:0.68em; font-weight:700; letter-spacing:0.09em; text-transform:uppercase;
+  color:rgba(56,189,248,0.9); margin:18px 0 7px; font-family:'Inter',sans-serif;
+}
+.aiinfo-lijst{ margin:0; padding-left:18px; }
+.aiinfo-lijst li{ color:var(--text-dim); font-size:0.82em; line-height:1.55; margin-bottom:6px; }
+.aiinfo-jouw{
+  margin:0; font-size:0.82em; line-height:1.55; color:var(--text-dim);
+  background:rgba(56,189,248,0.07); border-radius:10px; padding:9px 12px;
+}
+.aiinfo-letop{
+  margin:0; font-size:0.8em; line-height:1.55; color:var(--text-dim);
+  background:rgba(251,146,60,0.07); border-left:3px solid rgba(251,146,60,0.5);
+  border-radius:0 10px 10px 0; padding:9px 12px;
+}
+.aiinfo-go{
+  display:block; text-align:center; margin-top:20px; padding:12px 14px; border-radius:12px;
+  text-decoration:none; font-weight:700; font-size:0.85em; color:#08131c;
+  background:linear-gradient(135deg,#38bdf8,#22d3ee); box-shadow:0 4px 16px rgba(56,189,248,0.3);
+}
+.aiinfo-go:hover{ transform:translateY(-1px); box-shadow:0 6px 22px rgba(56,189,248,0.45); }
 </style>
 
 <script>
@@ -2467,7 +2490,7 @@ header h1 {
 <div id="orakel-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
   <div id="orakel-modal" style="background:#0d0e18;border:1px solid rgba(102,126,234,0.2);border-radius:22px;padding:32px 28px 24px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title">🎯 Welke AI?</div>
-    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent en hoor welke AI dit het beste kan — Claude, Perplexity, ChatGPT, Grok, Gemini, DeepSeek, Kimi, NotebookLM of Copilot. Met de vraag meteen op je klembord. (Gaat niet over je eigen Claude-projecten; die staan gewoon op de hub.)</div>
+    <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent en hoor welke AI dit het handigst kan — Claude, Perplexity, ChatGPT, Grok, Gemini, DeepSeek, Kimi, Gemini Notebook of Copilot. Met de vraag meteen op je klembord, en een knop om te lezen wat die AI precies kan. (Gaat niet over je eigen Claude-projecten; die staan gewoon op de hub.)</div>
 
     <span class="pb-label">💬 Waar wil je hulp bij?</span>
     <input id="orakel-input" placeholder="bijv: ik wil weten of een contract eerlijk is" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:12px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')orakelAsk()">
@@ -2477,6 +2500,16 @@ header h1 {
     <div id="orakel-answer" style="display:none;margin-top:16px;background:rgba(52,211,153,0.06);border:1px solid rgba(52,211,153,0.3);border-radius:14px;padding:16px;"></div>
 
     <button class="pb-close-btn" onclick="closeOrakel()">✕ Sluiten</button>
+  </div>
+</div>
+
+<!-- AI-INFOKAART: klik op een AI-kaart (of op "meer hierover" in de Welke AI?-uitslag) opent
+     eerst dit paneel — waar die AI voor is, wat je er in de praktijk mee doet, en waar je op
+     moet letten. Pas met de knop onderin ga je naar de site zelf. -->
+<div id="aiinfo-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1001;display:none;align-items:center;justify-content:center;padding:20px;">
+  <div id="aiinfo-modal" style="background:#0d0e18;border:1px solid rgba(56,189,248,0.2);border-radius:22px;padding:28px 26px 22px;max-width:640px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+    <div id="aiinfo-body"></div>
+    <button class="pb-close-btn" onclick="closeAiInfo()">✕ Sluiten</button>
   </div>
 </div>
 
@@ -2831,7 +2864,7 @@ header h1 {
     <div class="clock" id="clock">laden...</div>
     <div class="header-btns">
       <span class="hbtn" style="color:#38bdf8;background:rgba(56,189,248,0.08);border-color:rgba(56,189,248,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
-      <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen welke AI dit het beste kan (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, NotebookLM).">🎯 Welke AI?</span>
+      <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen welke AI dit het handigst kan (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, Gemini Notebook).">🎯 Welke AI?</span>
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#fbbf24;background:rgba(251,191,36,0.1);border-color:rgba(251,191,36,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
@@ -3058,47 +3091,54 @@ header h1 {
 
   <!-- ALGEMEEN -->
   <section class="section" id="sec-general">
-    <div class="section-label">Algemeen</div>
+    <div class="section-label">Algemeen <span style="opacity:0.5;font-weight:400;text-transform:none;letter-spacing:0;">— klik voor uitleg, daarna door naar de site</span></div>
     <div class="grid">
-      <a href="https://claude.ai/new" class="card general" target="_blank" rel="noopener noreferrer">
+      <!-- Klik opent eerst de infokaart (openAiInfo); de href blijft staan zodat
+           middenklik/nieuw tabblad nog rechtstreeks naar de AI gaat. -->
+      <a href="https://claude.ai/new" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('claude', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>✨ Claude / Dex</h2><p>Beste in schrijven &amp; code — lange, precieze teksten</p>
+        <h2>✨ Claude</h2><p>Schrijven, code en grote projecten</p>
         <p class="voorbeeld">→ algemeen: teksten, e-mails, code, documenten uitpluizen, moeilijke dingen simpel uitgelegd<br>→ bij mij: StekkerSlim-blog schrijven, of deze hub verbouwen</p>
       </a>
-      <a href="https://www.perplexity.ai/" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://www.perplexity.ai/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('perplexity', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>❓ Perplexity</h2><p>Beste voor actuele feiten — altijd met bronvermelding</p>
+        <h2>❓ Perplexity</h2><p>Actuele feiten en prijzen — met de bron erbij</p>
         <p class="voorbeeld">→ algemeen: iets opzoeken en zeker weten dat het klopt — nieuws, prijzen, regels, wetten<br>→ bij mij: "klopt die salderingsregel nog in 2026?" — mét bron</p>
       </a>
-      <a href="https://chatgpt.com/" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://chatgpt.com/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('chatgpt', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💬 ChatGPT</h2><p>Allrounder — beeld, spraak en data-analyse in één</p>
-        <p class="voorbeeld">→ algemeen: foto's, spraakgesprekken, plaatjes maken, Excel-lijstjes doorrekenen<br>→ bij mij: foto van de meterkast erin en laten uitleggen</p>
+        <h2>💬 ChatGPT</h2><p>De allrounder — foto's, bestanden, data, beeld</p>
+        <p class="voorbeeld">→ algemeen: foto's lezen, Excel en data doorrekenen, grafieken, beeld maken, spraak, webonderzoek<br>→ bij mij: foto van de meterkast erin en laten uitleggen</p>
       </a>
-      <a href="https://grok.com/" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://grok.com/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('grok', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🚀 Grok</h2><p>Beste voor wat nú op X speelt — direct en ongefilterd</p>
-        <p class="voorbeeld">→ algemeen: wat er nú gezegd wordt op X, meningen, rellen, hypes, zonder omzichtig gedoe<br>→ bij mij: wat roepen mensen deze week over thuisbatterijen</p>
+        <h2>🚀 Grok</h2><p>Wat er nú op X gezegd wordt</p>
+        <p class="voorbeeld">→ algemeen: reacties, hypes en vroege signalen op X — snel, maar niet representatief<br>→ bij mij: wat roepen mensen deze week over thuisbatterijen</p>
       </a>
-      <a href="https://gemini.google.com/u/0/app" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://gemini.google.com/u/0/app" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('gemini', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🤖 Gemini</h2><p>Beste bij lange documenten &amp; Google-spullen — royaal gratis</p>
+        <h2>🤖 Gemini</h2><p>Lange documenten &amp; je Google-omgeving</p>
         <p class="voorbeeld">→ algemeen: dikke PDF's en video's samenvatten, en werkt mee in Gmail, Drive en Docs<br>→ bij mij: hele Kennisbank doorlezen en de gaten aanwijzen</p>
       </a>
-      <a href="https://chat.deepseek.com/" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://chat.deepseek.com/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('deepseek', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🐋 DeepSeek</h2><p>Beste in redeneren, wiskunde &amp; code — gratis onbeperkt</p>
-        <p class="voorbeeld">→ algemeen: rekenwerk, logische puzzels, code die stuk is — denkt stap voor stap, gratis onbeperkt<br>→ bij mij: terugverdientijd doorrekenen, of een script dat niet wil</p>
+        <h2>🐋 DeepSeek</h2><p>Redeneren, code en rekenwerk — goedkoop</p>
+        <p class="voorbeeld">→ algemeen: rekenwerk, logische puzzels, code die stuk is — denkt stap voor stap<br>→ bij mij: terugverdientijd doorrekenen, of een script dat niet wil</p>
       </a>
-      <a href="https://www.kimi.com/" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://www.kimi.ai/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('kimi', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🌙 Kimi</h2><p>Beste bij enorme lappen tekst — hele boeken of codebases</p>
+        <h2>🌙 Kimi</h2><p>Enorme lappen tekst — documentsets of codebases</p>
         <p class="voorbeeld">→ algemeen: een heel boek, contract of jaarrapport in één keer erin en er vragen over stellen<br>→ bij mij: dik rapport of je hele index.html in één keer erin</p>
       </a>
-      <a href="https://notebooklm.google.com/?pli=1" class="card general" target="_blank" rel="noopener noreferrer">
+      <a href="https://notebooklm.google.com/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('notebook', event)">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>📓 NotebookLM</h2><p>Beste om jóúw eigen documenten uit te vragen</p>
-        <p class="voorbeeld">→ algemeen: je eigen documenten uploaden en alleen daaruit antwoord krijgen — verzint niks bij<br>→ bij mij: PWN-stukken erin en er een podcast van laten maken</p>
+        <h2>📓 Gemini Notebook</h2><p>Je eigen documenten, met citaten (was NotebookLM)</p>
+        <p class="voorbeeld">→ algemeen: je eigen bronnen uploaden en antwoorden krijgen die naar de passage terugwijzen<br>→ bij mij: PWN-stukken erin en er een podcast van laten maken</p>
+      </a>
+      <a href="https://copilot.microsoft.com/" class="card general" target="_blank" rel="noopener noreferrer" onclick="openAiInfo('copilot', event)">
+        <span class="recent-tag">▲ recent</span><div class="dot"></div>
+        <h2>🪟 Copilot</h2><p>Zit in Windows en Microsoft 365</p>
+        <p class="voorbeeld">→ algemeen: handig als het bestand toch al in Word, Excel of Outlook staat<br>→ bij mij: op het werk, waar Office de standaard is</p>
       </a>
 
     </div>
@@ -4381,6 +4421,9 @@ document.addEventListener('keydown', e => {
   const active = document.activeElement;
   const typing = active && (active.tagName==='INPUT'||active.tagName==='TEXTAREA');
   if (e.key==='Escape') {
+    // AI-infokaart ligt bovenop de andere overlays (z-index 1001), dus die eerst.
+    const aiinfo = document.getElementById('aiinfo-overlay');
+    if (aiinfo && aiinfo.style.display === 'flex') { closeAiInfo(); return; }
     if (document.getElementById('apikey-modal').classList.contains('show')) { closeApiKeyModal(); return; }
     if (document.getElementById('kosten-modal').classList.contains('show')) { closeKostenModal(); return; }
     if (document.getElementById('ssp-archive-overlay').classList.contains('show')) { closeSspArchive(); return; }
@@ -6403,7 +6446,7 @@ function agendaModalToevoegen() {
 // ══════════════════════════════════════════════
 const PB_PLATFORMS = {
   claude: {
-    naam: 'Claude / Dex',
+    naam: 'Claude',
     instructie: `Je optimaliseert prompts voor Claude (Anthropic). Claude is goed in: redeneren, nuance, lange context, instructies volgen, creatief schrijven, code. Claude werkt het beste met:
 - Duidelijke rol + context bovenaan ("Je bent een...")
 - Expliciete stijlinstructies (toon, lengte, format)
@@ -6652,6 +6695,7 @@ REGELS:
 - Bij beeld: voeg altijd stijl, compositie en sfeer parameters toe
 - Bij code: voeg taalspecificatie en outputformat toe
 - Bij leren: volg het stappenpatroon uit het TYPE-blok hierboven letterlijk, schrijf geen enkele-losse-taak-prompt` +
+  PB_GROOT_REGEL +
   (pbModus === 'lopend' ? PB_LOPEND_REGELS : '');
 
   const ctxText = ctxSelectedText();
@@ -6964,6 +7008,7 @@ REGELS:
 - Herbruikbare delen (onderwerp, product, doelgroep, URL) als placeholder tussen blokhaken in hoofdletters, bijv. [ONDERWERP]
 
 Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens eromheen.` +
+  PB_GROOT_REGEL +
   (pbModus === 'lopend' ? PB_LOPEND_REGELS : '');
       const ctxText = ctxSelectedText();
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -7352,6 +7397,13 @@ function pbProjectBlok() {
   }
   return t + '\n';
 }
+
+// Bij een groot verzoek ("bouw een app", "zet een compleet systeem op") levert een AI in één
+// beurt meestal iets halfs: de eerste onderdelen uitgewerkt, de rest afgeraffeld of verzonnen.
+// Deze regel laat de gegenereerde prompt daarom zelf om een werkplan vragen, met een
+// akkoordmoment ertussen. Alleen voorwaardelijk geformuleerd — bij een kleine taak doet hij niks.
+const PB_GROOT_REGEL = `
+- ALS het idee een groot of samengesteld project is (een app, een website, een compleet systeem, meerdere onderdelen tegelijk): laat de prompt de AI eerst een genummerd werkplan opstellen met de fases en per fase het op te leveren resultaat, dat plan laten voorleggen, en pas daarna fase voor fase uitvoeren — nooit alles in één antwoord. Bij een kleine, afgebakende taak sla je dit over.`;
 
 const PB_LOPEND_REGELS = `
 
@@ -8522,17 +8574,185 @@ async function toolzoekAsk() {
 // Zelfde opzet als toolkitAsk(): de hele lijst past in één prompt, dus geen
 // zoekindex nodig. Haiku kiest uit de vaste set AI's die Remy al gebruikt
 // (zie de Algemeen-sectie) — geen StekkerSlim-agents, dat is een andere vraag.
-const ORAKEL_LIJST = [
-  { n: 'Claude', u: 'https://claude.ai/new', d: 'Beste in schrijven & code — lange, precieze teksten, moeilijke dingen simpel uitgelegd, documenten uitpluizen' },
-  { n: 'Perplexity', u: 'https://www.perplexity.ai/', d: 'Beste voor actuele feiten met bronvermelding — nieuws, prijzen, regels, wetten, "klopt dit nog?"' },
-  { n: 'ChatGPT', u: 'https://chatgpt.com/', d: 'Allrounder — foto\'s, spraakgesprekken, plaatjes maken, Excel-lijstjes doorrekenen' },
-  { n: 'Grok', u: 'https://grok.com/', d: 'Beste voor wat nú op X speelt — meningen, hypes, rellen, direct en ongefilterd' },
-  { n: 'Gemini', u: 'https://gemini.google.com/u/0/app', d: 'Beste bij lange documenten & Google-spullen — dikke PDF\'s en video\'s samenvatten, werkt mee in Gmail/Drive/Docs' },
-  { n: 'DeepSeek', u: 'https://chat.deepseek.com/', d: 'Beste in redeneren, wiskunde & code — denkt stap voor stap, gratis onbeperkt' },
-  { n: 'Kimi', u: 'https://www.kimi.com/', d: 'Beste bij enorme lappen tekst — een heel boek, contract of hele codebase in één keer erin' },
-  { n: 'NotebookLM', u: 'https://notebooklm.google.com/?pli=1', d: 'Beste om jóúw eigen documenten uit te vragen — verzint niks bij, alleen antwoord uit wat je uploadt' },
-  { n: 'Copilot', u: 'https://copilot.microsoft.com/', d: 'Geïntegreerd in Windows en Microsoft 365 — handig als het werk al in Word/Excel/Outlook zit' }
-];
+// AI_INFO is de enige plek waar per AI staat wat hij is, waar je hem voor pakt en waar je
+// op moet letten. Drie dingen leunen erop, zodat ze niet uit elkaar kunnen lopen:
+//   1. de infokaart (openAiInfo) achter de AI-kaarten in de Algemeen-sectie
+//   2. ORAKEL_LIJST — de lijst die de 🎯 Welke AI?-knop aan het model voorlegt (hieronder
+//      afgeleid, niet apart onderhouden)
+//   3. de "ℹ️ Wat kan het"-knop in de uitslag van diezelfde knop
+// Toon: geen "de beste in X" — dat is in 2026 nauwelijks nog waar en verandert per taak.
+// Wel: waar pak je 'm in de praktijk voor, en wat is de grens.
+const AI_INFO = {
+  claude: {
+    emoji: '✨', naam: 'Claude', url: 'https://claude.ai/new',
+    kort: 'Schrijven, code en grote projecten — sterk in lange, precieze teksten',
+    routerD: 'schrijven en redigeren, complexe code, websites/apps bouwen, grote projecten stap voor stap opzetten, documenten uitpluizen, moeilijke dingen simpel uitgelegd',
+    waarvoor: 'Een sterke keuze zodra iets langer, preciezer of gestructureerder moet dan een chatantwoord. Kan code, HTML-pagina\'s en kleine werkende tools direct als artifact opleveren, zodat je meteen ziet wat eruit komt.',
+    scenarios: [
+      'Website of tooltje bouwen — vertellen wat je wilt, stap voor stap de code terugkrijgen',
+      'Een nieuw project opzetten: structuur, doelgroep, pagina-indeling, eerste contentbriefings',
+      'Formele e-mails, offertes en instructies opstellen of technische tekst herschrijven',
+      'Een lange tekst laten redigeren zonder dat de toon verandert'
+    ],
+    jouw: 'StekkerSlim-blogs schrijven (StekkerPen), de site verbouwen (Stekkerslim Bouwen) en deze hub zelf — die draait op Claude Code.',
+    letop: 'Niet automatisch de beste keus: voor actuele prijzen pak je een zoek-AI, en bij een hele bestaande codebase telt een goede git-workflow en tests zwaarder dan welk model je gebruikt.'
+  },
+  perplexity: {
+    emoji: '❓', naam: 'Perplexity', url: 'https://www.perplexity.ai/',
+    kort: 'Actuele feiten en prijzen — altijd met de bron erbij',
+    routerD: 'actuele feiten, prijzen, aanbiedingen, wetgeving, subsidies, "klopt dit nog?", meerdere bronnen naast elkaar zetten',
+    waarvoor: 'Zoekt live op het web en zet de bronnen onder het antwoord. De logische keuze als het antwoord van vandaag moet zijn en niet van vorig jaar.',
+    scenarios: [
+      'Aanbiedingen vergelijken — welke webshop is nu het goedkoopst voor die airco of warmtepomp',
+      'Checken of een subsidie, energieregel of belastingregel dit jaar nog geldt',
+      'Technisch vooronderzoek: drie thuisbatterijen vergelijken op garantie, noodstroom en ervaringen',
+      'Een claim natrekken die je ergens las, mét de originele bron'
+    ],
+    jouw: 'Factcheck-stap in de blog-pipeline (stap 2 en 6) en de affiliate-prijscontrole voor StekkerSlim.',
+    letop: 'Bronvermelding is niet hetzelfde als kloppen. Vraag bij prijzen altijd om exacte uitvoering, totaalprijs inclusief verzending en de datum van de check — anders vergelijk je een vanaf-prijs met een ander model.'
+  },
+  chatgpt: {
+    emoji: '💬', naam: 'ChatGPT', url: 'https://chatgpt.com/',
+    kort: 'De allrounder — foto\'s, bestanden, data, beeld en spraak in één',
+    routerD: 'allrounder: foto- en screenshot-analyse, Excel/CSV en data-analyse met grafieken, beeld genereren, spraak, webonderzoek, plannen, leren, schrijven en code',
+    waarvoor: 'Onderschat hem niet als "die van de plaatjes". Hij leest foto\'s en bestanden, rekent met Python, maakt grafieken, doet webonderzoek en schrijft code. Voor een keten van taken achter elkaar vaak de handigste.',
+    scenarios: [
+      'Foto van een leiding, aansluiting of meterkast erin en laten uitleggen wat je ziet',
+      'Excel- of meetdata uploaden, laten opschonen, afwijkingen laten zoeken en er een grafiek van maken',
+      'Weekschema voor training of voeding op maat, afgestemd op je dagen en herstel',
+      'Bonnetje fotograferen en de kosten laten uitsplitsen'
+    ],
+    jouw: 'Snelle foto-vragen in huis en rekenwerk waar je even geen zin in hebt.',
+    letop: 'Bij elektra, gas, drukleidingen of gezondheid is een foto-antwoord een eerste indruk, geen goedkeuring. Gebruik het om betere vragen te stellen aan een installateur of arts.'
+  },
+  grok: {
+    emoji: '🚀', naam: 'Grok', url: 'https://grok.com/',
+    kort: 'Wat er nú op X gezegd wordt — trends, reacties, hypes',
+    routerD: 'wat er nu op X speelt: reacties, hypes, sentiment, vroege signalen over een product, storing of gebeurtenis',
+    waarvoor: 'Zit direct aan X vast en kan posts, threads en trends doorzoeken. Goed voor snelheid en vroege signalen.',
+    scenarios: [
+      'Wat zeggen mensen deze week over die nieuwe firmware of dat product',
+      'Eerste indruk van een storing, lancering of gebeurtenis, voordat het nieuws is',
+      'Reputatiecheck: welke klachten komen steeds terug bij een merk'
+    ],
+    jouw: 'Reviewstap in de blog-pipeline en de UX-blik in de Site Guardian-pipeline.',
+    letop: 'Dit is wat er op X gezegd wordt, niet "de publieke opinie". X is een specifieke, luidruchtige groep, en posts kunnen fout, gecoördineerd of satirisch zijn. Check het daarna elders.'
+  },
+  gemini: {
+    emoji: '🤖', naam: 'Gemini', url: 'https://gemini.google.com/u/0/app',
+    kort: 'Lange documenten en je Google-omgeving (Gmail, Drive, Docs)',
+    routerD: 'lange documenten en PDF\'s, video samenvatten, en alles wat in Gmail, Drive, Docs, Sheets of Agenda zit',
+    waarvoor: 'Vooral logisch als het werk toch al in Google staat. Groot contextvenster, dus dikke documenten in één keer.',
+    scenarios: [
+      'Dikke handleiding, contract of offertebundel erin en er gericht vragen over stellen',
+      'Lange mailthread laten samenvatten met de openstaande acties eruit',
+      'Drive doorzoeken: welke documenten gaan hierover, wat verschilt er tussen versies'
+    ],
+    jouw: 'SEO- en content-gap-stappen in de pipelines, met de Kennisbank uit Drive als bron.',
+    letop: 'Hoeveel context en welke functies je krijgt verschilt per abonnement en instelling. "Agenda beheren" betekent meestal voorstellen doen — kijk goed welke rechten je weggeeft voordat iets echt mag wijzigen.'
+  },
+  deepseek: {
+    emoji: '🐋', naam: 'DeepSeek', url: 'https://chat.deepseek.com/',
+    kort: 'Redeneren, code en technische analyse — sterke prijs/prestatie',
+    routerD: 'stap voor stap redeneren, wiskunde, doorrekenen van scenario\'s, code debuggen, technische logica uitpluizen',
+    waarvoor: 'Denkt hardop en in stappen, wat helpt bij rekenwerk en vastgelopen code. Goedkoop tot gratis, dus prima als extra denkkracht naast je vaste tool.',
+    scenarios: [
+      'Terugverdientijd van zonnepanelen, thuisbatterij of laadpaal doorrekenen — inclusief aannames',
+      'Een Excel-formule, script of Home Assistant-automatisering stap voor stap ontleden',
+      'Voorwaarden en uitzonderingen van een regeling als beslisboom uitschrijven'
+    ],
+    jouw: 'Los rekenwerk en tweede mening op code, naast Claude.',
+    letop: 'Geen enkel model rekent "zonder fouten". Vraag om expliciete aannames en een controleberekening, zeker als er geld aan hangt.'
+  },
+  kimi: {
+    emoji: '🌙', naam: 'Kimi', url: 'https://www.kimi.ai/',
+    kort: 'Enorme lappen tekst — hele documentsets of codebases',
+    routerD: 'heel veel tekst in één keer: dikke rapporten, complete contracten, hele codebases of grote documentsets vergelijken',
+    waarvoor: 'Gemaakt voor lange context. Handig als het simpelweg te veel is om in stukken te knippen.',
+    scenarios: [
+      'Twee versies van een contract of protocol laten vergelijken op wijzigingen en tegenstrijdigheden',
+      'Een map met codebestanden erin om fouten te laten opsporen',
+      'Meerdere rapporten tegelijk doorzoeken op één concrete vraag'
+    ],
+    jouw: 'Zit als vierde model in de AI Council.',
+    letop: 'Gebruik www.kimi.ai — dat is de Engelse ingang; kimi.com opent in het Chinees. En "hele codebase in één keer fixen" werkt in de praktijk niet: laat eerst in kaart brengen, dan één probleem tegelijk, dan testen.'
+  },
+  notebook: {
+    emoji: '📓', naam: 'Gemini Notebook', url: 'https://notebooklm.google.com/',
+    kort: 'Je eigen documenten als kennisbank — antwoorden met citaten (heette NotebookLM)',
+    routerD: 'vragen stellen over je eigen geüploade documenten, met citaten terug naar de bron; ook podcast/audio-overzicht van je eigen stukken',
+    waarvoor: 'Je uploadt je eigen bronnen — PDF\'s, Docs, websites, transcripten — en stelt daar vragen over. Antwoorden verwijzen terug naar de passage waar ze vandaan komen.',
+    scenarios: [
+      'Alle handleidingen van je apparaten in één notebook, en gewoon vragen hoe iets ook alweer moest',
+      'Werkprotocollen en logboeken erin: "welke kalibratiefrequentie staat er in onze documentatie?"',
+      'Contracten doorzoeken op opzegtermijn, garantie of aansprakelijkheid',
+      'Audio Overview: er een luisterbaar gesprek van laten maken voor onderweg'
+    ],
+    jouw: 'PWN-stukken erin en er onderweg naar luisteren.',
+    letop: 'Google noemt dit sinds juli 2026 Gemini Notebook; het is dezelfde tool op hetzelfde adres. En het verzint minder, maar niet niks — bij iets belangrijks nog steeds het citaat zelf nalezen.'
+  },
+  copilot: {
+    emoji: '🪟', naam: 'Copilot', url: 'https://copilot.microsoft.com/',
+    kort: 'Zit in Windows en Microsoft 365 — handig als het werk in Office staat',
+    routerD: 'werk dat al in Word, Excel, Outlook of Teams zit, of iets snel in Windows zelf',
+    waarvoor: 'De reden om hem te pakken is de integratie, niet het model. Als het bestand toch al in Office staat, scheelt het overtypen.',
+    scenarios: [
+      'Een Word-document laten samenvatten of herschrijven zonder het eruit te kopiëren',
+      'Outlook-mail laten opstellen met de context van de thread erbij',
+      'Snel iets vragen vanuit Windows zelf'
+    ],
+    jouw: 'Op het werk, waar Office de standaard is.',
+    letop: 'Wat je krijgt hangt af van de licentie van je werkgever — de gratis en de 365-versie verschillen flink.'
+  }
+};
+
+// Wat de 🎯 Welke AI?-knop aan het model voorlegt. Afgeleid van AI_INFO, dus één plek bijwerken.
+const ORAKEL_LIJST = Object.keys(AI_INFO).map(k => ({
+  key: k, n: AI_INFO[k].naam, u: AI_INFO[k].url, d: AI_INFO[k].routerD
+}));
+
+// Zoek een AI_INFO-key op naam (de router geeft een naam terug, geen key).
+// Langste naam eerst, anders wint "Gemini" van "Gemini Notebook" — die bevat het woord Gemini.
+function aiInfoKeyVoorNaam(naam) {
+  const n = String(naam || '').toLowerCase();
+  if (!n) return null;
+  // Oude naam: het model kan "NotebookLM" teruggeven, dat is sinds juli 2026 Gemini Notebook.
+  if (n.includes('notebooklm')) return 'notebook';
+  return Object.keys(AI_INFO)
+    .sort((a, b) => AI_INFO[b].naam.length - AI_INFO[a].naam.length)
+    .find(k => n.includes(AI_INFO[k].naam.toLowerCase())) || null;
+}
+
+function openAiInfo(key, ev) {
+  if (ev) { ev.preventDefault(); ev.stopPropagation(); }
+  const a = AI_INFO[key];
+  if (!a) return;
+  document.getElementById('aiinfo-body').innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+      <span style="font-size:1.9em;line-height:1;">${a.emoji}</span>
+      <div>
+        <div class="pb-title" style="margin:0;">${escHtml(a.naam)}</div>
+        <div style="color:var(--muted);font-size:0.78em;line-height:1.4;margin-top:2px;">${escHtml(a.kort)}</div>
+      </div>
+    </div>
+    <p style="color:var(--text-dim);font-size:0.84em;line-height:1.6;margin:16px 0 0;">${escHtml(a.waarvoor)}</p>
+
+    <div class="aiinfo-kop">Waar je 'm voor pakt</div>
+    <ul class="aiinfo-lijst">${a.scenarios.map(s => '<li>' + escHtml(s) + '</li>').join('')}</ul>
+
+    <div class="aiinfo-kop">Bij mij</div>
+    <p class="aiinfo-jouw">${escHtml(a.jouw)}</p>
+
+    <div class="aiinfo-kop">Let op</div>
+    <p class="aiinfo-letop">${escHtml(a.letop)}</p>
+
+    <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="aiinfo-go" onclick="closeAiInfo()">→ Open ${escHtml(a.naam)}</a>`;
+  document.getElementById('aiinfo-overlay').style.display = 'flex';
+}
+function closeAiInfo() { document.getElementById('aiinfo-overlay').style.display = 'none'; }
+document.getElementById('aiinfo-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeAiInfo();
+});
 
 function openOrakel() {
   document.getElementById('orakel-input').value = '';
@@ -8597,7 +8817,8 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     let parsed = null;
     try { parsed = JSON.parse(antwoord.replace(/```json|```/g, '').trim()); } catch(e) {}
     const naam = parsed && parsed.naam ? String(parsed.naam).toLowerCase() : '';
-    const algemeen = naam && ORAKEL_LIJST.find(a => naam.includes(a.n.toLowerCase()));
+    const gekozenKey = aiInfoKeyVoorNaam(naam);
+    const algemeen = gekozenKey && ORAKEL_LIJST.find(a => a.key === gekozenKey);
     if (!algemeen) {
       outEl.style.display = 'none';
       errEl.textContent = '🤔 Geen duidelijke match — probeer je vraag specifieker te maken.';
@@ -8612,13 +8833,14 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     try { document.execCommand('copy'); } catch(e) {}
     document.body.removeChild(tmp);
 
-    const gekozen = { naam: algemeen.n, url: algemeen.u, tag: '' };
+    const gekozen = { naam: algemeen.n, url: algemeen.u, tag: '', key: algemeen.key };
     outEl.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#34d399;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🎯 Dit zou ik pakken</div>
       <a href="${gekozen.url}" target="_blank" rel="noopener noreferrer" style="display:block;padding:10px 12px;border-radius:9px;text-decoration:none;background:rgba(255,255,255,0.02);margin-bottom:10px;">
         <span style="color:var(--text);font-size:0.86em;font-weight:600;">${escHtml(gekozen.naam)}</span>
         ${gekozen.tag ? `<span style="color:var(--muted);font-size:0.68em;text-transform:uppercase;letter-spacing:0.05em;margin-left:8px;">${escHtml(gekozen.tag)}</span>` : ''}
         ${reden ? `<span style="color:var(--muted);font-size:0.78em;display:block;margin-top:3px;line-height:1.5;">${escHtml(reden)}</span>` : ''}
       </a>
+      ${gekozen.key ? `<button class="pb-copy" style="margin-bottom:10px;" onclick="openAiInfo('${gekozen.key}')">ℹ️ Wat kan ${escHtml(gekozen.naam)} precies?</button>` : ''}
       <div style="font-size:0.76em;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.03);border-radius:9px;padding:9px 11px;">📋 Je vraag staat op je klembord: "${escHtml(nettevraag)}"</div>`;
     inp.value = '';
   } catch (e) {
