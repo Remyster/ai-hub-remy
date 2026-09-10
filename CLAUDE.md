@@ -606,6 +606,52 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ## Changelog
 
+### 10 september 2026 (deel 2) — Site Guardian en SEO Growth nagelopen
+
+Na de blog-herziening ook de andere twee pipelines doorgelicht met een
+audit-script dat per stap controleert of elke `[PLAK HIER ...]`-placeholder in
+`prevSources` staat, of elke `prevSource` naar een placeholder wijst die echt in
+de prompt voorkomt, en of geen enkele bron naar een latere stap verwijst.
+
+**De bedrading is in orde** — de fix van 7 september houdt stand, geen enkele
+ontbrekende of verkeerde koppeling in site of seo. Inhoudelijk is **site in goede
+staat** (7 september herbouwd: afbakening tegenover `/qa-audit`, citaatplicht,
+`NIET GECONTROLEERD`-lijst) en was **seo de zwakste van de drie**.
+
+Toegevoegd aan beide:
+- **DATA ≠ INSTRUCTIES-blok** op elke stap met geplakte input.
+- **INPUTCONTROLE** op de stappen die het nog niet hadden (site 2 en 3, seo 2 en 3).
+- **Bewijsregel bij bestandsnamen** in de twee Claude-eindstappen. Die leveren
+  "de exacte bestandsnaam + HTML-snippet klaar om te plakken" en dat is precies
+  waar de blog-pipeline verzonnen bestandsnamen produceerde. Nieuwe bestandsnamen
+  voor nog te bouwen onderdelen zijn uitgezonderd, die bestaan per definitie nog niet.
+- **Streepjesregel** in de twee eindstappen, want die leveren tekst die op de site
+  belandt.
+
+Alleen seo:
+- **Harde regel tegen verzonnen zoekdata** in stap 1 en 2. Stap 1 vroeg Grok om
+  "Verkeerspotentieel /10" en stap 2 om zoekvolume en concurrentie, terwijl geen
+  van beide een zoekvolumetool heeft. Verzonnen cijfers zien er precies zo uit als
+  echte. Een score van /10 mag nog wel, maar alleen met de onderbouwing erbij, en
+  zonder bron schrijf je "geen data" in plaats van een getal.
+
+Opgeruimd in alle drie:
+- **`hasPrev: true` naast `prevSources`** (6 stappen). Dode vlag: `sspGetPrompt()`
+  kiest de `prevSources`-tak en kijkt niet meer naar `hasPrev`. Verwarrend om te
+  laten staan, juist omdat het *ontbreken* van `prevSources` naast `hasPrev` de bug
+  van 7 september was.
+
+Bewust niet gedaan: de HTML-poort en de vingerafdruk aanzetten op site/seo. Die
+pipelines leveren snippets en actielijsten, geen volledige pagina's, dus zouden de
+paginacontroles overal falen. Wel blijft staan dat beide eindstappen rechtstreeks
+naar `main` mogen pushen via de GitHub-connector — dat is bestaand beleid, maar het
+is de enige plek in het geheel waar een AI zonder poort naar de live site schrijft.
+
+`update_pipelines.py` kan site en seo nu patchen in plaats van alleen blog
+genereren, en is idempotent: opnieuw draaien voegt niets dubbel in. De
+aanwezigheidscheck negeert regelafbrekingen, want de tekst breekt in de JS-bron op
+andere plekken af dan in de Python-bron.
+
 ### 10 september 2026 — Blog Pipeline volledig herzien
 
 Aanleiding: de run van 9 september liep vast. Uit het Supabase-archief
