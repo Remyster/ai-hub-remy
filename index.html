@@ -10154,8 +10154,10 @@ async function dumpDelete(i) {
   _dumpCache = arr; dumpSaveLocal(arr); dumpUpdateCount(); dumpRenderList();
   if (item.id) {
     try {
+      // Echt verwijderen. Dit was een soft delete (status: 'klaar'), waardoor weggegooide
+      // gedachtes onzichtbaar in de tabel bleven staan: 86 stuks tegen 3 in de inbox.
       await fetch(`${SB_URL}/rest/v1/brain_dumps?id=eq.${item.id}`, {
-        method: 'PATCH', headers: SB_POST_HDR, body: JSON.stringify({ status: 'klaar' })
+        method: 'DELETE', headers: SB_POST_HDR
       });
     } catch(e) { console.error('Dump verwijderen mislukt:', e); }
   }
