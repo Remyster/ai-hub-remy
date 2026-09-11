@@ -606,6 +606,27 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ## Changelog
 
+### 11 september 2026 (deel 2) — Weekplanner: foto-import ook voor getypte tekst
+
+De foto-importknop in de Weekplanner (`wpFotoGekozen`) had één prompt, strak
+afgestemd op het handgeschreven GoodNotes-formulier (grijze dagkoppen,
+locatievakjes, tijd/taak-kolommen). Een screenshot van een WhatsApp-bericht,
+een gemaild rooster of een printje viel buiten die aannames en leverde rommel op.
+
+Nu twee knoppen naast elkaar: **📷 Foto (handschrift)** (ongewijzigd gedrag) en
+nieuw **🖹 Foto (getypte tekst)**, met een eigen prompt (`WP_PROMPT_TEKST`) zonder
+formulier-aannames — leest gewoon vrije tekst, herleidt relatieve dagen
+("morgen", "volgende week donderdag") naar een concrete weekdag. Beide knoppen
+delen verder alles: dezelfde review-lijst, dezelfde "opslaan in weekplanner",
+dezelfde 📥 Exporteer .ics-knop voor iOS Agenda. De gedeelde AI-call/parse-logica
+zit nu in één helper `wpFotoUitlezen(file, prompt, status)` die beide
+knop-handlers aanroepen — geen dubbele code meer.
+
+Getest via lokale server + Chrome: Weekplanner-overlay opent, beide knoppen
+staan er met eigen file-input, functies en prompt-constante bestaan en zijn
+correct bedraad. Geen echte foto-upload getest (betaalde API-call op Remy's
+eigen sleutel, en productie-Supabase-data) — puur bedrading geverifieerd.
+
 ### 11 september 2026 — Verfijn-knoppen leggen zichzelf uit
 
 De vier knoppen onder een gegenereerde prompt (✂️ Korter / 🔍 Specifieker /

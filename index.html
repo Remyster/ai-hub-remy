@@ -2712,8 +2712,10 @@ header h1 {
     </div>
 
     <div class="wp-tools-row">
-      <button class="wp-nav-btn" onclick="document.getElementById('wp-foto-input').click()">📷 Foto importeren</button>
+      <button class="wp-nav-btn" onclick="document.getElementById('wp-foto-input').click()" title="Handgeschreven GoodNotes-formulier">📷 Foto (handschrift)</button>
       <input type="file" id="wp-foto-input" accept="image/*" style="display:none" onchange="wpFotoGekozen(event)">
+      <button class="wp-nav-btn" onclick="document.getElementById('wp-foto-tekst-input').click()" title="Screenshot, printje, WhatsApp-bericht — getypte tekst">🖹 Foto (getypte tekst)</button>
+      <input type="file" id="wp-foto-tekst-input" accept="image/*" style="display:none" onchange="wpFotoTekstGekozen(event)">
       <button class="wp-nav-btn" onclick="wpExportIcs()">📥 Exporteer .ics (iOS Agenda)</button>
       <span id="wp-foto-status"></span>
     </div>
@@ -5272,44 +5274,14 @@ function wpIsDuplicate(datumISO, tekst) {
   });
 }
 
-async function wpFotoGekozen(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const status = document.getElementById('wp-foto-status');
-  const key = getApiKey();
-  if (!key) { openApiKeyModal(); event.target.value = ''; return; }
-
-  if (/heic|heif/i.test(file.type)) {
-    status.style.color = '#f87171';
-    status.textContent = '⚠️ HEIC-formaat — zet camera op "Meest compatibel" in iOS Instellingen, of stuur een screenshot (PNG).';
-    event.target.value = '';
-    return;
-  }
-
-  status.style.color = 'var(--muted)';
-  status.textContent = '⏳ AI leest de foto uit... handschrift is gokwerk, dus check zo elke regel.';
-
-  try {
-    const base64 = await wpFileToBase64(file);
-    const prompt = `Dit is een foto van een handgeschreven weekplanner (GoodNotes op iPad).
-
-STRUCTUUR VAN HET FORMULIER
-- Elke dag heeft een GEDRUKTE dagkop op een grijze balk: MAANDAG t/m ZONDAG.
-  Die gedrukte kop bepaalt bij welke dag alle regels eronder horen — dat is altijd hoge zekerheid.
-- In diezelfde dagkop staan vier locatievakjes: Velserbroek, Heemskerk, Andijk, Thuis.
-  Een vakje kan aangevinkt zijn met pen (kruisje, vinkje of ingekleurd).
-- Onder elke dagkop staan regels met links een smalle TIJD-kolom en rechts de TAAK-tekst,
-  gescheiden door een verticale lijn.
-- De lichtgrijze gedrukte hint "__:__ - __:__" is GEEN invoer. Negeer die volledig.
+const WP_PROMPT_TEKST = `Dit is een foto van GETYPTE of GEDRUKTE tekst met een planning erin — bijvoorbeeld
+een screenshot van een WhatsApp-bericht, een gemaild rooster, een printje of een tabel.
+Er is GEEN vast formulier zoals bij een GoodNotes-weekplanner: lees gewoon wat er staat.
 
 WAT JE UITLEEST
-Per beschreven regel: de dag (uit de gedrukte kop erboven), de starttijd, de eindtijd
-en de taaktekst. Lege regels sla je over.
-
-LOCATIE
-Is er bij een dag een locatievakje aangevinkt? Zet die locatie dan tussen blokhaken
-vooraan de taaktekst van ELKE regel van die dag, bijvoorbeeld: "[Velserbroek] HWL monsters".
-Geen vakje aangevinkt of twijfel je? Laat de blokhaken weg.
+Elke afspraak/taak die een dag en/of tijd heeft (of waarvoor dat redelijk valt af te leiden
+uit de context, bijv. "morgen", "volgende week donderdag" — reken dat om naar de dichtstbijzijnde
+concrete weekdag). Staat er geen dag bij te herleiden, gebruik dan "onbekend".
 
 Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 {
@@ -5319,13 +5291,26 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
 }
 
 Regels:
-- "zekerheid":"laag" zodra het handschrift onduidelijk is of je twijfelt over tijd of tekst
-- Staat er een gedrukte dagkop boven de regel? Dan is de dag zeker — gebruik "onbekend" alleen
-  als er echt geen kop te zien is
-- Sla lege regels over, maar geef vage krabbels wel terug met zekerheid laag
-- Neem de gedrukte hulptekst ("TIJD", "TAAK", "__:__", "datum") nooit over als taak
+- "zekerheid":"laag" zodra je moet gokken naar de dag, tijd of betekenis
+- Sla begroetingen, emoji-only regels en niet-planning-tekst over
+- Neem geen tekst over die duidelijk geen taak/afspraak is (bijv. een reactie als "oke tot dan")
 - Geen tekst buiten de JSON`;
 
+async function wpFotoUitlezen(file, prompt, status) {
+  const key = getApiKey();
+  if (!key) { openApiKeyModal(); return; }
+
+  if (/heic|heif/i.test(file.type)) {
+    status.style.color = '#f87171';
+    status.textContent = '⚠️ HEIC-formaat — zet camera op "Meest compatibel" in iOS Instellingen, of stuur een screenshot (PNG).';
+    return;
+  }
+
+  status.style.color = 'var(--muted)';
+  status.textContent = '⏳ AI leest de foto uit... check zo elke regel.';
+
+  try {
+    const base64 = await wpFileToBase64(file);
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -5381,9 +5366,58 @@ Regels:
     console.error('Kut, AI kon de foto niet uitlezen:', err);
     status.style.color = '#f87171';
     status.textContent = '⚠️ AI kon de foto niet uitlezen (vage scan of geen API key). Probeer een scherpere foto, of voeg handmatig toe.';
-  } finally {
-    event.target.value = '';
   }
+}
+
+async function wpFotoGekozen(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('wp-foto-status');
+  const WP_PROMPT_HANDSCHRIFT = `Dit is een foto van een handgeschreven weekplanner (GoodNotes op iPad).
+
+STRUCTUUR VAN HET FORMULIER
+- Elke dag heeft een GEDRUKTE dagkop op een grijze balk: MAANDAG t/m ZONDAG.
+  Die gedrukte kop bepaalt bij welke dag alle regels eronder horen — dat is altijd hoge zekerheid.
+- In diezelfde dagkop staan vier locatievakjes: Velserbroek, Heemskerk, Andijk, Thuis.
+  Een vakje kan aangevinkt zijn met pen (kruisje, vinkje of ingekleurd).
+- Onder elke dagkop staan regels met links een smalle TIJD-kolom en rechts de TAAK-tekst,
+  gescheiden door een verticale lijn.
+- De lichtgrijze gedrukte hint "__:__ - __:__" is GEEN invoer. Negeer die volledig.
+
+WAT JE UITLEEST
+Per beschreven regel: de dag (uit de gedrukte kop erboven), de starttijd, de eindtijd
+en de taaktekst. Lege regels sla je over.
+
+LOCATIE
+Is er bij een dag een locatievakje aangevinkt? Zet die locatie dan tussen blokhaken
+vooraan de taaktekst van ELKE regel van die dag, bijvoorbeeld: "[Velserbroek] HWL monsters".
+Geen vakje aangevinkt of twijfel je? Laat de blokhaken weg.
+
+Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
+{
+  "items": [
+    {"dag": "ma|di|wo|do|vr|za|zo|onbekend", "tijd_van": "HH:MM of lege string", "tijd_tot": "HH:MM of lege string", "tekst": "korte beschrijving van de taak", "zekerheid": "hoog|laag"}
+  ]
+}
+
+Regels:
+- "zekerheid":"laag" zodra het handschrift onduidelijk is of je twijfelt over tijd of tekst
+- Staat er een gedrukte dagkop boven de regel? Dan is de dag zeker — gebruik "onbekend" alleen
+  als er echt geen kop te zien is
+- Sla lege regels over, maar geef vage krabbels wel terug met zekerheid laag
+- Neem de gedrukte hulptekst ("TIJD", "TAAK", "__:__", "datum") nooit over als taak
+- Geen tekst buiten de JSON`;
+
+  await wpFotoUitlezen(file, WP_PROMPT_HANDSCHRIFT, status);
+  event.target.value = '';
+}
+
+async function wpFotoTekstGekozen(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('wp-foto-status');
+  await wpFotoUitlezen(file, WP_PROMPT_TEKST, status);
+  event.target.value = '';
 }
 
 function wpRenderReview() {
