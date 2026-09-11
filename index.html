@@ -2976,6 +2976,8 @@ header h1 {
         <button onclick="closeDumpInbox()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
       </div>
     </div>
+    <input id="dump-zoek" type="search" oninput="dumpRenderList()" placeholder="Zoek in je gedachtes (ook in tekst op foto's)..."
+      style="width:100%;margin-bottom:10px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Inter,sans-serif;font-size:0.75em;">
     <div id="dump-list" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;"></div>
     <div id="dump-sort-result" style="margin-top:12px;font-size:0.72em;color:var(--text-dim);line-height:1.6;"></div>
   </div>
@@ -2991,6 +2993,8 @@ header h1 {
         <button onclick="closeNotities()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
       </div>
     </div>
+    <input id="notities-zoek" type="search" oninput="notitiesRender()" placeholder="Zoek in je notities..."
+      style="width:100%;margin-bottom:10px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:Inter,sans-serif;font-size:0.75em;">
     <div id="notities-lijst" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;"></div>
   </div>
 </div>
@@ -9859,9 +9863,24 @@ const DUMP_CAT_INFO = {
 
 function dumpRenderList() {
   const list = document.getElementById('dump-list');
-  const arr = dumpGet();
-  if (!arr.length) { list.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">Leeg! Dump gedachtes via de balk bovenaan de hub.</div>'; return; }
-  list.innerHTML = arr.map((d, i) => {
+  const alles = dumpGet();
+  // Zoekt ook in de OCR-tekst, zodat een foto terug te vinden is op wat erop staat.
+  const zoekVeld = document.getElementById('dump-zoek');
+  const term = (zoekVeld ? zoekVeld.value : '').trim().toLowerCase();
+  const arr = term
+    ? alles.filter(d => (d.text || '').toLowerCase().includes(term) || (d.ocr || '').toLowerCase().includes(term))
+    : alles;
+  if (!arr.length) {
+    list.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">${
+      term ? 'Niets gevonden voor "' + escHtml(term) + '".' : 'Leeg! Dump gedachtes via de balk bovenaan de hub.'
+    }</div>`;
+    return;
+  }
+  list.innerHTML = arr.map((d) => {
+    // i is bewust de index in de ONgefilterde lijst: alle knoppen hieronder (verwijderen,
+    // structureren, lightbox) zoeken hun item op via die index. Met de filter-index erin
+    // zou zoeken + verwijderen de verkeerde gedachte wissen.
+    const i = alles.indexOf(d);
     const cat = d.categorie && DUMP_CAT_INFO[d.categorie];
     const badge = cat ? `<span style="display:inline-block;padding:2px 8px;border-radius:8px;background:${cat.kleur}22;color:${cat.kleur};font-size:0.62em;font-weight:700;margin-bottom:4px;">${cat.label}</span>` : '';
     const actie = d.actie ? `<div style="font-size:0.68em;color:var(--muted);margin-top:2px;">→ ${escHtml(d.actie)}</div>` : '';
@@ -9923,11 +9942,18 @@ async function notitiesLaad(toonMelding) {
 function notitiesRender() {
   const lijst = document.getElementById('notities-lijst');
   if (!lijst) return;
-  if (!_notities.length) {
-    lijst.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">Nog geen notities. Maak ze in de NotitieHub-app op je telefoon.</div>';
+  const zoekVeld = document.getElementById('notities-zoek');
+  const term = (zoekVeld ? zoekVeld.value : '').trim().toLowerCase();
+  const zichtbaar = term ? _notities.filter(n => (n.tekst || '').toLowerCase().includes(term)) : _notities;
+  if (!zichtbaar.length) {
+    lijst.innerHTML = `<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">${
+      term ? 'Niets gevonden voor "' + escHtml(term) + '".' : 'Nog geen notities. Maak ze in de NotitieHub-app op je telefoon.'
+    }</div>`;
     return;
   }
-  lijst.innerHTML = _notities.map((n, i) => {
+  // Zelfde reden als bij de dumps: de index moet naar de volledige lijst wijzen.
+  lijst.innerHTML = zichtbaar.map((n) => {
+    const i = _notities.indexOf(n);
     const thumb = n.thumb_url || n.foto_url;
     const foto = thumb ? `<img src="${escHtml(thumb)}" loading="lazy" onclick="notitieLightbox(${i})" alt="Foto bij deze notitie" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:zoom-in;flex-shrink:0;">` : '';
     const datum = n.created_at ? new Date(n.created_at).toLocaleString('nl-NL', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
