@@ -606,6 +606,20 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ## Changelog
 
+### 11 september 2026 — Verfijn-knoppen leggen zichzelf uit
+
+De vier knoppen onder een gegenereerde prompt (✂️ Korter / 🔍 Specifieker /
+💡 +Voorbeeld / 🪜 In stappen) zeiden alleen wát ze heten, niet wat ze doen.
+Onder de knoppenrij staat nu `#pb-refine-uitleg`: per knop één regel met de
+uitleg **plus een voor/na-voorbeeld** ("Schrijf een blog over thuisbatterijen"
+→ "Schrijf 800-1000 woorden … met een rekenvoorbeeld met €0,28/kWh"). Elke knop
+heeft daarnaast een `title`-tooltip met dezelfde uitleg in één zin.
+
+Puur UI, geen gedragswijziging: `PB_REFINE_INSTRUCTIES` en `pbRefine()` zijn
+ongemoeid. De uitlegteksten zijn bewust afgeleid van wat die instructies
+daadwerkelijk aan Haiku vragen, zodat ze niet uit elkaar lopen — wijzigt er één
+van de vier instructies, pas dan ook de bijbehorende regel aan.
+
 ### 10 september 2026 (deel 2) — Site Guardian en SEO Growth nagelopen
 
 Na de blog-herziening ook de andere twee pipelines doorgelicht met een

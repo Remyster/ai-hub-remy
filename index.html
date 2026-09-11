@@ -2395,10 +2395,16 @@ header h1 {
       </div>
       <div style="font-size:0.6em;color:var(--muted);letter-spacing:0.06em;text-transform:uppercase;margin-top:12px;margin-bottom:6px;">Niet helemaal goed? Verfijn 'm</div>
       <div class="pb-actions" id="pb-refine-actions">
-        <button class="pb-copy" onclick="pbRefine('korter')">✂️ Korter</button>
-        <button class="pb-copy" onclick="pbRefine('specifieker')">🔍 Specifieker</button>
-        <button class="pb-copy" onclick="pbRefine('voorbeeld')">💡 +Voorbeeld</button>
-        <button class="pb-copy" onclick="pbRefine('stappen')">🪜 In stappen</button>
+        <button class="pb-copy" onclick="pbRefine('korter')" title="Zelfde opdracht, minder woorden — alle omhaal eruit.">✂️ Korter</button>
+        <button class="pb-copy" onclick="pbRefine('specifieker')" title="Vage woorden vervangen door concrete aantallen, vorm en randvoorwaarden.">🔍 Specifieker</button>
+        <button class="pb-copy" onclick="pbRefine('voorbeeld')" title="Zet er een voorbeeldantwoord bij, zodat de AI de vorm kan nadoen.">💡 +Voorbeeld</button>
+        <button class="pb-copy" onclick="pbRefine('stappen')" title="De AI moet eerst hardop denken en pas daarna antwoorden.">🪜 In stappen</button>
+      </div>
+      <div id="pb-refine-uitleg" style="margin-top:8px;font-size:0.63em;color:var(--muted);line-height:1.6;background:rgba(255,255,255,0.025);border:1px solid var(--border);border-radius:10px;padding:9px 11px;">
+        <div><b style="color:var(--text);">✂️ Korter</b> — zelfde opdracht, minder woorden. <i>"Schrijf een uitgebreide, complete tekst waarin je zo volledig mogelijk..." → "Schrijf een complete tekst."</i></div>
+        <div style="margin-top:5px;"><b style="color:var(--text);">🔍 Specifieker</b> — vage woorden worden meetbaar: aantallen, lengte, vorm, wat er <i>niet</i> in mag. <i>"Schrijf een blog over thuisbatterijen" → "Schrijf 800-1000 woorden over thuisbatterijen voor huiseigenaren met zonnepanelen, met 3 tussenkoppen, een rekenvoorbeeld met €0,28/kWh, en zonder merknamen."</i></div>
+        <div style="margin-top:5px;"><b style="color:var(--text);">💡 +Voorbeeld</b> — er komt een voorbeeldantwoord in de prompt, zodat de AI de vorm kan nadoen in plaats van zelf iets te verzinnen. <i>"Geef een tabel" → "Geef een tabel, zo: | Apparaat | Verbruik | Kosten/jaar |<br>| Vaatwasser | 220 kWh | €62 |"</i></div>
+        <div style="margin-top:5px;"><b style="color:var(--text);">🪜 In stappen</b> — de AI moet eerst hardop nadenken en pas daarna antwoorden. Scheelt fouten bij rekenwerk en keuzes. <i>"Wat is de beste optie?" → "Zet eerst per optie de voor- en nadelen op een rij, reken daarna het verschil uit, en geef pas in je laatste alinea je advies."</i></div>
       </div>
     </div>
 
