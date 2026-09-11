@@ -2959,6 +2959,8 @@ header h1 {
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">🔔 <span id="rem-count" style="color:#34d399;"></span></button>
   <button onclick="openDumpInbox()" id="dump-inbox-btn" class="smart-side-btn" title="Je gedumpte gedachtes"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📥 Inbox <span id="dump-count" style="background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:100px;font-size:0.85em;">0</span></button>
+  <button onclick="openNotities()" class="smart-side-btn" title="Notities uit de NotitieHub-app, inclusief foto's"
+    style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📝 Notities <span id="notities-count" style="background:var(--accent-soft);color:var(--accent);padding:1px 7px;border-radius:100px;font-size:0.85em;">0</span></button>
   <button onclick="genContextPakket()" class="smart-side-btn" title="Genereer context-pakket voor elke AI"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📦 Context</button>
 </div>
@@ -2976,6 +2978,20 @@ header h1 {
     </div>
     <div id="dump-list" style="display:flex;flex-direction:column;gap:8px;max-height:55vh;overflow-y:auto;"></div>
     <div id="dump-sort-result" style="margin-top:12px;font-size:0.72em;color:var(--text-dim);line-height:1.6;"></div>
+  </div>
+</div>
+
+<!-- NOTITIES MODAL (tabel notities, gedeeld met de NotitieHub-app) -->
+<div id="notities-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:1500;align-items:flex-start;justify-content:center;padding:8vh 16px;overflow-y:auto;">
+  <div style="width:100%;max-width:560px;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:20px;padding:20px;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1em;color:var(--text);">📝 Notities</div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="notitiesLaad(true)" style="padding:8px 14px;background:var(--accent-soft);border:1px solid rgba(124,111,240,0.3);border-radius:10px;color:var(--accent);font-family:'Inter',sans-serif;font-size:0.68em;font-weight:600;cursor:pointer;">↻ Vernieuw</button>
+        <button onclick="closeNotities()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
+      </div>
+    </div>
+    <div id="notities-lijst" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;"></div>
   </div>
 </div>
 
@@ -9763,7 +9779,12 @@ async function dumpLoadCloud() {
       return { ok:false, status:r.status };
     }
     const rows = await r.json();
-    _dumpCache = rows.map(x => ({ id:x.id, text:x.tekst, ts:new Date(x.created_at).getTime(), categorie:x.categorie }));
+    // foto_url/thumb_url/ocr_tekst komen uit de NotitieHub-app (Android). Tot 11 september 2026
+    // werden ze hier weggegooid bij het mappen, waardoor foto's alleen op de telefoon bestonden.
+    _dumpCache = rows.map(x => ({
+      id:x.id, text:x.tekst, ts:new Date(x.created_at).getTime(), categorie:x.categorie,
+      foto:x.foto_url || null, thumb:x.thumb_url || x.foto_url || null, ocr:x.ocr_tekst || null
+    }));
     dumpSaveLocal(_dumpCache);
     dumpUpdateCount();
     return { ok:true };
@@ -9850,14 +9871,18 @@ function dumpRenderList() {
     } else if (cat) {
       actionBtn = `<button onclick="dumpKopieer(${i})" style="background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text-dim);font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;">📋 Kopieer</button>`;
     }
+    const foto = d.thumb ? `<img src="${escHtml(d.thumb)}" loading="lazy" onclick="dumpLightbox(${i})" alt="Foto bij deze gedachte" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:zoom-in;flex-shrink:0;">` : '';
+    const ocr = d.ocr ? `<div style="font-size:0.62em;color:var(--muted);margin-top:4px;"><span style="cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';">🔍 Tekst in foto</span><div style="display:none;white-space:pre-wrap;margin-top:3px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:8px;">${escHtml(d.ocr)}</div></div>` : '';
     const structKey = d.id != null ? d.id : 'i' + i;
     const structBtn = `<button id="dump-struct-btn-${i}" onclick="dumpStructureer(${i})" style="background:rgba(124,111,240,0.12);border:1px solid rgba(124,111,240,0.3);border-radius:8px;color:#a78bfa;font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;" title="Zet deze gedachte om in samenvatting, bullets en actiepunten">🧩 Structuur</button>`;
     return `
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;">
-      <div style="flex:1;">
+      ${foto}
+      <div style="flex:1;min-width:0;">
         ${badge}
         <div style="font-family:Inter,sans-serif;font-size:0.78em;color:var(--text);line-height:1.5;">${escHtml(d.text)}</div>
         ${actie}
+        ${ocr}
         <div style="font-size:0.62em;color:var(--muted);margin-top:4px;">${new Date(d.ts).toLocaleString('nl-NL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</div>
         <div id="dump-struct-${i}">${dumpStructRenderHtml(structKey, i)}</div>
       </div>
@@ -9868,6 +9893,144 @@ function dumpRenderList() {
       </div>
     </div>`;
   }).join('');
+}
+
+// ── Notities (tabel `notities`, geschreven door de NotitieHub-app op Android) ──
+// Deze tabel werd door de hub nooit gelezen, waardoor een notitie met foto die je op je
+// telefoon maakte hier nergens te zien was. Privé-notities blijven bewust buiten beeld.
+let _notities = [];
+
+async function notitiesLaad(toonMelding) {
+  const lijst = document.getElementById('notities-lijst');
+  if (toonMelding && lijst) lijst.innerHTML = `<div style="padding:8px 4px;">${skelBars(3)}</div>`;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/notities?or=(prive.is.null,prive.eq.false)&order=created_at.desc&limit=100`, { headers: SB_GET_HDR });
+    if (!r.ok) {
+      console.error('Notities laden mislukt — HTTP ' + r.status, await r.text());
+      if (lijst) lijst.innerHTML = `<div style="padding:14px;color:#f87171;font-family:Inter,sans-serif;font-size:0.74em;">⚠️ Kan notities niet laden (HTTP ${r.status}).</div>`;
+      return;
+    }
+    _notities = await r.json();
+    const teller = document.getElementById('notities-count');
+    if (teller) teller.textContent = _notities.length;
+    notitiesRender();
+  } catch (e) {
+    console.error('Notities netwerkfout:', e);
+    if (lijst) lijst.innerHTML = `<div style="padding:14px;color:#f87171;font-family:Inter,sans-serif;font-size:0.74em;">⚠️ Netwerkfout: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function notitiesRender() {
+  const lijst = document.getElementById('notities-lijst');
+  if (!lijst) return;
+  if (!_notities.length) {
+    lijst.innerHTML = '<div style="text-align:center;padding:24px;color:var(--muted);font-family:Inter,sans-serif;font-size:0.75em;">Nog geen notities. Maak ze in de NotitieHub-app op je telefoon.</div>';
+    return;
+  }
+  lijst.innerHTML = _notities.map((n, i) => {
+    const thumb = n.thumb_url || n.foto_url;
+    const foto = thumb ? `<img src="${escHtml(thumb)}" loading="lazy" onclick="notitieLightbox(${i})" alt="Foto bij deze notitie" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:zoom-in;flex-shrink:0;">` : '';
+    const datum = n.created_at ? new Date(n.created_at).toLocaleString('nl-NL', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+    return `
+    <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:12px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;">
+      ${foto}
+      <div style="flex:1;min-width:0;">
+        <div style="font-family:Inter,sans-serif;font-size:0.78em;color:var(--text);line-height:1.5;white-space:pre-wrap;">${escHtml(n.tekst || '')}</div>
+        <div style="font-size:0.62em;color:var(--muted);margin-top:4px;">${datum}</div>
+      </div>
+      <button onclick="notitieKopieer(${i})" title="Kopieer de tekst" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;">📋</button>
+    </div>`;
+  }).join('');
+}
+
+function notitieKopieer(i) {
+  const n = _notities[i];
+  if (!n) return;
+  navigator.clipboard.writeText(n.tekst || '').then(() => hubToast('📋 Tekst gekopieerd'));
+}
+
+function openNotities() {
+  document.getElementById('notities-overlay').style.display = 'flex';
+  notitiesLaad(true);
+}
+function closeNotities() { document.getElementById('notities-overlay').style.display = 'none'; }
+document.getElementById('notities-overlay').addEventListener('click', function(e) { if (e.target === this) closeNotities(); });
+
+// Teller vullen zonder de bestaande init-keten te raken.
+setTimeout(() => { try { notitiesLaad(false); } catch (e) { console.error('Notities-teller:', e); } }, 1500);
+
+// ── Lightbox voor foto's uit de NotitieHub-app ──
+// Werkt over alle dump-items met een foto, zodat je er doorheen kunt swipen/pijlen.
+let _lbFotos = [], _lbIdx = 0;
+
+function dumpLightbox(i) {
+  const arr = dumpGet();
+  lbOpen(arr.map((d, idx) => ({ idx, url: d.foto || d.thumb, tekst: d.text })), i);
+}
+
+function notitieLightbox(i) {
+  lbOpen(_notities.map((n, idx) => ({ idx, url: n.foto_url || n.thumb_url, tekst: n.tekst })), i);
+}
+
+function lbOpen(lijst, i) {
+  _lbFotos = lijst.filter(f => f.url);
+  const pos = _lbFotos.findIndex(f => f.idx === i);
+  if (pos < 0) return;
+  _lbIdx = pos;
+  let ov = document.getElementById('lb-overlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'lb-overlay';
+    ov.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(5,7,12,0.94);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;';
+    ov.onclick = e => { if (e.target === ov) lbClose(); };
+    ov.innerHTML = `
+      <img id="lb-img" alt="" style="max-width:100%;max-height:78vh;object-fit:contain;border-radius:12px;">
+      <div id="lb-cap" style="font-family:Inter,sans-serif;font-size:0.75em;color:var(--text-dim);text-align:center;max-width:640px;"></div>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <button onclick="lbStap(-1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.8em;padding:6px 14px;cursor:pointer;">‹</button>
+        <span id="lb-teller" style="font-size:0.7em;color:var(--muted);"></span>
+        <button onclick="lbStap(1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:0.8em;padding:6px 14px;cursor:pointer;">›</button>
+        <button onclick="lbClose()" style="background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-size:0.8em;padding:6px 14px;cursor:pointer;">✕ Sluiten</button>
+      </div>`;
+    document.body.appendChild(ov);
+    let x0 = null;
+    ov.addEventListener('touchstart', e => { x0 = e.changedTouches[0].clientX; }, { passive: true });
+    ov.addEventListener('touchend', e => {
+      if (x0 === null) return;
+      const dx = e.changedTouches[0].clientX - x0;
+      if (Math.abs(dx) > 50) lbStap(dx < 0 ? 1 : -1);
+      x0 = null;
+    }, { passive: true });
+  }
+  ov.style.display = 'flex';
+  document.addEventListener('keydown', lbToets);
+  lbToon();
+}
+
+function lbToon() {
+  const f = _lbFotos[_lbIdx];
+  if (!f) return;
+  document.getElementById('lb-img').src = f.url;
+  document.getElementById('lb-cap').textContent = f.tekst || '';
+  document.getElementById('lb-teller').textContent = (_lbIdx + 1) + ' / ' + _lbFotos.length;
+}
+
+function lbStap(richting) {
+  if (!_lbFotos.length) return;
+  _lbIdx = (_lbIdx + richting + _lbFotos.length) % _lbFotos.length;
+  lbToon();
+}
+
+function lbClose() {
+  const ov = document.getElementById('lb-overlay');
+  if (ov) ov.style.display = 'none';
+  document.removeEventListener('keydown', lbToets);
+}
+
+function lbToets(e) {
+  if (e.key === 'Escape') lbClose();
+  else if (e.key === 'ArrowLeft') lbStap(-1);
+  else if (e.key === 'ArrowRight') lbStap(1);
 }
 
 // ── Notitie-Stroomlijner: 1 dump-item omzetten in samenvatting + bullets + actiepunten ──
