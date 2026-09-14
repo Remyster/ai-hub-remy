@@ -606,6 +606,23 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ## Changelog
 
+### 14 september 2026 — Loon aangepast + inkomen-bedrag bewerkbaar
+
+Loon Remy (incl. vakantiegeld) in `vaste_lasten` (id 47, Project B) aangepast
+van €3569 naar €3636 via directe SQL-update — dit is de nieuwe standaard tot
+Remy 'm weer wijzigt.
+
+Bijkomend: inkomen-rijen (categorie `inkomen`) toonden het bedrag tot nu toe
+als platte tekst — nergens in de hub was het bedrag zelf aan te passen, ook
+niet voor de andere categorieën verschilt dat: elke rij slaat wijzigingen op
+in `betalingen` (per maand), nooit in `vaste_lasten.bedrag` zelf. Inkomen-rijen
+hebben nu hetzelfde bewerkbare invoerveld als de rest (`vl-bedrag-input`,
+`updateBedrag()`/`vlDebouncedSave()`), alleen zonder de betaal-knop — dat past
+bij hoe de rest van Vaste Lasten al werkt, dus geen nieuw patroon. Wijzigen
+van het echte basisbedrag (`vaste_lasten.bedrag`, wat de standaard voor
+nieuwe maanden bepaalt) kan nog steeds alleen via directe SQL — dat geldt
+voor alle categorieën, niet alleen inkomen.
+
 ### 11 september 2026 (deel 2) — Weekplanner: foto-import ook voor getypte tekst
 
 De foto-importknop in de Weekplanner (`wpFotoGekozen`) had één prompt, strak
