@@ -2333,6 +2333,31 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 
 /* rondjes die rond moeten blijven, ondanks de scherpe-hoekensweep */
 #pb-fab,.dot,#rem-btn{border-radius:50% !important}
+
+/* ══ KAART-ART ══
+   Elke kaart kan een eigen beeld krijgen. `.card::before` en `::after` zijn
+   allebei al in gebruik, dus de beeldlaag is een echt element (`.kaart-art`)
+   dat vooraan in de kaart geschoven wordt. Zelfde kleurbewerking als de
+   key-art kolom, zodat losse beelden één familie blijven. */
+.card.heeft-art{ overflow:hidden; }
+.card.heeft-art > *:not(.kaart-art){ position:relative; z-index:1; }
+.kaart-art{
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  background-image:var(--kaart-art); background-size:cover; background-position:center;
+  filter:saturate(.5) contrast(1.18) brightness(.9);
+  opacity:.62; transition:opacity .25s ease;
+}
+.kaart-art::before{
+  content:''; position:absolute; inset:0; mix-blend-mode:color;
+  background:linear-gradient(200deg,rgba(252,238,10,.42) 0%,rgba(255,0,60,.34) 52%,rgba(0,240,255,.40) 100%);
+}
+/* leesbaarheidsscherm: tekst staat links, dus daar het donkerst */
+.kaart-art::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(90deg,rgba(5,4,10,.93) 0%,rgba(5,4,10,.7) 46%,rgba(5,4,10,.18) 100%);
+}
+.card.heeft-art:hover .kaart-art{ opacity:.88; }
+@media (prefers-reduced-motion: reduce){ .kaart-art{ transition:none; } }
 </style>
 
 <style>
@@ -11761,6 +11786,66 @@ if ('serviceWorker' in navigator) {
     document.getElementById('ios-install-banner').style.display = 'block';
   }
 })();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// KAART-ART — elke kaart kan een eigen cyberpunk-beeld krijgen.
+//
+// Zo voeg je er een toe: zet het bestand naast index.html en schrijf
+// één regel in HUB_ART hieronder. De sleutel is de "slug" van de
+// kaarttitel: kleine letters, emoji eruit, spaties en tekens worden
+// streepjes. Weet je de slug niet, draai dan in de console:
+//     hubArtOntbreekt()
+// Die drukt af welke kaarten nog géén beeld hebben, met hun slug.
+// ══════════════════════════════════════════════════════════════
+const HUB_ART = {
+  // 'slug-van-de-kaart': 'bestandsnaam.jpg',
+  'ai-pipeline': 'art-pipeline.jpg',
+  'ai-council':  'art-council.jpg',
+};
+
+function hubArtSlug(kaart){
+  const h = kaart.querySelector('h2');
+  if (!h) return '';
+  return h.textContent
+    .replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}]/gu, '')
+    .replace(/&amp;|&/g, '')        // "Nova R&D" wordt nova-rd, niet nova-rend
+    .trim().toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function hubArtToepassen(){
+  document.querySelectorAll('.card').forEach(kaart => {
+    const slug = hubArtSlug(kaart);
+    if (!slug) return;
+    kaart.dataset.artSlug = slug;                 // altijd zetten, ook zonder beeld
+    const bron = HUB_ART[slug];
+    if (!bron || kaart.querySelector('.kaart-art')) return;
+    const laag = document.createElement('span');
+    laag.className = 'kaart-art';
+    kaart.style.setProperty('--kaart-art', `url('${bron}')`);
+    kaart.insertBefore(laag, kaart.firstChild);
+    kaart.classList.add('heeft-art');
+  });
+}
+
+// Hulpje voor het aanleveren van nieuwe beelden: welke kaarten missen er nog een?
+window.hubArtOntbreekt = function(){
+  const mist = [...document.querySelectorAll('.card')]
+    .map(k => ({ slug: k.dataset.artSlug || hubArtSlug(k),
+                 titel: (k.querySelector('h2')||{}).textContent || '' }))
+    .filter(x => x.slug && !HUB_ART[x.slug]);
+  console.log(`${mist.length} kaarten zonder beeld:`);
+  console.table(mist);
+  const regels = mist.map(x => `  '${x.slug}': 'art-${x.slug}.jpg',`).join('\n');
+  console.log('Plak dit in HUB_ART zodra de bestanden er zijn:\n' + regels);
+  return mist.map(x => x.slug);
+};
+
+document.addEventListener('DOMContentLoaded', hubArtToepassen);
+if (document.readyState !== 'loading') hubArtToepassen();
 </script>
 
 <script>
