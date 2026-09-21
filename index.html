@@ -11799,10 +11799,11 @@ if ('serviceWorker' in navigator) {
 //     hubArtOntbreekt()
 // Die drukt af welke kaarten nog géén beeld hebben, met hun slug.
 // ══════════════════════════════════════════════════════════════
+// Bewust leeg (21-09-2026). Het systeem werkt, maar twee kaarten met een beeld
+// tussen zevenentwintig zonder oogt half af: alles of niets. Zodra er een
+// volledige set beelden is, vul je dit in en staat het er meteen op.
 const HUB_ART = {
   // 'slug-van-de-kaart': 'bestandsnaam.jpg',
-  'ai-pipeline': 'art-pipeline.jpg',
-  'ai-council':  'art-council.jpg',
 };
 
 function hubArtSlug(kaart){
