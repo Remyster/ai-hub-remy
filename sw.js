@@ -3,7 +3,7 @@
 // Cache-strategie: network-first voor index.html (altijd nieuwste proberen),
 // met fallback naar cache zodra er geen verbinding is. Icons/manifest: cache-first.
 
-const CACHE_NAAM = 'ai-hub-v3';
+const CACHE_NAAM = 'ai-hub-v4';
 const CACHE_BESTANDEN = [
   './',
   './index.html',
@@ -15,6 +15,10 @@ const CACHE_BESTANDEN = [
   './art-skull-wide.jpg',
   './art-creature.jpg',
   './art-city.jpg'
+  // Per-onderdeel beelden (art-builder/pipeline/council/dump/planner/lasten/
+  // werk/toolkit.jpg) bewust NIET hier: een ontbrekend bestand laat cache.addAll
+  // in zijn geheel falen, waardoor de service worker niet installeert. Ze worden
+  // bij eerste gebruik alsnog gecachet door de fetch-handler hieronder.
 ];
 
 self.addEventListener('install', (event) => {

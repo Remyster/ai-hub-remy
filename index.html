@@ -2436,9 +2436,15 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 .pbx-art{border-right:1px solid var(--pbx-hair);display:flex;flex-direction:column;
   overflow:hidden;background:#000;position:relative}
 .pbx-art-img{flex:1;position:relative;overflow:hidden;min-height:0}
+/* De bronbeelden komen uit drie verschillende stijlen (neon-glitch, filmisch,
+   schilderachtig). Deze twee lagen trekken ze naar één palet, zodat ze als
+   familie lezen in plaats van als losse plaatjes. */
 .pbx-art-img img{width:100%;height:100%;object-fit:cover;display:block;
-  filter:saturate(1.25) contrast(1.08);transition:opacity .16s}
-.pbx-art-img::after{content:'';position:absolute;inset:0;pointer-events:none;
+  filter:saturate(.5) contrast(1.14) brightness(.94);transition:opacity .16s}
+.pbx-art-img::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
+  mix-blend-mode:color;
+  background:linear-gradient(200deg,rgba(252,238,10,.42) 0%,rgba(255,0,60,.34) 52%,rgba(0,240,255,.40) 100%)}
+.pbx-art-img::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,rgba(5,4,10,.5) 0%,transparent 22%,transparent 60%,rgba(5,4,10,.92) 100%)}
 .pbx-art-sweep{position:absolute;left:0;right:0;height:90px;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,transparent,rgba(252,238,10,.13),transparent);
@@ -2670,11 +2676,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
        <div class="h" id="pbx-art-h">Stille tools<br>echte impact</div>
        <div class="d" id="pbx-art-d">Jouw prompts. Jouw modellen.<br>Jouw werkwijze.</div>
      </div>
-     <div class="pbx-art-tabs" id="pbx-art-tabs">
-       <div class="on" onclick="pbxArtKies(0,this)">Denken</div>
-       <div onclick="pbxArtKies(1,this)">Bouwen</div>
-       <div onclick="pbxArtKies(2,this)">Nakijken</div>
-     </div>
+     <div class="pbx-art-tabs" id="pbx-art-tabs"><div class="on" id="pbx-art-tab">Builder</div></div>
    </div>
 
   <div id="pb-modal">
@@ -11779,34 +11781,61 @@ if ('serviceWorker' in navigator) {
 // ══════════════════════════════════════════════════════════════
 (function(){
 
-  const PBX_ART = [
-    { src:'art-skull.jpg',    k:'Cipher / Resident', h:'Stille tools<br>echte impact',
-      d:'Jouw prompts. Jouw modellen.<br>Jouw werkwijze.' },
-    { src:'art-creature.jpg', k:'Runner / Bouwer',   h:'Bouw wat<br>je zelf draait',
-      d:'Een prompt is pas af als<br>het resultaat bruikbaar is.' },
-    { src:'art-city.jpg',     k:'Scout / Reviewer',  h:'Kijk het na<br>voor het live gaat',
-      d:'Wat jij mist,<br>staat morgen op de site.' }
-  ];
+  // Per onderdeel een eigen beeld en een bijschrift dat iets zégt over dat
+  // onderdeel. De vorige bijschriften ("Runner / Bouwer") waren sfeer zonder
+  // betekenis; die suggereerden een functie die er niet was.
+  //
+  // De `src` hieronder is de definitieve bestandsnaam. Zet je zo'n bestand
+  // neer naast index.html, dan pakt het onderdeel hem automatisch op — er is
+  // verder niets te registreren. Ontbreekt hij, dan valt het beeld terug op
+  // `fallback` (een van de drie beelden die er al zijn).
+  const PBX_ART = {
+    'Builder':    { src:'art-builder.jpg',  fallback:'art-skull.jpg',    k:'Prompt Builder',
+                    h:'Ruw idee<br>scherpe prompt',
+                    d:'Wat je erin stopt bepaalt<br>wat er uit komt.' },
+    'Pipeline':   { src:'art-pipeline.jpg', fallback:'art-skull.jpg',    k:'Blog · Site · SEO',
+                    h:'Negen stappen<br>één artikel',
+                    d:'Elke overdracht tussen<br>chats is een lek.' },
+    'Council':    { src:'art-council.jpg',  fallback:'art-city.jpg',     k:'Drie modellen',
+                    h:'Parallel gevraagd<br>zelf gewogen',
+                    d:'Geen kruisgesprek.<br>Drie antwoorden naast elkaar.' },
+    'Brain Dump': { src:'art-dump.jpg',     fallback:'art-skull.jpg',    k:'Inbox',
+                    h:'Eerst eruit<br>dan pas ordenen',
+                    d:'Een gedachte die je<br>vasthoudt kost ruimte.' },
+    'Planner':    { src:'art-planner.jpg',  fallback:'art-city.jpg',     k:'Week · taken',
+                    h:'Wat wanneer<br>en waarom dan',
+                    d:'Alleen vandaag als de<br>notitie dat ook zegt.' },
+    'Lasten':     { src:'art-lasten.jpg',   fallback:'art-city.jpg',     k:'Maand · spaar',
+                    h:'Wat erin komt<br>wat eraf gaat',
+                    d:'En wat er dan<br>overblijft.' },
+    'Werk':       { src:'art-werk.jpg',     fallback:'art-creature.jpg', k:'PWN',
+                    h:'Links en<br>kilometers',
+                    d:'Wat je op een werkdag<br>bij de hand wilt hebben.' },
+    'Toolkit':    { src:'art-toolkit.jpg',  fallback:'art-creature.jpg', k:'FMHY · OSINT',
+                    h:'386 tools<br>één zoekveld',
+                    d:'Bladeren werkt niet<br>op die schaal. Typen wel.' }
+  };
 
   let pbxArtTimer = null;
-  window.pbxArtKies = function(i, el){
-    const a = PBX_ART[i], img = document.getElementById('pbx-art-img');
+  window.pbxArtZet = function(naam){
+    const a = PBX_ART[naam] || PBX_ART['Builder'];
+    const img = document.getElementById('pbx-art-img');
     if (!a || !img) return;
-    // snel achter elkaar klikken liet de vorige fade het beeld op 0 zetten
+    if (img.dataset.ctx === naam) return;                   // al goed, niks doen
+    img.dataset.ctx = naam;
+    // snel achter elkaar wisselen liet de vorige fade het beeld op 0 zetten
     if (pbxArtTimer) clearTimeout(pbxArtTimer);
     img.style.opacity = 0;
     pbxArtTimer = setTimeout(() => {
       pbxArtTimer = null;
+      // bestaat het eigen beeld nog niet, val dan terug zonder gebroken plaatje
+      img.onerror = () => { img.onerror = null; if (a.fallback) img.src = a.fallback; };
       img.src = a.src;
-      const k = document.getElementById('pbx-art-k'), h = document.getElementById('pbx-art-h'),
-            d = document.getElementById('pbx-art-d');
-      if (k) k.innerHTML = a.k;
-      if (h) h.innerHTML = a.h;
-      if (d) d.innerHTML = a.d;
+      const zet = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
+      zet('pbx-art-k', a.k); zet('pbx-art-h', a.h); zet('pbx-art-d', a.d);
+      zet('pbx-art-tab', naam);
       img.style.opacity = 1;
     }, 160);
-    const tabs = document.getElementById('pbx-art-tabs');
-    if (tabs && el) { [...tabs.children].forEach(t => t.classList.remove('on')); el.classList.add('on'); }
   };
 
   // ── rail ──
@@ -11830,7 +11859,9 @@ if ('serviceWorker' in navigator) {
   let gast = null;   // {ov, paneel, ouder, volgende, ovDisplay, obs}
 
   window.pbxHostTerug = function(stil){
-    if (!gast) { if (!stil) pbxRailActief('Builder'); return; }
+    // ook zonder gast de rail en het beeld op Builder zetten — anders blijft bij
+    // het openen van het cockpit het bijschrift uit de HTML staan
+    if (!gast) { pbxRailActief('Builder'); return; }
     const g = gast; gast = null;
     if (g.obs) g.obs.disconnect();
     // paneel exact terugzetten waar het vandaan kwam
@@ -11874,9 +11905,9 @@ if ('serviceWorker' in navigator) {
 
   function pbxRailActief(naam){
     const rail = document.getElementById('pbx-rail');
-    if (!rail) return;
-    [...rail.querySelectorAll('.pbx-ri')].forEach(el =>
+    if (rail) [...rail.querySelectorAll('.pbx-ri')].forEach(el =>
       el.classList.toggle('on', el.dataset.naam === naam));
+    pbxArtZet(naam);          // het beeld volgt waar je bent
   }
 
   function pbxRailBouw(){
