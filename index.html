@@ -2481,6 +2481,42 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 }
 /* leesbare regellengte op een breed scherm — niet de hele kolom uitvullen */
 #pb-overlay.show #pb-modal > *{max-width:880px}
+
+/* ── de werkkolom kan ook een ándere hub-functie tonen ──
+   Pipeline, Council, Brain Dump enzovoort worden hier naartoe verplaatst
+   in plaats van als losse overlay er overheen te komen. */
+#pb-overlay.show #pb-modal,#pb-overlay.show #pbx-host{grid-column:3;grid-row:1}
+#pbx-host{
+  display:none; min-height:0; height:100%; overflow-y:auto;
+  padding:18px 22px 26px;
+}
+#pb-overlay.show.pbx-gast #pb-modal{display:none !important}
+#pb-overlay.show.pbx-gast #pbx-host{display:block}
+/* de fasebalk en chips gaan over de builder, niet over een gasttoepassing */
+#pb-overlay.show.pbx-gast .pbx-phases,
+#pb-overlay.show.pbx-gast .pbx-chips{display:none}
+#pbx-host::-webkit-scrollbar{width:7px}
+#pbx-host::-webkit-scrollbar-thumb{background:rgba(252,238,10,.25)}
+/* het verplaatste paneel vult de kolom i.p.v. een smalle modal te blijven */
+#pbx-host > *{
+  max-width:900px !important; margin:0 auto !important;
+  min-height:0 !important; box-shadow:none !important;
+  background:transparent !important; border:0 !important; padding:0 !important;
+}
+.pbx-terug{
+  display:none; align-items:center; gap:8px; margin-bottom:14px;
+  font-family:var(--m); font-size:9.5px; letter-spacing:.18em; text-transform:uppercase;
+  color:var(--yel); background:rgba(252,238,10,.08);
+  border:1px solid var(--pbx-edge); padding:7px 12px; cursor:pointer;
+}
+#pb-overlay.show.pbx-gast .pbx-terug{display:inline-flex}
+.pbx-terug:hover{background:rgba(252,238,10,.18);box-shadow:0 0 20px -6px var(--yel)}
+/* een overlay waarvan het paneel in het cockpit hangt: leeg, onzichtbaar, klikdoorlatend */
+.pbx-verhuisd{
+  background:none !important; backdrop-filter:none !important;
+  -webkit-backdrop-filter:none !important; pointer-events:none !important;
+  box-shadow:none !important;
+}
 #pb-overlay.show #pb-modal::-webkit-scrollbar{width:7px}
 #pb-overlay.show #pb-modal::-webkit-scrollbar-thumb{background:rgba(252,238,10,.25)}
 
@@ -2617,6 +2653,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
      <div class="pbx-ph" data-ph="output">Output</div>
    </div>
    <div class="pbx-chips" id="pbx-chips"></div>
+   <button class="pbx-terug" onclick="pbxHostTerug()" title="Terug naar de Prompt Builder">← Builder</button>
    <button class="pbx-x" onclick="closePromptBuilder()" title="Sluiten (Esc)">✕</button>
  </div>
 
@@ -2774,6 +2811,8 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     </div>
     <button class="pb-close-btn" onclick="closePromptBuilder()">✕ Sluiten</button>
   </div>
+
+  <div id="pbx-host"></div>
  </div>
 
  <div class="pbx-status" id="pbx-status"></div>
@@ -11770,27 +11809,75 @@ if ('serviceWorker' in navigator) {
     if (tabs && el) { [...tabs.children].forEach(t => t.classList.remove('on')); el.classList.add('on'); }
   };
 
-  // ── rail ── fn wordt alleen aangeroepen als hij echt bestaat
+  // ── rail ──
+  // [emoji, naam, sublabel, open-functie, overlay-id, argument]
+  // De overlay-id is nodig omdat we het páneel van die functie naar de
+  // werkkolom verhuizen in plaats van de overlay er overheen te laten komen.
   const PBX_RAIL = [
     ['Hub', [
-      ['✦','Builder','Prompt smederij', null],
-      ['🚀','Pipeline','Blog · Site · SEO','openStekkerSlimGuardian'],
-      ['🏛️','Council','3 modellen','openCouncil'],
-      ['💭','Brain Dump','Losse gedachtes','openDumpInbox'],
-      ['📅','Planner','Week · taken','openWeekplanner'],
-      ['💰','Lasten','Maand · spaar','openVasteLasten'],
-      ['🔌','Werk','PWN · km','openWerk'],
-      ['🧰','Toolkit','386 tools','openToolkit','alles']
+      ['✦','Builder','Prompt smederij',       null,                      null],
+      ['🚀','Pipeline','Blog · Site · SEO',   'openStekkerSlimGuardian', 'ssp-overlay'],
+      ['🏛️','Council','3 modellen',           'openCouncil',             'council-overlay'],
+      ['💭','Brain Dump','Losse gedachtes',   'openDumpInbox',           'dump-overlay'],
+      ['📅','Planner','Week · taken',         'openWeekplanner',         'wp-overlay'],
+      ['💰','Lasten','Maand · spaar',         'openVasteLasten',         'vl-overlay'],
+      ['🔌','Werk','PWN · km',                'openWerk',                'werk-overlay'],
+      ['🧰','Toolkit','386 tools',            'openToolkit',             'toolkit-overlay','alles']
     ]]
   ];
 
-  window.pbxGa = function(fn, arg){
-    if (!fn) return;
-    if (typeof window[fn] !== 'function') return;   // bestaat niet? dan gebeurt er niets
-    closePromptBuilder();
-    try { arg ? window[fn](arg) : window[fn](); }
-    catch(e) { console.warn('[pbx] kon ' + fn + ' niet openen', e); }
+  // ── gast-modus: paneel van een andere functie in de werkkolom tillen ──
+  let gast = null;   // {ov, paneel, ouder, volgende, ovDisplay, obs}
+
+  window.pbxHostTerug = function(stil){
+    if (!gast) { if (!stil) pbxRailActief('Builder'); return; }
+    const g = gast; gast = null;
+    if (g.obs) g.obs.disconnect();
+    // paneel exact terugzetten waar het vandaan kwam
+    try { g.ouder.insertBefore(g.paneel, g.volgende); } catch(e) { g.ouder.appendChild(g.paneel); }
+    g.ov.classList.remove('pbx-verhuisd','show');
+    g.ov.style.display = 'none';
+    document.getElementById('pb-overlay').classList.remove('pbx-gast');
+    pbxRailActief('Builder');
+    pbxSync();
   };
+
+  window.pbxHost = function(fn, ovId, arg, naam){
+    if (!fn || typeof window[fn] !== 'function') return;   // bestaat niet? niets doen
+    pbxHostTerug(true);
+    // eerst de functie zelf laten draaien, die laadt zijn eigen data
+    try { arg ? window[fn](arg) : window[fn](); }
+    catch(e) { console.warn('[pbx] ' + fn + ' gaf een fout', e); }
+
+    const ov = document.getElementById(ovId);
+    const paneel = ov && ov.firstElementChild;
+    if (!paneel) { console.warn('[pbx] geen paneel in ' + ovId); return; }
+
+    gast = { ov, paneel, ouder: paneel.parentNode, volgende: paneel.nextSibling };
+
+    document.getElementById('pbx-host').appendChild(paneel);
+    // De overlay blijft naar eigen inzicht "open", maar wordt onzichtbaar en
+    // klikdoorlatend. Zou ik hem op display:none zetten, dan verandert zijn
+    // eigen sluitknop niets meer en merken we het sluiten nooit op.
+    ov.classList.add('pbx-verhuisd');
+    document.getElementById('pb-overlay').classList.add('pbx-gast');
+    pbxRailActief(naam);
+
+    // Sluit de gebruiker de functie met haar eigen kruisje, dan gaat de overlay
+    // op display:none — dat is ons signaal om het paneel terug te zetten.
+    gast.obs = new MutationObserver(() => {
+      if (!gast) return;
+      if (getComputedStyle(ov).display === 'none') pbxHostTerug();
+    });
+    gast.obs.observe(ov, { attributes: true, attributeFilter: ['style','class'] });
+  };
+
+  function pbxRailActief(naam){
+    const rail = document.getElementById('pbx-rail');
+    if (!rail) return;
+    [...rail.querySelectorAll('.pbx-ri')].forEach(el =>
+      el.classList.toggle('on', el.dataset.naam === naam));
+  }
 
   function pbxRailBouw(){
     const rail = document.getElementById('pbx-rail');
@@ -11798,11 +11885,14 @@ if ('serviceWorker' in navigator) {
     let html = '';
     PBX_RAIL.forEach(([kop, items]) => {
       html += '<div class="pbx-rail-h">' + kop + '</div>';
-      items.forEach(([g,t,s,fn,arg]) => {
-        const kan = fn && typeof window[fn] === 'function';
-        const call = 'pbxGa(\'' + fn + '\'' + (arg ? ',\'' + arg + '\'' : '') + ')';
-        html += '<div class="pbx-ri' + (fn ? '' : ' on') + '"' +
-                (kan ? ' onclick="' + call + '"' : ' style="cursor:default"') + '>' +
+      items.forEach(([g,t,s,fn,ovId,arg]) => {
+        const kan = fn && ovId && typeof window[fn] === 'function'
+                    && document.getElementById(ovId);
+        const call = fn
+          ? `pbxHost('${fn}','${ovId}',${arg ? `'${arg}'` : 'null'},'${t}')`
+          : 'pbxHostTerug()';
+        html += '<div class="pbx-ri' + (fn ? '' : ' on') + '" data-naam="' + t + '"' +
+                ((kan || !fn) ? ' onclick="' + call + '"' : ' style="opacity:.4;cursor:default"') + '>' +
                 '<span class="g">' + g + '</span><div><div class="t">' + t + '</div>' +
                 '<div class="s">' + s + '</div></div></div>';
       });
@@ -11886,8 +11976,16 @@ if ('serviceWorker' in navigator) {
     const origOpen = window.openPromptBuilder;
     window.openPromptBuilder = function(){
       const r = origOpen.apply(this, arguments);
-      try { pbxRailBouw(); pbxSync(); } catch(e) { console.warn('[pbx]', e); }
+      try { pbxRailBouw(); pbxHostTerug(true); pbxSync(); } catch(e) { console.warn('[pbx]', e); }
       return r;
+    };
+  }
+  // cockpit sluiten mag nooit een verhuisd paneel achterlaten
+  if (typeof window.closePromptBuilder === 'function') {
+    const origSluit = window.closePromptBuilder;
+    window.closePromptBuilder = function(){
+      try { pbxHostTerug(true); } catch(e) { console.warn('[pbx]', e); }
+      return origSluit.apply(this, arguments);
     };
   }
   // generatePrompt uitbreiden zodat de statusbalk ná het antwoord bijwerkt
