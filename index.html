@@ -2639,10 +2639,34 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 #pb-overlay #pb-refine-uitleg,#pb-overlay #pb-multi-content{
   background:rgba(26,16,48,.7) !important;border-color:var(--pbx-hair) !important}
 
-/* ── mobiel: rail en key-art vallen weg, het werkblad blijft ── */
+/* ── mobiel: key-art valt weg, de rail (Pipeline/Council/…) wordt een
+   horizontale strip boven het werkblad ──
+   Rechtstreeks getest 23-09-2026 (voorheen alleen via CSSOM geverifieerd, niet
+   visueel): eerste poging liet de rail weg en hield het beeld — dat bleek
+   precies verkeerd om. Remy mist juist de rail, niet het beeld: zonder rail
+   kun je op mobiel niet naar Pipeline/Council/Brain Dump/enz. binnen de
+   cockpit. Rail-headers (".pbx-rail-h") en subtekst gaan uit, alleen
+   icoon+label blijft, in één scrollbare rij. */
 @media (max-width:900px){
-  .pbx-mid{grid-template-columns:1fr}
-  .pbx-rail,.pbx-art{display:none}
+  .pbx-mid{grid-template-columns:1fr;grid-template-rows:46px minmax(0,1fr)}
+  .pbx-art{display:none}
+  .pbx-rail{
+    grid-column:1;grid-row:1;
+    display:flex;flex-direction:row;align-items:stretch;
+    overflow-x:auto;overflow-y:hidden;
+    border-right:0;border-bottom:1px solid var(--pbx-hair);padding:0;
+  }
+  .pbx-rail-h{display:none}
+  .pbx-ri{flex:0 0 auto;flex-direction:column;align-items:center;justify-content:center;
+    gap:2px;padding:5px 12px;border-left:0;border-bottom:2px solid transparent}
+  .pbx-ri:hover{border-left-color:transparent}
+  .pbx-ri.on{border-left-color:transparent;border-bottom-color:var(--yel)}
+  .pbx-ri .s{display:none}
+  /* de cinematic vignette (inset 0 0 240px 70px) is geijkt op een breed
+     scherm; op telefoonbreedte vreet diezelfde inset-shadow beide zijkanten
+     tot zwart op */
+  #pb-overlay.show::after{box-shadow:inset 0 0 50px 10px rgba(0,0,0,.94)}
+  #pb-overlay.show #pb-modal,#pb-overlay.show #pbx-host{grid-column:1;grid-row:2}
   .pbx-phases{display:none}
   #pb-overlay.show #pb-modal{padding:16px 14px 22px !important}
   #pb-overlay .pb-title{font-size:23px !important}
