@@ -29,14 +29,16 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **URL:** `https://dezyzzkuqkpljhprcbrg.supabase.co`
 - **Variabelen in code:** `SS_SBURL`, `SS_SBKEY`
 - **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
-- **Tabellen:** `pipeline_state`, `ss_assets`, `ss_pipeline_steps`, `ss_project_assets`, `ss_projects`, `ss_site_pages`, `werk_links`, `km_registratie`, `km_defaults`
+- **Tabellen:** `pipeline_state`, `brain_dumps` (ongebruikt, de echte staat in B), `ss_assets`, `ss_pipeline_steps`, `ss_project_assets`, `ss_projects`, `ss_site_pages`
+- **Let op:** `werk_links`, `km_registratie` en `km_defaults` stonden hier eerder vermeld maar staan in werkelijkheid in **Project B** — geverifieerd op 24 september 2026 via `list_tables`. De code wees al naar B, alleen deze tabel klopte niet.
 
 ### Project B — Vaste Lasten / Weekplanner
 - **Project ID:** `mdslvdrsggpksqrbtwci`
 - **URL:** `https://mdslvdrsggpksqrbtwci.supabase.co`
 - **Variabelen in code:** `SB_URL`, `SB_KEY`
 - **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
-- **Tabellen:** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `app_settings`, `weekplanner_items`, `brain_dumps`, `context_blocks`, `pb_projecten`
+- **Tabellen (25, geverifieerd 24 sept 2026):** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `spaar_mutaties`, `app_settings`, `weekplanner_items`, `brain_dumps`, `notities`, `media_items`, `verjaardagen`, `recepten`, `games`, `anime`, `context_blocks`, `pb_projecten`, `km_registratie`, `km_defaults`, `werk_links`, `vault_meta`, `vault_items`, `work_items`, `work_tasks`, `work_docs`, `work_load`, `work_reflect`
+- **De `work_*`-tabellen (WerkHub) hebben een policy op de rol `authenticated`, niet op `anon`.** De hub gebruikt een publishable key en krijgt daar dus een lege lijst terug — geen foutmelding, gewoon niks. Dat betekent ook dat de 💾 Backup-knop die data níét meepakt.
 
 **Let op:** Supabase heeft de oude `anon`/`service_role` JWT-keys vervangen door
 `publishable`/`secret` keys (nieuw format, onafhankelijk te roteren, betere
@@ -78,7 +80,7 @@ Drie pipelines voor StekkerSlim. Elke stap opent een AI-tool, prompt wordt gepla
 
 | Stap | AI | Functie | Krijgt als input |
 |------|----|---------|---|
-| 1 | Gemini + Grok (multi) | 5 ideeën elk: 3 aansluitend + 2 nieuw terrein | — |
+| 1 | Gemini + Grok (multi) | 5 ideeën elk: 3 cluster + 1 verdieping + 1 nieuw terrein | — |
 | 2 | Perplexity | Selectie uit 10 + researchbrief | stap 1 (beide scouts) |
 | 3 | Gemini | SEO- & cannibalisatiebriefing | stap 2 |
 | 4 | Bouwer (Claude) | Outline | stap 2 + stap 3 |
@@ -605,6 +607,66 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 ---
 
 ## Changelog
+
+### 24 september 2026 — Scouts op de nieuwe StekkerSlim-koers + backup was half leeg
+
+**Stap 1A en 1B herschreven naar de richting die op 24 september is vastgesteld.**
+Aanleiding: de Search Console-analyse van 16 maanden liet zien dat de
+thuisbatterij- en energiecontractpagina's vrijwel 0 klikken halen (Frank Energie,
+Gaslicht.com, Consumentenbond en EasySwitch bezetten die termen), terwijl
+`smarthome-p1-meter.html` op #4 staat voor "p1 meter home assistant koppelen" en
+44 van de 130 klikken levert. De scouts leverden tot nu toe braaf ideeën in de hoek
+waar niets te winnen valt, omdat de prompt dat niet wist.
+
+Wat er in `SCOUT_GEMEEN` staat (gedeeld door beide scouts, dus ze kunnen niet uit
+elkaar lopen):
+- **Positionering vooraan**: StekkerSlim is geen energievergelijker maar de site
+  over je eigen verbruik meten en sturen, en eerlijk zeggen wanneer iets niet loont.
+- **De gemeten cijfers**, expliciet als uitzondering op de bestaande regel "je hebt
+  geen zoekdata" — deze zijn geverifieerd en mogen geciteerd worden.
+- **Vier beslisregels in volgorde**: rankbaar voor een kleine site → kan Remy het uit
+  eigen ervaring schrijven → versterkt het het cluster → pas dán de affiliate-CTA.
+  Twijfel bij 1 of 2 betekent: niet voorstellen.
+- **De mix van 3+2 naar 3+1+1**: 3 x CLUSTER (smarthome), 1 x VERDIEPING (bestaande
+  pagina beter maken in plaats van een nieuwe erbij), 1 x NIEUW TERREIN. Minder dan
+  vijf leveren mag, met reden erbij.
+- **Per idee een verplicht "eigen bewijs"-antwoord**: welke meting, screenshot of
+  eigen fout van Remy maakt dit beter dan hetzelfde stuk van iemand anders. Dat is
+  het grootste gat op de site en het enige wat de grote spelers niet kopiëren.
+- Het onderwerpgebied staat nu op volgorde van belang, met de energiekant als
+  vierde en als context, niet als onderwerp. De bronnenlijst begint bij
+  r/homeassistant, community.home-assistant.io en het Tweakers-domoticaforum.
+
+**Stap 2 (Perplexity) mee veranderd**, anders selecteert die nog op de oude criteria:
+hij toetst nu elk idee expliciet aan de twee harde beslisregels, geeft STOP aan alles
+wat neerkomt op een nieuwe vergelijkingspagina, en moet het verantwoorden als hij iets
+buiten het smarthome-cluster als nummer 1 aanwijst.
+
+**De Kennisbank-kopie is meteen meegenomen.** `Kennisbank/blog-pipeline-prompts.md`
+in de stekkerslim-repo (wat `/blog-pipeline` gebruikt) is uit deze index.html
+gegenereerd, dus de twee bronnen zijn weer gelijk. Op 24 september bleek eerder dat ze
+uit elkaar waren gelopen: de bewerking van die ochtend zat in een verouderde kloon
+(`Desktop/Gemaakte apps/ai-hub-remy`, 10 commits achter en nooit gecommit) en heeft de
+echte repo nooit bereikt.
+
+**Backup-knop pakte 12 van de 25 tabellen.** `BACKUP_TABELLEN` is nagelopen tegen de
+echte tabellenlijst van beide projecten. Ontbraken: `spaarrekeningen`, `spaar_mutaties`,
+`notities`, `media_items`, `verjaardagen`, `recepten`, `games`, `anime`, `pb_projecten`
+en alle vijf de `work_*`-tabellen. Nu 26 in de lijst. Verder:
+- **Parallel opgehaald** via `Promise.all` in plaats van 26 GET's achter elkaar.
+- **`aantallen` en `totaal_rijen` in het JSON-bestand**, zodat je twee backups naast
+  elkaar kunt leggen en ziet welke tabel is leeggelopen. De melding achteraf noemt
+  het aantal tabellen en rijen in plaats van alleen te zwijgen als het goed ging.
+- Openstaand, niet zelf gewijzigd: de `work_*`-tabellen hebben een policy op
+  `authenticated` en blijven dus leeg in de backup. Zie de opmerking bij Project B.
+
+**Twee fouten in dit document gecorrigeerd**: `werk_links`, `km_registratie` en
+`km_defaults` stonden onder Project A maar staan in Project B (de code wees al goed),
+en de tabellenlijst van Project B was acht van de vijfentwintig.
+
+Getest via lokale server + Chrome: alle 26 tabellen geven HTTP 200, beide
+scout-prompts renderen (9657 en 9356 tekens) met de nieuwe blokken erin en zonder
+resten van de oude SOORT-labels, stap 2 bevat de beslisregeltoets, geen console-errors.
 
 ### 14 september 2026 — Loon aangepast + inkomen-bedrag bewerkbaar
 
