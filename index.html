@@ -2,6 +2,30 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
+<!-- Content-Security-Policy: een vangnet voor als er ooit tóch vreemde tekst in
+     de pagina belandt (een naam uit de database, een antwoord van een AI). De
+     belangrijkste regel is connect-src: die staat alleen verkeer toe naar de
+     vier adressen die de hub echt gebruikt. Lukt het iemand om script te
+     injecteren, dan kan hij de data nog steeds nergens naartoe sturen.
+     'unsafe-inline' moet erin blijven zolang alles in één bestand staat met
+     onclick-handlers; 'unsafe-eval' staat er bewust NIET in, daarom is de
+     rekenmachine van eval() naar een eigen parser gegaan.
+     Let op: frame-ancestors werkt niet via een meta-tag, dus clickjacking is
+     hiermee niet afgedekt — dat vereist een echte HTTP-header en die kan
+     GitHub Pages niet zetten. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'self';
+  script-src 'self' 'unsafe-inline';
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  font-src 'self' https://fonts.gstatic.com;
+  img-src 'self' data: blob: https://*.supabase.co;
+  connect-src 'self' https://*.supabase.co https://api.anthropic.com https://api.open-meteo.com https://openrouter.ai;
+  frame-src https://calendar.google.com;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <title>Remy AI Hub</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#05040a">
@@ -3192,7 +3216,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     <div class="warning-box">
       ⚠️ REMY — DIT IS NIET JE CLAUDE WACHTWOORD.<br>
       Dit is een aparte sleutel van Anthropic Console.<br>
-      → <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com/settings/keys</a><br>
+      → <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">console.anthropic.com/settings/keys</a><br>
       Klik "Create Key" → naam "Hub" → kopieer → plak hieronder.<br>
       Stel $5 limiet in via Billing → Limits. Dan kan het nooit uit de hand lopen.
     </div>
@@ -3204,7 +3228,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     </div>
 
     <h3 style="margin-top:22px;">🌐 OpenRouter API Key (AI Council)</h3>
-    <p>Voor de AI Council — parallel Gemini/Grok/Claude via OpenRouter. → <a href="https://openrouter.ai/settings/keys" target="_blank">openrouter.ai/settings/keys</a></p>
+    <p>Voor de AI Council — parallel Gemini/Grok/Claude via OpenRouter. → <a href="https://openrouter.ai/settings/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/settings/keys</a></p>
     <input type="password" id="openrouter-input" placeholder="sk-or-v1-...">
     <div class="apikey-btns">
       <button class="btn-save" onclick="saveOpenRouterKey()">✓ Opslaan</button>
@@ -3313,6 +3337,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#ffc53d;background:rgba(255,197,61,0.1);border-color:rgba(255,197,61,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
+      <span class="hbtn hbtn-muted" onclick="hubUitloggen()" title="Meld je af op dit apparaat — handig als je de hub op een vreemde computer opende">🔓 Uitloggen</span>
       <span class="hbtn" style="color:rgba(252,238,10,1);background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
       <span class="hbtn" style="color:#fcee0a;background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#7dd3fc;background:rgba(125,211,252,0.08);border-color:rgba(125,211,252,0.2);" onclick="openAgendaModal()" title="Je Google Agenda (jij + Denise) in de hub — bekijken en snel een afspraak toevoegen">📅 Agenda</span>
@@ -3720,10 +3745,129 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 </div>
 
 <script>
-const SS_SBURL = 'https://dezyzzkuqkpljhprcbrg.supabase.co';
-const SS_SBKEY = 'sb_publishable_uhpUclBMHQEn27ero9fp_A_Cs9VSMLf';
-const SS_GET_HDR  = { 'apikey': SS_SBKEY, 'Authorization': 'Bearer ' + SS_SBKEY };
-const SS_POST_HDR = { 'apikey': SS_SBKEY, 'Authorization': 'Bearer ' + SS_SBKEY, 'Content-Type': 'application/json' };
+// ══════════════════════════════════════════════
+// INLOGGEN — Supabase Auth over twee projecten
+// ══════════════════════════════════════════════
+// Waarom dit bestaat: de hub draaide op de publishable key, en die staat in een
+// publieke repo. Elke RLS-policy stond op `anon` met USING (true), dus wie de
+// repo vond kon vaste lasten, spaarrekeningen, de weekplanner, de notities en de
+// opgeslagen Claude/OpenRouter-keys niet alleen lezen maar ook overschrijven en
+// verwijderen. Achter een ingelogde sessie is de publishable key alleen nog een
+// projectaanduiding en bepaalt het gebruikerstoken wat er mag.
+//
+// De hub praat met twee losse Supabase-projecten, dus twee losse sessies. Beide
+// hebben hetzelfde account (remyegberts@gmail.com). Het loginscherm vraagt één
+// wachtwoord en logt allebei in; wijkt er één af, dan zegt hij welke.
+const HUB_DB = {
+  A: { url: 'https://dezyzzkuqkpljhprcbrg.supabase.co', key: 'sb_publishable_uhpUclBMHQEn27ero9fp_A_Cs9VSMLf', naam: 'Pipeline' },
+  B: { url: 'https://mdslvdrsggpksqrbtwci.supabase.co', key: 'sb_publishable_up1OFNJ06uqTvpzLo9YNkQ_2u6IvSXj', naam: 'Hub-data' }
+};
+const HUB_AUTH_EMAIL = 'remyegberts@gmail.com';
+const HUB_SESSIE_KEY = 'hub_sessie_v1';
+
+// Sessies staan in localStorage zodat je na het sluiten van de tab ingelogd
+// blijft. Vorm: { A: {access_token, refresh_token, verloopt}, B: {...} }.
+let hubSessies = (() => {
+  try { return JSON.parse(localStorage.getItem(HUB_SESSIE_KEY) || '{}'); } catch (e) { return {}; }
+})();
+
+function hubSessieBewaar() {
+  try { localStorage.setItem(HUB_SESSIE_KEY, JSON.stringify(hubSessies)); } catch (e) {}
+}
+
+// Het token dat in de Authorization-header gaat. Geen sessie? Dan de publishable
+// key, precies zoals vroeger — dat geeft na de policy-migratie een nette 401 die
+// het loginscherm opent, in plaats van een stille lege lijst.
+function hubToken(db) {
+  const s = hubSessies[db];
+  return (s && s.access_token) ? s.access_token : HUB_DB[db].key;
+}
+function hubIngelogd() {
+  return !!(hubSessies.A && hubSessies.A.access_token && hubSessies.B && hubSessies.B.access_token);
+}
+
+// Eén inlogpoging op één project.
+async function hubLoginDb(db, wachtwoord) {
+  const cfg = HUB_DB[db];
+  const r = await fetch(`${cfg.url}/auth/v1/token?grant_type=password`, {
+    method: 'POST',
+    headers: { 'apikey': cfg.key, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: HUB_AUTH_EMAIL, password: wachtwoord })
+  });
+  const data = await r.json().catch(() => ({}));
+  if (!r.ok || !data.access_token) {
+    throw new Error(data.error_description || data.msg || data.message || `HTTP ${r.status}`);
+  }
+  hubSessies[db] = {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token,
+    // 60 seconden marge, zodat we nooit met een net-verlopen token aankloppen
+    verloopt: Date.now() + ((data.expires_in || 3600) - 60) * 1000
+  };
+  hubSessieBewaar();
+}
+
+// Token vernieuwen met het refresh-token. Mislukt dat, dan is de sessie echt
+// weg (wachtwoord gewijzigd, sessie ingetrokken) en gooien we 'm weg, zodat het
+// loginscherm verschijnt in plaats van dat de hub blijft hangen op 401's.
+async function hubVernieuw(db) {
+  const s = hubSessies[db];
+  if (!s || !s.refresh_token) return false;
+  const cfg = HUB_DB[db];
+  try {
+    const r = await fetch(`${cfg.url}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': cfg.key, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: s.refresh_token })
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok || !data.access_token) throw new Error('vernieuwen geweigerd');
+    hubSessies[db] = {
+      access_token: data.access_token,
+      refresh_token: data.refresh_token || s.refresh_token,
+      verloopt: Date.now() + ((data.expires_in || 3600) - 60) * 1000
+    };
+    hubSessieBewaar();
+    return true;
+  } catch (e) {
+    delete hubSessies[db];
+    hubSessieBewaar();
+    return false;
+  }
+}
+
+// Vernieuwt wat bijna verloopt. Draait bij het laden, elke 10 minuten, en zodra
+// je terugkomt op de tab — een slapende tab laat timers niet doorlopen, dus
+// zonder die laatste kom je terug op een verlopen token.
+let _hubVernieuwBezig = null;
+async function hubSessiesBijwerken(forceer) {
+  if (_hubVernieuwBezig) return _hubVernieuwBezig;
+  _hubVernieuwBezig = (async () => {
+    for (const db of ['A', 'B']) {
+      const s = hubSessies[db];
+      if (!s) continue;
+      if (forceer || !s.verloopt || Date.now() > s.verloopt - 5 * 60 * 1000) {
+        await hubVernieuw(db);
+      }
+    }
+  })();
+  try { await _hubVernieuwBezig; } finally { _hubVernieuwBezig = null; }
+}
+
+function hubUitloggen() {
+  hubSessies = {};
+  try { localStorage.removeItem(HUB_SESSIE_KEY); } catch (e) {}
+  location.reload();
+}
+
+const SS_SBURL = HUB_DB.A.url;
+const SS_SBKEY = HUB_DB.A.key;
+// Let op: Authorization is een getter, geen vaste waarde. Elke fetch die deze
+// constante meegeeft (rechtstreeks of via spread) leest 'm op dat moment uit en
+// krijgt dus automatisch het actuele token. Daardoor hoefde geen enkele van de
+// vijftig bestaande fetch-aanroepen aangepast te worden.
+const SS_GET_HDR  = { 'apikey': SS_SBKEY, get Authorization() { return 'Bearer ' + hubToken('A'); } };
+const SS_POST_HDR = { 'apikey': SS_SBKEY, get Authorization() { return 'Bearer ' + hubToken('A'); }, 'Content-Type': 'application/json' };
 
 const MULTI_AIS = [
   { key: 'grok',       label: 'Grok Blog Checker',   url: 'https://grok.com/project/0e899b89-db9c-476a-b98c-05ae4f9a9ea8' },
@@ -4410,7 +4554,18 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeSSP(); });
 </script>
 
 <script>
-function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// Let op de laatste vervanging: het enkele aanhalingsteken hoort er echt bij.
+// Zonder die regel kon tekst met een ' uit een attribuut breken op elke plek waar
+// de HTML met enkele quotes is opgebouwd (onclick-handlers, style-waarden).
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+
+// Alleen http(s) toelaten in een href die uit de database of uit een AI-antwoord
+// komt. Zonder deze zeef zou "javascript:..." als linkdoel gewoon uitgevoerd
+// worden zodra je erop klikt.
+function veiligeUrl(u) {
+  const s = String(u || '').trim();
+  return /^https?:\/\//i.test(s) ? s : '#';
+}
 
 // Skeleton-loader: shimmerende balkjes i.p.v. "Laden..."-tekst tijdens fetches.
 function skelBars(n) {
@@ -4529,7 +4684,25 @@ function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } cat
   }
   const origFetch = window.fetch.bind(window);
   window.fetch = async function(input, init) {
-    const res = await origFetch(input, init);
+    let res = await origFetch(input, init);
+
+    // Verlopen sessie opvangen. Elke Supabase-aanroep loopt via deze wrapper, dus
+    // dit is de enige plek waar het hoeft: token vernieuwen en de aanvraag één
+    // keer overdoen. Lukt vernieuwen niet, dan is de sessie echt weg en komt het
+    // loginscherm terug — beter dan overal stil lege lijsten tonen.
+    try {
+      const u = typeof input === 'string' ? input : (input && input.url) || '';
+      const isSupabaseData = u.includes('.supabase.co/rest/') || u.includes('.supabase.co/storage/');
+      if (isSupabaseData && (res.status === 401 || res.status === 403) && !init?._alOpnieuw) {
+        const db = u.indexOf(HUB_DB.A.url) === 0 ? 'A' : 'B';
+        if (await hubVernieuw(db)) {
+          res = await origFetch(input, { ...(init || {}), _alOpnieuw: true });
+        } else if (typeof window.slotToon === 'function') {
+          window.slotToon();
+        }
+      }
+    } catch (e) {}
+
     try {
       const url = typeof input === 'string' ? input : (input && input.url) || '';
       if (url.includes('api.anthropic.com/v1/messages')) {
@@ -4964,10 +5137,12 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════
 // VASTE LASTEN — SUPABASE
 // ══════════════════════════════════════════════
-const SB_URL  = 'https://mdslvdrsggpksqrbtwci.supabase.co';
-const SB_KEY  = 'sb_publishable_up1OFNJ06uqTvpzLo9YNkQ_2u6IvSXj';
-const SB_GET_HDR  = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
-const SB_POST_HDR = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json' };
+const SB_URL  = HUB_DB.B.url;
+const SB_KEY  = HUB_DB.B.key;
+// Zelfde getter-truc als bij SS_GET_HDR hierboven: de Authorization-waarde wordt
+// pas bij de fetch zelf bepaald, dus altijd met het verse gebruikerstoken.
+const SB_GET_HDR  = { 'apikey': SB_KEY, get Authorization() { return 'Bearer ' + hubToken('B'); } };
+const SB_POST_HDR = { 'apikey': SB_KEY, get Authorization() { return 'Bearer ' + hubToken('B'); }, 'Content-Type': 'application/json' };
 
 async function sbGet(table, params='') {
   const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_GET_HDR });
@@ -5025,7 +5200,7 @@ function werkRenderLinks() {
   }
   list.innerHTML = werkLinksCache.map(l => `
     <div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;">
-      <a href="${l.url}" target="_blank" rel="noopener noreferrer" style="flex:1;min-width:0;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🔗 ${l.naam || l.url}</a>
+      <a href="${escHtml(veiligeUrl(l.url))}" target="_blank" rel="noopener noreferrer" style="flex:1;min-width:0;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">🔗 ${escHtml(l.naam || l.url)}</a>
       <button onclick="werkDeleteLink('${l.id}')" title="Verwijderen" style="background:none;border:none;color:var(--muted);font-size:0.9em;cursor:pointer;padding:2px 4px;">✕</button>
     </div>
   `).join('');
@@ -6931,6 +7106,64 @@ async function csvBevestigImport() {
 let calcExpr = '';
 let calcJustEvaled = false;
 
+// Rekenen zonder eval(). De rekenmachine gebruikte eval() op de ingetypte som.
+// De knoppen leveren weliswaar alleen cijfers en operatoren aan, maar eval() in
+// de pagina houden betekent ook dat er nooit een strikte Content-Security-Policy
+// omheen kan. Dit is een gewone parser: eerst in stukjes hakken, dan van links
+// naar rechts optellen en aftrekken met voorrang voor keer en delen.
+function calcBereken(invoer) {
+  const tekens = String(invoer).replace(/×/g, '*').replace(/÷/g, '/');
+  if (!/^[0-9+\-*/%.() ]*$/.test(tekens)) throw new Error('ongeldig teken');
+
+  const stukjes = tekens.match(/\d+\.?\d*|[+\-*/%()]/g) || [];
+  let pos = 0;
+  const kijk = () => stukjes[pos];
+  const pak  = () => stukjes[pos++];
+
+  // een getal, een haakjesgroep, of een min-teken ervoor
+  function waarde() {
+    if (kijk() === '-') { pak(); return -waarde(); }
+    if (kijk() === '+') { pak(); return waarde(); }
+    if (kijk() === '(') {
+      pak();
+      const v = som();
+      if (kijk() === ')') pak();
+      return v;
+    }
+    const t = pak();
+    if (t === undefined || !/^\d/.test(t)) throw new Error('onvolledige som');
+    let v = parseFloat(t);
+    // procent achter een getal: 50% wordt 0,5
+    while (kijk() === '%') { pak(); v = v / 100; }
+    return v;
+  }
+
+  function product() {
+    let v = waarde();
+    while (kijk() === '*' || kijk() === '/') {
+      const op = pak();
+      const rechts = waarde();
+      if (op === '/' && rechts === 0) throw new Error('delen door nul');
+      v = op === '*' ? v * rechts : v / rechts;
+    }
+    return v;
+  }
+
+  function som() {
+    let v = product();
+    while (kijk() === '+' || kijk() === '-') {
+      const op = pak();
+      v = op === '+' ? v + product() : v - product();
+    }
+    return v;
+  }
+
+  const uitkomst = som();
+  if (pos < stukjes.length) throw new Error('onvolledige som');
+  if (!isFinite(uitkomst)) throw new Error('geen geldige uitkomst');
+  return uitkomst;
+}
+
 function toggleCalc() {
   const body = document.getElementById('vl-calc-body');
   const icon = document.getElementById('calc-toggle-icon');
@@ -6949,13 +7182,12 @@ function calcInput(val) {
   if (val === '⌫') {
     calcExpr = calcExpr.slice(0, -1);
     exprEl.textContent = calcExpr || '';
-    try { resultEl.textContent = calcExpr ? formatCalcResult(eval(calcExpr.replace(/×/g,'*').replace(/÷/g,'/'))) : '0'; } catch {}
+    try { resultEl.textContent = calcExpr ? formatCalcResult(calcBereken(calcExpr)) : '0'; } catch {}
     return;
   }
   if (val === '=') {
     try {
-      const expr = calcExpr.replace(/×/g,'*').replace(/÷/g,'/').replace(/(\d+)%/g,'($1/100)');
-      const res = eval(expr);
+      const res = calcBereken(calcExpr);
       exprEl.textContent = calcExpr + ' =';
       resultEl.textContent = formatCalcResult(res);
       calcExpr = String(res);
@@ -6977,8 +7209,7 @@ function calcInput(val) {
 
   // Live resultaat tonen
   try {
-    const expr = calcExpr.replace(/×/g,'*').replace(/÷/g,'/').replace(/(\d+)%/g,'($1/100)');
-    const res = eval(expr);
+    const res = calcBereken(calcExpr);
     if (isFinite(res)) resultEl.textContent = formatCalcResult(res);
   } catch {}
 }
@@ -12168,6 +12399,264 @@ if (document.readyState !== 'loading') hubArtToepassen();
       return r;
     };
   });
+})();
+</script>
+
+<!-- ══════════════════════════════════════════════
+     SLOT — loginscherm voor de hele hub
+     ══════════════════════════════════════════════
+     Staat bewust helemaal achteraan: het overlay dekt alles af zodra blijkt dat
+     er geen geldige sessie is, en verdwijnt zodra beide projecten ingelogd zijn.
+     Het scherm regelt ook het zetten van een wachtwoord en het aanvragen van een
+     inloglink, zodat er nooit in het Supabase-dashboard gezocht hoeft te worden. -->
+<style>
+#slot-overlay {
+  position: fixed; inset: 0; z-index: 99999;
+  display: none; align-items: center; justify-content: center;
+  background: #05040a;
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(252,238,10,0.08), transparent),
+    linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: auto, 40px 40px, 40px 40px;
+  padding: 24px;
+}
+#slot-overlay.toon { display: flex; }
+#slot-box {
+  width: 100%; max-width: 420px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(252,238,10,0.14);
+  border-radius: 2px;
+  padding: 30px 28px;
+  font-family: 'DM Mono', monospace;
+  box-shadow: 0 24px 70px rgba(0,0,0,0.6);
+}
+#slot-box h2 {
+  font-family: 'Syne', sans-serif; font-size: 1.3em;
+  color: #fcee0a; margin-bottom: 6px; letter-spacing: 0.02em;
+}
+#slot-box .slot-sub {
+  font-size: 0.74em; color: rgba(230,232,238,0.42);
+  line-height: 1.6; margin-bottom: 22px;
+}
+#slot-box label {
+  display: block; font-size: 0.64em; letter-spacing: 0.1em;
+  text-transform: uppercase; color: rgba(230,232,238,0.42); margin-bottom: 6px;
+}
+#slot-box input {
+  width: 100%; padding: 12px 13px; margin-bottom: 16px;
+  background: rgba(0,0,0,0.35); color: #ece6ff;
+  border: 1px solid rgba(252,238,10,0.12); border-radius: 2px;
+  /* 16px voorkomt dat iOS Safari bij het focussen inzoomt */
+  font-family: 'DM Mono', monospace; font-size: 16px;
+}
+#slot-box input:focus { outline: none; border-color: rgba(252,238,10,0.45); }
+#slot-knop {
+  width: 100%; padding: 13px; cursor: pointer;
+  background: rgba(252,238,10,0.12); color: #fcee0a;
+  border: 1px solid rgba(252,238,10,0.35); border-radius: 2px;
+  font-family: 'DM Mono', monospace; font-size: 0.85em; font-weight: 700;
+  letter-spacing: 0.05em;
+}
+#slot-knop:hover { background: rgba(252,238,10,0.2); }
+#slot-knop:disabled { opacity: 0.5; cursor: wait; }
+.slot-hulp {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  display: flex; flex-direction: column; gap: 9px;
+}
+.slot-link {
+  background: none; border: none; padding: 0; cursor: pointer; text-align: left;
+  color: rgba(230,232,238,0.55); font-family: 'DM Mono', monospace; font-size: 0.7em;
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.slot-link:hover { color: #7dd3fc; }
+#slot-melding {
+  margin-top: 14px; font-size: 0.72em; line-height: 1.6; min-height: 1em;
+}
+</style>
+<div id="slot-overlay">
+  <div id="slot-box">
+    <h2>🔒 AI Hub</h2>
+    <div class="slot-sub">
+      Je gegevens stonden tot nu toe open op internet. Vanaf nu zit alles achter
+      dit scherm. Eén keer inloggen per apparaat, daarna blijf je ingelogd.
+    </div>
+    <label for="slot-mail">E-mail</label>
+    <input type="email" id="slot-mail" autocomplete="username" value="remyegberts@gmail.com">
+    <label for="slot-wachtwoord">Wachtwoord</label>
+    <input type="password" id="slot-wachtwoord" autocomplete="current-password" placeholder="••••••••">
+    <button id="slot-knop" onclick="slotInloggen()">Inloggen</button>
+    <div id="slot-melding"></div>
+    <div class="slot-hulp">
+      <button class="slot-link" onclick="slotWachtwoordZetten()">
+        Wachtwoord vergeten of nog nooit gezet? Stuur me een mail om 'm te kiezen
+      </button>
+      <button class="slot-link" onclick="slotInloglink()">
+        Liever zonder wachtwoord? Stuur me een inloglink
+      </button>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function melding(tekst, kleur) {
+    const el = document.getElementById('slot-melding');
+    if (el) el.innerHTML = '<span style="color:' + (kleur || '#4dffa6') + ';">' + escHtml(tekst) + '</span>';
+  }
+  function slotToon()  { document.getElementById('slot-overlay').classList.add('toon'); }
+  function slotWeg()   { document.getElementById('slot-overlay').classList.remove('toon'); }
+
+  // Inloggen doet twee aanmeldingen: de hub praat met twee losse Supabase-
+  // projecten en die delen geen sessie. Lukt er één niet, dan zeggen we welke,
+  // in plaats van een algemeen "inloggen mislukt".
+  window.slotInloggen = async function () {
+    const knop = document.getElementById('slot-knop');
+    const wachtwoord = document.getElementById('slot-wachtwoord').value;
+    if (!wachtwoord) { melding('Vul je wachtwoord in.', '#ffc53d'); return; }
+    knop.disabled = true; knop.textContent = 'Bezig…';
+    melding('');
+    const mislukt = [];
+    for (const db of ['A', 'B']) {
+      try { await hubLoginDb(db, wachtwoord); }
+      catch (e) { mislukt.push(HUB_DB[db].naam + ' (' + e.message + ')'); }
+    }
+    knop.disabled = false; knop.textContent = 'Inloggen';
+    if (mislukt.length === 0) {
+      melding('Gelukt. Even herladen…');
+      setTimeout(() => location.reload(), 500);
+    } else if (mislukt.length === 2) {
+      melding('Wachtwoord klopt niet. Gebruik anders de link hieronder.', '#ff003c');
+    } else {
+      melding('Alleen ' + mislukt[0] + ' lukte niet. Vraag daar een nieuw wachtwoord aan via de link hieronder, en maak het gelijk aan dit wachtwoord.', '#ffc53d');
+    }
+  };
+
+  // Herstelmail per project. Supabase stuurt een link terug naar deze pagina met
+  // een token in de hash; slotHashAfhandelen() hieronder pikt die op.
+  window.slotWachtwoordZetten = async function () {
+    const mail = document.getElementById('slot-mail').value.trim();
+    if (!mail) { melding('Vul eerst je e-mailadres in.', '#ffc53d'); return; }
+    melding('Mailtjes versturen…', '#7dd3fc');
+    let goed = 0;
+    for (const db of ['A', 'B']) {
+      try {
+        const r = await fetch(`${HUB_DB[db].url}/auth/v1/recover`, {
+          method: 'POST',
+          headers: { 'apikey': HUB_DB[db].key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: mail, redirect_to: location.origin + location.pathname })
+        });
+        if (r.ok) goed++;
+      } catch (e) {}
+    }
+    if (goed === 0) {
+      melding('Versturen mislukt. Supabase staat maximaal een paar mails per uur toe, probeer het zo nog eens.', '#ff003c');
+    } else {
+      melding('Er komen ' + goed + ' mails aan, één per database. Open ze allebei en kies in beide hetzelfde wachtwoord.', '#4dffa6');
+    }
+  };
+
+  window.slotInloglink = async function () {
+    const mail = document.getElementById('slot-mail').value.trim();
+    if (!mail) { melding('Vul eerst je e-mailadres in.', '#ffc53d'); return; }
+    melding('Inloglinks versturen…', '#7dd3fc');
+    let goed = 0;
+    for (const db of ['A', 'B']) {
+      try {
+        const r = await fetch(`${HUB_DB[db].url}/auth/v1/magiclink`, {
+          method: 'POST',
+          headers: { 'apikey': HUB_DB[db].key, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: mail, redirect_to: location.origin + location.pathname })
+        });
+        if (r.ok) goed++;
+      } catch (e) {}
+    }
+    melding(goed ? 'Er komen ' + goed + ' inloglinks aan. Klik ze allebei aan.' : 'Versturen mislukt, probeer het zo nog eens.', goed ? '#4dffa6' : '#ff003c');
+  };
+
+  // Supabase stuurt na een herstel- of magic-link terug met #access_token=…
+  // Die hash zegt alleen niet van wélk project hij komt, dus we proberen 'm bij
+  // allebei uit: het project waar hij geldig is, accepteert 'm.
+  async function slotHashAfhandelen() {
+    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const token = hash.get('access_token');
+    const refresh = hash.get('refresh_token');
+    const type = hash.get('type');
+    if (!token) return false;
+    history.replaceState(null, '', location.pathname + location.search);
+
+    for (const db of ['A', 'B']) {
+      try {
+        const r = await fetch(`${HUB_DB[db].url}/auth/v1/user`, {
+          headers: { 'apikey': HUB_DB[db].key, 'Authorization': 'Bearer ' + token }
+        });
+        if (!r.ok) continue;
+        hubSessies[db] = { access_token: token, refresh_token: refresh, verloopt: Date.now() + 3540 * 1000 };
+        hubSessieBewaar();
+        if (type === 'recovery') {
+          slotToon();
+          melding('Je bent binnen bij ' + HUB_DB[db].naam + '. Typ hieronder je nieuwe wachtwoord en klik op de knop.', '#7dd3fc');
+          document.getElementById('slot-knop').textContent = 'Wachtwoord opslaan';
+          document.getElementById('slot-knop').setAttribute('onclick', 'slotNieuwWachtwoord("' + db + '")');
+          document.getElementById('slot-wachtwoord').setAttribute('autocomplete', 'new-password');
+        }
+        return true;
+      } catch (e) {}
+    }
+    return false;
+  }
+
+  window.slotNieuwWachtwoord = async function (db) {
+    const nieuw = document.getElementById('slot-wachtwoord').value;
+    if (!nieuw || nieuw.length < 8) { melding('Kies er een van minstens 8 tekens.', '#ffc53d'); return; }
+    const knop = document.getElementById('slot-knop');
+    knop.disabled = true; knop.textContent = 'Opslaan…';
+    try {
+      const r = await fetch(`${HUB_DB[db].url}/auth/v1/user`, {
+        method: 'PUT',
+        headers: { 'apikey': HUB_DB[db].key, 'Authorization': 'Bearer ' + hubToken(db), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: nieuw })
+      });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      melding('Opgeslagen voor ' + HUB_DB[db].naam + '. Vergeet de andere mail niet, daar moet hetzelfde wachtwoord in.', '#4dffa6');
+      knop.textContent = 'Inloggen';
+      knop.setAttribute('onclick', 'slotInloggen()');
+    } catch (e) {
+      melding('Opslaan mislukt: ' + e.message, '#ff003c');
+      knop.textContent = 'Wachtwoord opslaan';
+    }
+    knop.disabled = false;
+  };
+
+  // Startpunt: hash afhandelen, sessies opfrissen, en pas dan besluiten of het
+  // slot eraf mag. Draait op DOMContentLoaded zodat de velden bestaan.
+  async function slotStart() {
+    const viaLink = await slotHashAfhandelen();
+    await hubSessiesBijwerken(false);
+    if (hubIngelogd()) {
+      slotWeg();
+    } else if (!viaLink) {
+      slotToon();
+    }
+    // Token blijft geldig zolang de hub open staat, en ook na een slapende tab.
+    setInterval(() => hubSessiesBijwerken(false), 10 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) hubSessiesBijwerken(false);
+    });
+  }
+
+  // Op Enter in het wachtwoordveld gewoon de knop indrukken.
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    if (e.target && e.target.id === 'slot-wachtwoord') {
+      e.preventDefault();
+      document.getElementById('slot-knop').click();
+    }
+  });
+
+  window.slotToon = slotToon;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', slotStart);
+  else slotStart();
 })();
 </script>
 </body>

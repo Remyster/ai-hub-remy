@@ -608,6 +608,87 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ## Changelog
 
+### 30 september 2026 — Inloggen verplicht + audit van de hele hub
+
+**De hub stond open op internet.** Alle 25 tabellen hadden een RLS-policy
+`FOR ALL TO anon USING (true) WITH CHECK (true)`, en de publishable key staat in
+de publieke repo. Dat betekent niet alleen lezen maar ook schrijven en
+verwijderen: vaste lasten, spaarrekeningen, weekplanner, notities, brain dumps,
+en de opgeslagen Claude- en OpenRouter-key. De aantekening "obscure URL, geen
+SEO" dekte dit niet af, want GitHub code search vindt `sb_publishable_` gewoon.
+Vier tabellen (`anime`, `games`, `recepten`, `verjaardagen`) stonden zelfs op
+rol `public` in plaats van `anon`.
+
+**Opgelost met Supabase Auth over beide projecten.** Beide projecten hadden al
+een account `remyegberts@gmail.com` met wachtwoord. Nieuw in `index.html`:
+- `HUB_DB` — één plek met url + key per project, waar `SS_SBURL`/`SB_URL` nu uit
+  afgeleid worden.
+- `hubLoginDb()` / `hubVernieuw()` / `hubSessiesBijwerken()` — sessies in
+  localStorage (`hub_sessie_v1`), token wordt vernieuwd bij het laden, elke 10
+  minuten, en bij terugkeer op de tab.
+- **De vier header-constanten zijn getters geworden.** `SS_GET_HDR`,
+  `SS_POST_HDR`, `SB_GET_HDR` en `SB_POST_HDR` hebben `get Authorization()` in
+  plaats van een vaste string. Zowel `headers: SB_GET_HDR` als
+  `{...SB_POST_HDR, Prefer: ...}` leest de getter op het moment van de aanroep,
+  dus alle ~50 bestaande fetch-aanroepen kregen het gebruikerstoken zonder dat
+  er één van aangepast hoefde te worden. Dit is het scharnierpunt van de hele
+  ingreep — laat die getters staan.
+- `#slot-overlay` — loginscherm dat de hub afdekt, met knoppen voor
+  "wachtwoord instellen/vergeten" (Supabase recover) en "stuur me een inloglink"
+  (magic link). Beide sturen per project een mail. Komt Supabase terug met een
+  token in de hash, dan pikt `slotHashAfhandelen()` die op en kan het wachtwoord
+  in de hub zelf gezet worden — bewust zo, zodat er nooit in het
+  Supabase-dashboard gezocht hoeft te worden.
+- 401-afvang in de bestaande fetch-wrapper (die van de kostenteller): bij een
+  401/403 op een Supabase-REST-call wordt het token één keer vernieuwd en de
+  aanvraag overgedaan; lukt dat niet, dan komt het loginscherm terug in plaats
+  van stilletjes lege lijsten.
+- Knop 🔓 Uitloggen in de header.
+
+**Twee losse projecten betekent twee losse sessies.** Eén wachtwoordveld logt op
+allebei in. Wijkt er één af, dan zegt het scherm welke van de twee.
+
+**Bonus die hieruit volgt:** de `work_*`-tabellen (WerkHub) stonden al op
+`authenticated` en gaven daarom altijd een lege lijst terug. Zodra je ingelogd
+bent werken die, en pakt de 💾 Backup-knop ze eindelijk mee.
+
+**Migratie in drie fasen, expres niet in één keer.** Fase 1 (gedaan):
+`authenticated_full` toegevoegd náást de bestaande anon-policies, op beide
+projecten, zodat er niets omviel tijdens het bouwen. Fase 2 (gedaan): code
+gebouwd en getest. Fase 3 (open): de ruime anon/public-policies droppen — pas
+nadat Remy één keer succesvol heeft ingelogd, anders sluit hij zichzelf buiten.
+
+**Overige beveiligingsfixes dezelfde ronde:**
+- **XSS in `werkLinksRender()`**: `l.url` ging ongeëscapet in een `href` en
+  `l.naam` ongeëscapet in de linktekst. Enige plek in de hele hub waar dat nog
+  zo was. Nu via `escHtml()` plus de nieuwe `veiligeUrl()`, die alles weigert
+  wat niet met `http(s)://` begint (anders is `javascript:` een geldig linkdoel).
+- **`escHtml()` escapete het enkele aanhalingsteken niet.** Toegevoegd.
+- **`eval()` uit de rekenmachine.** Drie aanroepen, vervangen door
+  `calcBereken()`: eigen tokenizer plus recursieve afdaling met voorrang voor
+  keer/delen, haakjes, unair min en procent. Reden is niet alleen de eval zelf
+  (de knoppen leverden alleen cijfers aan) maar dat eval een strikte CSP
+  onmogelijk maakt. Getest op 11 sommen.
+- **Content-Security-Policy** als meta-tag. `connect-src` staat alleen de vier
+  adressen toe die de hub echt aanroept (beide Supabase-projecten,
+  api.anthropic.com, api.open-meteo.com, openrouter.ai). `unsafe-inline` moet
+  erin blijven zolang alles in één bestand staat met onclick-handlers;
+  `unsafe-eval` staat er bewust niet in. Geverifieerd in Chrome: toegestane
+  hosts gaan door, een niet-toegestane host wordt geweigerd.
+  Let op: `frame-ancestors` werkt niet via een meta-tag, dus clickjacking blijft
+  open — dat vraagt een echte HTTP-header en die kan GitHub Pages niet zetten.
+- **Twee links zonder `rel="noopener"`** in het API-key-modal. Alle 49
+  `target="_blank"`-links hebben 'm nu.
+
+**Gemeten staat van het bestand (30 sept):** 807 KB, 12.175 regels (CLAUDE.md
+zei nog ~390 KB), 978 DOM-elementen, 10 losse `<style>`-blokken met 812
+selectorregels waarvan 110 met `!important`. De bekende CSS-schuld is nu
+becijferd: **43 selectoren staan in meerdere style-blokken**, en `:root`,
+`.hbtn`, `.card`, `.card p`, `.hbtn:hover` en `.card:hover` staan elk in
+**vier** blokken. Nog steeds niet opgeruimd, bewust — het raakt de hele
+visuele laag.
+
+
 ### 24 september 2026 — Scouts op de nieuwe StekkerSlim-koers + backup was half leeg
 
 **Stap 1A en 1B herschreven naar de richting die op 24 september is vastgesteld.**
