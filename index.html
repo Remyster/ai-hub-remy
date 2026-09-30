@@ -12680,7 +12680,17 @@ if (document.readyState !== 'loading') hubArtToepassen();
         headers: { 'apikey': HUB_DB[db].key, 'Authorization': 'Bearer ' + hubToken(db), 'Content-Type': 'application/json' },
         body: JSON.stringify({ password: nieuw })
       });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
+      if (!r.ok) {
+        // Supabase zet de échte reden in de body — bijvoorbeeld dat het nieuwe
+        // wachtwoord gelijk is aan het oude, of te kort. Alleen "HTTP 422"
+        // tonen maakt dat onvindbaar, dus we halen de tekst eruit.
+        const d = await r.json().catch(() => ({}));
+        const reden = d.msg || d.message || d.error_description || d.error || ('HTTP ' + r.status);
+        if (/should be different|same.*password/i.test(reden)) {
+          throw new Error('dit is al je huidige wachtwoord. Sluit dit scherm, herlaad de pagina en log er gewoon mee in.');
+        }
+        throw new Error(reden);
+      }
 
       // Meteen proberen of ditzelfde wachtwoord ook op het andere project werkt.
       // Vaak is dat zo, en dan is die tweede mail helemaal niet meer nodig.
