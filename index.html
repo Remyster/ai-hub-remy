@@ -12574,17 +12574,21 @@ if (document.readyState !== 'loading') hubArtToepassen();
     melding(goed ? 'Er komen ' + goed + ' inloglinks aan. Klik ze allebei aan.' : 'Versturen mislukt, probeer het zo nog eens.', goed ? '#4dffa6' : '#ff003c');
   };
 
-  // Supabase stuurt na een herstel- of magic-link terug met #access_token=…
-  // Die hash zegt alleen niet van wélk project hij komt, dus we proberen 'm bij
-  // allebei uit: het project waar hij geldig is, accepteert 'm.
-  async function slotHashAfhandelen() {
-    const hash = new URLSearchParams(location.hash.replace(/^#/, ''));
-    const token = hash.get('access_token');
-    const refresh = hash.get('refresh_token');
-    const type = hash.get('type');
-    if (!token) return false;
-    history.replaceState(null, '', location.pathname + location.search);
+  // Zet de hub in "kies een nieuw wachtwoord"-stand voor één project.
+  function slotHerstelStand(db) {
+    slotToon();
+    melding('Je bent binnen bij ' + HUB_DB[db].naam + '. Typ hieronder je nieuwe wachtwoord en klik op de knop. Doe daarna hetzelfde met de andere mail.', '#7dd3fc');
+    const knop = document.getElementById('slot-knop');
+    knop.textContent = 'Wachtwoord opslaan';
+    knop.setAttribute('onclick', 'slotNieuwWachtwoord("' + db + '")');
+    document.getElementById('slot-wachtwoord').setAttribute('autocomplete', 'new-password');
+    document.getElementById('slot-wachtwoord').value = '';
+  }
 
+  // Een token uit een mail-link geldt maar bij één van de twee projecten. Welk,
+  // staat er niet bij, dus we vragen het gewoon aan allebei: wie 'm accepteert,
+  // is de juiste.
+  async function slotTokenProberen(token, refresh) {
     for (const db of ['A', 'B']) {
       try {
         const r = await fetch(`${HUB_DB[db].url}/auth/v1/user`, {
@@ -12593,17 +12597,76 @@ if (document.readyState !== 'loading') hubArtToepassen();
         if (!r.ok) continue;
         hubSessies[db] = { access_token: token, refresh_token: refresh, verloopt: Date.now() + 3540 * 1000 };
         hubSessieBewaar();
-        if (type === 'recovery') {
-          slotToon();
-          melding('Je bent binnen bij ' + HUB_DB[db].naam + '. Typ hieronder je nieuwe wachtwoord en klik op de knop.', '#7dd3fc');
-          document.getElementById('slot-knop').textContent = 'Wachtwoord opslaan';
-          document.getElementById('slot-knop').setAttribute('onclick', 'slotNieuwWachtwoord("' + db + '")');
-          document.getElementById('slot-wachtwoord').setAttribute('autocomplete', 'new-password');
-        }
-        return true;
+        return db;
       } catch (e) {}
     }
-    return false;
+    return null;
+  }
+
+  // Terugkomst vanuit een herstel- of inlogmail. Supabase levert dat op drie
+  // verschillende manieren aan, afhankelijk van projectinstellingen en van de
+  // leeftijd van de mailsjablonen, dus we vangen ze alle drie af:
+  //   1. #access_token=…        (de klassieke variant)
+  //   2. ?token_hash=…&type=…   (nieuwere mails, moet nog ingewisseld worden)
+  //   3. #error=…               (link verlopen of al gebruikt)
+  // Die laatste is de belangrijkste toevoeging: zonder dat geval viel de pagina
+  // stilletjes terug op het gewone inlogscherm en leek de mail "niks te doen".
+  async function slotHashAfhandelen() {
+    const hash  = new URLSearchParams(location.hash.replace(/^#/, ''));
+    const query = new URLSearchParams(location.search);
+    const alles = (k) => hash.get(k) || query.get(k);
+
+    const fout = alles('error_description') || alles('error');
+    const token = hash.get('access_token');
+    const tokenHash = alles('token_hash') || alles('token');
+    const type = alles('type');
+
+    if (!fout && !token && !tokenHash) return false;
+    history.replaceState(null, '', location.pathname);
+
+    if (fout) {
+      slotToon();
+      const nette = decodeURIComponent(String(fout).replace(/\+/g, ' '));
+      melding('De link uit de mail werkte niet: ' + nette +
+        '. Meestal is hij verlopen of al een keer geopend (ook je mailprogramma kan hem stilletjes aanklikken). Vraag hieronder een nieuwe aan en klik hem meteen aan.', '#ff003c');
+      return true;
+    }
+
+    // Variant 1 — token staat al klaar in de hash
+    if (token) {
+      const db = await slotTokenProberen(token, hash.get('refresh_token'));
+      if (db) {
+        if (type === 'recovery') slotHerstelStand(db);
+        return true;
+      }
+    }
+
+    // Variant 2 — inwisselen bij /verify. Weer bij beide projecten proberen.
+    if (tokenHash) {
+      for (const db of ['A', 'B']) {
+        try {
+          const r = await fetch(`${HUB_DB[db].url}/auth/v1/verify`, {
+            method: 'POST',
+            headers: { 'apikey': HUB_DB[db].key, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ type: type || 'recovery', token_hash: tokenHash })
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok || !data.access_token) continue;
+          hubSessies[db] = {
+            access_token: data.access_token,
+            refresh_token: data.refresh_token,
+            verloopt: Date.now() + ((data.expires_in || 3600) - 60) * 1000
+          };
+          hubSessieBewaar();
+          if ((type || 'recovery') === 'recovery') slotHerstelStand(db);
+          return true;
+        } catch (e) {}
+      }
+    }
+
+    slotToon();
+    melding('De link uit de mail bevatte geen geldig token meer. Vraag hieronder een nieuwe aan.', '#ffc53d');
+    return true;
   }
 
   window.slotNieuwWachtwoord = async function (db) {
@@ -12618,9 +12681,21 @@ if (document.readyState !== 'loading') hubArtToepassen();
         body: JSON.stringify({ password: nieuw })
       });
       if (!r.ok) throw new Error('HTTP ' + r.status);
-      melding('Opgeslagen voor ' + HUB_DB[db].naam + '. Vergeet de andere mail niet, daar moet hetzelfde wachtwoord in.', '#4dffa6');
+
+      // Meteen proberen of ditzelfde wachtwoord ook op het andere project werkt.
+      // Vaak is dat zo, en dan is die tweede mail helemaal niet meer nodig.
+      const ander = db === 'A' ? 'B' : 'A';
+      let anderGoed = false;
+      try { await hubLoginDb(ander, nieuw); anderGoed = true; } catch (e) {}
+
       knop.textContent = 'Inloggen';
       knop.setAttribute('onclick', 'slotInloggen()');
+      if (anderGoed) {
+        melding('Opgeslagen, en ' + HUB_DB[ander].naam + ' werkt met hetzelfde wachtwoord. Je bent binnen, even herladen…', '#4dffa6');
+        setTimeout(() => location.reload(), 900);
+      } else {
+        melding('Opgeslagen voor ' + HUB_DB[db].naam + '. ' + HUB_DB[ander].naam + ' heeft nog een ander wachtwoord: open de tweede mail en zet daar hetzelfde in.', '#ffc53d');
+      }
     } catch (e) {
       melding('Opslaan mislukt: ' + e.message, '#ff003c');
       knop.textContent = 'Wachtwoord opslaan';
