@@ -652,6 +652,18 @@ allebei in. Wijkt er één af, dan zegt het scherm welke van de twee.
 `authenticated` en gaven daarom altijd een lege lijst terug. Zodra je ingelogd
 bent werken die, en pakt de 💾 Backup-knop ze eindelijk mee.
 
+**Policies toetsen op het account, niet op "is ingelogd".** Tijdens het testen
+bleek `disable_signup` op **false** te staan op beide projecten: iedereen kan
+zelf een account aanmaken, en op project A staat `mailer_autoconfirm` ook nog
+eens aan. Een policy die alleen `TO authenticated` toetst zou zo'n zelfgemaakt
+account dus meteen volledige toegang geven. De policies heten daarom
+`eigenaar_only` en toetsen op `auth.uid() = <het id van Remy's account>`:
+- project B: `4bad6ad7-741a-4d54-abfd-60e102df10a3`
+- project A: `41b8c700-c3fe-43d7-b6e9-4a50f9f229c5`
+
+Nieuwe tabel? Diezelfde policy erop, nooit een kale `TO authenticated`.
+Los daarvan blijft het verstandig om signup in beide dashboards uit te zetten.
+
 **Migratie in drie fasen, expres niet in één keer.** Fase 1 (gedaan):
 `authenticated_full` toegevoegd náást de bestaande anon-policies, op beide
 projecten, zodat er niets omviel tijdens het bouwen. Fase 2 (gedaan): code
