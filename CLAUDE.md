@@ -646,9 +646,26 @@ het bestreed het symptoom, niet de twee deuren.
 1 oktober allebei geprobeerd. Route voor Remy is de inloglink of het Supabase-
 dashboard.
 
-Fase 3 staat nog open: de ruime `anon`/`public`-policies op **project B**
-droppen zodra Remy één keer succesvol is ingelogd. Project A houdt bewust
-`anon_all`.
+**Fase 3 is afgerond, dezelfde dag.** Remy logde in via de inloglink en zette om
+18:12 een wachtwoord. Daarna zijn op project B 25 ruime policies gedropt:
+16x `anon_all`, 4x op rol `public` (`anime_all`, `games_all`, `recepten_all`,
+`verjaardagen_all`) en 5x `authenticated_all` op de `work_*`-tabellen. Die
+laatste vijf waren `TO authenticated USING (true)` en dus open voor elk
+zelfgemaakt account zolang `disable_signup` op `false` staat.
+
+Eindstand project B: 25 tabellen, RLS aan, precies één policy per tabel
+(`eigenaar_only`, toetst `auth.uid()` tegen Remy's account-id). Geverifieerd
+vanuit de browser met de publishable key: lezen geeft `200 []` op
+`vaste_lasten`, `spaarrekeningen`, `app_settings`, `vault_items`, `notities` en
+`work_items`, en een INSERT geeft `401 new row violates row-level security`.
+
+**Project A houdt bewust `anon_all`** — dat zit niet achter het slot
+(`HUB_SLOT_DB = ['B']`) en bevat geen persoonlijke gegevens. Zou je A er later
+achter zetten, dan pas die policies aanpakken, niet eerder.
+
+Nog open: de Claude- en OpenRouter-key rouleren (die stonden maanden leesbaar in
+`app_settings` achter een publieke key), en `disable_signup` aanzetten op beide
+projecten. Allebei alleen door Remy te doen.
 
 ### 30 september 2026 — Inloggen verplicht + audit van de hele hub
 
