@@ -3337,6 +3337,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
       <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#ffc53d;background:rgba(255,197,61,0.1);border-color:rgba(255,197,61,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
+      <span class="hbtn hbtn-muted" onclick="slotWachtwoordWijzigen()" title="Kies een wachtwoord zodat je voortaan zonder mail kunt inloggen">🔑 Wachtwoord</span>
       <span class="hbtn hbtn-muted" onclick="hubUitloggen()" title="Meld je af op dit apparaat — handig als je de hub op een vreemde computer opende">🔓 Uitloggen</span>
       <span class="hbtn" style="color:rgba(252,238,10,1);background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
       <span class="hbtn" style="color:#fcee0a;background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
@@ -12505,6 +12506,9 @@ if (document.readyState !== 'loading') hubArtToepassen();
     <button id="slot-knop" onclick="slotInloggen()">Inloggen</button>
     <div id="slot-melding"></div>
     <div class="slot-hulp">
+      <button class="slot-link" id="slot-later" style="display:none" onclick="slotLater()">Later — terug naar de hub</button>
+    </div>
+    <div class="slot-hulp">
       <button class="slot-link" onclick="slotWachtwoordZetten()">
         Wachtwoord vergeten of nog nooit gezet? Stuur me een mail om 'm te kiezen
       </button>
@@ -12605,7 +12609,37 @@ if (document.readyState !== 'loading') hubArtToepassen();
     document.getElementById('slot-wachtwoord-label').textContent = 'Nieuw wachtwoord voor ' + HUB_DB[db].naam;
     document.getElementById('slot-wachtwoord').setAttribute('autocomplete', 'new-password');
     document.getElementById('slot-wachtwoord').value = '';
+    document.getElementById('slot-later').style.display = 'none';
   }
+
+  // Wachtwoord kiezen terwijl je al binnen bent — de knop 🔑 Wachtwoord in de
+  // header. Zonder dit kon een wachtwoord alleen via een herstelmail gezet
+  // worden, en wie met een inloglink binnenkomt krijgt dat scherm nooit te zien.
+  // Die blijft dan voor elk nieuw apparaat afhankelijk van een mail.
+  window.slotWachtwoordWijzigen = function () {
+    const db = HUB_SLOT_DB[0];
+    if (!(hubSessies[db] && hubSessies[db].access_token)) {
+      slotToon();
+      melding('Log eerst in, daarna kun je hier een wachtwoord kiezen.', '#ffc53d');
+      return;
+    }
+    slotHerstelStand(db);
+    melding('Kies een wachtwoord van minstens 8 tekens. Daarna log je op elk apparaat in zonder mail.', '#7dd3fc');
+    document.getElementById('slot-later').style.display = 'block';
+  };
+
+  // Terug naar de hub zonder iets te kiezen. Alleen bereikbaar als je al binnen
+  // bent, dus dit zet het slot nergens open.
+  window.slotLater = function () {
+    slotWeg();
+    const knop = document.getElementById('slot-knop');
+    knop.textContent = 'Inloggen';
+    knop.setAttribute('onclick', 'slotInloggen()');
+    document.getElementById('slot-wachtwoord-label').textContent = 'Wachtwoord';
+    document.getElementById('slot-wachtwoord').value = '';
+    document.getElementById('slot-later').style.display = 'none';
+    melding('');
+  };
 
   // Een token uit een mail-link geldt maar bij één van de twee projecten. Welk,
   // staat er niet bij, dus we vragen het gewoon aan allebei: wie 'm accepteert,
