@@ -608,6 +608,48 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ## Changelog
 
+### 1 oktober 2026 — Eén deur in plaats van twee
+
+De login van 30 september zette de hub achter **beide** Supabase-projecten, en
+dat is één deur te veel gebleken. Twee projecten zijn twee losse accounts met
+losse wachtwoorden, losse herstelmails en losse sessies. Op 30 september is per
+project een aparte herstelmail gebruikt en daar zijn twee verschillende
+wachtwoorden ingevuld. Gevolg op 1 oktober: project B logde gewoon in (twee
+verse sessies om 11:39 vanaf de telefoon), project A weigerde, en omdat
+`hubIngelogd()` ze allebei eiste stond de **complete** hub op slot — ook vaste
+lasten, weekplanner en notities, die niets met project A te maken hebben.
+
+**`HUB_SLOT_DB = ['B']`** is de oplossing. Alleen project B zit achter het slot,
+want daar staat alles wat beschermd moet worden: vaste lasten, spaarrekeningen,
+notities, weekplanner, brain dumps, kluis, en de opgeslagen Claude- en
+OpenRouter-key. Project A heeft pipeline-antwoorden en StekkerSlim-tabellen —
+geen persoonlijke gegevens — en draait verder op de publishable key. Hetzelfde
+wachtwoord wordt na een geslaagde login stil op A geprobeerd; mislukt dat, dan
+merk je er niets van.
+
+Verder:
+- Herstelmail en inloglink gaan nog maar naar één project, dus één mail in
+  plaats van twee die allebei geopend moesten worden.
+- De 401-afvang opent het loginscherm alleen nog voor een project dat er écht
+  achter zit. Een 401 op project A betekent een policy-probleem, geen
+  verlopen sessie.
+- `hubIngelogd()` toetst nu `HUB_SLOT_DB.every(...)`. Wil je A er later alsnog
+  achter: geef dat account hetzelfde wachtwoord, zet `HUB_SLOT_DB` op
+  `['A','B']` en drop daar de anon-policies.
+
+Tussenstap `fd66a9e` (één sessie is genoeg, plus een wachtwoordveld per project
+en een "verder zonder"-knop) is hiermee overbodig geworden en weer verwijderd —
+het bestreed het symptoom, niet de twee deuren.
+
+**Let op:** het wachtwoord kan niet vanuit Claude gezet worden. Een
+`update auth.users ... crypt(...)` wordt geblokkeerd; op 30 september en
+1 oktober allebei geprobeerd. Route voor Remy is de inloglink of het Supabase-
+dashboard.
+
+Fase 3 staat nog open: de ruime `anon`/`public`-policies op **project B**
+droppen zodra Remy één keer succesvol is ingelogd. Project A houdt bewust
+`anon_all`.
+
 ### 30 september 2026 — Inloggen verplicht + audit van de hele hub
 
 **De hub stond open op internet.** Alle 25 tabellen hadden een RLS-policy
