@@ -3782,18 +3782,21 @@ function hubToken(db) {
   const s = hubSessies[db];
   return (s && s.access_token) ? s.access_token : HUB_DB[db].key;
 }
-// Eén werkende sessie is genoeg om de hub te openen. Deze functie eiste eerst
-// beide projecten, en dat bleek de verkeerde kant op te falen: project A bevat
-// alleen de pipeline-tabellen, maar wie daar niet inkwam zat de hele hub uit —
-// vaste lasten, weekplanner, notities en al. Op 1 oktober 2026 liepen de
-// wachtwoorden van de twee projecten uit elkaar en was de hub daardoor volledig
-// onbereikbaar terwijl project B gewoon inlogde.
+// Alleen project B zit achter het slot, en daarom kent de hub maar één
+// wachtwoord. Twee projecten betekent twee losse accounts met losse
+// wachtwoorden, losse herstelmails en losse sessies; op 1 oktober 2026 liepen
+// die wachtwoorden uit elkaar en was de hub onbereikbaar terwijl B gewoon
+// inlogde. Die tweede deur levert ook weinig op: alles wat beschermd moet
+// worden (vaste lasten, spaarrekeningen, notities, kluis, de opgeslagen
+// Claude- en OpenRouter-key) staat in B. Project A heeft de pipeline-antwoorden
+// en de StekkerSlim-tabellen, geen persoonlijke gegevens, en blijft dus op de
+// publishable key draaien.
+//
+// Wil je A er later alsnog achter zetten: geef dat account hetzelfde wachtwoord
+// als B, zet HUB_SLOT_DB op ['A','B'] en drop daar de anon-policies.
+const HUB_SLOT_DB = ['B'];
 function hubIngelogd() {
-  return ['A', 'B'].some(db => hubSessies[db] && hubSessies[db].access_token);
-}
-// Welke projecten géén sessie hebben. Bepaalt de waarschuwing in het slot.
-function hubDbUit() {
-  return ['A', 'B'].filter(db => !(hubSessies[db] && hubSessies[db].access_token));
+  return HUB_SLOT_DB.every(db => hubSessies[db] && hubSessies[db].access_token);
 }
 
 // Eén inlogpoging op één project.
@@ -3867,9 +3870,6 @@ async function hubSessiesBijwerken(forceer) {
 function hubUitloggen() {
   hubSessies = {};
   try { localStorage.removeItem(HUB_SESSIE_KEY); } catch (e) {}
-  // Ook de "verder zonder dit project"-keuze weg, zodat een nieuwe inlogpoging
-  // weer om beide databases vraagt.
-  try { localStorage.removeItem('hub_zonder_db_v1'); } catch (e) {}
   location.reload();
 }
 
@@ -4710,10 +4710,10 @@ function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } cat
         const db = u.indexOf(HUB_DB.A.url) === 0 ? 'A' : 'B';
         if (await hubVernieuw(db)) {
           res = await origFetch(input, { ...(init || {}), _alOpnieuw: true });
-        } else if (typeof window.slotToon === 'function' &&
-                   !(typeof window.slotZonderDb === 'function' && window.slotZonderDb(db))) {
-          // Niet zeuren over een project waarvan de gebruiker zelf heeft gezegd
-          // dat hij er zonder verder wil: dan hoort een lege lijst erbij.
+        } else if (typeof window.slotToon === 'function' && HUB_SLOT_DB.includes(db)) {
+          // Alleen het slot openen voor een project dat er écht achter zit.
+          // Project A draait op de publishable key; een 401 daar betekent een
+          // policy-probleem, niet dat de gebruiker opnieuw moet inloggen.
           window.slotToon();
         }
       }
@@ -12505,9 +12505,6 @@ if (document.readyState !== 'loading') hubArtToepassen();
     <button id="slot-knop" onclick="slotInloggen()">Inloggen</button>
     <div id="slot-melding"></div>
     <div class="slot-hulp">
-      <button class="slot-link" id="slot-doorgaan" style="display:none" onclick="slotDoorgaan()"></button>
-    </div>
-    <div class="slot-hulp">
       <button class="slot-link" onclick="slotWachtwoordZetten()">
         Wachtwoord vergeten of nog nooit gezet? Stuur me een mail om 'm te kiezen
       </button>
@@ -12526,96 +12523,33 @@ if (document.readyState !== 'loading') hubArtToepassen();
   function slotToon()  { document.getElementById('slot-overlay').classList.add('toon'); }
   function slotWeg()   { document.getElementById('slot-overlay').classList.remove('toon'); }
 
-  // Inloggen doet twee aanmeldingen: de hub praat met twee losse Supabase-
-  // projecten en die delen geen sessie. Die twee accounts hebben ook ieder hun
-  // eigen wachtwoord, en die kunnen uit elkaar lopen zodra je per herstelmail
-  // een ander wachtwoord kiest — dat is op 30 september 2026 ook gebeurd. Lukt
-  // er één niet, dan vragen we daarom het wachtwoord van dát ene project, in
-  // plaats van alleen te melden dat het mislukte.
+  // Eén wachtwoord, één deur. Alleen de projecten in HUB_SLOT_DB moeten lukken;
+  // de rest wordt stilletjes meegenomen als hetzelfde wachtwoord daar toevallig
+  // ook werkt. Mislukt die bijvangst, dan merk je er niets van — dat project
+  // draait gewoon verder op de publishable key.
   window.slotInloggen = async function () {
     const knop = document.getElementById('slot-knop');
     const wachtwoord = document.getElementById('slot-wachtwoord').value;
     if (!wachtwoord) { melding('Vul je wachtwoord in.', '#ffc53d'); return; }
     knop.disabled = true; knop.textContent = 'Bezig…';
     melding('');
-    const mislukt = [];
-    for (const db of ['A', 'B']) {
-      if (hubSessies[db] && hubSessies[db].access_token) continue;
+    let fout = null;
+    for (const db of HUB_SLOT_DB) {
       try { await hubLoginDb(db, wachtwoord); }
-      catch (e) { mislukt.push({ db: db, reden: e.message }); }
+      catch (e) { fout = fout || e.message; }
+    }
+    if (!fout) {
+      for (const db of ['A', 'B']) {
+        if (HUB_SLOT_DB.includes(db)) continue;
+        try { await hubLoginDb(db, wachtwoord); } catch (e) {}
+      }
     }
     knop.disabled = false; knop.textContent = 'Inloggen';
-    if (mislukt.length === 0) {
+    if (!fout) {
       melding('Gelukt. Even herladen…');
       setTimeout(() => location.reload(), 500);
-    } else if (mislukt.length === 2) {
-      melding('Dit wachtwoord klopt bij geen van de twee databases (' + mislukt[0].reden +
-        '). Gebruik een van de twee links hieronder.', '#ff003c');
     } else {
-      slotEnkelStand(mislukt[0].db, mislukt[0].reden);
-    }
-  };
-
-  // Eén project over: eigen wachtwoordveld voor dat project, plus de keuze om
-  // zonder verder te gaan. Dat laatste mag sinds hubIngelogd() genoegen neemt
-  // met één werkende sessie.
-  window.slotEnkelStand = function (db, reden) {
-    slotToon();
-    const naam = HUB_DB[db].naam;
-    document.getElementById('slot-wachtwoord-label').textContent = 'Wachtwoord voor ' + naam;
-    const veld = document.getElementById('slot-wachtwoord');
-    veld.value = '';
-    veld.setAttribute('autocomplete', 'current-password');
-    try { veld.focus(); } catch (e) {}
-    const knop = document.getElementById('slot-knop');
-    knop.disabled = false;
-    knop.textContent = 'Inloggen bij ' + naam;
-    knop.setAttribute('onclick', 'slotInloggenEen("' + db + '")');
-    const door = document.getElementById('slot-doorgaan');
-    door.style.display = 'block';
-    door.textContent = 'Verder zonder ' + naam + ' — de rest van de hub werkt wel';
-    door.setAttribute('onclick', 'slotDoorgaan("' + db + '")');
-    melding('De andere database is binnen. Alleen ' + naam + ' weigert dit wachtwoord' +
-      (reden ? ' (' + reden + ')' : '') + '. Dat project heeft zijn eigen wachtwoord: typ dat ' +
-      'hieronder, of vraag er met de eerste link een nieuw aan en kies daar hetzelfde als net.', '#ffc53d');
-  };
-
-  window.slotInloggenEen = async function (db) {
-    const knop = document.getElementById('slot-knop');
-    const wachtwoord = document.getElementById('slot-wachtwoord').value;
-    if (!wachtwoord) { melding('Vul het wachtwoord in.', '#ffc53d'); return; }
-    knop.disabled = true; knop.textContent = 'Bezig…';
-    try {
-      await hubLoginDb(db, wachtwoord);
-      melding('Gelukt, beide databases zijn binnen. Even herladen…');
-      setTimeout(() => location.reload(), 500);
-    } catch (e) {
-      melding('Ook dit wachtwoord klopt niet bij ' + HUB_DB[db].naam + ': ' + e.message +
-        '. Vraag er met de eerste link hieronder een nieuw aan.', '#ff003c');
-      knop.disabled = false; knop.textContent = 'Inloggen bij ' + HUB_DB[db].naam;
-    }
-  };
-
-  // Doorgaan met één sessie. De keuze wordt onthouden zodat het slot er niet bij
-  // elke herlaad opnieuw om vraagt; inloggen bij dat project kan daarna nog via
-  // 🔓 Uitloggen en opnieuw inloggen.
-  const SLOT_ZONDER_KEY = 'hub_zonder_db_v1';
-  function slotZonder(db) {
-    try { return (localStorage.getItem(SLOT_ZONDER_KEY) || '').split(',').includes(db); }
-    catch (e) { return false; }
-  }
-  // De fetch-wrapper gebruikt dit om het loginscherm niet te laten opduiken voor
-  // een project dat de gebruiker bewust heeft overgeslagen.
-  window.slotZonderDb = slotZonder;
-  window.slotDoorgaan = function (db) {
-    try {
-      const lijst = (localStorage.getItem(SLOT_ZONDER_KEY) || '').split(',').filter(Boolean);
-      if (db && !lijst.includes(db)) lijst.push(db);
-      localStorage.setItem(SLOT_ZONDER_KEY, lijst.join(','));
-    } catch (e) {}
-    slotWeg();
-    if (db && window.hubToast) {
-      hubToast('⚠️ Niet ingelogd bij ' + HUB_DB[db].naam + '. Die gegevens blijven leeg tot je daar wel inlogt.');
+      melding('Dat wachtwoord klopt niet (' + fout + '). Gebruik een van de links hieronder.', '#ff003c');
     }
   };
 
@@ -12624,9 +12558,9 @@ if (document.readyState !== 'loading') hubArtToepassen();
   window.slotWachtwoordZetten = async function () {
     const mail = document.getElementById('slot-mail').value.trim();
     if (!mail) { melding('Vul eerst je e-mailadres in.', '#ffc53d'); return; }
-    melding('Mailtjes versturen…', '#7dd3fc');
+    melding('Mailtje versturen…', '#7dd3fc');
     let goed = 0;
-    for (const db of ['A', 'B']) {
+    for (const db of HUB_SLOT_DB) {
       try {
         const r = await fetch(`${HUB_DB[db].url}/auth/v1/recover`, {
           method: 'POST',
@@ -12639,16 +12573,16 @@ if (document.readyState !== 'loading') hubArtToepassen();
     if (goed === 0) {
       melding('Versturen mislukt. Supabase staat maximaal een paar mails per uur toe, probeer het zo nog eens.', '#ff003c');
     } else {
-      melding('Er komen ' + goed + ' mails aan, één per database. Open ze allebei en kies in beide hetzelfde wachtwoord.', '#4dffa6');
+      melding('Er komt één mail aan. Klik de link erin meteen aan, dan kies je hier je nieuwe wachtwoord.', '#4dffa6');
     }
   };
 
   window.slotInloglink = async function () {
     const mail = document.getElementById('slot-mail').value.trim();
     if (!mail) { melding('Vul eerst je e-mailadres in.', '#ffc53d'); return; }
-    melding('Inloglinks versturen…', '#7dd3fc');
+    melding('Inloglink versturen…', '#7dd3fc');
     let goed = 0;
-    for (const db of ['A', 'B']) {
+    for (const db of HUB_SLOT_DB) {
       try {
         const r = await fetch(`${HUB_DB[db].url}/auth/v1/magiclink`, {
           method: 'POST',
@@ -12658,20 +12592,19 @@ if (document.readyState !== 'loading') hubArtToepassen();
         if (r.ok) goed++;
       } catch (e) {}
     }
-    melding(goed ? 'Er komen ' + goed + ' inloglinks aan. Klik ze allebei aan.' : 'Versturen mislukt, probeer het zo nog eens.', goed ? '#4dffa6' : '#ff003c');
+    melding(goed ? 'Er komt een inloglink aan. Klik hem meteen aan.' : 'Versturen mislukt, probeer het zo nog eens.', goed ? '#4dffa6' : '#ff003c');
   };
 
   // Zet de hub in "kies een nieuw wachtwoord"-stand voor één project.
   function slotHerstelStand(db) {
     slotToon();
-    melding('Je bent binnen bij ' + HUB_DB[db].naam + '. Typ hieronder je nieuwe wachtwoord en klik op de knop. Doe daarna hetzelfde met de andere mail.', '#7dd3fc');
+    melding('Je bent binnen. Typ hieronder je nieuwe wachtwoord en klik op de knop.', '#7dd3fc');
     const knop = document.getElementById('slot-knop');
     knop.textContent = 'Wachtwoord opslaan';
     knop.setAttribute('onclick', 'slotNieuwWachtwoord("' + db + '")');
     document.getElementById('slot-wachtwoord-label').textContent = 'Nieuw wachtwoord voor ' + HUB_DB[db].naam;
     document.getElementById('slot-wachtwoord').setAttribute('autocomplete', 'new-password');
     document.getElementById('slot-wachtwoord').value = '';
-    document.getElementById('slot-doorgaan').style.display = 'none';
   }
 
   // Een token uit een mail-link geldt maar bij één van de twee projecten. Welk,
@@ -12781,21 +12714,16 @@ if (document.readyState !== 'loading') hubArtToepassen();
         throw new Error(reden);
       }
 
-      // Meteen proberen of ditzelfde wachtwoord ook op het andere project werkt.
-      // Vaak is dat zo, en dan is die tweede mail helemaal niet meer nodig.
+      // Bijvangst: werkt ditzelfde wachtwoord ook op het project dat niet achter
+      // het slot zit, dan nemen we die sessie mee. Lukt het niet, geen probleem.
       const ander = db === 'A' ? 'B' : 'A';
-      let anderGoed = false;
-      try { await hubLoginDb(ander, nieuw); anderGoed = true; } catch (e) {}
+      try { await hubLoginDb(ander, nieuw); } catch (e) {}
 
       knop.textContent = 'Inloggen';
       knop.setAttribute('onclick', 'slotInloggen()');
       document.getElementById('slot-wachtwoord-label').textContent = 'Wachtwoord';
-      if (anderGoed) {
-        melding('Opgeslagen, en ' + HUB_DB[ander].naam + ' werkt met hetzelfde wachtwoord. Je bent binnen, even herladen…', '#4dffa6');
-        setTimeout(() => location.reload(), 900);
-      } else {
-        melding('Opgeslagen voor ' + HUB_DB[db].naam + '. ' + HUB_DB[ander].naam + ' heeft nog een ander wachtwoord: open de tweede mail en zet daar hetzelfde in.', '#ffc53d');
-      }
+      melding('Opgeslagen. Je bent binnen, even herladen…', '#4dffa6');
+      setTimeout(() => location.reload(), 900);
     } catch (e) {
       melding('Opslaan mislukt: ' + e.message, '#ff003c');
       knop.textContent = 'Wachtwoord opslaan';
@@ -12808,21 +12736,12 @@ if (document.readyState !== 'loading') hubArtToepassen();
   async function slotStart() {
     const viaLink = await slotHashAfhandelen();
     await hubSessiesBijwerken(false);
-    const uit = hubDbUit();
-    if (!hubIngelogd()) {
-      // Niets binnen: gewoon het inlogscherm, tenzij een mail-link het al heeft
-      // overgenomen (dan staat daar een eigen melding).
-      if (!viaLink) slotToon();
-    } else if (uit.length && !viaLink && !slotZonder(uit[0])) {
-      // Half binnen. Eén keer vragen om het wachtwoord van het ontbrekende
-      // project; kiest hij "verder zonder", dan vraagt het slot er niet meer om.
-      slotEnkelStand(uit[0], '');
-    } else {
+    if (hubIngelogd()) {
       slotWeg();
-      if (uit.length && window.hubToast) {
-        setTimeout(() => hubToast('⚠️ Niet ingelogd bij ' + uit.map(d => HUB_DB[d].naam).join(' en ') +
-          '. Die gegevens blijven leeg.'), 1200);
-      }
+    } else if (!viaLink) {
+      // Niets binnen: het inlogscherm, tenzij een mail-link het al heeft
+      // overgenomen (dan staat daar een eigen melding).
+      slotToon();
     }
     // Token blijft geldig zolang de hub open staat, en ook na een slapende tab.
     setInterval(() => hubSessiesBijwerken(false), 10 * 60 * 1000);
