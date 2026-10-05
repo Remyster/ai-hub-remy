@@ -706,6 +706,31 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 5 oktober 2026 (deel 4) — De migratie zei niets, ook niet toen alles faalde
+
+Remy drukte op "Nu versleutelen", bevestigde, en zag niets gebeuren. Drie
+fouten die elkaar maskeerden:
+
+1. **De `_enc`-kolommen bestonden nog niet** — `hub-fix.sql` was niet gedraaid.
+   Elke PATCH gaf `column does not exist`.
+2. **De uitslag ging via `alert()`.** De hub vervángt `alert` door
+   `window.hubToast()`, een toast die vanzelf verdwijnt, en de afsluitende
+   `location.reload()` wiste die meteen. Dus zelfs bij volledig falen: stilte.
+   Dit stond gewoon in dit document; ik had het moeten weten.
+3. **Een mislukte rij telde als gelukt.** `sbPatch` geeft `null` bij zowel een
+   fout als succes, en de code deed onvoorwaardelijk `gedaan++`. Het verslag
+   zou dus ook gelogen hebben als het wél zichtbaar was geweest.
+
+Nu: `hsKolommenOntbreken()` controleert vooraf per tabel of de `_enc`-kolom
+bestaat en stopt met een duidelijk scherm zonder iets te wijzigen. Voortgang en
+uitslag gaan naar `hsPaneel()`, een overlay die blijft staan tot je zelf klikt,
+met per tabel het aantal gelukt / al goed / MISLUKT. Herladen gebeurt pas na
+die klik. De PATCH gaat rechtstreeks en kijkt naar `pr.ok` in plaats van naar
+de retourwaarde van `sbPatch`.
+
+**Les voor de volgende keer: gebruik in deze hub nooit `alert()` voor iets dat
+gelezen moet worden, en zeker niet vlak voor een `location.reload()`.**
+
 ### 5 oktober 2026 (deel 3) — Login terug, nu als tweede slot náást de versleuteling
 
 De login van deel 1 is diezelfde dag weer teruggezet, na een review door de
