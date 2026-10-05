@@ -609,7 +609,145 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 
 ---
 
+## HUBSLOT — veldversleuteling (5 oktober 2026)
+
+De vervanger van de login. In plaats van de deur te bewaken worden de gegevens
+zelf onleesbaar gemaakt, client-side. Geen account, geen mailtje, geen server.
+
+**Dezelfde sleutel als de Kluis.** Die zit al dubbel ingepakt in `vault_meta`:
+één keer met Remy's code, één keer met zijn herstelcode (`vltTryUnwrap`). Er is
+dus niets nieuws te onthouden en de herstelroute bestond al. `hsKey` en
+`vltKey` wijzen naar hetzelfde `CryptoKey`.
+
+**Vorm van een versleuteld veld:** `\u200b` + `HS1:` + iv + `:` + ciphertext,
+als gewone string in de kolom waar de waarde al stond. Dus géén schemawijziging
+voor tekstkolommen. Belangrijker: elk veld staat op zichzelf, dus één veld
+bijwerken blijft één PATCH — geen read-modify-write, geen race tussen telefoon
+en pc.
+
+**Bedragen** passen niet in een numerieke kolom en gaan naar `<kolom>_enc`
+(`vaste_lasten.bedrag_enc`, `betalingen.bedrag_betaald_enc`,
+`spaarrekeningen.saldo_enc`, `spaar_mutaties.bedrag_enc`). De numerieke kolom
+gaat op 0 — niet NULL, want een paar ervan zijn NOT NULL.
+
+**Halverwege stoppen mag.** Een waarde zonder markering is gewoon platte tekst
+en gaat ongemoeid door `hsUitRij()`. De migratie kan dus afbreken of in stukjes
+draaien zonder dat er iets onbruikbaar wordt. Dat is met opzet: alles-of-niets
+op financiële data is precies wat je niet wilt.
+
+### Wat wel en niet versleuteld wordt
+
+| Wel (`HS_TABELLEN`) | Niet, en waarom |
+|---|---|
+| `vaste_lasten`, `betalingen`, `spaarrekeningen`, `spaar_mutaties` | `notities`, `brain_dumps`, `weekplanner_items` — **NotitieHub** (Android) schrijft die ook |
+| `werk_links`, `pb_projecten`, `context_blocks` | `work_*` — **WerkHub** schrijft die |
+| | `app_settings` — NotitieHub bewaart daar de salt van zijn eigen privé-notitie-crypto (`PriveCrypto.kt`) |
+
+**Dit is de belangrijkste beperking van de hele opzet.** Project B wordt gedeeld
+met twee andere apps. Versleutel je een tabel die zo'n app ook schrijft, dan
+blijft die platte tekst wegschrijven en toont hij onleesbare brij voor alles wat
+de hub schreef. Bij `app_settings` is het erger: NotitieHub zou zijn eigen
+privé-notities niet meer kunnen ontsleutelen. Geverifieerd op 5 oktober 2026 in
+de NotitieHub-broncode (`C:\Users\remy\Desktop\Gemaakte apps\NotitieHub`): die
+app raakt `notities`, `brain_dumps`, `weekplanner_items`, `media_items`,
+`verjaardagen`, `games`, `anime`, `recepten` en `app_settings` aan.
+
+**Structuurkolommen blijven altijd plat**: `id`, `datum`, `tijd`, `volgorde`,
+`actief`, `klaar`, `status`, `created_at`, `setting_key`. Anders breken queries
+als `datum=gte.…` stilletjes. De eerlijke consequentie: een buitenstaander ziet
+nog steeds dát er zoveel vaste lasten zijn en wanneer ze vallen — niet wát het
+zijn of wat ze kosten.
+
+**Wat dit níét oplost:** iemand met de publishable key kan rijen nog steeds
+*wissen* of rommel bijschrijven. Versleuteling beschermt vertrouwelijkheid, niet
+integriteit. De 💾 Backup-knop is daarmee belangrijker geworden.
+
+### Functies
+
+| Functie | Wat |
+|---------|-----|
+| `hsVersleutel(v)` / `hsOntsleutel(s)` | Eén waarde heen en weer. `hsOntsleutel` geeft `{ok, waarde}` en gooit nooit — het draait in renderpaden |
+| `hsUitRij(rij)` / `hsUitLijst(rijen)` | Lezen. Heeft géén tabelkennis nodig: de markering herkent zichzelf |
+| `hsPakRij(t, body)` / `hsPakLijst` | Schrijven. Weigert als de hub vergrendeld is (`HsVergrendeld`) |
+| `hsStart()` | Bij het laden: sleutel van dit apparaat ophalen, anders de balk tonen |
+| `hsVraagCode()` / `hsVergrendel()` | Ontgrendelen en weer afsluiten |
+| `hsMigreer()` | Eenmalig bestaande rijen versleutelen, per tabel, rij voor rij |
+| `hsMigratieNodig()` | Kijkt of er nog platte rijen liggen; vult de groene balk |
+| `hsSorteerOpNaam(rijen)` | Sorteren moet ná het ontsleutelen — Postgres ziet alleen ciphertext |
+
+`sbGet`, `sbPost`, `sbPatch` en `sbUpsert` doen dit zelf. **Schrijf je ergens
+een rechtstreekse `fetch` naar `/rest/v1/`, dan moet je `hsUitLijst()` /
+`hsPakLijst()` daar met de hand omheen zetten** — gebruik liever de helpers.
+`sbUpsert` weigert bovendien een `on_conflict` op een versleutelde kolom: elke
+versleuteling krijgt een eigen IV, dus zo'n upsert zou nooit matchen en
+stilletjes duplicaten maken.
+
+### Geen deur die dichtvalt
+
+Nadrukkelijk géén schermvullend slot. Dat was de fout van 30 september: één
+weigerende database zette de complete hub dicht, ook de helft die er niets mee
+te maken had. Nu blijft alles bereikbaar en staat er bij de versleutelde stukken
+een 🔒. Twee balkjes onderin, allebei wegklikbaar: geel "je gegevens zijn
+vergrendeld" en groen "ze staan nog onversleuteld". Schrijven naar een
+versleutelde tabel wordt wél geweigerd zolang je vergrendeld bent — platte tekst
+wegschrijven "zodat het blijft werken" zou het lek stil terugzetten.
+
+### Basisbedrag bewerken (`vlBasisbedrag`)
+
+Nieuw potloodje achter elke naam in Vaste Lasten. Het bestaande invoerveld in de
+rij slaat iets anders op: dat gaat naar `betalingen` en geldt alleen voor de
+getoonde maand. Het vaste basisbedrag (`vaste_lasten.bedrag`) kon tot nu toe
+**alleen via directe SQL** — en dat kan niet blijven, want sinds het hubslot
+staat de echte waarde in `bedrag_enc` en is de numerieke kolom 0. Een
+SQL-update daarop geeft geen foutmelding maar wordt bij het laden stil
+overschreven door de versleutelde waarde. Vandaar de knop.
+
+---
+
 ## Changelog
+
+### 5 oktober 2026 (deel 2) — HUBSLOT: gegevens versleuteld in plaats van een deur ervoor
+
+Na het weghalen van de login (deel 1) de vervanger gebouwd. Zie de sectie
+HUBSLOT hierboven voor de werking.
+
+Onderweg van ontwerp veranderd. Eerste idee was één `enc`-blob per rij, maar dan
+moet een enkele veldwijziging eerst de hele blob ophalen, ontsleutelen, samen­
+voegen en terugschrijven — verborgen extra aanvragen op financiële data, met
+kans dat telefoon en pc elkaar overschrijven. Per veld versleutelen in de
+bestaande kolom heeft dat probleem niet, vraagt geen schemawijziging voor
+tekstkolommen, en maakt de migratie afbreekbaar.
+
+Drie dingen gevonden tijdens het bouwen die het plan veranderd hebben:
+1. **Het SQL-script van deel 1 zou WerkHub breken** — alleen `TO anon` terwijl
+   die app als `authenticated` draait. Gecorrigeerd vóór uitvoeren.
+2. **Drie tabelgroepen worden door andere apps geschreven** en kunnen dus niet
+   versleuteld worden. Zie de tabel hierboven.
+3. **`app_settings` kan al helemaal niet** — NotitieHub bewaart daar de salt van
+   zijn eigen privé-notitie-versleuteling.
+
+Getest met een node-harness die de echte functies uit `index.html` trekt: 21
+controles, allemaal goed — tekst en getallen heen en weer, een eigen IV per
+keer, structuurkolommen blijven plat, een onversleutelde rij gaat ongeschonden
+door, vergrendeld lezen geeft het slotje, vergrendeld schrijven wordt geweigerd
+maar een patch zonder geheim veld mag door, een verkeerde sleutel geeft een
+nette weigering in plaats van een crash, en een tabel buiten de lijst blijft
+plat. **Niet in Chrome geladen** — de browser-extensie was niet verbonden, en de
+SQL moet eerst draaien.
+
+**Nog te doen, in deze volgorde:**
+1. Remy draait `slot-eraf.sql` (policies + de vier `_enc`-kolommen).
+2. Hub laden, groene balk → 💾 Backup → "Nu versleutelen".
+3. Controleren dat Vaste Lasten, spaarrekeningen en de prompt-projecten kloppen.
+
+**Openstaand:** de API-keys. Project B heeft al een edge function `ai-proxy`
+(`verify_jwt: true`, origin-whitelist met `remyster.github.io`, modellen
+`claude-sonnet-5` en `claude-haiku-4-5-20251001`, `MAX_TOKENS` 2000) die de
+Anthropic-key als server-secret houdt. Dat is de nette route — dan hoeft de key
+nergens in de database, versleuteld of niet. Twee haken: `MAX_TOKENS` staat op
+2000 terwijl de Prompt Builder 2500 stuurt (zou de afkap-bug van 3 september
+terugbrengen), en de proxy dekt alleen Anthropic, niet OpenRouter. Niet gedaan
+in deze ronde.
 
 ### 5 oktober 2026 — Het slot is er weer af
 
@@ -637,12 +775,18 @@ Dat scheelde opnieuw ~50 fetch-aanroepen aanpassen, en het is het haakje waar
 een volgende oplossing weer aan kan hangen. Laat die getters dus staan.
 Eenmalige opruiming: `localStorage.removeItem('hub_sessie_v1')` bij het laden.
 
-Supabase project B: de 25 `eigenaar_only`-policies moeten terug naar
-`anon_all` (`FOR ALL TO anon USING (true) WITH CHECK (true)`), anders geeft de
-hub overal lege lijsten. **Dat is niet vanuit Claude gedaan** — het openzetten
-van RLS voor `anon` wordt door een veiligheidsfilter geblokkeerd. De SQL staat
-klaar als `DO $$`-blok over alle tabellen met `policyname = 'eigenaar_only'`;
-Remy draait 'm in de SQL Editor.
+Supabase project B: de 25 `eigenaar_only`-policies moeten terug naar één
+`hub_open` per tabel, anders geeft de hub overal lege lijsten. **Dat is niet
+vanuit Claude gedaan** — het openzetten van RLS voor `anon` wordt door een
+veiligheidsfilter geblokkeerd. De SQL staat klaar als `DO $$`-blok over alle
+tabellen met `policyname = 'eigenaar_only'`; Remy draait 'm in de SQL Editor.
+
+**Die policy moet `TO anon, authenticated` zijn, niet alleen `anon`.** WerkHub
+(repo `solo-leveling`) zit sinds 16 september 2026 achter Supabase Auth op
+ditzelfde project en draait dus als rol `authenticated`. Een policy die alleen
+`anon` noemt dekt die rol niet, en dan krijgt WerkHub overal lege lijsten —
+precies het probleem dat de `work_*`-tabellen andersom al hadden. De eerste
+versie van het script maakte die fout; gecorrigeerd voordat het gedraaid is.
 
 **De bekende prijs:** vaste lasten, spaarrekeningen, notities, weekplanner,
 brain dumps, kluis en de opgeslagen Claude- en OpenRouter-key staan hiermee

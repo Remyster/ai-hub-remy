@@ -3347,6 +3347,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
       <a href="https://photos.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📸 Photos</a>
       <a href="https://supabase.com/dashboard" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🗄️ Supabase</a>
       <span class="hbtn hbtn-muted" onclick="openVault()">🔐 Kluis</span>
+      <span class="hbtn hbtn-muted" id="hs-knop" onclick="hsKnopKlik()" title="Je persoonlijke gegevens staan versleuteld in de database. Dezelfde code als de Kluis.">🔒 Slot</span>
       <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
       <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
@@ -5038,25 +5039,37 @@ const SB_KEY  = HUB_DB.B.key;
 const SB_GET_HDR  = { 'apikey': SB_KEY, get Authorization() { return 'Bearer ' + hubToken('B'); } };
 const SB_POST_HDR = { 'apikey': SB_KEY, get Authorization() { return 'Bearer ' + hubToken('B'); }, 'Content-Type': 'application/json' };
 
+// Let op: deze vier helpers versleutelen en ontsleutelen zelf (zie HUBSLOT
+// verderop). Schrijf je ergens een rechtstreekse fetch naar /rest/v1/, dan moet
+// je hsPakLijst()/hsUitLijst() daar met de hand omheen zetten — gebruik liever
+// deze helpers.
 async function sbGet(table, params='') {
   const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, { headers: SB_GET_HDR });
   if (!r.ok) { console.error(`sbGet ${table} fout:`, r.status, await r.text()); return []; }
-  return r.json();
+  return hsUitLijst(await r.json());
 }
 async function sbPost(table, body) {
+  let payload;
+  try { payload = await hsPakLijst(table, body); }
+  catch (e) { if (e instanceof HsVergrendeld) { hsMeldVergrendeld(); return null; } throw e; }
   const r = await fetch(`${SB_URL}/rest/v1/${table}`, {
     method:'POST',
     headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(payload)
   });
   if (!r.ok) { const t = await r.text(); console.error(`sbPost ${table} fout:`, r.status, t); return null; }
-  return r.status === 204 ? null : r.json().catch(() => null);
+  if (r.status === 204) return null;
+  const terug = await r.json().catch(() => null);
+  return Array.isArray(terug) ? hsUitLijst(terug) : (terug ? hsUitRij(terug) : terug);
 }
 async function sbPatch(table, params, body) {
+  let payload;
+  try { payload = await hsPakRij(table, body); }
+  catch (e) { if (e instanceof HsVergrendeld) { hsMeldVergrendeld(); return null; } throw e; }
   const r = await fetch(`${SB_URL}/rest/v1/${table}?${params}`, {
     method:'PATCH',
     headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(payload)
   });
   if (!r.ok) { const t = await r.text(); console.error(`sbPatch ${table} fout:`, r.status, t); return null; }
   return null;
@@ -5179,6 +5192,414 @@ async function vltTryUnwrap(code, saltKey, wrapIvKey, wrapCtKey) {
   } catch(e) { return null; }
 }
 const VLT_FAIL_LS = 'vlt_fail_count_v1';
+
+// ══════════════════════════════════════════════
+// HUBSLOT — veldversleuteling over de hele hub
+// ══════════════════════════════════════════════
+// Waarom dit bestaat: de hub draait op een publishable key die in een publieke
+// repo staat, en de RLS-policies op project B staan op `anon` met USING (true).
+// Wie de key vindt kan dus alles lezen. De login van 30 september moest dat
+// oplossen maar werkte in de praktijk niet (zie de changelog van 5 oktober).
+// Dit is de vervanger: de gegevens zelf zijn onleesbaar, en er is geen account,
+// geen mailtje en geen server bij betrokken.
+//
+// Hergebruikt bewust de sleutel van de Kluis. Die zit al dubbel ingepakt in
+// `vault_meta` — één keer met je code, één keer met je herstelcode — dus er is
+// niets nieuws te onthouden en de herstelroute bestaat al.
+//
+// ── Vorm ──
+// Een versleuteld veld is een gewone string: ZWSP + 'HS1:' + iv + ':' + inhoud.
+// Dat betekent geen schemawijziging voor tekstkolommen, en belangrijker: elk
+// veld staat op zichzelf. Eén veld bijwerken blijft één PATCH, zonder eerst de
+// rest op te halen en samen te voegen. Dat scheelt een hele klasse bugs waarbij
+// telefoon en pc elkaars wijziging overschrijven.
+//
+// Getallen passen niet in een numerieke kolom, dus die hebben een tekstkolom
+// ernaast (`<kolom>_enc`); zie HS_TABELLEN en het SQL-script in de changelog.
+//
+// ── Halverwege stoppen mag ──
+// Een waarde zonder markering is gewoon platte tekst en wordt ongemoeid gelaten.
+// De migratie kan dus afbreken, overslaan of in stukjes draaien zonder dat er
+// iets onbruikbaar wordt. Dat is met opzet: alles-of-niets op financiële data
+// is precies wat je niet wilt.
+const HS_MARK = '\u200bHS1:';  // zero-width space: onzichtbaar, maar niemand typt 'm per ongeluk
+let hsKey = null;   // CryptoKey of null. null = vergrendeld, hub werkt gewoon door.
+
+// Welke velden bij het schrijven versleuteld moeten worden. Lezen heeft deze
+// lijst niet nodig — daar herkent de markering zichzelf.
+//
+// Wat er bewust NIET in staat: alles waar de hub serverkant op filtert of
+// sorteert. `datum`, `tijd`, `volgorde`, `klaar`, `actief`, `status`,
+// `created_at`, `setting_key`, en alle id's. Versleutel je die, dan breken
+// queries als `datum=gte.…` stilletjes. Gevolg, en dat is de eerlijke grens van
+// deze opzet: een buitenstaander ziet nog steeds dát je zoveel vaste lasten
+// hebt en wanneer ze vallen — niet wát het zijn of wat ze kosten.
+//
+// ⚠ Alleen tabellen die alleen de hub zelf beschrijft. Project B wordt gedeeld
+// met twee andere apps, en die kennen deze versleuteling niet:
+//   • NotitieHub (Android, nl.remy.notitiehub) schrijft `brain_dumps` en
+//     `notities` — zie de regel over foto_url/ocr_tekst in dumpLoadCloud().
+//   • WerkHub (repo solo-leveling) schrijft de `work_*`-tabellen en zit achter
+//     een eigen Supabase Auth-login.
+// Versleutel je die hier, dan blijft de andere app platte tekst wegschrijven
+// en toont hij onleesbare brij voor alles wat de hub schreef. Die tabellen
+// staan daarom bewust niet in deze lijst; dat vraagt eerst een aanpassing aan
+// de andere kant.
+//
+// Geverifieerd op 5 oktober 2026 in de NotitieHub-broncode: die app raakt
+// `notities`, `brain_dumps`, `weekplanner_items`, `media_items`,
+// `verjaardagen`, `games`, `anime`, `recepten` én `app_settings` aan.
+//
+// `app_settings` is de vervelendste van het stel: NotitieHub bewaart daar de
+// salt en controlewaarde van zijn eigen privé-notitie-versleuteling
+// (PriveCrypto.kt). Versleutel je `setting_value`, dan kan die app zijn eigen
+// sleutel niet meer afleiden en zijn de privé-notities op je telefoon weg.
+// De API-keys die daar óók in staan horen daar sowieso niet thuis — die gaan
+// naar de ai-proxy edge function, zie de changelog.
+const HS_TABELLEN = {
+  vaste_lasten:      { tekst: ['naam', 'omschrijving'], getal: ['bedrag'] },
+  betalingen:        { getal: ['bedrag_betaald'] },
+  spaarrekeningen:   { tekst: ['naam', 'doel'], getal: ['saldo'] },
+  spaar_mutaties:    { tekst: ['omschrijving'], getal: ['bedrag'] },
+  werk_links:        { tekst: ['naam', 'url'] },
+  pb_projecten:      { tekst: ['naam', 'omschrijving'] },
+  context_blocks:    { tekst: ['naam', 'tekst'] }
+};
+
+// Een getalkolom kan geen ciphertext bevatten, dus die gaat naar een tekstkolom
+// ernaast. De originele kolom wordt op 0 gezet: niet op NULL, want een paar
+// kolommen zijn NOT NULL en 0 is bovendien een duidelijker "hier staat niks
+// echts" dan een leeg veld.
+function hsGetalKolom(veld) { return veld + '_enc'; }
+
+function hsAan() { return !!hsKey; }
+function hsIsVersleuteld(v) { return typeof v === 'string' && v.startsWith(HS_MARK); }
+
+// De sleutel komt uit de Kluis. Staat hij op "onthouden op dit apparaat", dan
+// pakt dit 'm zonder dat er iets gevraagd wordt — dat is het normale geval na
+// de eerste keer.
+async function hsSleutelUitOnthouden() {
+  if (hsKey) return hsKey;
+  const bewaard = localStorage.getItem(VLT_REMEMBER_LS);
+  if (!bewaard) return null;
+  try {
+    const raw = vltUnb64(bewaard);
+    const key = await crypto.subtle.importKey('raw', raw, 'AES-GCM', true, ['encrypt', 'decrypt']);
+    hsKey = key;
+    return key;
+  } catch (e) { return null; }
+}
+
+async function hsVersleutel(waarde) {
+  if (!hsKey) throw new Error('hub is vergrendeld');
+  // Als JSON, zodat een getal een getal blijft en null ook echt null teruggeeft.
+  const { iv, ciphertext } = await vltEncryptJSON(hsKey, { v: waarde });
+  return HS_MARK + iv + ':' + ciphertext;
+}
+
+// Geeft { ok: true, waarde } of { ok: false } — die laatste bij vergrendeld of
+// bij een sleutel die niet past. Nooit een exception, want dit draait midden in
+// renderpaden die niet mogen omvallen.
+async function hsOntsleutel(tekst) {
+  if (!hsIsVersleuteld(tekst) || !hsKey) return { ok: false };
+  const rest = tekst.slice(HS_MARK.length);
+  const scheiding = rest.indexOf(':');
+  if (scheiding < 0) return { ok: false };
+  try {
+    const obj = await vltDecryptJSON(hsKey, rest.slice(0, scheiding), rest.slice(scheiding + 1));
+    return { ok: true, waarde: obj.v };
+  } catch (e) { return { ok: false }; }
+}
+
+// ── Lezen ──────────────────────────────────────
+// Werkt zonder te weten uit welke tabel de rij komt: wat de markering draagt
+// wordt ontsleuteld, de rest blijft zoals het is. Een nog niet gemigreerde rij
+// gaat er dus ongeschonden doorheen.
+//
+// Vergrendeld? Dan wordt een versleuteld tekstveld het slotje, zodat bestaande
+// renderfuncties gewoon iets te tonen hebben zonder dat er één aangepast hoeft
+// te worden. De rij krijgt `_slot = true` mee, zodat een scherm dat erop wil
+// reageren dat kan — zie hsSlotBanner().
+const HS_SLOT_TEKST = '🔒';
+
+async function hsUitRij(rij) {
+  if (!rij || typeof rij !== 'object') return rij;
+  for (const veld of Object.keys(rij)) {
+    const waarde = rij[veld];
+    if (!hsIsVersleuteld(waarde)) continue;
+    const res = await hsOntsleutel(waarde);
+    if (res.ok) {
+      // Een getalkolom staat onder `<kolom>_enc`; de waarde hoort terug in de
+      // echte kolom, want daar leest de rest van de hub 'm uit.
+      if (veld.endsWith('_enc')) {
+        rij[veld.slice(0, -4)] = res.waarde;
+        delete rij[veld];
+      } else {
+        rij[veld] = res.waarde;
+      }
+    } else {
+      rij._slot = true;
+      if (veld.endsWith('_enc')) delete rij[veld];
+      else rij[veld] = HS_SLOT_TEKST;
+    }
+  }
+  return rij;
+}
+
+async function hsUitLijst(rijen) {
+  if (!Array.isArray(rijen)) return rijen;
+  for (const rij of rijen) await hsUitRij(rij);
+  return rijen;
+}
+
+// ── Schrijven ──────────────────────────────────
+// Bewuste keuze: vergrendeld schrijven mag niet. De verleiding is om dan maar
+// platte tekst weg te schrijven zodat "het blijft werken", maar dat zet precies
+// het lek terug dat dit moet dichten, en je ziet het nergens aan. Dus liever
+// een nette weigering die zegt wat je moet doen.
+class HsVergrendeld extends Error {
+  constructor() { super('🔒 Eerst ontgrendelen voordat dit opgeslagen kan worden.'); }
+}
+
+async function hsPakRij(tabel, body) {
+  const cfg = HS_TABELLEN[tabel];
+  if (!cfg || !body || typeof body !== 'object') return body;
+
+  const raaktVersleuteldVeld =
+    (cfg.tekst || []).some(v => v in body) || (cfg.getal || []).some(v => v in body);
+  if (!raaktVersleuteldVeld) return body;      // bv. alleen `klaar` aanvinken
+  if (!hsKey) throw new HsVergrendeld();
+
+  const uit = { ...body };
+  for (const veld of (cfg.tekst || [])) {
+    if (!(veld in uit)) continue;
+    if (uit[veld] === null || uit[veld] === undefined) continue;
+    uit[veld] = await hsVersleutel(uit[veld]);
+  }
+  for (const veld of (cfg.getal || [])) {
+    if (!(veld in uit)) continue;
+    uit[hsGetalKolom(veld)] = await hsVersleutel(uit[veld]);
+    uit[veld] = 0;   // niet NULL: een paar van deze kolommen zijn NOT NULL
+  }
+  return uit;
+}
+
+// Sorteren op een versleutelde kolom moet in de browser gebeuren, ná het
+// ontsleutelen — Postgres ziet daar alleen ciphertext.
+function hsSorteerOpNaam(rijen) {
+  if (!Array.isArray(rijen)) return rijen;
+  return rijen.sort((a, b) => String(a.naam || '').localeCompare(String(b.naam || ''), 'nl'));
+}
+
+async function hsPakLijst(tabel, body) {
+  if (!Array.isArray(body)) return hsPakRij(tabel, body);
+  const uit = [];
+  for (const rij of body) uit.push(await hsPakRij(tabel, rij));
+  return uit;
+}
+
+// ── Ontgrendelen ───────────────────────────────
+// Nadrukkelijk géén schermvullend slot. Dat was de fout van 30 september: één
+// weigerende database zette de complete hub dicht, ook de helft die er niets
+// mee te maken had. Hier blijft alles bereikbaar — pipeline, prompt builder,
+// toolkits, de structuur van je weekplanner — en staat er bij de versleutelde
+// stukken een slotje tot je je code intikt. Je kunt jezelf hier niet
+// buitensluiten.
+function hsMeldVergrendeld() {
+  alert('🔒 Eerst ontgrendelen — tik je code in via het slotje in de header.');
+  hsToonBalk();
+}
+
+function hsToonBalk() {
+  if (hsKey) { const b = document.getElementById('hs-balk'); if (b) b.remove(); return; }
+  if (document.getElementById('hs-balk')) return;
+  const balk = document.createElement('div');
+  balk.id = 'hs-balk';
+  balk.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9998;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 14px;background:rgba(252,238,10,0.1);border-top:1px solid rgba(252,238,10,0.3);backdrop-filter:blur(8px);font-family:\'DM Mono\',monospace;font-size:0.74em;color:#fcee0a;';
+  balk.innerHTML =
+    '<span>🔒 Je persoonlijke gegevens zijn versleuteld opgeslagen en nu nog vergrendeld.</span>' +
+    '<button onclick="hsVraagCode()" style="padding:6px 14px;background:rgba(252,238,10,0.16);border:1px solid rgba(252,238,10,0.4);border-radius:2px;color:#fcee0a;font-family:inherit;font-size:1em;cursor:pointer;font-weight:700;">Code invullen</button>' +
+    '<button onclick="document.getElementById(\'hs-balk\').remove()" title="Je kunt de hub gewoon blijven gebruiken; de versleutelde onderdelen tonen dan een slotje" style="padding:6px 10px;background:none;border:none;color:rgba(230,232,238,0.5);font-family:inherit;font-size:1em;cursor:pointer;text-decoration:underline;">later</button>';
+  document.body.appendChild(balk);
+}
+
+// Eén veld dat zowel de code als de herstelcode accepteert — precies zoals de
+// Kluis dat al doet, want het is dezelfde sleutel.
+async function hsVraagCode() {
+  if (!vltMeta || !vltMeta.salt_a) {
+    const rows = await sbGet('vault_meta', 'select=key,value');
+    vltMeta = {};
+    rows.forEach(r => vltMeta[r.key] = r.value);
+  }
+  if (!vltMeta.salt_a) {
+    alert('⚠️ Er is nog geen code ingesteld. Open eerst 🔐 Kluis en kies daar een code en een herstelcode — de hub gebruikt dezelfde.');
+    return;
+  }
+  const code = prompt('🔒 Vul je code in (je herstelcode werkt hier ook):');
+  if (!code) return;
+  let key = await vltTryUnwrap(code, 'salt_a', 'wrap_a_iv', 'wrap_a_ct');
+  if (!key) key = await vltTryUnwrap(code, 'salt_b', 'wrap_b_iv', 'wrap_b_ct');
+  if (!key) { alert('❌ Die code klopt niet. Je herstelcode werkt in hetzelfde veld.'); return; }
+
+  hsKey = key;
+  vltKey = key;   // de Kluis staat hiermee meteen ook open, het is dezelfde sleutel
+  try {
+    const raw = await crypto.subtle.exportKey('raw', key);
+    localStorage.setItem(VLT_REMEMBER_LS, vltB64(raw));
+  } catch (e) {}
+  const balk = document.getElementById('hs-balk');
+  if (balk) balk.remove();
+  alert('🔓 Ontgrendeld. Dit apparaat onthoudt het, je hoeft dit niet nog eens te doen.');
+  location.reload();   // schermen opnieuw vullen, nu met leesbare gegevens
+}
+
+function hsVergrendel() {
+  hsKey = null; vltKey = null;
+  try { localStorage.removeItem(VLT_REMEMBER_LS); } catch (e) {}
+  location.reload();
+}
+
+// De header-knop doet het voor de hand liggende: dicht? dan open 'm. Open? dan
+// bied aan af te sluiten — handig op een computer die niet van jou is.
+function hsKnopKlik() {
+  if (!hsKey) { hsVraagCode(); return; }
+  if (confirm('🔓 De hub is ontgrendeld op dit apparaat.\n\nWil je weer vergrendelen? Je moet je code dan opnieuw invullen.')) hsVergrendel();
+}
+
+function hsKnopBijwerken() {
+  const el = document.getElementById('hs-knop');
+  if (!el) return;
+  el.textContent = hsKey ? '🔓 Slot' : '🔒 Slot';
+  el.title = hsKey
+    ? 'Je gegevens zijn ontgrendeld op dit apparaat. Klik om te vergrendelen.'
+    : 'Je persoonlijke gegevens zijn versleuteld en nu vergrendeld. Klik om je code in te vullen.';
+}
+
+// ── Migratie ───────────────────────────────────
+// Eenmalig: bestaande platte rijen versleutelen. Draait per tabel, rij voor
+// rij, en slaat over wat al versleuteld is. Afbreken is niet erg — wat gedaan
+// is blijft goed en wat nog plat staat werkt gewoon, want hsUitRij laat
+// onversleutelde waarden met rust. Opnieuw draaien pakt simpelweg de rest.
+//
+// Doet met opzet geen DELETE en geen INSERT, alleen PATCH per id. Het ergste
+// wat een fout halverwege kan opleveren is een tabel die half versleuteld is,
+// en dat is een werkende toestand.
+async function hsMigreer(bevestigd) {
+  if (!hsKey) { alert('🔒 Ontgrendel eerst — zonder sleutel valt er niets te versleutelen.'); hsVraagCode(); return; }
+  if (!bevestigd) {
+    const tabellen = Object.keys(HS_TABELLEN).join(', ');
+    if (!confirm(
+      'Dit versleutelt je bestaande gegevens in:\n\n' + tabellen +
+      '\n\nMaak eerst een backup met de 💾-knop. Doorgaan?'
+    )) return;
+  }
+
+  const verslag = [];
+  for (const tabel of Object.keys(HS_TABELLEN)) {
+    const cfg = HS_TABELLEN[tabel];
+    const velden = [...(cfg.tekst || []), ...(cfg.getal || [])];
+    let gedaan = 0, overgeslagen = 0, mislukt = 0;
+    try {
+      // Let op: sbGet ontsleutelt al, dus hier bewust een rauwe fetch — we
+      // moeten kunnen zien wat er écht in de kolom staat.
+      const r = await fetch(`${SB_URL}/rest/v1/${tabel}?select=*`, { headers: SB_GET_HDR });
+      if (!r.ok) { verslag.push(`${tabel}: niet gelezen (HTTP ${r.status})`); continue; }
+      const rijen = await r.json();
+
+      for (const rij of rijen) {
+        if (rij.id === undefined || rij.id === null) { overgeslagen++; continue; }
+
+        const patch = {};
+        for (const veld of (cfg.tekst || [])) {
+          const w = rij[veld];
+          if (w === null || w === undefined || w === '') continue;
+          if (hsIsVersleuteld(w)) continue;              // al gedaan
+          patch[veld] = w;
+        }
+        for (const veld of (cfg.getal || [])) {
+          if (hsIsVersleuteld(rij[hsGetalKolom(veld)])) continue;   // al gedaan
+          if (rij[veld] === null || rij[veld] === undefined) continue;
+          patch[veld] = rij[veld];
+        }
+        if (!Object.keys(patch).length) { overgeslagen++; continue; }
+
+        const res = await sbPatch(tabel, `id=eq.${encodeURIComponent(rij.id)}`, patch);
+        if (res === null && !hsKey) { mislukt++; break; }
+        gedaan++;
+      }
+      verslag.push(`${tabel}: ${gedaan} versleuteld, ${overgeslagen} al goed${mislukt ? `, ${mislukt} mislukt` : ''}`);
+    } catch (e) {
+      console.error(`hsMigreer ${tabel}:`, e);
+      verslag.push(`${tabel}: fout — ${e.message}`);
+    }
+  }
+  console.log('[hubslot] migratie:\n' + verslag.join('\n'));
+  alert('🔐 Versleuteling klaar:\n\n' + verslag.join('\n') + '\n\nDe hub laadt opnieuw.');
+  location.reload();
+}
+
+// Kijkt of er nog platte rijen liggen. Bewust geen knop die je ergens moet
+// zoeken: dit hoeft precies één keer te gebeuren, dus de hub zegt het zelf
+// zodra het nodig is en zwijgt erover zodra het klaar is.
+async function hsMigratieNodig() {
+  for (const tabel of Object.keys(HS_TABELLEN)) {
+    const cfg = HS_TABELLEN[tabel];
+    const tekstVelden = cfg.tekst || [];
+    const getalVelden = (cfg.getal || []).map(hsGetalKolom);
+    const kolommen = [...tekstVelden, ...getalVelden];
+    if (!kolommen.length) continue;
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/${tabel}?select=${kolommen.join(',')}&limit=25`, { headers: SB_GET_HDR });
+      if (!r.ok) continue;
+      const rijen = await r.json();
+      for (const rij of rijen) {
+        // Een tekstveld met inhoud dat geen markering draagt is nog niet gedaan.
+        for (const v of tekstVelden) {
+          const w = rij[v];
+          if (w !== null && w !== undefined && w !== '' && !hsIsVersleuteld(w)) return true;
+        }
+        // Voor bedragen geldt het omgekeerde: de _enc-kolom hoort gevuld te zijn.
+        for (const v of getalVelden) {
+          if (v in rij && !hsIsVersleuteld(rij[v])) return true;
+        }
+      }
+    } catch (e) {}
+  }
+  return false;
+}
+
+function hsToonMigratieBalk() {
+  if (document.getElementById('hs-mig-balk')) return;
+  const balk = document.createElement('div');
+  balk.id = 'hs-mig-balk';
+  balk.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9998;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 14px;background:rgba(77,255,166,0.1);border-top:1px solid rgba(77,255,166,0.3);backdrop-filter:blur(8px);font-family:\'DM Mono\',monospace;font-size:0.74em;color:#4dffa6;';
+  balk.innerHTML =
+    '<span>🔐 Je financiële gegevens staan nog onversleuteld in de database.</span>' +
+    '<button onclick="hsMigreer()" style="padding:6px 14px;background:rgba(77,255,166,0.16);border:1px solid rgba(77,255,166,0.4);border-radius:2px;color:#4dffa6;font-family:inherit;font-size:1em;cursor:pointer;font-weight:700;">Nu versleutelen</button>' +
+    '<button onclick="backupAlles()" style="padding:6px 10px;background:none;border:none;color:rgba(230,232,238,0.6);font-family:inherit;font-size:1em;cursor:pointer;text-decoration:underline;">eerst backup</button>' +
+    '<button onclick="document.getElementById(\'hs-mig-balk\').remove()" style="padding:6px 10px;background:none;border:none;color:rgba(230,232,238,0.45);font-family:inherit;font-size:1em;cursor:pointer;text-decoration:underline;">later</button>';
+  document.body.appendChild(balk);
+}
+
+// Draait bij het laden. Vindt hij de onthouden sleutel, dan merk je hier niets
+// van — dat is na de eerste keer het normale geval.
+async function hsStart() {
+  await hsSleutelUitOnthouden();
+  if (hsKey) {
+    if (!vltKey) vltKey = hsKey;
+    hsKnopBijwerken();
+    try { if (await hsMigratieNodig()) hsToonMigratieBalk(); } catch (e) {}
+    return;
+  }
+  try {
+    const rows = await sbGet('vault_meta', 'select=key,value');
+    vltMeta = {};
+    rows.forEach(r => vltMeta[r.key] = r.value);
+    // Alleen zeuren als er ook echt een code bestaat om in te vullen.
+    if (vltMeta.salt_a) hsToonBalk();
+  } catch (e) {}
+  hsKnopBijwerken();
+}
 
 async function openVault() {
   document.getElementById('vault-overlay').classList.add('show');
@@ -5574,10 +5995,30 @@ async function sbUpsert(table, body) {
     'vault_meta': 'key'
   };
   const onConflict = conflictCols[table] || 'id';
+
+  // Versleutelen gebruikt elke keer een nieuwe IV, dus dezelfde invoer levert
+  // nooit twee keer dezelfde ciphertext op. Een upsert die op zo'n kolom
+  // matcht vindt daarom nooit een bestaande rij en maakt stilletjes
+  // duplicaten. Geen van de huidige aanroepen doet dat; deze rem staat er voor
+  // de volgende die een tabel toevoegt.
+  const hsCfg = HS_TABELLEN[table];
+  if (hsCfg) {
+    const versleuteld = [...(hsCfg.tekst || []), ...(hsCfg.getal || [])];
+    const botsing = onConflict.split(',').find(k => versleuteld.includes(k.trim()));
+    if (botsing) {
+      console.error(`sbUpsert ${table}: on_conflict op '${botsing}' kan niet, die kolom wordt versleuteld. Gebruik sbPost/sbPatch, of haal de kolom uit HS_TABELLEN.`);
+      return null;
+    }
+  }
+
+  let payload;
+  try { payload = await hsPakLijst(table, body); }
+  catch (e) { if (e instanceof HsVergrendeld) { hsMeldVergrendeld(); return null; } throw e; }
+
   const r = await fetch(`${SB_URL}/rest/v1/${table}?on_conflict=${onConflict}`, {
     method:'POST',
     headers: { ...SB_POST_HDR, 'Prefer': 'resolution=merge-duplicates,return=minimal' },
-    body: JSON.stringify(body)
+    body: JSON.stringify(payload)
   });
   if (!r.ok) {
     const t = await r.text();
@@ -5631,7 +6072,7 @@ function wpEsc(s) {
 async function sbWpGet(startISO, endISO) {
   const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=gte.${startISO}&datum=lte.${endISO}&order=datum,tijd,volgorde`, { headers: SB_GET_HDR });
   if (!r.ok) { console.error('sbWpGet fout:', r.status, await r.text()); return []; }
-  return r.json();
+  return hsUitLijst(await r.json());
 }
 async function sbWpDelete(id) {
   const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?id=eq.${id}`, { method:'DELETE', headers: SB_POST_HDR });
@@ -6144,12 +6585,14 @@ async function loadVasteLasten() {
     const [lasten, betalingen, spaar] = await Promise.all([
       sbGet('vaste_lasten', 'actief=eq.true&order=volgorde.asc'),
       sbGet('betalingen', `jaar=eq.${vlJaar}&maand=eq.${vlMaand}`),
-      sbGet('spaarrekeningen', 'order=naam.asc')
+      // Niet serverkant op naam sorteren: die kolom staat versleuteld, dus
+      // Postgres ziet ciphertext en sorteert willekeurig. Zie hsSorteerOpNaam().
+      sbGet('spaarrekeningen', '')
     ]);
 
     vlLasten    = Array.isArray(lasten)    ? lasten    : [];
     vlBetalingen= Array.isArray(betalingen)? betalingen: [];
-    vlSpaar     = Array.isArray(spaar)     ? spaar     : [];
+    vlSpaar     = hsSorteerOpNaam(Array.isArray(spaar) ? spaar : []);
 
     renderVasteLasten();
     renderSpaar();
@@ -6296,7 +6739,7 @@ function renderVasteLasten() {
       if (l.categorie === 'inkomen') {
         html += `<div class="vl-row betaald" id="vl-row-${l.id}" style="border-color:rgba(77,255,166,0.25);background:rgba(77,255,166,0.05);">
           <div>
-            <div class="vl-naam" style="color:#4dffa6;">${escHtml(l.naam)}</div>
+            <div class="vl-naam" style="color:#4dffa6;">${escHtml(l.naam)} <button onclick="vlBasisbedrag(${l.id})" title="Pas het vaste basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button></div>
             ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
           </div>
           <div class="vl-bedrag-wrap">
@@ -6313,7 +6756,7 @@ function renderVasteLasten() {
         <div style="display:flex;align-items:center;gap:8px;">
           <input type="checkbox" class="vl-watals-cb" id="vl-watals-${l.id}" ${vlWatAlsUit.has(l.id)?'':'checked'} onchange="vlWatAlsToggle(${l.id})" title="Wat-als: reken deze uitgave er even niet bij">
           <div>
-            <div class="vl-naam">${escHtml(l.naam)}${alterBadge}</div>
+            <div class="vl-naam">${escHtml(l.naam)}${alterBadge} <button onclick="vlBasisbedrag(${l.id})" title="Pas het vaste basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button></div>
             ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
           </div>
         </div>
@@ -6415,6 +6858,33 @@ let vlSaveTimers = {};
 function vlDebouncedSave(id, val) {
   clearTimeout(vlSaveTimers[id]);
   vlSaveTimers[id] = setTimeout(() => updateBedrag(id, val), 700);
+}
+
+// Het vaste basisbedrag van een post (`vaste_lasten.bedrag`), de standaard waar
+// elke nieuwe maand mee begint. Het invoerveld in de rij hiernaast slaat iets
+// anders op: dat gaat naar `betalingen` en geldt alleen voor de getoonde maand.
+//
+// Dit kon tot nu toe alleen met een directe SQL-update. Dat kan niet blijven:
+// sinds het hubslot staat het echte bedrag versleuteld in `bedrag_enc` en is
+// de numerieke kolom 0. Een SQL-update daarop zou geen foutmelding geven maar
+// wel stil worden overschreven door de versleutelde waarde — een val waar je
+// een keer in trapt en daarna een uur naar zoekt.
+async function vlBasisbedrag(id) {
+  const post = vlLasten.find(l => l.id === id);
+  if (!post) return;
+  if (!hsKey) { hsMeldVergrendeld(); return; }
+
+  const huidig = parseFloat(post.bedrag || 0).toFixed(2);
+  const inv = prompt(`Vast basisbedrag voor "${post.naam}"\n\nDit is de standaard voor nieuwe maanden, niet het bedrag van deze maand.`, huidig);
+  if (inv === null) return;
+  const nieuw = parseFloat(String(inv).replace(',', '.'));
+  if (isNaN(nieuw)) { alert('⚠️ Dat is geen geldig bedrag.'); return; }
+
+  const res = await sbPatch('vaste_lasten', `id=eq.${id}`, { bedrag: nieuw, updated_at: new Date().toISOString() });
+  if (res === null && !hsKey) return;   // vergrendeld; sbPatch heeft al gemeld
+  post.bedrag = nieuw;
+  alert(`✅ Basisbedrag van "${post.naam}" staat nu op €${nieuw.toFixed(2)}.`);
+  renderVasteLasten();
 }
 
 async function updateBedrag(id, val) {
@@ -7676,6 +8146,9 @@ window.addEventListener('load', async () => {
   // waardoor de rest van deze init nooit draaide — geen key-sync uit de cloud en
   // geen fetchVoorJou(). Elke stap hieronder los afgeschermd, zodat één kapotte
   // aanroep nooit meer de hele init meesleurt.
+  // Als eerste de sleutel van dit apparaat terughalen, zodat alles wat hierna
+  // laadt meteen leesbare gegevens krijgt in plaats van slotjes.
+  try { await hsStart(); } catch(e) { console.warn('Init: hubslot mislukt:', e); }
   try { await syncApiKeyFromCloud(); } catch(e) { console.warn('Init: Claude-key sync mislukt:', e); }
   try { await syncOpenRouterKeyFromCloud(); } catch(e) { console.warn('Init: OpenRouter-key sync mislukt:', e); }
   // Geen popup, geen apikey modal — direct hub tonen
@@ -10155,7 +10628,7 @@ async function heroLoadTaak() {
     const iso = heroVandaagIso();
     const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${iso}&order=klaar,tijd&limit=8`, { headers: SB_GET_HDR });
     if (!r.ok) { el.innerHTML = '<span style="opacity:.6;">Kon taken niet laden</span>'; return; }
-    const items = await r.json();
+    const items = await hsUitLijst(await r.json());
     if (!items.length) { el.innerHTML = '✅ <b>Niks gepland vandaag</b> — lekker bezig'; return; }
     el.innerHTML = items.map(t => `
       <label class="hero-taak-row${t.klaar ? ' klaar' : ''}">
@@ -10386,7 +10859,7 @@ async function dumpLoadCloud() {
       dumpUpdateCount();
       return { ok:false, status:r.status };
     }
-    const rows = await r.json();
+    const rows = await hsUitLijst(await r.json());
     // foto_url/thumb_url/ocr_tekst komen uit de NotitieHub-app (Android). Tot 11 september 2026
     // werden ze hier weggegooid bij het mappen, waardoor foto's alleen op de telefoon bestonden.
     _dumpCache = rows.map(x => ({
@@ -10533,7 +11006,7 @@ async function notitiesLaad(toonMelding) {
       if (lijst) lijst.innerHTML = `<div style="padding:14px;color:#ff003c;font-family:Inter,sans-serif;font-size:0.74em;">⚠️ Kan notities niet laden (HTTP ${r.status}).</div>`;
       return;
     }
-    _notities = await r.json();
+    _notities = await hsUitLijst(await r.json());
     const teller = document.getElementById('notities-count');
     if (teller) teller.textContent = _notities.length;
     notitiesRender();
@@ -11418,7 +11891,7 @@ async function genContextPakket() {
     let weektaken = [];
     try {
       const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=gte.${iso}&klaar=eq.false&order=datum,tijd&limit=8`, { headers: SB_GET_HDR });
-      if (r.ok) weektaken = await r.json();
+      if (r.ok) weektaken = await hsUitLijst(await r.json());
     } catch(e) {}
     // Pipeline voortgang
     const pipeStatus = ['blog','site','seo'].map(p => {
