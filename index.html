@@ -5604,24 +5604,94 @@ function hsKnopBijwerken() {
 // Doet met opzet geen DELETE en geen INSERT, alleen PATCH per id. Het ergste
 // wat een fout halverwege kan opleveren is een tabel die half versleuteld is,
 // en dat is een werkende toestand.
+//
+// ⚠ Gebruikt bewust GEEN alert() voor de uitslag. De hub vervangt alert door
+// een toast die vanzelf verdwijnt (window.hubToast), en die werd door de
+// afsluitende location.reload() meteen weggespoeld. Resultaat op 5 oktober:
+// Remy drukte op OK, de migratie faalde op élke rij omdat de _enc-kolommen nog
+// niet bestonden, en hij zag niets. Alles gaat nu naar een paneel dat blijft
+// staan tot je het zelf wegklikt.
+
+function hsPaneel(titel, html, knopHtml) {
+  let el = document.getElementById('hs-paneel');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'hs-paneel';
+    el.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(5,4,10,0.85);padding:24px;';
+    document.body.appendChild(el);
+  }
+  el.innerHTML =
+    '<div style="width:100%;max-width:520px;max-height:80vh;overflow:auto;background:#0d1017;border:1px solid rgba(252,238,10,0.2);border-radius:4px;padding:24px;font-family:monospace;color:#e6e8ee;font-size:0.8em;line-height:1.7;">' +
+      '<div style="font-family:Syne,sans-serif;font-size:1.3em;color:#fcee0a;margin-bottom:14px;">' + titel + '</div>' +
+      html +
+      (knopHtml ? '<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">' + knopHtml + '</div>' : '') +
+    '</div>';
+  return el;
+}
+function hsPaneelWeg(herlaad) {
+  const el = document.getElementById('hs-paneel');
+  if (el) el.remove();
+  if (herlaad) location.reload();
+}
+
+// De bedragkolommen moeten bestaan vóór we beginnen. Zonder deze controle
+// faalt elke PATCH met "column does not exist" en lijkt alles goed gegaan
+// terwijl er niets versleuteld is.
+async function hsKolommenOntbreken() {
+  const mist = [];
+  for (const tabel of Object.keys(HS_TABELLEN)) {
+    for (const veld of (HS_TABELLEN[tabel].getal || [])) {
+      const kolom = hsGetalKolom(veld);
+      try {
+        const r = await fetch(`${SB_URL}/rest/v1/${tabel}?select=${kolom}&limit=1`, { headers: SB_GET_HDR });
+        if (!r.ok) mist.push(`${tabel}.${kolom}`);
+      } catch (e) { mist.push(`${tabel}.${kolom}`); }
+    }
+  }
+  return mist;
+}
+
 async function hsMigreer(bevestigd) {
-  if (!hsKey) { alert('🔒 Ontgrendel eerst — zonder sleutel valt er niets te versleutelen.'); hsVraagCode(); return; }
+  if (!hsKey) { hsMeldVergrendeld(); return; }
+
+  hsPaneel('🔐 Even controleren', '<div>Kijken of de database klaar is…</div>', '');
+  const mist = await hsKolommenOntbreken();
+  if (mist.length) {
+    hsPaneel('⚠️ Database is nog niet klaar',
+      '<div>Deze kolommen bestaan nog niet:</div>' +
+      '<div style="margin:10px 0;padding:10px;background:rgba(255,0,60,0.08);border:1px solid rgba(255,0,60,0.25);border-radius:2px;color:#ff8da1;">' +
+        mist.map(escHtml).join('<br>') +
+      '</div>' +
+      '<div>Draai eerst <b>hub-fix.sql</b> (staat op je bureaublad) in de Supabase SQL Editor. Deel A daarvan voegt precies deze kolommen toe. Daarna kun je hier verder.</div>' +
+      '<div style="margin-top:10px;color:rgba(230,232,238,0.5);">Er is niets gewijzigd.</div>',
+      '<button onclick="hsPaneelWeg(false)" style="padding:9px 16px;background:rgba(252,238,10,0.14);border:1px solid rgba(252,238,10,0.35);border-radius:2px;color:#fcee0a;font-family:inherit;cursor:pointer;">Sluiten</button>');
+    return;
+  }
+
   if (!bevestigd) {
-    const tabellen = Object.keys(HS_TABELLEN).join(', ');
-    if (!confirm(
-      'Dit versleutelt je bestaande gegevens in:\n\n' + tabellen +
-      '\n\nMaak eerst een backup met de 💾-knop. Doorgaan?'
-    )) return;
+    if (!confirm('Dit versleutelt je bestaande gegevens in:\n\n' + Object.keys(HS_TABELLEN).join(', ') + '\n\nHeb je een backup gemaakt met de 💾-knop? Doorgaan?')) {
+      hsPaneelWeg(false);
+      return;
+    }
   }
 
   const verslag = [];
+  let totaalGedaan = 0, totaalMislukt = 0;
+
   for (const tabel of Object.keys(HS_TABELLEN)) {
     const cfg = HS_TABELLEN[tabel];
-    const velden = [...(cfg.tekst || []), ...(cfg.getal || [])];
     let gedaan = 0, overgeslagen = 0, mislukt = 0;
+
+    hsPaneel('🔐 Bezig met versleutelen',
+      '<div>Nu bezig: <b>' + escHtml(tabel) + '</b></div>' +
+      '<div style="margin-top:10px;color:rgba(230,232,238,0.55);">' +
+        (verslag.length ? verslag.map(escHtml).join('<br>') : 'Nog niets afgerond.') +
+      '</div>' +
+      '<div style="margin-top:12px;color:rgba(230,232,238,0.45);">Even geduld, dit kan een minuut duren. Sluit dit scherm niet.</div>', '');
+
     try {
-      // Let op: sbGet ontsleutelt al, dus hier bewust een rauwe fetch — we
-      // moeten kunnen zien wat er écht in de kolom staat.
+      // Bewust een rauwe fetch: sbGet ontsleutelt al, en we moeten juist zien
+      // wat er écht in de kolom staat.
       const r = await fetch(`${SB_URL}/rest/v1/${tabel}?select=*`, { headers: SB_GET_HDR });
       if (!r.ok) { verslag.push(`${tabel}: niet gelezen (HTTP ${r.status})`); continue; }
       const rijen = await r.json();
@@ -5633,29 +5703,49 @@ async function hsMigreer(bevestigd) {
         for (const veld of (cfg.tekst || [])) {
           const w = rij[veld];
           if (w === null || w === undefined || w === '') continue;
-          if (hsIsVersleuteld(w)) continue;              // al gedaan
+          if (hsIsVersleuteld(w)) continue;
           patch[veld] = w;
         }
         for (const veld of (cfg.getal || [])) {
-          if (hsIsVersleuteld(rij[hsGetalKolom(veld)])) continue;   // al gedaan
+          if (hsIsVersleuteld(rij[hsGetalKolom(veld)])) continue;
           if (rij[veld] === null || rij[veld] === undefined) continue;
           patch[veld] = rij[veld];
         }
         if (!Object.keys(patch).length) { overgeslagen++; continue; }
 
-        const res = await sbPatch(tabel, `id=eq.${encodeURIComponent(rij.id)}`, patch);
-        if (res === null && !hsKey) { mislukt++; break; }
-        gedaan++;
+        // Hier bewust niet via sbPatch: die geeft null bij fout én bij succes,
+        // waardoor een mislukte rij als "versleuteld" werd geteld.
+        let payload;
+        try { payload = await hsPakRij(tabel, patch); }
+        catch (e) { mislukt++; break; }
+        const pr = await fetch(`${SB_URL}/rest/v1/${tabel}?id=eq.${encodeURIComponent(rij.id)}`, {
+          method: 'PATCH',
+          headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' },
+          body: JSON.stringify(payload)
+        });
+        if (pr.ok) { gedaan++; }
+        else {
+          mislukt++;
+          if (mislukt === 1) console.error(`hsMigreer ${tabel} HTTP ${pr.status}:`, await pr.text());
+        }
       }
-      verslag.push(`${tabel}: ${gedaan} versleuteld, ${overgeslagen} al goed${mislukt ? `, ${mislukt} mislukt` : ''}`);
+      verslag.push(`${tabel}: ${gedaan} versleuteld, ${overgeslagen} al goed${mislukt ? `, ${mislukt} MISLUKT` : ''}`);
+      totaalGedaan += gedaan; totaalMislukt += mislukt;
     } catch (e) {
       console.error(`hsMigreer ${tabel}:`, e);
       verslag.push(`${tabel}: fout — ${e.message}`);
+      totaalMislukt++;
     }
   }
+
   console.log('[hubslot] migratie:\n' + verslag.join('\n'));
-  alert('🔐 Versleuteling klaar:\n\n' + verslag.join('\n') + '\n\nDe hub laadt opnieuw.');
-  location.reload();
+  hsPaneel(
+    totaalMislukt ? '⚠️ Versleuteling deels gelukt' : '✅ Versleuteling klaar',
+    '<div style="margin-bottom:10px;">' + verslag.map(escHtml).join('<br>') + '</div>' +
+    (totaalMislukt
+      ? '<div style="color:#ff8da1;">Er ging iets mis bij ' + totaalMislukt + ' rij(en). Wat wél versleuteld is blijft goed; de rest staat nog gewoon leesbaar en werkt normaal. Druk gerust nog eens op versleutelen, dat pakt alleen de rest op.</div>'
+      : '<div style="color:#4dffa6;">' + totaalGedaan + ' rijen versleuteld.</div>'),
+    '<button onclick="hsPaneelWeg(true)" style="padding:9px 16px;background:rgba(77,255,166,0.14);border:1px solid rgba(77,255,166,0.4);border-radius:2px;color:#4dffa6;font-family:inherit;cursor:pointer;font-weight:700;">Sluiten en herladen</button>');
 }
 
 // Kijkt of er nog platte rijen liggen. Bewust geen knop die je ergens moet
