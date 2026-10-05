@@ -38,7 +38,10 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **Variabelen in code:** `SB_URL`, `SB_KEY`
 - **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
 - **Tabellen (25, geverifieerd 24 sept 2026):** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `spaar_mutaties`, `app_settings`, `weekplanner_items`, `brain_dumps`, `notities`, `media_items`, `verjaardagen`, `recepten`, `games`, `anime`, `context_blocks`, `pb_projecten`, `km_registratie`, `km_defaults`, `werk_links`, `vault_meta`, `vault_items`, `work_items`, `work_tasks`, `work_docs`, `work_load`, `work_reflect`
-- **De `work_*`-tabellen (WerkHub) hebben een policy op de rol `authenticated`, niet op `anon`.** De hub gebruikt een publishable key en krijgt daar dus een lege lijst terug — geen foutmelding, gewoon niks. Dat betekent ook dat de 💾 Backup-knop die data níét meepakt.
+- **Policies:** sinds 5 oktober 2026 weer één `anon_all` per tabel — zie de
+changelog van die dag. De `work_*`-tabellen (WerkHub) stonden lang op de rol
+`authenticated` en gaven daarom altijd een lege lijst terug; met `anon_all`
+werken ze wel, en pakt de 💾 Backup-knop ze ook mee.
 
 **Let op:** Supabase heeft de oude `anon`/`service_role` JWT-keys vervangen door
 `publishable`/`secret` keys (nieuw format, onafhankelijk te roteren, betere
@@ -607,6 +610,52 @@ heeft een verplicht `letop`-veld (oranje blok) juist omdat de vorige teksten te 
 ---
 
 ## Changelog
+
+### 5 oktober 2026 — Het slot is er weer af
+
+De login werkte in de praktijk niet. Remy kwam er niet doorheen, de hub was
+onbruikbaar, en ook onderdelen die niets met beveiliging te maken hebben
+(notities, vaste lasten, weekplanner) waren daardoor onbereikbaar. Op zijn
+verzoek is de hele constructie van 30 september / 1 oktober teruggedraaid. Er
+komt een andere aanpak; wat dat wordt is nog open (Home Assistant als
+dataopslag is genoemd als richting, niet als besluit).
+
+Uit `index.html`:
+- Het hele `#slot-overlay`-blok achteraan (style + markup + script, ~380
+  regels): inloggen, wachtwoord zetten, magic link, hash-afhandeling.
+- De headerknoppen 🔑 Wachtwoord en 🔓 Uitloggen.
+- `HUB_SLOT_DB`, `hubIngelogd`, `hubLoginDb`, `hubVernieuw`,
+  `hubSessiesBijwerken`, `hubUitloggen`, `hubSessies`, `hubSessieBewaar`,
+  `HUB_AUTH_EMAIL`, `HUB_SESSIE_KEY`.
+- De 401-afvang in de fetch-wrapper. Zonder sessies valt er niets te
+  vernieuwen; een 401 op Supabase betekent nu altijd een policy-probleem.
+
+Wat blijft staan: `HUB_DB` met de twee projecten, en `hubToken(db)` — die geeft
+nu altijd de publishable key terug. **De vier header-constanten (`SS_GET_HDR`,
+`SS_POST_HDR`, `SB_GET_HDR`, `SB_POST_HDR`) houden hun `get Authorization()`.**
+Dat scheelde opnieuw ~50 fetch-aanroepen aanpassen, en het is het haakje waar
+een volgende oplossing weer aan kan hangen. Laat die getters dus staan.
+Eenmalige opruiming: `localStorage.removeItem('hub_sessie_v1')` bij het laden.
+
+Supabase project B: de 25 `eigenaar_only`-policies moeten terug naar
+`anon_all` (`FOR ALL TO anon USING (true) WITH CHECK (true)`), anders geeft de
+hub overal lege lijsten. **Dat is niet vanuit Claude gedaan** — het openzetten
+van RLS voor `anon` wordt door een veiligheidsfilter geblokkeerd. De SQL staat
+klaar als `DO $$`-blok over alle tabellen met `policyname = 'eigenaar_only'`;
+Remy draait 'm in de SQL Editor.
+
+**De bekende prijs:** vaste lasten, spaarrekeningen, notities, weekplanner,
+brain dumps, kluis en de opgeslagen Claude- en OpenRouter-key staan hiermee
+weer open voor iedereen die `sb_publishable_` in de publieke repo vindt — exact
+de situatie die op 30 september beschreven is. Bewuste, tijdelijke keuze. Het
+blijft verstandig om die twee API-keys te rouleren.
+
+Project A is niet aangeraakt: stond al op `anon_all`, zat nooit achter het slot.
+
+Getest: alle 9 script-blokken parsen (`node --check`), geen enkele verwijzing
+naar `slot*`/`hub*Sessie*`/`HUB_SLOT_DB` meer in het bestand, precies één
+script-blok minder dan in HEAD. **Niet in Chrome geladen** — de browser-extensie
+was niet verbonden, en zonder de SQL-stap geeft de hub toch overal 401's.
 
 ### 1 oktober 2026 — Eén deur in plaats van twee
 
