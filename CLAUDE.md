@@ -706,6 +706,57 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 5 oktober 2026 (deel 3) — Login terug, nu als tweede slot náást de versleuteling
+
+De login van deel 1 is diezelfde dag weer teruggezet, na een review door de
+Claude die aan WerkHub werkt. Zijn bezwaar was terecht en het ging om het
+script dat ik had klaargezet om de policies op `anon` te openen:
+
+- `FOR ALL TO anon USING (true) WITH CHECK (true)` geeft niet alleen lezen maar
+  ook **toevoegen, wijzigen en verwijderen**. Client-side versleuteling dekt
+  vertrouwelijkheid, niet integriteit — iemand kan rijen wissen zonder ze te
+  kunnen lezen.
+- Het dekt ook **bestaande platte gegevens** niet. De `_enc`-kolommen zijn
+  additief en doen uit zichzelf niets; pas de migratie versleutelt echt.
+- De eerste versie van dat script zette bovendien de **`work_*`-tabellen** open
+  (offertes, bonnen, uren), die sinds 1 oktober juist beschermd zijn en die de
+  hub helemaal niet nodig heeft.
+
+Daar kwam een eigen vondst bij die dezelfde kant op wijst: de kluissleutel zit
+ingepakt in `vault_meta`, in dezelfde database. Dat is op zich normaal, maar het
+staat of valt met de sterkte van de code. **Is die code een cijferreeks van zes**
+(de kluis suggereert `bijv. 210909`), dan is PBKDF2 met 250.000 rondes over een
+miljoen mogelijkheden in minuten te kraken zodra iemand `vault_meta` kan
+downloaden. Open policies maken de versleuteling dus niet alleen incompleet,
+ze ondermijnen hem.
+
+**Eindopzet: twee sloten.**
+1. **Supabase Auth op alleen project B** (`HUB_SLOT_DB = ['B']`), met de
+   bestaande `eigenaar_only`-policies die toetsen op `auth.uid()`. De database
+   gaat dus níét open. Project A blijft op de publishable key.
+2. **HUBSLOT-veldversleuteling** (deel 2) als extra laag erbovenop, niet in
+   plaats daarvan.
+
+Teruggezet uit `7f000ab`: het `#slot-overlay`-blok, `HUB_SLOT_DB`,
+`hubIngelogd`, `hubLoginDb`, `hubVernieuw`, `hubSessiesBijwerken`,
+`hubUitloggen`, de 401-afvang in de fetch-wrapper, en de knoppen 🔑 Wachtwoord
+en 🔓 Uitloggen. Eén regel bewust níét teruggezet: de
+`localStorage.removeItem('hub_sessie_v1')` uit deel 1 zou elke sessie bij het
+laden wissen.
+
+**Waarom het nu wél moet werken.** De storing van vanochtend was operationeel,
+niet conceptueel: twee projecten, twee accounts, twee herstelmails en een Site
+URL die naar localhost wees. Dat is er allemaal af — één project, één account,
+en het wachtwoord staat sinds 1 oktober 18:12.
+
+Het SQL-script is teruggebracht tot wat veilig is: de vier `_enc`-kolommen en
+een opruimtaak voor `cron.job_run_details` met een bewaartermijn van **30 dagen**
+in plaats van 2, zodat de storingsgeschiedenis bruikbaar blijft voor het
+onderzoek naar de mislukte WerkHub-herinneringen. Geen enkele policy-wijziging.
+
+Getest via lokale server + Chrome: loginscherm rendert met mailadres en beide
+herstelroutes, nul console-fouten, alle 10 script-blokken parsen.
+
 ### 5 oktober 2026 (deel 2) — HUBSLOT: gegevens versleuteld in plaats van een deur ervoor
 
 Na het weghalen van de login (deel 1) de vervanger gebouwd. Zie de sectie
