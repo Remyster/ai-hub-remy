@@ -2897,7 +2897,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 <div id="council-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
   <div id="council-modal" style="background:#0a0715;border:1px solid rgba(252,238,10,0.2);border-radius:3px;padding:32px 28px 24px;max-width:1080px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title">🏛️ AI Council</div>
-    <div class="pb-sub">Eén vraag → parallel naar Gemini, Grok en Claude. Geen synthese, geen kruisgesprek — gewoon 3 antwoorden naast elkaar.</div>
+    <div class="pb-sub">Eén vraag → parallel naar vier modellen met web-grounding, daarna twee onafhankelijke voorzitters en één korte eindsamenvatting. Elke run wordt bewaard, dus je kunt later terugzien wat er is geadviseerd en wat je ermee gedaan hebt.</div>
 
     <span class="pb-label">🧠 Context meesturen (optioneel)</span>
     <div id="council-ctx-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
@@ -2905,15 +2905,25 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     <span class="pb-label">💬 Jouw vraag</span>
     <textarea id="council-input" placeholder="bijv: moet ik nu investeren in zonnepanelen of wachten tot 2027..." style="width:100%;min-height:90px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:12px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.82em;resize:vertical;box-sizing:border-box;"></textarea>
 
-    <button class="pb-generate" id="council-ask-btn" onclick="councilAsk()" style="margin-top:12px;">🏛️ Vraag de Council</button>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;">
+      <button class="pb-generate" id="council-ask-btn" onclick="councilAsk()" style="margin-top:0;">🏛️ Vraag de Council</button>
+      <button class="hbtn" id="council-hist-btn" onclick="councilToggleGeschiedenis()">📜 Geschiedenis</button>
+      <span id="council-save-status" style="font-size:0.72em;color:var(--text-dim);font-family:'Inter',sans-serif;"></span>
+    </div>
 
     <div class="pb-error" id="council-error"></div>
+
+    <!-- Geschiedenis: lijst van eerdere runs uit council_runs (Project A) -->
+    <div id="council-hist-wrap" style="display:none;margin-top:16px;border:1px solid var(--border);border-radius:2px;padding:14px;">
+      <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#00f0ff;margin-bottom:10px;font-family:'Inter',sans-serif;text-transform:uppercase;">📜 Eerdere runs</div>
+      <div id="council-hist-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
 
     <div id="council-results" style="display:none;margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;"></div>
 
     <div id="council-synthesis-section" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);">
       <span class="pb-label">🧑‍⚖️ Voorzitter — wat maak je hiervan?</span>
-      <button id="council-synth-btn" class="pb-generate" onclick="councilSynthesize()">🧑‍⚖️ Vraag synthese (Sonnet 4.5 + GPT-5.6)</button>
+      <button id="council-synth-btn" class="pb-generate" onclick="councilSynthesize()">🧑‍⚖️ Vraag synthese (Sonnet 5 + GPT-5.6)</button>
 
       <div id="council-final-wrap" style="display:none;margin-top:16px;background:rgba(255,197,61,0.06);border:2px solid rgba(255,197,61,0.35);border-radius:2px;padding:16px;">
         <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#ffc53d;margin-bottom:8px;font-family:'Inter',sans-serif;text-transform:uppercase;">📌 Lees dit eerst — kort samengevat</div>
@@ -2921,6 +2931,19 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
       </div>
 
       <div id="council-synthesis-results" style="display:none;margin-top:14px;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;"></div>
+    </div>
+
+    <!-- Besluitlogboek: wat Remy met het advies deed, en hoe dat uitpakte -->
+    <div id="council-besluit-wrap" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);">
+      <span class="pb-label">📋 Besluitlogboek</span>
+      <div style="font-size:0.72em;color:var(--text-dim);margin-bottom:10px;font-family:'Inter',sans-serif;line-height:1.6;">Wat doe je hiermee? En als je het later weet: wat kwam er van terecht? Daarmee zie je terug welke adviezen klopten en welke alleen overtuigend klonken.</div>
+      <textarea id="council-besluit" placeholder="Mijn besluit — wat ga ik doen, en wat laat ik liggen..." style="width:100%;min-height:60px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;resize:vertical;box-sizing:border-box;"></textarea>
+      <textarea id="council-uitkomst" placeholder="Uitkomst — hoe pakte het uit? (later invullen)" style="width:100%;min-height:60px;margin-top:8px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:10px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;">
+        <button class="hbtn" onclick="councilBesluitOpslaan()">💾 Opslaan</button>
+        <button class="hbtn" onclick="councilExportMd()">⬇️ Rapport (.md)</button>
+        <button class="hbtn" onclick="councilCopyMd()">📋 Rapport kopiëren</button>
+      </div>
     </div>
 
     <button class="pb-close-btn" onclick="closeCouncil()">✕ Sluiten</button>
@@ -9500,6 +9523,11 @@ function councilRenderCards() {
   document.getElementById('council-synthesis-section').style.display = 'none';
   document.getElementById('council-synthesis-results').style.display = 'none';
   document.getElementById('council-synthesis-results').innerHTML = '';
+  document.getElementById('council-besluit-wrap').style.display = 'none';
+  document.getElementById('council-besluit').value = '';
+  document.getElementById('council-uitkomst').value = '';
+  councilStatus('');
+  COUNCIL_RUN_ID = null;
 }
 
 async function councilAsk() {
@@ -9541,6 +9569,10 @@ async function councilAsk() {
   if (Object.keys(COUNCIL_LAST_ANSWERS).length >= 2) {
     document.getElementById('council-synthesis-section').style.display = 'block';
   }
+
+  // Bewaren gebeurt hier, niet na de synthese: ook een run waarvan je nooit een
+  // voorzitter vraagt is het opzoeken waard.
+  if (Object.keys(COUNCIL_LAST_ANSWERS).length) await councilRunNieuw(!!ctxText);
 }
 
 // ── Synthese-stap: laat 2 onafhankelijke "voorzitters" oordelen over de 3 antwoorden ──
@@ -9590,7 +9622,8 @@ async function councilSynthesize() {
   await Promise.allSettled(calls);
 
   btn.disabled = false;
-  btn.textContent = '🧑‍⚖️ Vraag synthese (Sonnet 4.5 + GPT-5.6)';
+  btn.textContent = '🧑‍⚖️ Vraag synthese (Sonnet 5 + GPT-5.6)';
+  councilRunBijwerken({ voorzitters: COUNCIL_LAST_SYNTHESES });
 
   if (Object.keys(COUNCIL_LAST_SYNTHESES).length >= 1) {
     await councilFinalSummary();
@@ -9619,9 +9652,240 @@ async function councilFinalSummary() {
   try {
     const text = await callOpenRouter(COUNCIL_FINAL_MODEL, systemPrompt, prompt);
     el.textContent = text;
+    COUNCIL_LAST_FINAL = text;
+    councilRunBijwerken({ eindsamenvatting: text });
   } catch (e) {
     el.innerHTML = `<span style="color:#ff003c;">❌ ${escHtml(e.message || 'onbekende fout')}</span>`;
   }
+}
+
+// ══════════════════════════════════════════════
+// COUNCIL — GESCHIEDENIS, BESLUITLOGBOEK EN RAPPORT
+// ══════════════════════════════════════════════
+// Tabel `council_runs` in Project A, net als pipeline_state. Een run wordt
+// opgeslagen zodra de modellen klaar zijn; daarna wordt diezelfde rij
+// bijgewerkt met de voorzitters, de eindsamenvatting en later het besluit.
+//
+// Bewust eigen fetch in plaats van sbPost/sbPatch: die praten met Project B én
+// geven bij een mislukking exact hetzelfde `null` terug als bij succes — dat
+// was de kern van de zwijgende migratieknop (05-10-2026). Hier wordt een fout
+// zichtbaar gemeld in de statusregel naast de knop.
+//
+// Let op: Project A staat op `anon_all`, dus deze runs zijn leesbaar voor wie
+// de publishable key uit de repo haalt. Stel geen vraag in de Council die daar
+// niet in mag staan; context-blokken sturen wel mee naar de modellen maar
+// worden hier niet opgeslagen.
+const COUNCIL_TABEL = 'council_runs';
+let COUNCIL_RUN_ID = null;
+let COUNCIL_LAST_FINAL = '';
+let COUNCIL_HIST = [];
+
+function councilStatus(msg, kleur) {
+  const el = document.getElementById('council-save-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  el.style.color = kleur || 'var(--text-dim)';
+}
+
+async function councilRunNieuw(contextGebruikt) {
+  try {
+    const r = await fetch(`${SS_SBURL}/rest/v1/${COUNCIL_TABEL}`, {
+      method: 'POST',
+      headers: { ...SS_POST_HDR, 'Prefer': 'return=representation' },
+      body: JSON.stringify({
+        vraag: COUNCIL_LAST_QUESTION,
+        antwoorden: COUNCIL_LAST_ANSWERS,
+        modellen: COUNCIL_MODELS.filter(m => COUNCIL_LAST_ANSWERS[m.key]).map(m => m.model),
+        context_gebruikt: !!contextGebruikt
+      })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status} — ${(await r.text()).slice(0, 160)}`);
+    const rij = (await r.json())[0];
+    COUNCIL_RUN_ID = rij?.id ?? null;
+    document.getElementById('council-besluit-wrap').style.display = 'block';
+    councilStatus(`💾 Bewaard als run #${COUNCIL_RUN_ID}`, '#00f0ff');
+  } catch (e) {
+    console.error('council bewaren mislukt:', e);
+    councilStatus('⚠️ Niet bewaard: ' + (e.message || 'onbekende fout'), '#ff003c');
+  }
+}
+
+async function councilRunBijwerken(velden) {
+  if (!COUNCIL_RUN_ID) return false;
+  try {
+    const r = await fetch(`${SS_SBURL}/rest/v1/${COUNCIL_TABEL}?id=eq.${COUNCIL_RUN_ID}`, {
+      method: 'PATCH',
+      headers: { ...SS_POST_HDR, 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ ...velden, updated_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error(`HTTP ${r.status} — ${(await r.text()).slice(0, 160)}`);
+    return true;
+  } catch (e) {
+    console.error('council bijwerken mislukt:', e);
+    councilStatus('⚠️ Bijwerken mislukt: ' + (e.message || 'onbekende fout'), '#ff003c');
+    return false;
+  }
+}
+
+async function councilBesluitOpslaan() {
+  if (!COUNCIL_RUN_ID) { councilStatus('⚠️ Nog geen bewaarde run om dit aan te hangen', '#ff003c'); return; }
+  councilStatus('⏳ Opslaan...');
+  const ok = await councilRunBijwerken({
+    besluit: document.getElementById('council-besluit').value.trim() || null,
+    uitkomst: document.getElementById('council-uitkomst').value.trim() || null
+  });
+  if (ok) councilStatus(`💾 Besluit bewaard bij run #${COUNCIL_RUN_ID}`, '#00f0ff');
+}
+
+// ── Geschiedenis ──────────────────────────────
+async function councilToggleGeschiedenis() {
+  const wrap = document.getElementById('council-hist-wrap');
+  if (wrap.style.display === 'block') { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  const lijst = document.getElementById('council-hist-list');
+  lijst.innerHTML = '<span style="font-size:0.78em;opacity:0.5;">⏳ Laden...</span>';
+  try {
+    const r = await fetch(`${SS_SBURL}/rest/v1/${COUNCIL_TABEL}?select=*&order=created_at.desc&limit=30`, { headers: SS_GET_HDR });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    COUNCIL_HIST = await r.json();
+  } catch (e) {
+    lijst.innerHTML = `<span style="font-size:0.78em;color:#ff003c;">❌ Ophalen mislukt: ${escHtml(e.message)}</span>`;
+    return;
+  }
+  if (!COUNCIL_HIST.length) {
+    lijst.innerHTML = '<span style="font-size:0.78em;opacity:0.5;">Nog geen runs bewaard.</span>';
+    return;
+  }
+  lijst.innerHTML = COUNCIL_HIST.map(run => {
+    const d = new Date(run.created_at).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const n = Object.keys(run.antwoorden || {}).length;
+    const merk = [
+      `${n} antwoord${n === 1 ? '' : 'en'}`,
+      Object.keys(run.voorzitters || {}).length ? 'synthese' : null,
+      run.besluit ? '📋 besluit' : null,
+      run.uitkomst ? '✅ uitkomst' : null
+    ].filter(Boolean).join(' · ');
+    return `<div style="display:flex;gap:10px;align-items:flex-start;justify-content:space-between;background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:2px;padding:10px 12px;">
+      <div style="min-width:0;">
+        <div style="font-size:0.78em;color:var(--text);line-height:1.5;">${escHtml((run.vraag || '').slice(0, 140))}${(run.vraag || '').length > 140 ? '…' : ''}</div>
+        <div style="font-size:0.68em;color:var(--text-dim);margin-top:4px;font-family:'Inter',sans-serif;">#${run.id} · ${d} · ${merk}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="hbtn" onclick="councilOpenRun(${run.id})" style="font-size:0.7em;padding:5px 9px;">Openen</button>
+        <button class="hbtn" onclick="councilExportMd(${run.id})" style="font-size:0.7em;padding:5px 9px;">⬇️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// Een bewaarde run terug in het scherm zetten. Dit hergebruikt dezelfde kaarten
+// als een verse run, zodat er geen tweede weergave onderhouden hoeft te worden.
+function councilOpenRun(id) {
+  const run = COUNCIL_HIST.find(r => r.id === id);
+  if (!run) return;
+  COUNCIL_LAST_QUESTION = run.vraag || '';
+  COUNCIL_LAST_ANSWERS = run.antwoorden || {};
+  COUNCIL_LAST_SYNTHESES = run.voorzitters || {};
+  COUNCIL_LAST_FINAL = run.eindsamenvatting || '';
+
+  document.getElementById('council-input').value = COUNCIL_LAST_QUESTION;
+  councilRenderCards();
+  COUNCIL_RUN_ID = run.id;
+  COUNCIL_MODELS.forEach(m => {
+    const el = document.getElementById('council-out-' + m.key);
+    if (!el) return;
+    if (COUNCIL_LAST_ANSWERS[m.key]) el.textContent = COUNCIL_LAST_ANSWERS[m.key];
+    else el.innerHTML = '<span style="opacity:0.4;">— geen antwoord in deze run</span>';
+  });
+
+  if (Object.keys(COUNCIL_LAST_SYNTHESES).length) {
+    document.getElementById('council-synthesis-section').style.display = 'block';
+    const wrap = document.getElementById('council-synthesis-results');
+    wrap.innerHTML = COUNCIL_SYNTH_MODELS.map(m => `
+      <div style="background:rgba(${m.color},0.05);border:1px solid rgba(${m.color},0.25);border-radius:2px;padding:14px;">
+        <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:rgb(${m.color});margin-bottom:8px;font-family:'Inter',sans-serif;text-transform:uppercase;">${m.naam}</div>
+        <div style="font-size:0.78em;color:var(--text-dim);line-height:1.6;white-space:pre-wrap;">${escHtml(COUNCIL_LAST_SYNTHESES[m.key] || '— niet in deze run')}</div>
+      </div>`).join('');
+    wrap.style.display = 'grid';
+  } else {
+    document.getElementById('council-synthesis-section').style.display = 'block';
+  }
+
+  if (COUNCIL_LAST_FINAL) {
+    document.getElementById('council-final-wrap').style.display = 'block';
+    document.getElementById('council-final-out').textContent = COUNCIL_LAST_FINAL;
+  }
+
+  document.getElementById('council-besluit-wrap').style.display = 'block';
+  document.getElementById('council-besluit').value = run.besluit || '';
+  document.getElementById('council-uitkomst').value = run.uitkomst || '';
+  councilStatus(`📜 Run #${run.id} geopend — wijzigingen gaan naar deze run`, '#00f0ff');
+  document.getElementById('council-hist-wrap').style.display = 'none';
+}
+
+// ── Rapport ───────────────────────────────────
+// Vaste indeling, zodat twee rapporten naast elkaar te leggen zijn: vraag,
+// losse antwoorden, voorzitters, samenvatting, besluit, uitkomst.
+function councilMarkdown(run) {
+  const d = new Date(run.created_at || Date.now()).toLocaleString('nl-NL');
+  // Opsomming en niet losse regels: twee regels onder elkaar lopen in Markdown
+  // samen tot één alinea.
+  const r = [`# AI Council — run ${run.id ? '#' + run.id : '(niet bewaard)'}`, '', `- **Datum:** ${d}`];
+  if ((run.modellen || []).length) r.push(`- **Modellen:** ${run.modellen.join(', ')}`);
+  if (run.context_gebruikt) r.push('- **Context-blokken meegestuurd:** ja');
+  r.push('', '## 1. De vraag', '', run.vraag || '(leeg)', '', '## 2. De antwoorden per model', '');
+  COUNCIL_MODELS.forEach(m => {
+    const a = (run.antwoorden || {})[m.key];
+    if (a) r.push(`### ${m.naam}`, '', a, '');
+  });
+  if (Object.keys(run.voorzitters || {}).length) {
+    r.push('## 3. De voorzitters', '');
+    COUNCIL_SYNTH_MODELS.forEach(m => {
+      const s = run.voorzitters[m.key];
+      if (s) r.push(`### Voorzitter ${m.naam}`, '', s, '');
+    });
+  }
+  if (run.eindsamenvatting) r.push('## 4. Eindsamenvatting', '', run.eindsamenvatting, '');
+  r.push('## 5. Mijn besluit', '', run.besluit || '_(nog niet ingevuld)_', '');
+  r.push('## 6. De uitkomst', '', run.uitkomst || '_(nog niet ingevuld)_', '');
+  return r.join('\n');
+}
+
+// Zonder id: de run die nu op het scherm staat.
+function councilHuidigeRun() {
+  const bekend = COUNCIL_HIST.find(r => r.id === COUNCIL_RUN_ID);
+  return {
+    id: COUNCIL_RUN_ID,
+    created_at: bekend?.created_at || new Date().toISOString(),
+    vraag: COUNCIL_LAST_QUESTION,
+    antwoorden: COUNCIL_LAST_ANSWERS,
+    voorzitters: COUNCIL_LAST_SYNTHESES,
+    eindsamenvatting: COUNCIL_LAST_FINAL,
+    modellen: COUNCIL_MODELS.filter(m => COUNCIL_LAST_ANSWERS[m.key]).map(m => m.model),
+    context_gebruikt: bekend?.context_gebruikt || false,
+    besluit: document.getElementById('council-besluit').value.trim(),
+    uitkomst: document.getElementById('council-uitkomst').value.trim()
+  };
+}
+
+function councilExportMd(id) {
+  const run = id ? COUNCIL_HIST.find(r => r.id === id) : councilHuidigeRun();
+  if (!run) return;
+  const md = councilMarkdown(run);
+  const naam = `council-${run.id || 'run'}-${new Date(run.created_at || Date.now()).toISOString().slice(0, 10)}.md`;
+  const url = URL.createObjectURL(new Blob([md], { type: 'text/markdown;charset=utf-8' }));
+  const a = document.createElement('a');
+  a.href = url; a.download = naam;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+  councilStatus('⬇️ ' + naam, '#00f0ff');
+}
+
+function councilCopyMd() {
+  const md = councilMarkdown(councilHuidigeRun());
+  navigator.clipboard.writeText(md)
+    .then(() => councilStatus('📋 Rapport gekopieerd', '#00f0ff'))
+    .catch(() => councilStatus('⚠️ Kopiëren mislukt', '#ff003c'));
 }
 
 // ══════════════════════════════════════════════

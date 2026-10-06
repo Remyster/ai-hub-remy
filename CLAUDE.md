@@ -29,7 +29,8 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **URL:** `https://dezyzzkuqkpljhprcbrg.supabase.co`
 - **Variabelen in code:** `SS_SBURL`, `SS_SBKEY`
 - **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
-- **Tabellen:** `pipeline_state`, `brain_dumps` (ongebruikt, de echte staat in B), `ss_assets`, `ss_pipeline_steps`, `ss_project_assets`, `ss_projects`, `ss_site_pages`
+- **Tabellen:** `pipeline_state`, `council_runs`, `brain_dumps` (ongebruikt, de echte staat in B), `ss_assets`, `ss_pipeline_steps`, `ss_project_assets`, `ss_projects`, `ss_site_pages`
+- **Policies:** één `anon_all` per tabel, en die moet `TO anon, authenticated` zijn. Die tweede rol is nodig: staat er een sessie voor A in localStorage, dan geeft `hubToken('A')` een JWT in plaats van de publishable key, en dan weigert een policy op alleen `anon` met een 403 — dezelfde val als bij de `work_*`-tabellen.
 - **Let op:** `werk_links`, `km_registratie` en `km_defaults` stonden hier eerder vermeld maar staan in werkelijkheid in **Project B** — geverifieerd op 24 september 2026 via `list_tables`. De code wees al naar B, alleen deze tabel klopte niet.
 
 ### Project B — Vaste Lasten / Weekplanner
@@ -705,6 +706,55 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 ---
 
 ## Changelog
+
+### 6 oktober 2026 — De Council onthoudt wat hij adviseerde
+
+Aanleiding: Remy liet meerdere AI's een "lokale multi-AI-hub" ontwerpen en kreeg een
+masterplan terug voor parallelle OpenRouter-calls met cross-check en één rapport. Dat
+bestaat al — dat is de AI Council in deze hub, inclusief `:online`-grounding die het
+voorgestelde Tavily/Serper-stuk overbodig maakt. De modellen konden dat niet weten, want
+ze krijgen deze code niet als context. Het enige wat werkelijk ontbrak, was dat de Council
+**niets bewaarde**: geen enkele insert in dat hele blok, dus elke run verdween bij het
+sluiten van de overlay.
+
+Daarom toegevoegd, in de Council zelf en niet als los Python-script (een tweede plek
+betekent een tweede kopie, en wat daarvan komt staat bij 24 september):
+
+- **Tabel `council_runs`** (Project A): vraag, antwoorden per model, voorzitters,
+  eindsamenvatting, gebruikte model-id's, besluit en uitkomst. Een run wordt opgeslagen
+  zodra de modellen klaar zijn — dus ook als je nooit een voorzitter vraagt — en daarna
+  wordt dezelfde rij bijgewerkt.
+- **📜 Geschiedenis**: laatste 30 runs, met per regel of er synthese, besluit en uitkomst
+  bij zit. "Openen" zet een bewaarde run terug in exact dezelfde kaarten als een verse run,
+  zodat er geen tweede weergave te onderhouden is.
+- **Besluitlogboek**: jouw besluit en later de uitkomst. Dat is het stuk dat zichtbaar
+  maakt welke adviezen klopten en welke alleen overtuigend klonken.
+- **Rapport** als Markdown, kopiëren of downloaden, met een vaste indeling (vraag →
+  antwoorden → voorzitters → samenvatting → besluit → uitkomst) zodat twee rapporten naast
+  elkaar te leggen zijn.
+
+Bewust **eigen fetch** in plaats van `sbPost`/`sbPatch`: die praten met Project B én geven
+bij een mislukking exact hetzelfde `null` terug als bij succes — precies de zwijgende
+migratieknop van gisteren. Fouten komen nu in de statusregel naast de knop te staan.
+
+Twee dingen die onderweg bleken:
+
+1. **De policy moet op `anon, authenticated` staan, niet alleen op `anon`.** De eerste
+   versie gaf in de browser een 403 terwijl dezelfde insert vanaf node wél lukte. Oorzaak:
+   er stond een sessie voor A in localStorage, dus `hubToken('A')` stuurde een JWT en niet
+   de publishable key. Dat is dezelfde val waar de `work_*`-tabellen maanden in zaten. Bij
+   een nieuwe tabel in deze hub dus altijd beide rollen.
+2. **Deze runs staan open.** Project A heeft `anon_all` en de publishable key staat in een
+   publieke repo. Een Council-vraag is daarmee leesbaar voor wie die key vindt. De
+   context-blokken zelf worden niet opgeslagen, alleen de vlag dat ze meegestuurd zijn.
+
+Getest: 10 script-blokken parsen, 9 controles op de rapportopbouw (lege velden, ontbrekende
+voorzitters, modellen zonder antwoord), een REST-rondgang insert/patch/select/delete met de
+echte key, en in Chrome de hele route — opslaan, bijwerken, geschiedenis laden, run #4
+heropenen en het rapport opbouwen. Testrijen daarna verwijderd.
+
+Nog niet gebouwd: de reality-check met echte zoekdata (Nimble) vóór de voorzitters
+oordelen. Dat is pas zinvol nu er geschiedenis is om het effect van te zien.
 
 ### 5 oktober 2026 (deel 4) — De migratie zei niets, ook niet toen alles faalde
 
