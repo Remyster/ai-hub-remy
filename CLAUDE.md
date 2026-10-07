@@ -707,6 +707,48 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 7 oktober 2026 (deel 2) — Kooplijst: ruimte kiezen, prijszoeker vinden, details per regel
+
+Twee klachten van Remy, allebei in het 🛒 Kopen-venster:
+
+1. **De ruimte bleef hangen.** Het veld was een `<input list="koop-ruimtes">`. Een
+   datalist filtert zijn suggesties op wat er al staat, dus zodra "Keuken" erin
+   stond toonde de lijst alleen nog Keuken — je moest het veld eerst helemaal
+   leegmaken voordat je iets anders kon kiezen. Nu een echte `<select>` met alle
+   ruimtes plus een laatste regel **➕ Nieuwe ruimte…**, die een tekstveld ernaast
+   laat verschijnen. Wisselen is één klik; na het toevoegen van een nieuwe ruimte
+   staat die meteen in de lijst en blijft hij geselecteerd.
+   Nieuw: `koopVulRuimteKeuze()`, `koopRuimteKeuze()`, `koopGekozenRuimte()`.
+2. **De prijszoeker was onvindbaar.** Hij zat er wel (`koopZoekPrijs` → de
+   bestaande dealfinder), maar alleen achter de kleine 🛒 per regel, en die
+   **sloot de hele kooplijst** — dus je stond ineens ergens anders en de link
+   tussen de twee was onzichtbaar. Nu een volle knop **🔎 Prijzen & aanbiedingen
+   zoeken** boven het invoerblok, en de dealfinder-overlay staat op `z-index:1600`
+   (boven de kooplijst op 1500) zodat hij er bovenop komt en je na ✕ Sluiten
+   gewoon weer in je lijst staat.
+
+3. **Details per regel (📏).** Nieuw knopje achter elke regel dat een paneeltje
+   uitklapt met **maten (l × b × h)**, **kleur/uitvoering**, een **link** en een
+   **notitie**. Ingevulde details staan daarna als grijze regel onder de naam, en
+   het 📏 kleurt groen zodra er iets in zit. Twee kolommen bijgezet op
+   `koop_items` (migratie `koop_items_maten_kleur`): `maten` en `kleur`, allebei
+   nullable `text`. `url` en `notitie` bestonden al vanaf dag één maar hadden nooit
+   een invoerveld gekregen. Bewust losse kolommen en geen gecodeerde string in één
+   veld — anders moet je bij elke wijziging weer gaan parsen.
+   Nieuw: `koopOpenDetails` (Set), `koopDetailsToggle()`, `koopDetailsPaneel()`,
+   `koopDetailsOpslaan()`, `koopDetailsSamenvatting()`.
+   Let op: `veiligeUrl()` geeft **`'#'`** terug bij een niet-http(s)-adres, geen
+   lege string. De eerste versie van de ↗ Openen-link toetste op waarheid en toonde
+   daardoor altijd een link; vergelijk dus expliciet met `'#'`.
+
+Getest via lokale server + Chrome: alle 10 script-blokken parsen, direct wisselen
+Keuken → Badkamer zonder leegmaken, alle 9 opties blijven staan, het
+nieuwe-ruimteveld verschijnt en toevoegen zonder naam wordt geweigerd, de 🛒
+vult de dealfinder terwijl de kooplijst eronder open blijft, en details opslaan +
+weer leegmaken is tegen de echte tabel gedaan (een `javascript:`-url belandt niet
+in de HTML en geeft geen Openen-link). Testwaarden daarna teruggezet op leeg,
+geverifieerd via SQL.
+
 ### 6 oktober 2026 — De Council onthoudt wat hij adviseerde
 
 Aanleiding: Remy liet meerdere AI's een "lokale multi-AI-hub" ontwerpen en kreeg een

@@ -3020,7 +3020,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   </div>
 </div>
 
-<div id="dealfinder-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
+<div id="dealfinder-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1600;display:none;align-items:center;justify-content:center;padding:20px;">
   <div id="dealfinder-modal" style="background:#0a0715;border:1px solid rgba(77,255,166,0.2);border-radius:3px;padding:32px 28px 24px;max-width:680px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title">🛒 Prijzen &amp; Aanbiedingen</div>
     <div class="pb-sub">Wat dit is: live doorzoeken wat iets nu kost of waar het in de aanbieding is — met een echte, actuele webzoekopdracht (geen verzonnen prijzen). Typ wat je zoekt, of waar je iets meteen kunt kopen.</div>
@@ -3049,14 +3049,19 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     </div>
     <div style="font-size:0.7em;color:var(--muted);line-height:1.6;margin-bottom:14px;">
       Wat je nog wilt kopen, gesorteerd per ruimte en op hoe hard het nodig is.
-      De 🛒 achter een regel zoekt live op waar dat ding in Nederland in de aanbieding is.
+      De 📏 achter een regel is voor maten, kleur, een link en een notitie.
+      De 🛒 zoekt live op waar dat ding in Nederland in de aanbieding is.
     </div>
+
+    <button onclick="openDealfinder()" style="width:100%;margin-bottom:12px;padding:9px 14px;background:rgba(77,255,166,0.08);border:1px solid rgba(77,255,166,0.3);border-radius:2px;color:var(--green);font-family:'Inter',sans-serif;font-size:0.75em;font-weight:600;cursor:pointer;">🔎 Prijzen &amp; aanbiedingen zoeken</button>
 
     <!-- toevoegen -->
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
-      <input id="koop-ruimte-input" type="text" list="koop-ruimtes" placeholder="Ruimte" autocomplete="off"
-        style="width:140px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;">
-      <datalist id="koop-ruimtes"></datalist>
+      <select id="koop-ruimte-select" onchange="koopRuimteKeuze()"
+        style="width:150px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 8px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;"></select>
+      <input id="koop-ruimte-nieuw" type="text" placeholder="Naam nieuwe ruimte" autocomplete="off"
+        style="display:none;width:140px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;"
+        onkeydown="if(event.key==='Enter')koopToevoegen()">
       <input id="koop-naam-input" type="text" placeholder="Wat wil je kopen?" autocomplete="off"
         style="flex:1;min-width:160px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;"
         onkeydown="if(event.key==='Enter')koopToevoegen()">
@@ -11053,10 +11058,39 @@ function koopEuro(n) {
   return '€' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
-function koopRender() {
-  // datalist bijwerken zodat je eigen ruimtes terugkomen als suggestie
+// Een echte dropdown, geen datalist. Met een datalist bleef de getypte ruimte in
+// het veld staan en toonde de lijst daarna alleen nog treffers op dat woord — je
+// moest het veld dus eerst helemaal leegmaken voordat je een andere ruimte kon
+// kiezen. Een <select> houdt altijd alle ruimtes bereikbaar; een eigen ruimte
+// toevoegen gaat via de laatste regel in de lijst.
+function koopVulRuimteKeuze() {
+  const sel = document.getElementById('koop-ruimte-select');
+  if (!sel) return;
+  const vorige = sel.value;
   const alle = koopRuimteVolgorde([...KOOP_RUIMTES_STD, ...koopCache.map(i => i.ruimte)]);
-  document.getElementById('koop-ruimtes').innerHTML = alle.map(r => '<option value="' + escHtml(r) + '">').join('');
+  sel.innerHTML = alle.map(r => '<option value="' + escHtml(r) + '">' + escHtml(r) + '</option>').join('') +
+    '<option value="__nieuw">➕ Nieuwe ruimte…</option>';
+  sel.value = (vorige && (alle.includes(vorige) || vorige === '__nieuw')) ? vorige : (alle[0] || 'Overig');
+  koopRuimteKeuze();
+}
+
+function koopRuimteKeuze() {
+  const sel = document.getElementById('koop-ruimte-select');
+  const nieuw = document.getElementById('koop-ruimte-nieuw');
+  if (!sel || !nieuw) return;
+  const aan = sel.value === '__nieuw';
+  nieuw.style.display = aan ? '' : 'none';
+  if (aan && document.activeElement === sel) nieuw.focus();
+}
+
+function koopGekozenRuimte() {
+  const sel = document.getElementById('koop-ruimte-select');
+  if (sel.value === '__nieuw') return document.getElementById('koop-ruimte-nieuw').value.trim();
+  return sel.value;
+}
+
+function koopRender() {
+  koopVulRuimteKeuze();
 
   const toonGekocht = document.getElementById('koop-toon-gekocht').checked;
   const zichtbaar = koopCache.filter(i => toonGekocht || !i.gekocht);
@@ -11089,7 +11123,12 @@ function koopRender() {
 
     items.forEach(i => {
       const p = KOOP_PRIO[i.prioriteit] || KOOP_PRIO[2];
-      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:2px;background:rgba(255,255,255,0.02);margin-bottom:4px;' +
+      const samenvatting = koopDetailsSamenvatting(i);
+      const heeftDetails = !!samenvatting || !!i.url;
+      const open = koopOpenDetails.has(i.id);
+
+      html += '<div style="margin-bottom:4px;">' +
+        '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:2px;background:rgba(255,255,255,0.02);' +
                 (i.gekocht ? 'opacity:.45;' : '') + '">' +
         '<input type="checkbox" ' + (i.gekocht ? 'checked' : '') + ' onchange="koopToggleGekocht(' + i.id + ')" title="Gekocht" style="cursor:pointer;">' +
         '<span onclick="koopVolgendePrio(' + i.id + ')" title="Klik om de prioriteit te wisselen" ' +
@@ -11097,12 +11136,19 @@ function koopRender() {
           'padding:3px 7px;border-radius:2px;color:rgb(' + p.kleur + ');background:rgba(' + p.kleur + ',0.1);border:1px solid rgba(' + p.kleur + ',0.3);">' +
           escHtml(p.label.toUpperCase()) + '</span>' +
         '<span style="flex:1;min-width:0;font-family:\'Inter\',sans-serif;font-size:0.78em;color:var(--text);' +
-          (i.gekocht ? 'text-decoration:line-through;' : '') + '">' + escHtml(i.naam) + '</span>' +
+          (i.gekocht ? 'text-decoration:line-through;' : '') + '">' + escHtml(i.naam) +
+          (samenvatting ? '<span style="display:block;font-size:0.82em;color:var(--muted);margin-top:2px;">' + escHtml(samenvatting) + '</span>' : '') +
+        '</span>' +
         (i.richtprijs ? '<span style="font-size:0.72em;color:var(--muted);white-space:nowrap;">' + koopEuro(i.richtprijs) + '</span>' : '') +
+        '<button onclick="koopDetailsToggle(' + i.id + ')" title="Maten, kleur, link en notitie" ' +
+          'style="background:none;border:none;font-size:0.9em;cursor:pointer;padding:0 2px;color:' +
+          (heeftDetails ? 'var(--green)' : 'var(--muted)') + ';">📏</button>' +
         '<button onclick="koopZoekPrijs(' + i.id + ')" title="Zoek waar dit in de aanbieding is" ' +
           'style="background:none;border:none;color:var(--green);font-size:0.9em;cursor:pointer;padding:0 2px;">🛒</button>' +
         '<button onclick="koopVerwijder(' + i.id + ')" title="Verwijderen" ' +
           'style="background:none;border:none;color:var(--muted);font-size:0.85em;cursor:pointer;padding:0 2px;">✕</button>' +
+        '</div>' +
+        (open ? koopDetailsPaneel(i) : '') +
       '</div>';
     });
     html += '</div>';
@@ -11114,6 +11160,62 @@ function koopRender() {
   koopStatus(open.length + ' open' + (totaal ? ' · ± ' + koopEuro(totaal) + ' totaal' : ''));
 }
 
+// ── Details per regel: maten, kleur, link, notitie ────────────────────────────
+// Kolommen `maten` en `kleur` zijn 7 oktober toegevoegd; `url` en `notitie`
+// stonden er al vanaf het begin maar hadden nog geen invoerveld. Losse kolommen
+// en géén gecodeerde tekst in één veld, want dat zou je bij elke wijziging weer
+// moeten uit elkaar peuteren.
+const koopOpenDetails = new Set();
+
+function koopDetailsSamenvatting(i) {
+  return [i.maten, i.kleur, i.notitie].filter(v => v && String(v).trim()).join(' · ');
+}
+
+function koopDetailsToggle(id) {
+  if (koopOpenDetails.has(id)) koopOpenDetails.delete(id); else koopOpenDetails.add(id);
+  koopRender();
+  if (koopOpenDetails.has(id)) {
+    const v = document.getElementById('koop-maten-' + id);
+    if (v) v.focus();
+  }
+}
+
+function koopDetailsPaneel(i) {
+  const veld = (naam, id, waarde, hint) =>
+    '<label style="display:block;font-size:0.62em;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px;">' + naam + '</label>' +
+    '<input id="koop-' + id + '-' + i.id + '" type="text" value="' + escHtml(waarde || '') + '" placeholder="' + hint + '" autocomplete="off" ' +
+      'onkeydown="if(event.key===\'Enter\')koopDetailsOpslaan(' + i.id + ')" ' +
+      'style="width:100%;box-sizing:border-box;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;' +
+      'padding:7px 9px;color:var(--text);font-family:\'Inter\',sans-serif;font-size:0.74em;outline:none;">';
+
+  return '<div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-top:none;border-radius:0 0 2px 2px;padding:10px 10px 12px;">' +
+    '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;">' +
+      '<div style="flex:2;min-width:170px;">' + veld('Maten (l × b × h)', 'maten', i.maten, 'bijv. 120 × 60 × 75 cm') + '</div>' +
+      '<div style="flex:1;min-width:110px;">' + veld('Kleur / uitvoering', 'kleur', i.kleur, 'bijv. eiken, mat zwart') + '</div>' +
+    '</div>' +
+    '<div style="margin-bottom:8px;">' + veld('Link naar het product', 'url', i.url, 'https://…') + '</div>' +
+    '<div style="margin-bottom:9px;">' + veld('Notitie', 'notitie', i.notitie, 'bijv. moet door de deur van 78 cm') + '</div>' +
+    '<div style="display:flex;gap:8px;align-items:center;">' +
+      '<button onclick="koopDetailsOpslaan(' + i.id + ')" style="padding:7px 13px;background:rgba(77,255,166,0.1);border:1px solid rgba(77,255,166,0.3);' +
+        'border-radius:2px;color:var(--green);font-family:\'Inter\',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;">Opslaan</button>' +
+      '<button onclick="koopDetailsToggle(' + i.id + ')" style="background:none;border:none;color:var(--muted);font-size:0.72em;cursor:pointer;">Sluiten</button>' +
+      // veiligeUrl() geeft '#' terug bij alles wat geen http(s) is — dan geen link tonen
+      (veiligeUrl(i.url) !== '#' ? '<a href="' + escHtml(veiligeUrl(i.url)) + '" target="_blank" rel="noopener" ' +
+        'style="margin-left:auto;font-size:0.72em;color:var(--green);">↗ Openen</a>' : '') +
+    '</div>' +
+  '</div>';
+}
+
+function koopDetailsOpslaan(id) {
+  const lees = (k) => {
+    const el = document.getElementById('koop-' + k + '-' + id);
+    const v = el ? el.value.trim() : '';
+    return v || null;
+  };
+  koopOpenDetails.delete(id);
+  koopBijwerken(id, { maten: lees('maten'), kleur: lees('kleur'), url: lees('url'), notitie: lees('notitie') }, 'details opslaan');
+}
+
 function koopPrijsUitVeld(v) {
   const s = String(v || '').replace(/[€\s]/g,'').replace(',','.');
   const n = parseFloat(s);
@@ -11122,10 +11224,12 @@ function koopPrijsUitVeld(v) {
 
 async function koopToevoegen() {
   const naam   = document.getElementById('koop-naam-input').value.trim();
-  const ruimte = document.getElementById('koop-ruimte-input').value.trim() || 'Overig';
+  const gekozen = koopGekozenRuimte();
   const prio   = parseInt(document.getElementById('koop-prio-input').value, 10) || 2;
   const prijs  = koopPrijsUitVeld(document.getElementById('koop-prijs-input').value);
   if (!naam) { koopStatus('⚠️ Vul in wát je wilt kopen', true); return; }
+  if (!gekozen) { koopStatus('⚠️ Geef de nieuwe ruimte een naam', true); return; }
+  const ruimte = gekozen;
 
   koopStatus('Opslaan…');
   const rij = await koopFetch('', {
@@ -11137,9 +11241,12 @@ async function koopToevoegen() {
 
   document.getElementById('koop-naam-input').value = '';
   document.getElementById('koop-prijs-input').value = '';
-  document.getElementById('koop-naam-input').focus();
+  document.getElementById('koop-ruimte-nieuw').value = '';
   koopCache = koopCache.concat(rij);
+  // de nieuwe ruimte bestaat nu, dus die kan gewoon in de dropdown gekozen blijven
+  document.getElementById('koop-ruimte-select').value = ruimte;
   koopRender();
+  document.getElementById('koop-naam-input').focus();
 }
 
 async function koopBijwerken(id, velden, wat) {
@@ -11182,7 +11289,8 @@ async function koopVerwijder(id) {
 function koopZoekPrijs(id) {
   const item = koopCache.find(i => i.id === id);
   if (!item) return;
-  closeKoop();
+  // De kooplijst blijft eronder openstaan (dealfinder ligt erboven met z-index
+  // 1600), zodat je na het sluiten weer in je lijst staat in plaats van op de hub.
   openDealfinder();
   const inp = document.getElementById('dealfinder-input');
   inp.value = item.naam + ' aanbieding';
