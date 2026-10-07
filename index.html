@@ -3039,6 +3039,50 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   </div>
 </div>
 
+<!-- ══ KOOPLIJST — per ruimte, met prioriteit ══ -->
+<div id="koop-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1500;align-items:flex-start;justify-content:center;padding:6vh 16px;overflow-y:auto;">
+  <div id="koop-modal" style="width:100%;max-width:720px;background:var(--bg-elevated);border:1px solid var(--border-strong);border-radius:3px;padding:22px 20px 18px;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.05em;color:var(--text);">🛒 Kopen — per ruimte</div>
+      <button onclick="closeKoop()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
+    </div>
+    <div style="font-size:0.7em;color:var(--muted);line-height:1.6;margin-bottom:14px;">
+      Wat je nog wilt kopen, gesorteerd per ruimte en op hoe hard het nodig is.
+      De 🛒 achter een regel zoekt live op waar dat ding in Nederland in de aanbieding is.
+    </div>
+
+    <!-- toevoegen -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+      <input id="koop-ruimte-input" type="text" list="koop-ruimtes" placeholder="Ruimte" autocomplete="off"
+        style="width:140px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;">
+      <datalist id="koop-ruimtes"></datalist>
+      <input id="koop-naam-input" type="text" placeholder="Wat wil je kopen?" autocomplete="off"
+        style="flex:1;min-width:160px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;"
+        onkeydown="if(event.key==='Enter')koopToevoegen()">
+      <select id="koop-prio-input"
+        style="width:118px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 8px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;">
+        <option value="1">1 · Eerst</option>
+        <option value="2" selected>2 · Belangrijk</option>
+        <option value="3">3 · Ooit</option>
+      </select>
+      <input id="koop-prijs-input" type="text" inputmode="decimal" placeholder="€" autocomplete="off"
+        style="width:76px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;padding:9px 11px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.78em;outline:none;"
+        onkeydown="if(event.key==='Enter')koopToevoegen()">
+      <button onclick="koopToevoegen()" style="padding:9px 14px;background:rgba(77,255,166,0.1);border:1px solid rgba(77,255,166,0.3);border-radius:2px;color:var(--green);font-family:'Inter',sans-serif;font-size:0.75em;font-weight:600;cursor:pointer;white-space:nowrap;">+ Toevoegen</button>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:10px;">
+      <label style="display:flex;align-items:center;gap:6px;font-size:0.72em;color:var(--muted);cursor:pointer;">
+        <input type="checkbox" id="koop-toon-gekocht" onchange="koopRender()"> gekochte regels tonen
+      </label>
+      <div id="koop-status" style="flex:1;text-align:right;font-size:0.7em;color:var(--muted);min-height:1em;"></div>
+    </div>
+
+    <div id="koop-lijst" style="display:flex;flex-direction:column;gap:14px;"></div>
+  </div>
+</div>
+
 <!-- ══ VASTE LASTEN MODAL ══ -->
 <div id="vl-overlay">
   <div id="vl-modal">
@@ -6168,7 +6212,7 @@ const BACKUP_TABELLEN = [
   'brain_dumps', 'notities', 'media_items', 'verjaardagen', 'recepten', 'games', 'anime',
   'km_registratie', 'km_defaults', 'werk_links',
   'work_items', 'work_tasks', 'work_docs', 'work_load', 'work_reflect',
-  'app_settings', 'context_blocks', 'pb_projecten', 'pipeline_state',
+  'app_settings', 'context_blocks', 'pb_projecten', 'koop_items', 'pipeline_state',
   'vault_meta', 'vault_items'
 ];
 async function backupAlles() {
@@ -10940,6 +10984,212 @@ function dealfinderMetNlCheck(tekst) {
          ' — check zelf even of ze naar Nederland verzenden voordat je bestelt.';
 }
 
+// ══════════════════════════════════════════════
+// KOOPLIJST — wat je nog wilt kopen, per ruimte en op prioriteit
+// Tabel koop_items (Project B). Bewust géén sbGet/sbPost: die geven bij een
+// mislukking exact hetzelfde terug als bij succes (zie de migratieknop van
+// 5 oktober). Hier komt een fout in de statusregel te staan.
+// Niet versleuteld — het staat niet in HS_TABELLEN, een boodschappenlijst is
+// geen financiële gegevens. Zie HUBSLOT in CLAUDE.md.
+// ══════════════════════════════════════════════
+const KOOP_RUIMTES_STD = ['Woonkamer','Keuken','Slaapkamer','Badkamer','Tuin','Zoey','Schuur','Overig'];
+const KOOP_PRIO = {
+  1: { label: 'Eerst',      kleur: '255,0,60'    },
+  2: { label: 'Belangrijk', kleur: '252,238,10'  },
+  3: { label: 'Ooit',       kleur: '120,130,150' }
+};
+let koopCache = [];
+
+function koopStatus(tekst, fout) {
+  const el = document.getElementById('koop-status');
+  if (!el) return;
+  el.textContent = tekst || '';
+  el.style.color = fout ? '#ff003c' : 'var(--muted)';
+}
+
+async function koopFetch(pad, opties, wat) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/koop_items${pad}`, opties);
+    if (!r.ok) {
+      const t = await r.text();
+      console.error('koop_items ' + wat + ' fout:', r.status, t);
+      koopStatus('⚠️ ' + wat + ' mislukt (' + r.status + ') — zie console', true);
+      return null;
+    }
+    if (r.status === 204) return [];
+    return await r.json().catch(() => []);
+  } catch (e) {
+    console.error('koop_items ' + wat + ' fout:', e);
+    koopStatus('⚠️ ' + wat + ' mislukt — geen verbinding?', true);
+    return null;
+  }
+}
+
+function openKoop() {
+  document.getElementById('koop-overlay').style.display = 'flex';
+  koopStatus('');
+  koopLaad();
+}
+function closeKoop() { document.getElementById('koop-overlay').style.display = 'none'; }
+document.getElementById('koop-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeKoop();
+});
+
+async function koopLaad() {
+  document.getElementById('koop-lijst').innerHTML = (typeof skelBars === 'function') ? skelBars(4) : '';
+  const rijen = await koopFetch('?select=*&order=volgorde.asc', { headers: SB_GET_HDR }, 'laden');
+  if (rijen === null) { document.getElementById('koop-lijst').innerHTML = ''; return; }
+  koopCache = rijen;
+  koopRender();
+}
+
+// Vaste ruimtes eerst in hun eigen volgorde, zelfbedachte ruimtes daarna op alfabet.
+function koopRuimteVolgorde(lijst) {
+  const eigen = [...new Set(lijst)].filter(r => !KOOP_RUIMTES_STD.includes(r)).sort((a,b) => a.localeCompare(b,'nl'));
+  return [...KOOP_RUIMTES_STD.filter(r => lijst.includes(r)), ...eigen];
+}
+
+function koopEuro(n) {
+  return '€' + Number(n).toLocaleString('nl-NL', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function koopRender() {
+  // datalist bijwerken zodat je eigen ruimtes terugkomen als suggestie
+  const alle = koopRuimteVolgorde([...KOOP_RUIMTES_STD, ...koopCache.map(i => i.ruimte)]);
+  document.getElementById('koop-ruimtes').innerHTML = alle.map(r => '<option value="' + escHtml(r) + '">').join('');
+
+  const toonGekocht = document.getElementById('koop-toon-gekocht').checked;
+  const zichtbaar = koopCache.filter(i => toonGekocht || !i.gekocht);
+  const wrap = document.getElementById('koop-lijst');
+
+  if (!zichtbaar.length) {
+    wrap.innerHTML = '<div style="font-size:0.75em;color:var(--muted);padding:18px 0;text-align:center;">' +
+      (koopCache.length ? 'Alles afgevinkt. Zet het vinkje aan om de gekochte dingen te zien.'
+                        : 'Nog niets op de lijst. Typ hierboven een ruimte en wat je wilt kopen.') + '</div>';
+    koopStatus('');
+    return;
+  }
+
+  const volgorde = koopRuimteVolgorde(zichtbaar.map(i => i.ruimte));
+  let html = '';
+  volgorde.forEach(ruimte => {
+    const items = zichtbaar.filter(i => i.ruimte === ruimte).sort((a,b) =>
+      (a.gekocht - b.gekocht) || (a.prioriteit - b.prioriteit) || (a.volgorde - b.volgorde) || a.naam.localeCompare(b.naam,'nl'));
+    if (!items.length) return;
+
+    const openTotaal = items.filter(i => !i.gekocht && i.richtprijs).reduce((s,i) => s + Number(i.richtprijs), 0);
+    const openAantal = items.filter(i => !i.gekocht).length;
+
+    html += '<div>' +
+      '<div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:5px;margin-bottom:7px;">' +
+        '<span style="font-family:\'Syne\',sans-serif;font-weight:800;font-size:0.84em;color:var(--text);">' + escHtml(ruimte) + '</span>' +
+        '<span style="font-size:0.68em;color:var(--muted);">' + openAantal + ' open' +
+          (openTotaal ? ' · ± ' + koopEuro(openTotaal) : '') + '</span>' +
+      '</div>';
+
+    items.forEach(i => {
+      const p = KOOP_PRIO[i.prioriteit] || KOOP_PRIO[2];
+      html += '<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:2px;background:rgba(255,255,255,0.02);margin-bottom:4px;' +
+                (i.gekocht ? 'opacity:.45;' : '') + '">' +
+        '<input type="checkbox" ' + (i.gekocht ? 'checked' : '') + ' onchange="koopToggleGekocht(' + i.id + ')" title="Gekocht" style="cursor:pointer;">' +
+        '<span onclick="koopVolgendePrio(' + i.id + ')" title="Klik om de prioriteit te wisselen" ' +
+          'style="flex-shrink:0;cursor:pointer;font-family:\'Inter\',sans-serif;font-size:0.63em;font-weight:700;letter-spacing:.04em;' +
+          'padding:3px 7px;border-radius:2px;color:rgb(' + p.kleur + ');background:rgba(' + p.kleur + ',0.1);border:1px solid rgba(' + p.kleur + ',0.3);">' +
+          escHtml(p.label.toUpperCase()) + '</span>' +
+        '<span style="flex:1;min-width:0;font-family:\'Inter\',sans-serif;font-size:0.78em;color:var(--text);' +
+          (i.gekocht ? 'text-decoration:line-through;' : '') + '">' + escHtml(i.naam) + '</span>' +
+        (i.richtprijs ? '<span style="font-size:0.72em;color:var(--muted);white-space:nowrap;">' + koopEuro(i.richtprijs) + '</span>' : '') +
+        '<button onclick="koopZoekPrijs(' + i.id + ')" title="Zoek waar dit in de aanbieding is" ' +
+          'style="background:none;border:none;color:var(--green);font-size:0.9em;cursor:pointer;padding:0 2px;">🛒</button>' +
+        '<button onclick="koopVerwijder(' + i.id + ')" title="Verwijderen" ' +
+          'style="background:none;border:none;color:var(--muted);font-size:0.85em;cursor:pointer;padding:0 2px;">✕</button>' +
+      '</div>';
+    });
+    html += '</div>';
+  });
+  wrap.innerHTML = html;
+
+  const open = koopCache.filter(i => !i.gekocht);
+  const totaal = open.filter(i => i.richtprijs).reduce((s,i) => s + Number(i.richtprijs), 0);
+  koopStatus(open.length + ' open' + (totaal ? ' · ± ' + koopEuro(totaal) + ' totaal' : ''));
+}
+
+function koopPrijsUitVeld(v) {
+  const s = String(v || '').replace(/[€\s]/g,'').replace(',','.');
+  const n = parseFloat(s);
+  return (isFinite(n) && n > 0) ? n : null;
+}
+
+async function koopToevoegen() {
+  const naam   = document.getElementById('koop-naam-input').value.trim();
+  const ruimte = document.getElementById('koop-ruimte-input').value.trim() || 'Overig';
+  const prio   = parseInt(document.getElementById('koop-prio-input').value, 10) || 2;
+  const prijs  = koopPrijsUitVeld(document.getElementById('koop-prijs-input').value);
+  if (!naam) { koopStatus('⚠️ Vul in wát je wilt kopen', true); return; }
+
+  koopStatus('Opslaan…');
+  const rij = await koopFetch('', {
+    method: 'POST',
+    headers: { ...SB_POST_HDR, 'Prefer': 'return=representation' },
+    body: JSON.stringify({ naam, ruimte, prioriteit: prio, richtprijs: prijs, volgorde: Date.now() % 2000000000 })
+  }, 'toevoegen');
+  if (rij === null) return;
+
+  document.getElementById('koop-naam-input').value = '';
+  document.getElementById('koop-prijs-input').value = '';
+  document.getElementById('koop-naam-input').focus();
+  koopCache = koopCache.concat(rij);
+  koopRender();
+}
+
+async function koopBijwerken(id, velden, wat) {
+  const item = koopCache.find(i => i.id === id);
+  if (!item) return;
+  const oud = { ...item };
+  Object.assign(item, velden);      // meteen tekenen, draaien we terug als het mislukt
+  koopRender();
+  const r = await koopFetch('?id=eq.' + id, {
+    method: 'PATCH',
+    headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' },
+    body: JSON.stringify({ ...velden, updated_at: new Date().toISOString() })
+  }, wat);
+  if (r === null) { Object.assign(item, oud); koopRender(); }
+}
+
+function koopToggleGekocht(id) {
+  const item = koopCache.find(i => i.id === id);
+  if (item) koopBijwerken(id, { gekocht: !item.gekocht }, 'afvinken');
+}
+
+function koopVolgendePrio(id) {
+  const item = koopCache.find(i => i.id === id);
+  if (item) koopBijwerken(id, { prioriteit: (item.prioriteit % 3) + 1 }, 'prioriteit wijzigen');
+}
+
+async function koopVerwijder(id) {
+  const item = koopCache.find(i => i.id === id);
+  if (!item) return;
+  if (!confirm('"' + item.naam + '" van de lijst halen?')) return;
+  const r = await koopFetch('?id=eq.' + id, { method: 'DELETE', headers: SB_POST_HDR }, 'verwijderen');
+  if (r === null) return;
+  koopCache = koopCache.filter(i => i.id !== id);
+  koopRender();
+}
+
+// De brug naar de prijszoeker die er al stond. Bewust alléén invullen en niet
+// meteen zoeken: dat is een betaalde call, en je wilt de zoekvraag eerst kunnen
+// bijschaven (zelfde keuze als bij "Stuur naar Council" in de Prompt Builder).
+function koopZoekPrijs(id) {
+  const item = koopCache.find(i => i.id === id);
+  if (!item) return;
+  closeKoop();
+  openDealfinder();
+  const inp = document.getElementById('dealfinder-input');
+  inp.value = item.naam + ' aanbieding';
+  inp.focus();
+  inp.select();
+}
+
 function openDealfinder(prefill) {
   document.getElementById('dealfinder-overlay').style.display = 'flex';
   document.getElementById('dealfinder-error').style.display = 'none';
@@ -12540,7 +12790,8 @@ const CMDK_ACTIES = [
   { ico: '🚀', title: 'AI Pipeline',            sub: 'Blog · Site check · SEO wizard',              fn: 'openStekkerSlimGuardian' },
   { ico: '🏛️', title: 'AI Council',             sub: '1 vraag parallel naar 3 AI’s',           fn: 'openCouncil' },
   { ico: '🧭', title: 'Socratic Coach',         sub: 'Stelt alleen vragen, geeft nooit antwoord',   fn: 'openSocratic' },
-  { ico: '🛒', title: 'Prijzen & Aanbiedingen', sub: 'Live prijs/aanbieding opzoeken',              fn: 'openDealfinder' },
+  { ico: '🛒', title: 'Kopen',                  sub: 'Wenslijst per ruimte + prioriteit',           fn: 'openKoop' },
+  { ico: '🏷️', title: 'Prijzen & Aanbiedingen', sub: 'Live prijs/aanbieding opzoeken',              fn: 'openDealfinder' },
   { ico: '✦',  title: 'Prompt Builder',         sub: 'Ruw idee → nette prompt',                fn: 'openPromptBuilder' },
   { ico: '🔐', title: 'Kluis',                  sub: 'Wachtwoorden, versleuteld',                   fn: 'openVault' },
   { ico: '🗓️', title: 'Week Planner',           sub: 'Taken per dag + foto-import',                 fn: 'openWeekplanner' },
@@ -13060,6 +13311,7 @@ if (document.readyState !== 'loading') hubArtToepassen();
       ['💭','Brain Dump','Losse gedachtes',   'openDumpInbox',           'dump-overlay'],
       ['📅','Planner','Week · taken',         'openWeekplanner',         'wp-overlay'],
       ['💰','Lasten','Maand · spaar',         'openVasteLasten',         'vl-overlay'],
+      ['🛒','Kopen','Per ruimte · prioriteit','openKoop',                'koop-overlay'],
       ['🔌','Werk','PWN · km',                'openWerk',                'werk-overlay'],
       ['🧰','Toolkit','386 tools',            'openToolkit',             'toolkit-overlay','alles']
     ]]
