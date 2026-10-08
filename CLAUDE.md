@@ -89,10 +89,10 @@ Drie pipelines voor StekkerSlim. Elke stap opent een AI-tool, prompt wordt gepla
 | 3 | Gemini | SEO- & cannibalisatiebriefing | stap 2 |
 | 4 | Bouwer (Claude) | Outline | stap 2 + stap 3 |
 | 5 | Grok + Perplexity + Gemini (multi) | Outline-review, parallel, elk eigen rol | stap 4 |
-| 6 | StekkerPen (Claude) | Blog als **volledige pagina** | stap 2 + 3 + 4 + 5 |
-| 7 | Alle 4 AI's (multi) | Review van de pagina + technische checklist | stap 6 |
-| 8 | StekkerPen (Claude) | Finale pagina | stap 6 + stap 7 |
-| 9 | Stekkerslim Bouwen (Claude) | Publicatiecheck + kennisbank | stap 8 |
+| 6 | **Claude Code** (`/blog-schrijf`) | Schrijft de pagina als **bestand** in de stekkerslim-repo | stap 2 + 3 + 4 + 5 |
+| 7 | Alle 4 AI's (multi) | Review van de **reviewversie** + technische checklist | stap 6 |
+| 8 | **Claude Code** (`/blog-finale`) | Verwerkt de reviews met `Edit` in datzelfde bestand | stap 7 |
+| 9 | **Claude Code** (`/blog-publiceer`) | Publicatiecheck + kennisbank + push na akkoord | stap 8 |
 
 **Waarom 9 en niet 13.** Elke overdracht tussen chatvensters is een lek: in de run
 van 9 september ging de blog vanaf stap 10 verloren en werkten stap 11 en 12 door
@@ -221,6 +221,13 @@ Alle Claude-stappen (site stap 5, seo stap 4) bevatten expliciete instructies:
 | `sspCheckDubbeleAntwoorden(p,i)` | Waarschuwt als twee AI-velden identieke tekst bevatten |
 
 ### De HTML-poort (`sspHtmlControles`, 10 september 2026)
+
+> **Sinds 8 oktober 2026 draait deze poort niet meer in de blog-pipeline.** Stap 6
+> en 8 schrijven de pagina als bestand in de stekkerslim-repo, dus de hub krijgt
+> de HTML niet meer te zien en de 🔍-knop staat daar niet meer. Het werk doet
+> `Scripts/check-pagina.js` in die repo, op de bytes die er echt staan. De functie
+> hieronder blijft in `index.html` staan: hij is de bron waar dat script uit
+> afgeleid is, en wijzig je de ene, werk dan de andere bij.
 
 Zestien objectieve controles op een geschreven pagina, **zonder API-call**: DOCTYPE,
 `lang="nl"`, nav, footer, CSS, precies één `<h1>`, precies één `page-hero`,
@@ -706,6 +713,72 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 ---
 
 ## Changelog
+
+### 8 oktober 2026 — Stap 6, 8 en 9 naar Claude Code: de pagina gaat niet meer door een chatvenster
+
+Aanleiding: Remy plakte in stap 6 de begeleidende chattekst van StekkerPen in
+plaats van de HTML. De hub mat dat veld netjes op (5722 tekens, 0 `<h1>`, 0
+JSON-LD) en stap 7 weigerde terecht. Maar de vraag erachter was groter: de
+reviewers kregen vier keer 62 KB, en stap 8 typte die 62 KB compleet opnieuw uit
+voor **veertien zinsvervangingen**. Ruim 32 KB daarvan is sjabloon dat letterlijk
+uit `saldering-2027.html` komt: CSS 12.469, footer en scripts 14.472 (waarvan
+`_SP` 6.826), nav en mobiel menu ~5.900.
+
+Eerst is een fragment- plus patchmodus ontworpen om die tekst kleiner te maken.
+Dat is onderweg losgelaten toen Remy zei dat stap 6, 8 en 9 naar Claude Code
+moesten: beide waren manieren om tekst door een chatvenster te persen, en als het
+bestand gewoon op schijf staat verdwijnt die hele omweg.
+
+**Nieuw in de stekkerslim-repo** (`C:\Users\remy\Documents\Stekkerslim`):
+- `Scripts/check-pagina.js` — de overzetting van `sspHtmlControles()` naar een
+  commando op een echt bestand. 25 controles, exitcode 1 bij falen. Drie dingen
+  bewust anders dan in de hub: `sponsored` wordt alleen geëist op links naar de
+  affiliate-netwerken uit `affiliate-regels.md` (de hub eiste het op *elke*
+  externe link en zou de zeven documentatielinks hebben afgekeurd), omgekeerd
+  wordt `sponsored` op een gewone bronlink juist afgekeurd, en `essent` is uit de
+  vreemde-merkenlijst want dat is sinds 2026 een actieve partner. Nieuw erbij:
+  `</body></html>` aanwezig, de pagina staat in zijn eigen `_SP`, lokale `<img>`
+  bestaat echt, title ≤60 en description ≤155.
+- `Scripts/review-extract.js` — schrijft `<slug>.review.txt`: dezelfde pagina
+  zonder CSS, nav, footer en scripts. Op de pagina van 8 oktober: 62.822 → 30.299
+  tekens (52% minder), en 71 links → 23, want de 48 uit nav, footer en `_SP`
+  vallen weg. Print ook de vingerafdruk voor stap 7.
+- `.claude/commands/blog-schrijf.md`, `blog-finale.md`, `blog-publiceer.md`.
+  `/blog-finale` schrijft de pagina **niet** opnieuw uit maar bewerkt hem met
+  `Edit`, en moet elk technisch verwijt eerst zelf in het bestand aanwijzen —
+  op 8 oktober beweerde één reviewer 58 tekens waar er 69 stonden, en een ander
+  `ld json` zonder plusteken terwijl dat er niet stond.
+- `/blog-pipeline` stuurt nu alleen nog de externe AI's aan en verwijst voor 6,
+  8 en 9 door.
+
+**In de hub:**
+- Stappen kunnen `terminal: '/blog-schrijf'` hebben in plaats van een URL. De
+  knop heet dan ⌨️ Kopieer /blog-schrijf en zet het commando op het klembord in
+  plaats van een site te openen (`sspOpenAI`). Lukt kopiëren niet, dan noemt de
+  statusregel het commando zodat je het kunt typen.
+- `htmlCheck` is weg bij stap 6 en 8: de hub ziet de HTML niet meer, en een knop
+  die altijd faalt is erger dan geen knop. `check-pagina.js` doet het werk.
+- **`sspFingerprint()` geeft een bestaand vingerafdrukblok ongewijzigd door.**
+  Dat is het scharnierpunt: in stap 6 staat nu het verslag, niet de pagina, dus
+  opmeten zou 0 `<h1>` en 0 JSON-LD opleveren en de versiecontrole van stap 7
+  slopen. Staan de regels `- Aantal tekens:` t/m `- Aantal links` er al in, dan
+  komen die uit `review-extract.js` en worden ze overgenomen. Staat er alleen
+  chattekst, dan meet hij gewoon en faalt stap 7 nog steeds — het vangnet blijft.
+- Prompts 6, 8 en 9 zijn dun geworden: 2308, 2241 en 928 tekens, tegen 9000+
+  eerder. De werkinstructie staat in de commando-bestanden, de hub levert de
+  input. Stap 7 vraagt om `<slug>.review.txt`.
+- `Kennisbank/blog-pipeline-prompts.md` is meegegaan (2420 → 2083 regels).
+
+**Wat dit niet oplost:** de vier reviewers blijven plakwerk, want Remy wil geen
+ongereviewde pagina op de publieke repo. De reviewversie halveert dat, meer niet.
+
+Getest: 25/25 controles op de echte pagina van vandaag, de reviewversie gemeten,
+alle 10 script-blokken parsen, `sspFingerprint` in vier gevallen (verslag met
+vingerafdruk, ruwe HTML, chattekst zonder vingerafdruk, leeg), en in Chrome de
+negen stappen met hun labels, terminal-velden en knopteksten. **Niet getest:** de
+klembord-schrijfactie onder een echte muisklik — de hub zit achter het
+inlogscherm van project B en dat wachtwoord vul ik niet in. De fallback is wel
+gezien en toont het commando.
 
 ### 7 oktober 2026 (deel 2) — Kooplijst: ruimte kiezen, prijszoeker vinden, details per regel
 
