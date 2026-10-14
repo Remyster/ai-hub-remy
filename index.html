@@ -4096,7 +4096,16 @@ function sspGetMultiOutput(p, i) {
   return step.ais.map(ai => {
     const v = sspDecode(localStorage.getItem(sspMultiKey(p,i,ai.key))||'');
     const pre = step.multiLabel || 'COMMENTAAR';
-    return v ? '\n\n' + pre + ' ' + ai.label.toUpperCase() + ':\n' + v : '';
+    if (v) return '\n\n' + pre + ' ' + ai.label.toUpperCase() + ':\n' + v;
+    // Een leeg veld werd hier stil overgeslagen. De volgende stap kreeg dan twee
+    // reviews in plaats van drie en kon niet zien dat er een miste: in de prompt
+    // stond niets, dus werd er op onvolledig materiaal geschreven. Een gat moet
+    // zichtbaar zijn in de prompt zelf, niet alleen in de statusregel op het scherm.
+    return '\n\n' + pre + ' ' + ai.label.toUpperCase() + ':\n'
+         + '(ONTBREEKT — van deze AI is geen antwoord opgeslagen. Verzin niet wat hij'
+         + ' gezegd zou hebben en vul het niet aan uit eigen kennis. Meld bovenaan je'
+         + ' antwoord: "ONTBREKENDE INPUT: ' + ai.label + ' uit stap '
+         + (i + 1) + '" en ga daarna verder met wat er wel is.)';
   }).join('');
 }
 
