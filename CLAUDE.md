@@ -87,7 +87,7 @@ Drie pipelines voor StekkerSlim. Elke stap opent een AI-tool, prompt wordt gepla
 | 1 | Gemini + Grok (multi) | 5 ideeën elk: 3 cluster + 1 verdieping + 1 nieuw terrein | — |
 | 2 | Perplexity | Selectie uit 10 + researchbrief | stap 1 (beide scouts) |
 | 3 | Gemini | SEO- & cannibalisatiebriefing | stap 2 |
-| 4 | Bouwer (Claude) | Outline | stap 2 + stap 3 |
+| 4 | **Claude Code** (`/blog-outline`) | Outline, als bestand in de Kennisbank | stap 2 + stap 3 |
 | 5 | Grok + Perplexity + Gemini (multi) | Outline-review, parallel, elk eigen rol | stap 4 |
 | 6 | **Claude Code** (`/blog-schrijf`) | Schrijft de pagina als **bestand** in de stekkerslim-repo | stap 2 + 3 + 4 + 5 |
 | 7 | Alle 4 AI's (multi) | Review van de **reviewversie** + technische checklist | stap 6 |
@@ -800,6 +800,43 @@ expliciet: **is er niets, schrijf dan niets** — geen kopje, geen "geen bijzond
 Opgeruimd: de rij `ssp_blog_0_gemini` is leeg (lokaal en in de cloud); het
 Grok-antwoord van 10.206 tekens staat er nog. Remy plakt het Gemini-antwoord opnieuw
 en gaat verder bij stap 2.
+
+**Vijfde ronde — stap 4 naar Claude Code.** Op verzoek van Remy: alles wat gemaakt
+of geschreven wordt, doet Claude Code; de andere AI's blijven voor onderzoek en voor
+onafhankelijke meningen. Stap 4 was de laatste maak-stap die nog in een chatvenster
+draaide (het project Stekkerslim Bouwen).
+
+Waarom het daar niet hoorde, bleek vandaag twee keer. De outline van een **update**
+moet de bestaande pagina kennen, en die staat in de repo; een chatvenster moest hem van
+buiten ophalen en liep op `stekkerslim.nl` tegen een blokkade. En stap 3 verzon twee
+`<title>`-citaten die alleen te betrappen zijn door wie de bestanden echt voor zich
+heeft. Met de repo op schijf is verifiëren geen belofte meer maar een `ls`.
+
+Nieuw: `.claude/commands/blog-outline.md`. Drie dingen staan er hard in:
+- **Links natrekken op schijf**, met de echte `<h1>` en `<title>` als bewijs, en elke
+  afwijking met de input gemeld als `AFWIJKING IN DE INPUT: …`.
+- **Tekens tellen met node**, niet uit het hoofd:
+  `node -e "const t='…'; console.log(t.length)"`. Een taalmodel telt tekens slecht;
+  stap 3 claimde 57 en 151 tekens waar het 58 en 147 waren. Dit is dezelfde keuze als
+  `check-pagina.js`: meetbare dingen horen bij de machine.
+- **De outline wordt een bestand**, `Kennisbank/blog-pipeline-outline-<slug>.md`, in
+  het patroon dat daar al lag. Dat bestand is de waarheid en stap 6 leest het van
+  schijf (`blog-schrijf.md` is daarop aangepast). De volledige outline staat ook in het
+  antwoord, want de drie reviewers van stap 5 zitten in chatvensters en kunnen geen
+  bestand lezen. Wijkt een geplakte kopie af van het bestand, dan geldt het bestand.
+
+**Stap 3 levert geen bewijscitaten meer.** Hij stelt interne links voor met
+bestandsnaam en reden, zonder status en zonder citaat, en schrijft bij twijfel
+"bestaan onbekend — stap 4 controleert dit". Gemini kan die bestanden niet
+betrouwbaar inzien, en een verzonnen citaat is erger dan geen citaat: het ziet er
+precies zo uit als een echt citaat en haalt de hele controle onderuit. De verificatie
+zit nu op de enige plek waar hij kan: stap 4, op schijf.
+
+De prompt van stap 4 is daarmee van 9763 naar 3267 tekens gegaan, hetzelfde patroon als
+6, 8 en 9: de werkinstructie staat in het commandobestand, de hub levert de input.
+
+**Stand van de pipeline nu:** 1, 2, 3, 5 en 7 in chatvensters (web en onafhankelijke
+meningen), 4, 6, 8 en 9 in Claude Code (alles wat een bestand maakt of aanraakt).
 
 **Vierde ronde — een ontbrekend multi-AI antwoord was onzichtbaar** (`a7664b2`).
 `sspGetMultiOutput()` deed `return v ? … : ''`, dus een leeg AI-veld werd stil
