@@ -13141,8 +13141,8 @@ function cmdkBuildIndex() {
     Object.keys(SSP_PIPELINES).forEach(p => {
       const pl = SSP_PIPELINES[p];
       pl.steps.forEach((s, i) => {
-        // Labels zien eruit als "Stap 4 van 13 — Bouwer: Outline"; het stapnummer
-        // staat al in de titel, dus dat voorvoegsel eraf.
+        // Labels zien eruit als "Stap 4 van 9 — Claude Code: De outline"; het
+        // stapnummer staat al in de titel, dus dat voorvoegsel eraf.
         const naam = String(s.label || '')
           .replace(/^\s*stap\s*\d+\s*van\s*\d+\s*[—-]\s*/i, '')
           .replace(/^\d+\s*\/\s*\d+\s*[—-]\s*/, '')
