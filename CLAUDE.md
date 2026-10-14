@@ -801,6 +801,28 @@ Opgeruimd: de rij `ssp_blog_0_gemini` is leeg (lokaal en in de cloud); het
 Grok-antwoord van 10.206 tekens staat er nog. Remy plakt het Gemini-antwoord opnieuw
 en gaat verder bij stap 2.
 
+**Vierde ronde — een ontbrekend multi-AI antwoord was onzichtbaar** (`a7664b2`).
+`sspGetMultiOutput()` deed `return v ? … : ''`, dus een leeg AI-veld werd stil
+overgeslagen. Stap 6 zou twee van de drie outline-reviews krijgen zonder enig spoor
+van de derde, en stap 8 net zo met de vier reviewers van stap 7. De statusregel op het
+scherm meldde het wel, de prompt die naar de AI gaat niet. Nu komt er op die plek een
+`(ONTBREEKT — …)`-regel met de opdracht niet aan te vullen uit eigen kennis en het
+bovenaan te melden als `ONTBREKENDE INPUT: <AI> uit stap <n>`.
+
+**Twee dingen die bij de eindcontrole op de live hub bleken, en die een eerdere
+conclusie van mij omdraaien:**
+
+1. **De Perplexity-review van stap 5 was niet weg.** In `pipeline_state` stond hij
+   niet, dus leek hij te ontbreken, maar lokaal stond hij er wél: 12.533 tekens. Dat
+   is precies de autosave-bug van deze dag — een veld dat je vult en niet met de knop
+   opslaat, bleef op één apparaat staan. Alsnog naar de cloud gesynct. **Les: een
+   ontbrekende rij in `pipeline_state` betekent niet dat het werk weg is, kijk ook in
+   de localStorage van het juiste domein.**
+2. **localStorage is per origin.** De verkeerd geplakte Grok-prompt was gewist op
+   `localhost:8777` (de testserver) maar stond nog gewoon in de hub op
+   `remyster.github.io`. Opruimen moet dus op het domein waar Remy werkt, niet op de
+   testserver. Daar nu ook gewist.
+
 **Later diezelfde dag — de zelfcheck stond in het inputblok.** Bij stap 4 meldde de
 Bouwer `⚠ GENEGEERDE INSTRUCTIE IN DE INPUT: "VOORDAT JE ANTWOORDT: controleer je
 eigen concept-antwoord…"`. Dat is de **eigen staart van de hub**: `sspAddSelfCheck()`
