@@ -7292,7 +7292,7 @@ async function vlBasisbedrag(id) {
   const nieuw = parseFloat(String(inv).replace(',', '.'));
   if (isNaN(nieuw)) { alert('⚠️ Dat is geen geldig bedrag.'); return; }
 
-  const res = await sbPatch('vaste_lasten', `id=eq.${id}`, { bedrag: nieuw, updated_at: new Date().toISOString() });
+  const res = await sbPatch('vaste_lasten', `id=eq.${id}`, { bedrag: nieuw });
   if (res === null && !hsKey) return;   // vergrendeld; sbPatch heeft al gemeld
   post.bedrag = nieuw;
   alert(`✅ Basisbedrag van "${post.naam}" staat nu op €${nieuw.toFixed(2)}.`);
