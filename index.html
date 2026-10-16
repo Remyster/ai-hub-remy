@@ -7039,7 +7039,7 @@ async function vlLoadTrend() {
   el.innerHTML = skelBars(1);
   try {
     const orFilter = maanden.map(x => `and(jaar.eq.${x.jaar},maand.eq.${x.maand})`).join(',');
-    const rows = await sbGet('betalingen', `or=(${orFilter})&select=jaar,maand,bedrag_betaald,vaste_last_id`);
+    const rows = await sbGet('betalingen', `or=(${orFilter})&select=jaar,maand,bedrag_betaald,bedrag_betaald_enc,vaste_last_id`);
     const lastenById = {};
     vlLasten.forEach(l => lastenById[l.id] = l);
     const perMaand = {};
