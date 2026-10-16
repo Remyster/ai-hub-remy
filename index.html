@@ -928,6 +928,7 @@ header h1 {
 .vl-row.vl-watals-uit { opacity:0.4; }
 .vl-row.vl-watals-uit .vl-naam { text-decoration:line-through;text-decoration-color:rgba(252,238,10,0.5); }
 .vl-incasso { font-size:0.65em;color:var(--muted); }
+.vl-omschrijving { font-size:0.65em;color:#ffc53d;font-style:italic; }
 .vl-bedrag-wrap { display:flex;align-items:center;gap:6px; }
 .vl-bedrag-input {
   width:72px;padding:4px 8px;background:rgba(255,255,255,0.05);border:1px solid var(--border);
@@ -7151,8 +7152,9 @@ function renderVasteLasten() {
       if (l.categorie === 'inkomen') {
         html += `<div class="vl-row betaald" id="vl-row-${l.id}" style="border-color:rgba(77,255,166,0.25);background:rgba(77,255,166,0.05);">
           <div>
-            <div class="vl-naam" style="color:#4dffa6;">${escHtml(l.naam)} <button onclick="vlBasisbedrag(${l.id})" title="Pas het vaste basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button></div>
+            <div class="vl-naam" style="color:#4dffa6;">${escHtml(l.naam)} <button onclick="vlBasisbedrag(${l.id})" title="Pas het vaste basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button><button onclick="vlNotitie(${l.id})" title="Notitie bij deze post, bijv. geleend geld en wanneer het terugkomt" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#128221;</button></div>
             ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
+            ${l.omschrijving ? `<div class="vl-omschrijving">📝 ${escHtml(l.omschrijving)}</div>` : ''}
           </div>
           <div class="vl-bedrag-wrap">
             <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
@@ -7168,8 +7170,9 @@ function renderVasteLasten() {
         <div style="display:flex;align-items:center;gap:8px;">
           <input type="checkbox" class="vl-watals-cb" id="vl-watals-${l.id}" ${vlWatAlsUit.has(l.id)?'':'checked'} onchange="vlWatAlsToggle(${l.id})" title="Wat-als: reken deze uitgave er even niet bij">
           <div>
-            <div class="vl-naam">${escHtml(l.naam)}${alterBadge} <button onclick="vlBasisbedrag(${l.id})" title="Pas het vaste basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button></div>
+            <div class="vl-naam">${escHtml(l.naam)}${alterBadge} <button onclick="vlBasisbedrag(${l.id})" title="Pas het vaste basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button><button onclick="vlNotitie(${l.id})" title="Notitie bij deze post, bijv. geleend geld en wanneer het terugkomt" style="background:none;border:none;color:rgba(230,232,238,0.35);cursor:pointer;font-size:0.9em;padding:0 2px;">&#128221;</button></div>
             ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
+            ${l.omschrijving ? `<div class="vl-omschrijving">📝 ${escHtml(l.omschrijving)}</div>` : ''}
           </div>
         </div>
         <div class="vl-bedrag-wrap">
@@ -7296,6 +7299,25 @@ async function vlBasisbedrag(id) {
   if (res === null && !hsKey) return;   // vergrendeld; sbPatch heeft al gemeld
   post.bedrag = nieuw;
   alert(`✅ Basisbedrag van "${post.naam}" staat nu op €${nieuw.toFixed(2)}.`);
+  renderVasteLasten();
+}
+
+// Vrije notitie bij een post, bijv. "geleend van noodfonds, komt terug in december".
+// Gaat naar `vaste_lasten.omschrijving` — staat al in HS_TABELLEN, dus wordt
+// automatisch versleuteld via hsPakRij, net als naam en bedrag.
+async function vlNotitie(id) {
+  const post = vlLasten.find(l => l.id === id);
+  if (!post) return;
+  if (!hsKey) { hsMeldVergrendeld(); return; }
+
+  const huidig = post.omschrijving || '';
+  const inv = prompt(`Notitie bij "${post.naam}"\n\nBijv. "geleend van potje X, komt terug in december". Leeg laten om te verwijderen.`, huidig);
+  if (inv === null) return;
+  const nieuw = inv.trim();
+
+  const res = await sbPatch('vaste_lasten', `id=eq.${id}`, { omschrijving: nieuw === '' ? null : nieuw });
+  if (res === null && !hsKey) return;   // vergrendeld; sbPatch heeft al gemeld
+  post.omschrijving = nieuw === '' ? null : nieuw;
   renderVasteLasten();
 }
 
