@@ -11057,11 +11057,21 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     }
     const nettevraag = (parsed.vraag || vraag).trim();
     const reden = (parsed.reden || '').trim();
-    // Kopieer de herschreven vraag naar klembord
-    const tmp = document.createElement('textarea'); tmp.value = nettevraag; tmp.style.cssText='position:fixed;opacity:0;';
-    document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
-    try { document.execCommand('copy'); } catch(e) {}
-    document.body.removeChild(tmp);
+    // Kopieer de herschreven vraag naar klembord. Dit gebeurt ná de await fetch
+    // hierboven, dus de "verse klik" die execCommand('copy') nodig heeft is dan
+    // allang verlopen — faalde altijd stil terwijl de tekst wél "gelukt" meldde.
+    // navigator.clipboard.writeText vraagt alleen dat het tabblad focus heeft,
+    // niet een recente klik, en werkt hier dus wel betrouwbaar.
+    let klembordGelukt = false;
+    try { await navigator.clipboard.writeText(nettevraag); klembordGelukt = true; }
+    catch(e) {
+      try {
+        const tmp = document.createElement('textarea'); tmp.value = nettevraag; tmp.style.cssText='position:fixed;opacity:0;';
+        document.body.appendChild(tmp); tmp.select(); tmp.setSelectionRange(0,99999);
+        klembordGelukt = document.execCommand('copy');
+        document.body.removeChild(tmp);
+      } catch(e2) {}
+    }
 
     const gekozen = { naam: algemeen.n, url: algemeen.u, tag: '', key: algemeen.key };
     outEl.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#4dffa6;margin-bottom:10px;text-transform:uppercase;font-family:'Inter',sans-serif;">🎯 Dit zou ik pakken</div>
@@ -11071,7 +11081,10 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
         ${reden ? `<span style="color:var(--muted);font-size:0.78em;display:block;margin-top:3px;line-height:1.5;">${escHtml(reden)}</span>` : ''}
       </a>
       ${gekozen.key ? `<button class="pb-copy" style="margin-bottom:10px;" onclick="openAiInfo('${gekozen.key}')">ℹ️ Wat kan ${escHtml(gekozen.naam)} precies?</button>` : ''}
-      <div style="font-size:0.76em;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.03);border-radius:2px;padding:9px 11px;">📋 Je vraag staat op je klembord: "${escHtml(nettevraag)}"</div>`;
+      <div style="font-size:0.76em;color:var(--text-dim);line-height:1.5;background:rgba(255,255,255,0.03);border-radius:2px;padding:9px 11px;">
+        ${klembordGelukt ? '📋 Je vraag staat op je klembord:' : '⚠️ Kopiëren naar klembord lukte niet — kopieer zelf:'} "${escHtml(nettevraag)}"
+        ${klembordGelukt ? '' : `<button class="pb-copy" style="margin-top:8px;" onclick="navigator.clipboard.writeText(${JSON.stringify(nettevraag)}).then(()=>hubToast('📋 Gekopieerd')).catch(()=>hubToast('❌ Kopiëren mislukt — selecteer de tekst handmatig'))">📋 Opnieuw proberen</button>`}
+      </div>`;
     inp.value = '';
   } catch (e) {
     outEl.style.display = 'none';
