@@ -4437,11 +4437,10 @@ const SSP_FILENOTE_TEXT = "Ik stuur je hierbij een bijlage met de volledige inpu
 
 // ── Opschonen: haalt bronstatus/connector-checks/voortgangsmeldingen uit een
 // geplakt AI-antwoord, zodat alleen de bruikbare inhoud doorgaat naar de volgende stap ──
-const SSP_CLEANUP_MODEL = 'anthropic/claude-haiku-5.5';
 const SSP_CLEANUP_SYSPROMPT = "Je krijgt een ruwe, geplakte AI-output uit een contentpipeline. Die output bevat vaak meta-tekst die niet bedoeld is voor de volgende stap in de pipeline: bronstatus-rapportages (bijvoorbeeld \"GitHub-connector werkte: ja\", \"Sitemap gecontroleerd: ja\"), connector-bevestigingen, voortgangsmeldingen, herhalingen van de opdracht zelf, en andere administratieve ruis rond het eigenlijke antwoord.\n\nJouw taak: geef ALLEEN de eigenlijke inhoudelijke output terug — het deel waar de volgende AI in de pipeline daadwerkelijk mee moet werken (bijvoorbeeld de lijst met ideeen, de outline, de reviewpunten, de factcheck-resultaten zelf). Verwijder:\n- Bronstatus-blokken (GitHub/Drive/live site/sitemap gecontroleerd: ja/nee/gedeeltelijk)\n- Connector-bevestigingen en meldingen over welke tools wel/niet werkten\n- Voortgangsmeldingen en tussentijdse meta-tekst (\"ik ga nu...\", \"hierbij mijn analyse...\")\n- Letterlijke herhaling van de opdracht of instructies\n\nVerander NIETS aan de inhoud van het eigenlijke antwoord zelf: geen samenvatting, geen herschrijving, geen eigen interpretatie, geen tekst toevoegen. Alleen de ruis eromheen weg. Twijfel je of iets ruis is of inhoud: laat het staan, beter te veel bewaren dan inhoud verliezen.\n\nGeef uitsluitend de opgeschoonde tekst terug, zonder inleiding, aanhef of toelichting van jouzelf.";
 
 async function sspCleanupText(rawText) {
-  return callOpenRouter(SSP_CLEANUP_MODEL, SSP_CLEANUP_SYSPROMPT, rawText, 90000);
+  return callHaiku(SSP_CLEANUP_SYSPROMPT, rawText, 90000, 16000);
 }
 async function sspCleanup() {
   const ta = document.getElementById('ssp-output');
@@ -4885,6 +4884,33 @@ const KEY_STORE = 'remy_claude_key';
 const HAIKU_MODEL = 'claude-haiku-5-5';
 const HAIKU_OPTS = { effort: 'low' };
 function claudeTekst(data) { return (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join(''); }
+// Zelfde contract als callOpenRouter(): geeft tekst terug of gooit een Error met leesbare melding.
+async function callHaiku(systemPrompt, userMsg, timeoutMs = 60000, maxTokens = 4000) {
+  const key = getApiKey();
+  if (!key) throw new Error('Geen Claude API key. Zet die eerst in het API Key-scherm.');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      signal: controller.signal,
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+      body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: maxTokens, system: systemPrompt, messages: [{ role: 'user', content: userMsg }] })
+    });
+    if (!res.ok) {
+      const t = await res.text().catch(() => '');
+      let msg = `HTTP ${res.status}`;
+      try { msg = JSON.parse(t)?.error?.message || msg; } catch {}
+      throw new Error(msg);
+    }
+    return claudeTekst(await res.json()).trim() || '(leeg antwoord)';
+  } catch (e) {
+    if (e.name === 'AbortError') throw new Error(`Timeout na ${timeoutMs/1000}s — geen antwoord`);
+    throw e;
+  } finally {
+    clearTimeout(timer);
+  }
+}
 function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
 
 // ══════════════════════════════════════════════
@@ -10211,7 +10237,6 @@ function councilCopyMd() {
 // Dit is een handmatige selectie van wat voor Remy relevant is. De lijst past
 // compleet in een prompt, dus de "wat heb je nodig"-zoeker heeft geen zoekindex
 // nodig — Haiku krijgt gewoon de hele lijst mee en kiest er 3 uit.
-const TOOLKIT_ASK_MODEL = 'anthropic/claude-haiku-5.5';
 
 const TOOLKITS = {
   fmhy: {
@@ -10766,8 +10791,8 @@ async function toolkitAsk() {
   const outEl = document.getElementById('toolkit-answer');
   errEl.style.display = 'none';
   if (!vraag) { document.getElementById('toolkit-input').focus(); return; }
-  if (!getOpenRouterKey()) {
-    errEl.textContent = '❌ Geen OpenRouter key. Zet die eerst in het API Key-scherm.';
+  if (!getApiKey()) {
+    errEl.textContent = '❌ Geen Claude API key. Zet die eerst in het API Key-scherm.';
     errEl.style.display = 'block';
     return;
   }
@@ -10785,7 +10810,7 @@ async function toolkitAsk() {
   const userMsg = `Beschikbare tools:\n\n${lijst}\n\nRemy vraagt: "${vraag}"\n\nKies de 3 beste (of minder als er minder passen).`;
 
   try {
-    const text = await callOpenRouter(TOOLKIT_ASK_MODEL, systemPrompt, userMsg, 30000);
+    const text = await callHaiku(systemPrompt, userMsg, 30000, 2000);
     const regels = text.split('\n').map(r => r.trim()).filter(r => r.includes('|'));
     let html = '';
     if (!regels.length || regels[0].startsWith('GEEN')) {
@@ -10820,8 +10845,8 @@ async function toolzoekAsk() {
   const outEl = document.getElementById('toolzoek-answer');
   errEl.style.display = 'none';
   if (!vraag) { document.getElementById('toolzoek-input').focus(); return; }
-  if (!getOpenRouterKey()) {
-    errEl.textContent = '❌ Geen OpenRouter key. Zet die eerst in het API Key-scherm.';
+  if (!getApiKey()) {
+    errEl.textContent = '❌ Geen Claude API key. Zet die eerst in het API Key-scherm.';
     errEl.style.display = 'block';
     return;
   }
@@ -10839,7 +10864,7 @@ async function toolzoekAsk() {
   const userMsg = `Beschikbare tools:\n\n${lijst}\n\nRemy vraagt: "${vraag}"\n\nKies de 3 beste (of minder als er minder passen).`;
 
   try {
-    const text = await callOpenRouter(TOOLKIT_ASK_MODEL, systemPrompt, userMsg, 30000);
+    const text = await callHaiku(systemPrompt, userMsg, 30000, 2000);
     const regels = text.split('\n').map(r => r.trim()).filter(r => r.includes('|'));
     let html = '';
     if (!regels.length || regels[0].startsWith('GEEN')) {

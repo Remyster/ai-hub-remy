@@ -379,7 +379,7 @@ De losse `fmhy`/`osint` keys in `TOOLKITS` bestaan nog (o.a. omdat `alles` zijn 
 | `toolzoekAsk()` | De hoofd-zoekbalk onder de header — zelfde aanpak als `toolkitAsk()` maar altijd tegen `TOOLKITS.alles` |
 | `toolkitSurprise()` | 3 willekeurige tools, geen API-call — puur om op ideeën te komen |
 
-**Zoek-detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-5.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
+**Zoek-detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — Haiku 5.5 krijgt via `callHaiku()` (Claude API, Claude-key) gewoon alles mee. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
 
 ## 📍 Plaats-knop + herinneringen (20 augustus 2026)
 
@@ -716,10 +716,16 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ### 22 oktober 2026 — Haiku 5.5 + Vaste Lasten: verwacht vs werkelijk
 
-**Alle Haiku-aanroepen naar Haiku 5.5.** De 15 directe Anthropic-calls gebruiken nu
-`HAIKU_MODEL` (`claude-haiku-5-5`), gedefinieerd naast `KEY_STORE`; de twee
-OpenRouter-calls (`SSP_CLEANUP_MODEL`, `TOOLKIT_ASK_MODEL`) staan op
-`anthropic/claude-haiku-5.5`. Drie dingen veranderen mee, want Haiku 5.5 gedraagt
+**Alle Haiku-aanroepen naar Haiku 5.5, en allemaal via de Claude API.** De 15
+directe calls gebruiken nu `HAIKU_MODEL` (`claude-haiku-5-5`), gedefinieerd naast
+`KEY_STORE`. De twee die via OpenRouter liepen (🧹 Opschonen in de pipeline en de
+toolzoekbalk / toolkit-zoeker) gaan op Remy's verzoek nu ook rechtstreeks naar de
+Claude API, via de nieuwe `callHaiku(systeem, vraag, timeoutMs, maxTokens)` — zelfde
+contract als `callOpenRouter()` (tekst terug, of een Error met leesbare melding), dus
+de aanroepers hoefden verder niet te veranderen. `SSP_CLEANUP_MODEL` en
+`TOOLKIT_ASK_MODEL` zijn weg; die twee hebben nu de Claude-key nodig, niet de
+OpenRouter-key. OpenRouter blijft alleen voor de AI Council en de dealfinder (andere
+modellen, `:online`-grounding). Drie dingen veranderen mee, want Haiku 5.5 gedraagt
 zich anders dan 4.5:
 - **Hij denkt standaard eerst na.** Een antwoord kan dus beginnen met een
   `thinking`-blok, en zes plekken lazen `data.content[0].text` — die zouden een leeg
@@ -734,9 +740,6 @@ zich anders dan 4.5:
 
 Prijs is $0,10 / $0,50 per miljoen tokens (4.5: $1 / $5); de kostenteller
 (`CLAUDE_PRICING`) kent het nieuwe model. Let op: dezelfde tekst telt ~30% meer tokens.
-**Niet geverifieerd:** de OpenRouter-id `anthropic/claude-haiku-5.5` — openrouter.ai
-was vanuit de testomgeving niet bereikbaar. Geven 🧹 Opschonen of de toolzoekbalk een
-model-fout, dan klopt die id niet.
 
 **Vaste Lasten: blok "📊 Verwacht vs werkelijk"** (`#vl-overzicht`,
 `vlOverzichtBereken()`), onder de vijf bestaande tegels. Verwacht = het basisbedrag
@@ -751,7 +754,7 @@ vóórdat de invoervelden van de nieuwe maand in de DOM staan.
 
 Getest: alle 10 script-blokken parsen, in Chromium met nepdata (loon, huur, energie
 met afwijking, beide spaarpotten): bedragen kloppen met de hand nagerekend, nul
-console-fouten. `claudeTekst` op een antwoord met thinking- en tekstblokken. **Niet
+console-fouten. `claudeTekst` op een antwoord met thinking- en tekstblokken, en `callHaiku` / `sspCleanupText` tegen een nagebootste API (juiste model, effort en max_tokens in de body, denkblok genegeerd). **Niet
 getest:** een echte Haiku 5.5-call — dat kost geld op Remy's key en het netwerk naar
 de API staat dicht vanuit de testomgeving.
 
