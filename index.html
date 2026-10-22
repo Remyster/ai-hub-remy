@@ -3124,6 +3124,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
       </div>
     </div>
 
+    <div id="vl-overzicht" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:2px;padding:14px 16px;margin-bottom:16px;"></div>
     <div id="vl-watals-box" style="display:none;margin-bottom:16px;background:rgba(252,238,10,0.06);border:1px solid rgba(252,238,10,0.3);border-radius:2px;padding:12px 16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div style="font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:#fcee0a;">🧪 Wat-als — <span id="vl-watals-count">0</span> uitgezet</div>
@@ -4436,7 +4437,7 @@ const SSP_FILENOTE_TEXT = "Ik stuur je hierbij een bijlage met de volledige inpu
 
 // ── Opschonen: haalt bronstatus/connector-checks/voortgangsmeldingen uit een
 // geplakt AI-antwoord, zodat alleen de bruikbare inhoud doorgaat naar de volgende stap ──
-const SSP_CLEANUP_MODEL = 'anthropic/claude-haiku-4.5';
+const SSP_CLEANUP_MODEL = 'anthropic/claude-haiku-5.5';
 const SSP_CLEANUP_SYSPROMPT = "Je krijgt een ruwe, geplakte AI-output uit een contentpipeline. Die output bevat vaak meta-tekst die niet bedoeld is voor de volgende stap in de pipeline: bronstatus-rapportages (bijvoorbeeld \"GitHub-connector werkte: ja\", \"Sitemap gecontroleerd: ja\"), connector-bevestigingen, voortgangsmeldingen, herhalingen van de opdracht zelf, en andere administratieve ruis rond het eigenlijke antwoord.\n\nJouw taak: geef ALLEEN de eigenlijke inhoudelijke output terug — het deel waar de volgende AI in de pipeline daadwerkelijk mee moet werken (bijvoorbeeld de lijst met ideeen, de outline, de reviewpunten, de factcheck-resultaten zelf). Verwijder:\n- Bronstatus-blokken (GitHub/Drive/live site/sitemap gecontroleerd: ja/nee/gedeeltelijk)\n- Connector-bevestigingen en meldingen over welke tools wel/niet werkten\n- Voortgangsmeldingen en tussentijdse meta-tekst (\"ik ga nu...\", \"hierbij mijn analyse...\")\n- Letterlijke herhaling van de opdracht of instructies\n\nVerander NIETS aan de inhoud van het eigenlijke antwoord zelf: geen samenvatting, geen herschrijving, geen eigen interpretatie, geen tekst toevoegen. Alleen de ruis eromheen weg. Twijfel je of iets ruis is of inhoud: laat het staan, beter te veel bewaren dan inhoud verliezen.\n\nGeef uitsluitend de opgeschoonde tekst terug, zonder inleiding, aanhef of toelichting van jouzelf.";
 
 async function sspCleanupText(rawText) {
@@ -4879,6 +4880,11 @@ const FALLBACK = {
 function getRand(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
 const KEY_STORE = 'remy_claude_key';
+// Haiku 5.5 denkt standaard eerst na (adaptive thinking). Effort 'low' houdt dat kort
+// en goedkoop; lees antwoorden altijd via de text-blokken, niet via content[0].
+const HAIKU_MODEL = 'claude-haiku-5-5';
+const HAIKU_OPTS = { effort: 'low' };
+function claudeTekst(data) { return (data?.content || []).filter(b => b.type === 'text').map(b => b.text).join(''); }
 function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } catch { return ''; } }
 
 // ══════════════════════════════════════════════
@@ -4886,12 +4892,14 @@ function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } cat
 // ══════════════════════════════════════════════
 (function() {
   const CLAUDE_PRICING = {
+    'claude-haiku-5-5': { in: 0.10, out: 0.50 },
     'claude-haiku-4-5': { in: 1, out: 5 },
     'claude-sonnet-5': { in: 3, out: 15 },
   };
   const USD_EUR = 0.92; // ruwe indicatieve koers, alleen voor weergave
   function claudePriceFor(model) {
     if (!model) return null;
+    if (model.startsWith('claude-haiku-5-5')) return CLAUDE_PRICING['claude-haiku-5-5'];
     if (model.startsWith('claude-haiku-4-5')) return CLAUDE_PRICING['claude-haiku-4-5'];
     if (model.startsWith('claude-sonnet-5')) return CLAUDE_PRICING['claude-sonnet-5'];
     return null;
@@ -5139,8 +5147,8 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 600,
+        model: HAIKU_MODEL, output_config: HAIKU_OPTS,
+        max_tokens: 1500,
         tools: [{ type: 'web_search_20250305', name: 'web_search' }],
         messages: [{ role: 'user', content: nieuwsPrompt }]
       })
@@ -5276,11 +5284,11 @@ async function fetchVoorJou(force) {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 150, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const tekst = (data.content?.[0]?.text || '').trim();
+    const tekst = claudeTekst(data).trim();
     if (el) el.textContent = tekst;
     try { localStorage.setItem(cacheKey, tekst); } catch {}
   } catch {
@@ -6695,7 +6703,7 @@ async function wpFotoUitlezen(file, prompt, status) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: HAIKU_MODEL, output_config: HAIKU_OPTS,
         max_tokens: 1200,
         messages: [{
           role: 'user',
@@ -7201,6 +7209,7 @@ function renderVasteLasten() {
   });
 
   document.getElementById('vl-content').innerHTML = html;
+  vlOverzichtBereken(); // opnieuw nu de invoervelden van déze maand in de DOM staan
 }
 
 // Spaarrekening die bij een vaste-lastnaam hoort — alleen voor categorie 'sparen', anders matcht
@@ -7550,7 +7559,64 @@ function updateTotalsLive() {
   updateVlSaldo();
 }
 
+// ── Verwacht vs werkelijk ──
+// Verwacht = het vaste basisbedrag (`vaste_lasten.bedrag`), werkelijk = wat er deze
+// maand staat (`betalingen.bedrag_betaald`, of het invoerveld terwijl je typt).
+// Draait mee via updateVlSaldo(), dus elke wijziging in een rij werkt dit bij.
+function vlOverzichtBereken() {
+  const el = document.getElementById('vl-overzicht');
+  if (!el) return;
+  const isAutoMaand = vlMaand % 2 === 1;
+  const actief = l => !(l.naam === 'Auto sparen' && !isAutoMaand) && !(l.naam === 'Huis sparen' && isAutoMaand);
+  const maandBedrag = l => {
+    const inp = document.getElementById('vl-inp-' + l.id);
+    const b = getBetaling(l.id);
+    return parseFloat(inp?.value ?? b?.bedrag_betaald ?? l.bedrag ?? 0) || 0;
+  };
+  let uitVerwacht = 0, uitWerkelijk = 0, betaald = 0, nogOpen = 0, nBetaald = 0, nPosten = 0;
+  let loonVerwacht = 0, loonWerkelijk = 0;
+  const afwijkingen = [];
+  vlLasten.filter(actief).forEach(l => {
+    const basis = parseFloat(l.bedrag || 0) || 0;
+    const nu = maandBedrag(l);
+    if (Math.abs(nu - basis) >= 0.01) afwijkingen.push({ naam: l.naam, basis, nu, inkomen: l.categorie === 'inkomen' });
+    if (l.categorie === 'inkomen') { loonVerwacht += basis; loonWerkelijk += nu; return; }
+    nPosten++;
+    uitVerwacht += basis; uitWerkelijk += nu;
+    if (getBetaling(l.id)?.betaald) { betaald += nu; nBetaald++; } else nogOpen += nu;
+  });
+  const verschil = (v, goedAlsHoger) => {
+    if (Math.abs(v) < 0.01) return '<span style="color:var(--muted);">= verwacht</span>';
+    const goed = goedAlsHoger ? v > 0 : v < 0;
+    return `<span style="color:${goed ? '#4dffa6' : '#ff003c'};">${v > 0 ? '+' : '−'}${euroFmt(Math.abs(v))}</span>`;
+  };
+  const kolom = (label, kleur, groot, regels) => `<div style="flex:1;min-width:150px;">
+      <div style="font-size:0.62em;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;">${label}</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15em;color:${kleur};">${euroFmt(groot)}</div>
+      <div style="font-size:0.68em;color:var(--muted);line-height:1.5;">${regels}</div>
+    </div>`;
+  const overVerwacht = loonVerwacht - uitVerwacht;
+  const overWerkelijk = loonWerkelijk - uitWerkelijk;
+  let html = '<div style="font-size:0.62em;font-weight:700;letter-spacing:0.1em;color:var(--muted);text-transform:uppercase;margin-bottom:10px;">📊 Verwacht vs werkelijk</div>'
+    + '<div style="display:flex;flex-wrap:wrap;gap:14px;">'
+    + kolom('Verwachte uitgaven', '#ffc53d', uitVerwacht, `deze maand ${euroFmt(uitWerkelijk)} · ${verschil(uitWerkelijk - uitVerwacht, false)}`)
+    + kolom('Verwacht loon', '#4dffa6', loonVerwacht, `deze maand ${euroFmt(loonWerkelijk)} · ${verschil(loonWerkelijk - loonVerwacht, true)}`)
+    + kolom('Werkelijk betaald', '#00f0ff', betaald, `${nBetaald} van ${nPosten} posten · nog open ${euroFmt(nogOpen)}`)
+    + '</div>'
+    + `<div style="font-size:0.72em;margin-top:10px;padding-top:8px;border-top:1px dashed var(--border);">Over na vaste lasten: verwacht <b>${euroFmt(overVerwacht)}</b> · deze maand <b>${euroFmt(overWerkelijk)}</b> (${verschil(overWerkelijk - overVerwacht, true)})</div>`;
+  if (afwijkingen.length) {
+    afwijkingen.sort((a, b) => Math.abs(b.nu - b.basis) - Math.abs(a.nu - a.basis));
+    html += '<div style="font-size:0.68em;margin-top:8px;color:var(--muted);">Afwijkend deze maand:</div>'
+      + afwijkingen.map(a => `<div style="display:flex;justify-content:space-between;gap:8px;font-size:0.7em;padding:2px 0;">
+          <span>${escHtml(a.naam)}</span>
+          <span style="white-space:nowrap;">${euroFmt(a.basis)} → ${euroFmt(a.nu)} ${verschil(a.nu - a.basis, a.inkomen)}</span>
+        </div>`).join('');
+  }
+  el.innerHTML = html;
+}
+
 function updateVlSaldo() {
+  vlOverzichtBereken();
   const saldo = parseFloat(document.getElementById('vl-saldo-input')?.value || 0);
   const isAutoMaandCalc = vlMaand % 2 === 1;
   const nogRaw = vlLasten.reduce((sum, l) => {
@@ -8351,7 +8417,7 @@ REGELS:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: HAIKU_MODEL, output_config: HAIKU_OPTS,
         max_tokens: 2500,
         system: systeemPrompt,
         messages: [{ role: 'user', content: userMsg }]
@@ -8364,7 +8430,7 @@ REGELS:
     }
 
     const data = await res.json();
-    const output = data.content?.[0]?.text?.trim() || '';
+    const output = claudeTekst(data).trim();
     if (!output) throw new Error('Lege response van Claude');
 
     document.getElementById('pb-output').value = output;
@@ -8432,7 +8498,7 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: HAIKU_MODEL, output_config: HAIKU_OPTS,
         max_tokens: 2500,
         system: systeemPrompt,
         messages: [{ role: 'user', content: userMsg }]
@@ -8443,7 +8509,7 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
       throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'API fout'}`);
     }
     const data = await res.json();
-    const text = data.content?.[0]?.text?.trim() || '';
+    const text = claudeTekst(data).trim();
     let parsed = null;
     try { parsed = JSON.parse(text.replace(/```json|```/g, '').trim()); } catch(e) {}
     if (!parsed || !parsed.analyseer || !parsed.outline || !parsed.schrijf) throw new Error('Kon de stappen niet uitlezen — probeer opnieuw');
@@ -8513,7 +8579,7 @@ async function pbRefine(soort) {
         'anthropic-dangerous-direct-browser-access': 'true'
       },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: HAIKU_MODEL, output_config: HAIKU_OPTS,
         max_tokens: 2500,
         system: 'Je krijgt een bestaande prompt. Pas hem aan volgens de instructie. Geef ALLEEN de aangepaste prompt terug, geen uitleg, geen aanhalingstekens eromheen.',
         messages: [{ role: 'user', content: `PROMPT:\n${huidig}\n\nINSTRUCTIE: ${instructie}` }]
@@ -8524,7 +8590,7 @@ async function pbRefine(soort) {
       throw new Error(`HTTP ${res.status}: ${errData?.error?.message || 'API fout'}`);
     }
     const data = await res.json();
-    const output = data.content?.[0]?.text?.trim() || '';
+    const output = claudeTekst(data).trim();
     if (output) ta.value = output;
   } catch(e) {
     const errEl = document.getElementById('pb-error');
@@ -8655,14 +8721,14 @@ Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens erom
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-        body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 2500,
+        body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: 2500,
           system: systeemPrompt,
           messages: [{ role: 'user', content: (ctxText ? `CONTEXT OVER DE GEBRUIKER:\n${ctxText}\n\n` : '') + pbExtraContext() + `Ruw idee: ${ruwIdee}` }]
         })
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.error?.message || resp.status);
-      pbMultiResults[platformKey] = data.content?.[0]?.text || '';
+      pbMultiResults[platformKey] = claudeTekst(data);
     } catch(e) {
       pbMultiResults[platformKey] = '❌ Fout: ' + e.message;
     }
@@ -9447,11 +9513,11 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, system: systeem, messages: [{ role: 'user', content: userMsg }] })
+      body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: 1200, system: systeem, messages: [{ role: 'user', content: userMsg }] })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data?.error?.message || `HTTP ${res.status}`);
-    const tekst = (data.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    const tekst = claudeTekst(data).replace(/```json|```/g, '').trim();
     let parsed = null;
     try { parsed = JSON.parse(tekst); } catch {
       const m = tekst.match(/\{[\s\S]*\}/);
@@ -10145,7 +10211,7 @@ function councilCopyMd() {
 // Dit is een handmatige selectie van wat voor Remy relevant is. De lijst past
 // compleet in een prompt, dus de "wat heb je nodig"-zoeker heeft geen zoekindex
 // nodig — Haiku krijgt gewoon de hele lijst mee en kiest er 3 uit.
-const TOOLKIT_ASK_MODEL = 'anthropic/claude-haiku-4.5';
+const TOOLKIT_ASK_MODEL = 'anthropic/claude-haiku-5.5';
 
 const TOOLKITS = {
   fmhy: {
@@ -11039,7 +11105,7 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 300, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -11098,7 +11164,7 @@ letterlijke kopie als het origineel al onvolledig of kort door de bocht is.`;
 // ══════════════════════════════════════════════
 // SOCRATIC COACH — geeft nooit antwoord, stelt alleen de volgende vraag
 // ══════════════════════════════════════════════
-const SOCRATIC_MODEL = 'claude-haiku-4-5-20251001';
+const SOCRATIC_MODEL = HAIKU_MODEL;
 const SOCRATIC_SYSPROMPT = "Je bent een socratische coach voor Remy. Je taak is NIET om vragen te beantwoorden, advies te geven of een oplossing voor te stellen — hoe expliciet Remy daar ook om vraagt. Je enige taak is: één scherpe, korte vervolgvraag stellen die Remy helpt zelf verder te denken over zijn dilemma of projectidee.\n\nRegels:\n- Maximaal 2 zinnen, meestal 1.\n- Nooit een antwoord, mening, aanbeveling of samenvatting geven — ook niet \"verpakt\" in een vraag (bijv. niet \"heb je overwogen om X te doen?\" als verkapt advies).\n- Bouw voort op wat Remy net zei, ga niet terug naar het begin.\n- Als Remy iets vraagt als \"geef nu gewoon antwoord\": stel alsnog alleen een vraag, bijvoorbeeld over wat hem tegenhoudt om zelf een antwoord te kiezen.\n- Geen aanhef, geen \"goede vraag!\", geen opsomming — gewoon de vraag zelf.";
 let socraticHistory = []; // [{role:'user'|'assistant', content:'...'}]
 
@@ -11157,7 +11223,7 @@ async function socraticSend() {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: SOCRATIC_MODEL, max_tokens: 200, system: SOCRATIC_SYSPROMPT, messages: socraticHistory })
+      body: JSON.stringify({ model: SOCRATIC_MODEL, output_config: HAIKU_OPTS, max_tokens: 1024, system: SOCRATIC_SYSPROMPT, messages: socraticHistory })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -11778,7 +11844,7 @@ heroLoadWeer();
 // (max 2 zinnen). 1x per dag gecached in localStorage, ↻ forceert een nieuwe.
 // ══════════════════════════════════════════════
 const BRIEFING_KEY = 'remy_briefing_v1';
-const BRIEFING_MODEL = 'claude-haiku-4-5-20251001';
+const BRIEFING_MODEL = HAIKU_MODEL;
 
 async function briefingVlSamenvatting() {
   try {
@@ -11841,7 +11907,7 @@ Noem kort wat er vandaag speelt, en als er nog vaste lasten open staan, noem dat
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: BRIEFING_MODEL, max_tokens: 200, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: BRIEFING_MODEL, output_config: HAIKU_OPTS, max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -12183,7 +12249,7 @@ function lbToets(e) {
 }
 
 // ── Notitie-Stroomlijner: 1 dump-item omzetten in samenvatting + bullets + actiepunten ──
-const DUMP_STRUCT_MODEL = 'claude-haiku-4-5-20251001';
+const DUMP_STRUCT_MODEL = HAIKU_MODEL;
 let _dumpStructCache = {}; // key (item.id of 'i'+index) -> {samenvatting, bullets:[], acties:[]}
 
 function dumpStructRenderHtml(structKey, i) {
@@ -12224,7 +12290,7 @@ Antwoord ALLEEN met geldige JSON, geen andere tekst, exact dit formaat:
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: DUMP_STRUCT_MODEL, max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: DUMP_STRUCT_MODEL, output_config: HAIKU_OPTS, max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -12333,7 +12399,7 @@ categorie is exact één van: WEEKPLANNER-TAAK, BLOG-IDEE, STEKKERSLIM-SITE, AI-
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: 1200, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -12450,7 +12516,7 @@ AGENDA:
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-      body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 400, messages: [{ role: 'user', content: prompt }] })
+      body: JSON.stringify({ model: HAIKU_MODEL, output_config: HAIKU_OPTS, max_tokens: 1024, messages: [{ role: 'user', content: prompt }] })
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
@@ -13004,8 +13070,8 @@ async function sspContextPakket() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
+        model: HAIKU_MODEL, output_config: HAIKU_OPTS,
+        max_tokens: 1500,
         messages: [{ role: 'user', content: `Maak een compact context-pakket (max 15 regels) dat Remy kan plakken als opening in een andere AI-chat (Grok/Gemini/Perplexity/Claude), zodat die AI meteen weet waar het project staat.
 
 PROJECT: ${projectNaam} (StekkerSlim ${SSP_PIPELINES[sspPipeline].label})

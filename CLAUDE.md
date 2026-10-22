@@ -379,7 +379,7 @@ De losse `fmhy`/`osint` keys in `TOOLKITS` bestaan nog (o.a. omdat `alles` zijn 
 | `toolzoekAsk()` | De hoofd-zoekbalk onder de header — zelfde aanpak als `toolkitAsk()` maar altijd tegen `TOOLKITS.alles` |
 | `toolkitSurprise()` | 3 willekeurige tools, geen API-call — puur om op ideeën te komen |
 
-**Zoek-detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-4.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
+**Zoek-detail:** de hele lijst past in één prompt, dus er is géén zoekindex of embedding nodig — `TOOLKIT_ASK_MODEL` (`anthropic/claude-haiku-5.5`) krijgt gewoon alles mee. Hergebruikt `callOpenRouter()` en dezelfde OpenRouter-key als de AI Council. Antwoord komt terug als `NAAM | URL | waarom`-regels; URL's die niet met `http(s)://` beginnen worden vervangen door de bron-URL, zodat een hallucinerende link nergens heen wijst.
 
 ## 📍 Plaats-knop + herinneringen (20 augustus 2026)
 
@@ -713,6 +713,47 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 ---
 
 ## Changelog
+
+### 22 oktober 2026 — Haiku 5.5 + Vaste Lasten: verwacht vs werkelijk
+
+**Alle Haiku-aanroepen naar Haiku 5.5.** De 15 directe Anthropic-calls gebruiken nu
+`HAIKU_MODEL` (`claude-haiku-5-5`), gedefinieerd naast `KEY_STORE`; de twee
+OpenRouter-calls (`SSP_CLEANUP_MODEL`, `TOOLKIT_ASK_MODEL`) staan op
+`anthropic/claude-haiku-5.5`. Drie dingen veranderen mee, want Haiku 5.5 gedraagt
+zich anders dan 4.5:
+- **Hij denkt standaard eerst na.** Een antwoord kan dus beginnen met een
+  `thinking`-blok, en zes plekken lazen `data.content[0].text` — die zouden een leeg
+  antwoord geven. Nu via `claudeTekst(data)`, die alleen de `text`-blokken pakt.
+  **Gebruik die helper ook in nieuwe code, nooit meer `content[0]`.**
+- **Nadenken telt mee in `max_tokens`.** Limieten van 150–400 zijn naar 1024 gegaan,
+  600–800 naar 1500, anders kan het denken het hele budget opmaken en komt er geen
+  tekst. De prompts zelf begrenzen de lengte van het antwoord nog steeds.
+- **`output_config: HAIKU_OPTS`** (`{ effort: 'low' }`) op elke call: zo denkt hij
+  kort of helemaal niet bij simpele vragen. `temperature` en prefill (die op 5.5 een
+  400 geven) kwamen nergens voor.
+
+Prijs is $0,10 / $0,50 per miljoen tokens (4.5: $1 / $5); de kostenteller
+(`CLAUDE_PRICING`) kent het nieuwe model. Let op: dezelfde tekst telt ~30% meer tokens.
+**Niet geverifieerd:** de OpenRouter-id `anthropic/claude-haiku-5.5` — openrouter.ai
+was vanuit de testomgeving niet bereikbaar. Geven 🧹 Opschonen of de toolzoekbalk een
+model-fout, dan klopt die id niet.
+
+**Vaste Lasten: blok "📊 Verwacht vs werkelijk"** (`#vl-overzicht`,
+`vlOverzichtBereken()`), onder de vijf bestaande tegels. Verwacht = het basisbedrag
+(`vaste_lasten.bedrag`), werkelijk = het bedrag van deze maand (`betalingen`, of het
+invoerveld terwijl je typt). Laat zien: verwachte uitgaven vs deze maand, verwacht
+loon vs deze maand, werkelijk betaald (x van y posten, nog open), wat er verwacht en
+werkelijk overblijft na vaste lasten, en een lijst van posten die deze maand afwijken
+van hun basisbedrag. Telt de wisselende spaarpotten net zo als de rest. Wordt
+bijgewerkt via `updateVlSaldo()` (dus bij typen, betalen en maand wisselen) en
+nogmaals aan het eind van `renderVasteLasten()`, omdat `updateVlSaldo()` daar draait
+vóórdat de invoervelden van de nieuwe maand in de DOM staan.
+
+Getest: alle 10 script-blokken parsen, in Chromium met nepdata (loon, huur, energie
+met afwijking, beide spaarpotten): bedragen kloppen met de hand nagerekend, nul
+console-fouten. `claudeTekst` op een antwoord met thinking- en tekstblokken. **Niet
+getest:** een echte Haiku 5.5-call — dat kost geld op Remy's key en het netwerk naar
+de API staat dicht vanuit de testomgeving.
 
 ### 14 oktober 2026 — De prompt van scout 1B stond in het antwoordveld van Gemini
 
