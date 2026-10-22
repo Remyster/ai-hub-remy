@@ -2546,6 +2546,126 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   .pbx-chips{max-width:56%}
 }
 </style>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   LEESBAARHEID  (22 oktober 2026)
+   Laatste laag in de <head>, moet dus achteraan blijven staan.
+   Gemeten vóór deze laag: headerknoppen 9,9px mono in hoofdletters,
+   kaarttekst 10,3px, voorbeeldregels 9,9px cursief, sectiekoppen 9,9px.
+   Alles in grijs-paars op zwart. Dat leest niet, zeker niet op de telefoon.
+   Kleuren en sfeer blijven; alleen maat, contrast en letter veranderen.
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --lees-tekst:#d6cff0;
+  --lees-zacht:#b3a9d6;
+  --lees-stil:#9d93c4;
+}
+body .header-btns .hbtn,
+body .header-btns .hb-menu-wrap > .hbtn{
+  font-family:'Inter',system-ui,sans-serif !important;
+  font-size:12.5px !important; font-weight:600 !important;
+  text-transform:none !important; letter-spacing:0.01em !important;
+  padding:7px 12px !important; line-height:1.2 !important;
+}
+body #hb-menu .hbtn, body .hb-menu2 .hbtn{ font-size:13px !important; padding:9px 11px !important; }
+body .card h2{ font-size:15px !important; line-height:1.3 !important; }
+body .card p{
+  font-size:13px !important; line-height:1.5 !important;
+  color:var(--lees-tekst) !important;
+}
+body .card p.voorbeeld{
+  font-size:12px !important; line-height:1.5 !important; font-style:normal !important;
+  color:var(--lees-stil) !important;
+}
+body .section-label{ font-size:11.5px !important; color:var(--lees-zacht) !important; }
+body .section-label span, body .section-label small{ color:var(--lees-stil) !important; }
+#toolzoek-input, #dealfinder-bar-input, #smart-input{ font-size:14px !important; }
+#toolzoek-bar button, #dealfinder-bar button, #toolzoek-bar span{ font-size:13px !important; }
+body .smart-action-btn, body .smart-side-btn{ font-size:12.5px !important; }
+body .hint{ color:rgba(255,255,255,0.42) !important; font-size:12px !important; }
+#hero-taken-lijst, #briefing-strip{ font-size:14px; }
+
+/* Backup ouder dan een week: oranje, zodat je het ziet zonder te zoeken */
+body .header-btns .hbtn.backup-oud{
+  color:#ffb15c !important; border-color:rgba(255,177,92,0.45) !important;
+  background:rgba(255,177,92,0.10) !important;
+}
+
+/* ⚙️ Account-menu: zelfde vorm als het Links-menu */
+.hb-menu2{
+  position:absolute; top:calc(100% + 8px); right:0; z-index:950;
+  min-width:210px; padding:7px;
+  display:none; flex-direction:column; gap:3px;
+  background:rgba(14,16,24,0.96);
+  backdrop-filter:blur(20px) saturate(1.4); -webkit-backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid rgba(255,255,255,0.10); border-radius:2px;
+  box-shadow:0 12px 40px -8px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
+}
+.hb-menu2.open{ display:flex; animation:hbPop .16s cubic-bezier(.34,1.4,.64,1) both; }
+.hb-menu2 .hbtn{
+  display:flex !important; align-items:center; gap:9px; width:100%; margin:0 !important;
+  border-color:transparent !important; background:transparent !important; background-image:none !important;
+  box-shadow:none !important; text-align:left; justify-content:flex-start;
+}
+.hb-menu2 .hbtn:hover{ background:rgba(255,255,255,0.07) !important; transform:none !important; }
+
+@media (max-width: 640px){
+  body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ font-size:13px !important; padding:8px 11px !important; }
+  body .card h2{ font-size:15.5px !important; }
+  body .card p{ font-size:13.5px !important; }
+  body .card p.voorbeeld{ font-size:12.5px !important; }
+  /* iOS zoomt in op invoervelden onder de 16px */
+  #toolzoek-input, #dealfinder-bar-input, #smart-input{ font-size:16px !important; }
+  /* het belletje kreeg flex:1 én border-radius:50% en werd een grote ovaal */
+  #rem-btn{ flex:0 0 44px !important; width:44px !important; height:44px !important; padding:0 !important; }
+  /* menu's niet buiten beeld laten vallen op een smal scherm */
+  #hb-menu, .hb-menu2{ right:auto; left:50%; transform:translateX(-50%); }
+  #hb-menu.open, .hb-menu2.open{ animation:none; }
+}
+</style>
+<script>
+// ⚙️ Account: de knoppen die je zelden nodig hebt uit de hoofdbalk, in een menu.
+// Verplaatst, niet gekopieerd: id's, onclick en de staat van 🔒 Slot blijven gelijk.
+(function(){
+  function build(){
+    const bar = document.querySelector('.header-btns');
+    if (!bar || document.getElementById('hb-account')) return;
+    const ids = ['hs-knop'];
+    const knoppen = [...bar.querySelectorAll(':scope > .hbtn')].filter(el => {
+      const oc = el.getAttribute('onclick') || '';
+      return ids.includes(el.id) || /openApiKeyModal|slotWachtwoordWijzigen|hubUitloggen/.test(oc);
+    });
+    if (knoppen.length < 2) return;
+    const wrap = document.createElement('div');
+    wrap.className = 'hb-menu-wrap';
+    const toggle = document.createElement('span');
+    toggle.className = 'hbtn hbtn-muted';
+    toggle.id = 'hb-account';
+    toggle.setAttribute('role','button'); toggle.setAttribute('tabindex','0');
+    toggle.setAttribute('aria-haspopup','true'); toggle.setAttribute('aria-expanded','false');
+    toggle.title = 'API-key, slot, wachtwoord en uitloggen';
+    toggle.innerHTML = '⚙️ Account <span class="hb-caret">▾</span>';
+    const menu = document.createElement('div');
+    menu.className = 'hb-menu2';
+    const links = document.getElementById('hb-toggle');
+    bar.insertBefore(wrap, links ? links.closest('.hb-menu-wrap') : null);
+    wrap.appendChild(toggle); wrap.appendChild(menu);
+    knoppen.forEach(k => menu.appendChild(k));
+    function setOpen(v){
+      menu.classList.toggle('open', v); toggle.classList.toggle('open', v);
+      toggle.setAttribute('aria-expanded', v ? 'true' : 'false');
+    }
+    toggle.addEventListener('click', e => { e.stopPropagation(); setOpen(!menu.classList.contains('open')); });
+    toggle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!menu.classList.contains('open')); } });
+    document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+    menu.addEventListener('click', () => setOpen(false));
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
+  else build();
+})();
+</script>
+
 </head>
 <body>
 
@@ -3456,7 +3576,8 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     <div class="grid">
       <a href="https://claude.ai/project/019c8aa5-f843-7141-b663-cb017a540215" class="card agent" data-key="1" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🏥 Dr. NeuroCut</h2><p>Medische specialist ADHD &amp; gewicht · Sonnet 4.6 Extended</p><span class="kbd">1</span>
+        <h2>🏥 Dr. NeuroCut</h2><p>Medisch: ADHD, medicatie &amp; gewicht</p>
+        <p class="voorbeeld">→ medicatie en bijwerkingen, wat zegt het onderzoek</p><span class="kbd">1</span>
       </a>
       <a href="https://claude.ai/project/019c8aa0-42f8-7509-b6ae-a1b708cefa79" class="card agent" data-key="2" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
@@ -3470,23 +3591,28 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
       </a>
       <a href="https://claude.ai/project/019c8aa4-2f69-74e6-8cd4-7628e5a481e6" class="card agent" data-key="3" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>💻 Voltex Coder</h2><p>HA / Excel / Coding · Sonnet 4.6 Extended</p><span class="kbd">3</span>
+        <h2>💻 Voltex Coder</h2><p>Home Assistant, Excel &amp; code</p>
+        <p class="voorbeeld">→ automation die niet afgaat, YAML, ESPHome, een formule die vastloopt</p><span class="kbd">3</span>
       </a>
       <a href="https://claude.ai/project/019d8198-c3d7-7004-a846-5221dd83acb1" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🤖 AI Hubby</h2><p>Alles omtrent AI Hub · Sonnet 4.6 Extended</p>
+        <h2>🤖 AI Hubby</h2><p>Ideeën en vragen over deze hub</p>
+        <p class="voorbeeld">→ nieuwe functie bedenken, iets in de hub dat raar doet</p>
       </a>
       <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card agent" data-usage="true" target="_blank" rel="noopener noreferrer">
         <span class="recent-tag">▲ recent</span><div class="dot"></div>
-        <h2>🔌 Stekkerslim Bouwen</h2><p>Project assistent · Sonnet 4.6 Extended</p>
+        <h2>🔌 Stekkerslim Bouwen</h2><p>Site bouwen, prijscheck &amp; actielijst</p>
+        <p class="voorbeeld">→ pagina aanpassen, Site Guardian stap 4 en 5</p>
       </a>
       <a href="#" class="card agent" onclick="openCouncil(); return false;" style="border-color:rgba(252,238,10,0.35);background:linear-gradient(135deg,rgba(252,238,10,0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
-        <h2>🏛️ AI Council</h2><p>Gemini + Grok + Claude parallel — 1 vraag, 3 antwoorden</p>
+        <h2>🏛️ AI Council</h2><p>Gemini, Grok, Claude &amp; Kimi tegelijk: 1 vraag, 4 antwoorden</p>
+        <p class="voorbeeld">→ een beslissing waar je meerdere meningen over wilt, met geschiedenis</p>
       </a>
       <a href="#" class="card agent" onclick="openSocratic(); return false;" style="border-color:rgba(0,240,255,0.35);background:linear-gradient(135deg,rgba(0,240,255,0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
         <h2>🧭 Socratic Coach</h2><p>Geeft nooit antwoord, stelt alleen de volgende vraag</p>
+        <p class="voorbeeld">→ als je vastzit en zelf het antwoord wilt vinden</p>
       </a>
     </div>
   </section>
@@ -3553,7 +3679,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
     <div class="grid">
       <a href="#" class="card affiliate" onclick="openStekkerSlimGuardian(); return false;" style="border-color:rgba(255,197,61,0.35);background:linear-gradient(135deg,rgba(255,197,61,0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
-        <h2>🚀 AI Pipeline</h2><p>Blog · Site check · SEO — 13 staps workflow</p>
+        <h2>🚀 AI Pipeline</h2><p>Blog (9 stappen) · Site check (5) · SEO (4)</p>
         <div id="ssp-hub-progress"></div>
       </a>
       <a href="https://claude.ai/project/019d39d8-8ed9-77a5-984e-f584661c27d1" class="card affiliate" data-usage="true" target="_blank" rel="noopener noreferrer">
@@ -6240,8 +6366,47 @@ const BACKUP_TABELLEN = [
   'km_registratie', 'km_defaults', 'werk_links',
   'work_items', 'work_tasks', 'work_docs', 'work_load', 'work_reflect',
   'app_settings', 'context_blocks', 'pb_projecten', 'koop_items', 'pipeline_state',
-  'vault_meta', 'vault_items'
+  'vault_meta', 'vault_items',
+  // 22 okt 2026: tabellen van de andere apps op project B die er sinds de vorige
+  // controle bij kwamen. WerkHub, iPad Werkplek en de keuken-app.
+  'work_stops', 'work_teksten', 'work_team', 'werkplek_documents',
+  'keuken_households', 'keuken_household_members', 'keuken_family_profiles',
+  'keuken_pantry_items', 'keuken_shopping_items', 'keuken_recipes',
+  'keuken_meal_participants', 'keuken_stores', 'keuken_store_routes',
+  'council_runs'
 ];
+// Deze staan in project A, de rest in B.
+// Bewust niet mee: work_whatsapp_*, work_reminder_*, work_push_subscriptions en
+// server_config hebben geen leesregel (alleen de server mag erbij), en
+// keuken_nevo_foods/offers/prices zijn opzoekdata die de keuken-app zelf ophaalt.
+const BACKUP_PROJECT_A = new Set(['pipeline_state', 'council_runs']);
+const BACKUP_LAATSTE_KEY = 'hub_laatste_backup_v1';
+const BACKUP_HERINNER_DAGEN = 7;
+
+// Laat op de knop zien hoe oud de laatste backup van dit apparaat is. Ouder dan
+// een week (of nooit gemaakt) wordt hij oranje, en één keer per dag komt er een
+// melding. Er bestaat geen automatische backup, dus vergeten kost data.
+function backupLeeftijdTonen(meldMag) {
+  const btn = document.getElementById('backup-btn');
+  if (!btn) return;
+  let iso = null;
+  try { iso = localStorage.getItem(BACKUP_LAATSTE_KEY); } catch(e) {}
+  const dagen = iso ? Math.floor((Date.now() - new Date(iso).getTime()) / 86400000) : null;
+  const oud = dagen === null || dagen >= BACKUP_HERINNER_DAGEN;
+  btn.textContent = '💾 Backup' + (dagen === null ? ' · nooit' : dagen === 0 ? ' · vandaag' : ' · ' + dagen + 'd');
+  btn.classList.toggle('backup-oud', oud);
+  btn.title = (iso ? 'Laatste backup op dit apparaat: ' + new Date(iso).toLocaleDateString('nl-NL', { day:'numeric', month:'long' })
+                   : 'Op dit apparaat nog nooit een backup gemaakt') + '. Downloadt alle Supabase-data als JSON.';
+  if (!meldMag || !oud) return;
+  const vandaag = new Date().toISOString().slice(0,10);
+  try {
+    if (localStorage.getItem('hub_backup_gemeld_v1') === vandaag) return;
+    localStorage.setItem('hub_backup_gemeld_v1', vandaag);
+  } catch(e) { return; }
+  setTimeout(() => alert(dagen === null
+    ? '⚠️ Je hebt op dit apparaat nog nooit een backup gemaakt. Klik even op 💾 Backup in de header.'
+    : `⚠️ Je laatste backup is ${dagen} dagen oud. Klik even op 💾 Backup in de header.`), 4000);
+}
 async function backupAlles() {
   const btn = document.getElementById('backup-btn');
   const origTxt = btn.textContent;
@@ -6254,7 +6419,7 @@ async function backupAlles() {
   // BACKUP_TABELLEN, want die bepalen we bij het wegschrijven hieronder.
   const uitkomsten = await Promise.all(BACKUP_TABELLEN.map(async tabel => {
     try {
-      const isSs = tabel === 'pipeline_state';
+      const isSs = BACKUP_PROJECT_A.has(tabel);
       const r = await fetch(`${isSs ? SS_SBURL : SB_URL}/rest/v1/${tabel}?select=*`, { headers: isSs ? SS_GET_HDR : SB_GET_HDR });
       if (!r.ok) return { tabel, rijen: null, fout: r.status === 404 ? null : `HTTP ${r.status}` };
       return { tabel, rijen: await r.json(), fout: null };
@@ -6281,6 +6446,8 @@ async function backupAlles() {
   URL.revokeObjectURL(url);
   btn.textContent = origTxt; btn.style.pointerEvents = '';
   const gelukt = BACKUP_TABELLEN.length - fouten.length - leeg.length;
+  if (totaalRijen > 0) { try { localStorage.setItem(BACKUP_LAATSTE_KEY, new Date().toISOString()); } catch(e) {} }
+  backupLeeftijdTonen(false);
   if (fouten.length) {
     console.warn('Backup: sommige tabellen gaven een fout:', fouten);
     alert(`⚠️ Backup gedownload: ${gelukt} tabellen, ${totaalRijen} rijen. Fout bij:\n` + fouten.join('\n'));
@@ -8554,6 +8721,7 @@ window.addEventListener('load', async () => {
   // Geen popup, geen apikey modal — direct hub tonen
   // AI blokjes laden als key beschikbaar is
   try { fetchVoorJou(false); } catch(e) { console.warn('Init: fetchVoorJou mislukt:', e); }
+  try { backupLeeftijdTonen(true); } catch(e) { console.warn('Init: backup-leeftijd mislukt:', e); }
 });
 
 // ── Multi-platform prompt generator ──────────────────
@@ -11760,7 +11928,7 @@ function briefingRender(tekst) {
 
 async function briefingGenereer() {
   const key = getApiKey();
-  if (!key) { briefingRender('Vul je Claude API key in (🔑) voor een persoonlijke ochtendbrief.'); return; }
+  if (!key) { briefingRender('Vul je Claude API key in (⚙️ Account → 🔑 API Key) voor een persoonlijke ochtendbrief.'); return; }
   const [taken, vl] = await Promise.all([briefingTaken(), briefingVlSamenvatting()]);
   const open = taken.filter(t => !t.klaar);
   const takenTekst = open.length

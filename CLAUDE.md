@@ -39,10 +39,17 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **Variabelen in code:** `SB_URL`, `SB_KEY`
 - **Key type:** `publishable` (`sb_publishable_...`) — legacy `anon` JWT is disabled sinds 28 augustus 2026
 - **Tabellen (25, geverifieerd 24 sept 2026):** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `spaar_mutaties`, `app_settings`, `weekplanner_items`, `brain_dumps`, `notities`, `media_items`, `verjaardagen`, `recepten`, `games`, `anime`, `context_blocks`, `pb_projecten`, `km_registratie`, `km_defaults`, `werk_links`, `vault_meta`, `vault_items`, `work_items`, `work_tasks`, `work_docs`, `work_load`, `work_reflect`
-- **Policies:** sinds 5 oktober 2026 weer één `anon_all` per tabel — zie de
-changelog van die dag. De `work_*`-tabellen (WerkHub) stonden lang op de rol
-`authenticated` en gaven daarom altijd een lege lijst terug; met `anon_all`
-werken ze wel, en pakt de 💾 Backup-knop ze ook mee.
+- **Policies (nagekeken 22 okt 2026 via `pg_policies`):** de hub-tabellen staan op
+`eigenaar_only` voor `authenticated`, dus de hub leest ze met de sessie van het
+loginscherm. Uitzondering: `koop_items` heeft `anon_all` voor `anon, authenticated`.
+De regel hierboven over "weer `anon_all`" (5 oktober) is achterhaald: diezelfde dag
+ging de login terug (deel 3).
+- **Er staan inmiddels ~50 tabellen in B**, niet 25: WerkHub (`work_stops`,
+`work_teksten`, `work_team`, `work_whatsapp_*`, `work_reminder_*`,
+`work_push_subscriptions`), iPad Werkplek (`werkplek_documents`), een keuken-app
+(`keuken_*`) en `server_config`. **Let op de `list_tables`-rijtellingen:** dat zijn
+Postgres-schattingen. Op 22 oktober gaf hij 0 rijen voor `vaste_lasten` terwijl er 47
+staan. Tel met `select count(*)` voordat je ergens van schrikt.
 
 **Let op:** Supabase heeft de oude `anon`/`service_role` JWT-keys vervangen door
 `publishable`/`secret` keys (nieuw format, onafhankelijk te roteren, betere
@@ -713,6 +720,55 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 ---
 
 ## Changelog
+
+### 22 oktober 2026 (deel 2) — Leesbaarder, 207 regels dode CSS weg, backup compleet
+
+**Leesbaarheid.** Gemeten vóór de wijziging: headerknoppen 9,9px mono in hoofdletters,
+kaarttekst 10,3px, voorbeeldregels 9,9px cursief, sectiekoppen 9,9px, allemaal
+grijs-paars op zwart. Nieuw laatste `<style>`-blok in de head, "LEESBAARHEID": knoppen
+12,5px Inter zonder hoofdletters, kaarttitels 15px, kaarttekst 13px in `--lees-tekst`,
+voorbeelden 12px niet-cursief, sectiekoppen 11,5px, zoekvelden 14px (16px op mobiel,
+anders zoomt iOS in). Kleuren en sfeer zijn niet aangeraakt. **Dit blok moet de
+laatste `<style>` in de head blijven.**
+
+**⚙️ Account-menu.** API Key, 🔒 Slot, Wachtwoord en Uitloggen zitten nu in een
+dropdown naast 🔗 Links (zelfde aanpak: verplaatst, niet gekopieerd, dus id's,
+onclick en de staat van `#hs-knop` blijven gelijk, en ⌘K vindt ze nog). Header op
+desktop van 2 naar 1 rij, op mobiel van 5 naar 3. De briefingtekst verwijst nu naar
+"⚙️ Account → 🔑 API Key".
+
+**Belletje op mobiel** (`#rem-btn`) was een grote lege ovaal: `flex:1` uit de
+smart-bar-regels plus `border-radius:50%`. Nu vast 44×44.
+
+**Dode CSS weg.** 207 declaraties die verderop met exact dezelfde selector, in
+dezelfde `@media` en met minstens dezelfde `!important` weer overschreven werden;
+32 regels werden daardoor leeg. Commentaar blijft staan. Gecontroleerd met een
+vergelijking van alle computed styles (ook `::before`/`::after`) van elk element,
+voor en na, op 1440 en 412px, in de starttoestand en met 19 overlays open: identiek.
+Eigen commit, dus los terug te draaien. De 43 selectoren die in meerdere blokken
+staan met *verschillende* waarden zijn niet aangeraakt; dat samenvoegen verandert
+wel iets en vraagt per geval een keuze.
+
+**Kaartteksten bijgewerkt.** "Sonnet 4.6 Extended" weg bij vier agents (welk model
+er in een Claude-project draait staat daar, niet hier), elke agent heeft een
+voorbeeldregel, de Council noemt nu 4 modellen (Kimi stond er niet bij) en de
+pipeline-kaart zegt 9/5/4 stappen in plaats van "13 staps". De voorbeeldregel van
+Dr. NeuroCut noemt bewust geen medicijnnamen: deze repo is publiek.
+
+**💾 Backup.** `BACKUP_TABELLEN` nagelopen tegen beide databases: er ontbraken 14
+tabellen. Erbij: `work_stops`, `work_teksten`, `work_team`, `werkplek_documents`,
+negen `keuken_*`-tabellen en `council_runs` (project A, via `BACKUP_PROJECT_A`).
+Bewust niet: `work_whatsapp_*`, `work_reminder_*`, `work_push_subscriptions` en
+`server_config` (geen leesregel, alleen de server mag erbij) en de opzoekdata van de
+keuken-app. De knop toont nu hoe oud de laatste backup van dit apparaat is
+(`hub_laatste_backup_v1`), wordt oranje vanaf 7 dagen of als er nooit een was, en
+geeft dan één keer per dag een melding (`backupLeeftijdTonen()`).
+
+Getest in Chromium: alle 11 script-blokken parsen, beide menu's blijven binnen beeld
+op 360/412/1440px zonder horizontaal scrollen, het Account-menu opent het
+API-key-venster, en de backup tegen een nagebootste database: 41 tabellen in het
+bestand, A- en B-tabellen naar het juiste project, badge "vandaag" en "9d" in oranje.
+**Niet getest:** een backup tegen de echte database (dan moet ik inloggen).
 
 ### 22 oktober 2026 — Haiku 5.5 + Vaste Lasten: verwacht vs werkelijk
 
