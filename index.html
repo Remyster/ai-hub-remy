@@ -7154,7 +7154,7 @@ function renderVasteLasten() {
     if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return;
     if (l.naam === 'Huis sparen' && isAutoMaandCalc) return;
     const b = getBetaling(l.id);
-    const bedrag = b?.bedrag_betaald ?? l.bedrag;
+    const bedrag = vlBedragData(l);
     totaal += parseFloat(bedrag||0);
     if (b?.betaald) betaaldTot += parseFloat(bedrag||0);
     else nogTot += parseFloat(bedrag||0);
@@ -7190,8 +7190,7 @@ function renderVasteLasten() {
 
     let catTotaal = 0;
     zichtbaar.forEach(l => {
-      const inp = document.getElementById('vl-inp-'+l.id);
-      catTotaal += parseFloat(inp?.value ?? getBetaling(l.id)?.bedrag_betaald ?? l.bedrag ?? 0);
+      catTotaal += vlBedragData(l);
     });
 
     html += `<div class="vl-cat">
@@ -7201,7 +7200,8 @@ function renderVasteLasten() {
     zichtbaar.forEach(l => {
       const bet = getBetaling(l.id);
       const isPaid = bet?.betaald || false;
-      const bedrag = bet?.bedrag_betaald ?? l.bedrag;
+      const invul = vlInvulWaarde(l);
+      const verwachtTxt = `<span title="Verwacht bedrag" style="font-family:'DM Mono',monospace;font-size:0.72em;color:var(--muted);white-space:nowrap;">${euroFmt(parseFloat(l.bedrag||0))}</span>`;
       // Badge voor alternerende potten
       const alterBadge = (l.naam === 'Auto sparen' || l.naam === 'Huis sparen')
         ? `<span style="font-size:0.6em;color:#ffc53d;margin-left:6px;">om de maand</span>` : '';
@@ -7215,7 +7215,8 @@ function renderVasteLasten() {
             ${l.omschrijving ? `<div class="vl-omschrijving">📝 ${escHtml(l.omschrijving)}</div>` : ''}
           </div>
           <div class="vl-bedrag-wrap">
-            <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
+            ${verwachtTxt}
+            <input class="vl-bedrag-input" type="number" step="0.01" value="${invul}" placeholder="werkelijk"
               id="vl-inp-${l.id}" style="color:#4dffa6;font-weight:700;"
               oninput="updateTotalsLive(); vlDebouncedSave(${l.id}, this.value)"
               onchange="clearTimeout(vlSaveTimers[${l.id}]); updateBedrag(${l.id}, this.value)">
@@ -7234,7 +7235,8 @@ function renderVasteLasten() {
           </div>
         </div>
         <div class="vl-bedrag-wrap">
-          <input class="vl-bedrag-input" type="number" step="0.01" value="${parseFloat(bedrag).toFixed(2)}"
+          ${verwachtTxt}
+          <input class="vl-bedrag-input" type="number" step="0.01" value="${invul}" placeholder="werkelijk"
             id="vl-inp-${l.id}" oninput="updateTotalsLive(); vlDebouncedSave(${l.id}, this.value)"
             onchange="clearTimeout(vlSaveTimers[${l.id}]); updateBedrag(${l.id}, this.value)">
         </div>
@@ -7269,10 +7271,28 @@ async function vlAdjustSpaarSaldo(spaarMatch, delta) {
   renderSpaar();
 }
 
+// Verwacht = `vaste_lasten.bedrag`, werkelijk = het veld naast de rij. Een leeg veld
+// betekent: gewoon het verwachte bedrag. In `betalingen` staat dan het basisbedrag zelf.
+function vlBedragData(l) {
+  const b = getBetaling(l.id);
+  return parseFloat(b?.bedrag_betaald ?? l.bedrag ?? 0) || 0;
+}
+function vlBedrag(l) {          // wat er nu telt, ook terwijl je typt
+  const basis = parseFloat(l.bedrag || 0) || 0;
+  const inp = document.getElementById('vl-inp-' + l.id);
+  if (!inp) return vlBedragData(l);
+  const n = parseFloat(inp.value);
+  return inp.value.trim() === '' || isNaN(n) ? basis : n;
+}
+function vlInvulWaarde(l) {     // wat er in het veld hoort: alleen een afwijking
+  const w = vlBedragData(l), basis = parseFloat(l.bedrag || 0) || 0;
+  return Math.abs(w - basis) >= 0.01 ? w.toFixed(2) : '';
+}
+
 async function toggleBetaald(id) {
   const bet = getBetaling(id);
   const last = vlLasten.find(l => l.id === id);
-  const huidigBedrag = parseFloat(document.getElementById('vl-inp-'+id)?.value || bet?.bedrag_betaald || last?.bedrag || 0);
+  const huidigBedrag = last ? vlBedrag(last) : 0;
   const nieuwBetaald = !(bet?.betaald || false);
 
   // Optimistische UI update
@@ -7317,7 +7337,7 @@ async function toggleBetaald(id) {
     if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return;
     if (l.naam === 'Huis sparen' && isAutoMaandCalc) return;
     const b = getBetaling(l.id);
-    const bedrag = parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
+    const bedrag = vlBedrag(l);
     totaal+=bedrag;
     if(b?.betaald) betaaldTot+=bedrag; else nogTot+=bedrag;
   });
@@ -7398,10 +7418,12 @@ async function vlNotitieOpslaan() {
 }
 
 async function updateBedrag(id, val) {
-  const nieuwBedrag = parseFloat(val);
+  const last0 = vlLasten.find(l => l.id === id);
+  const leeg = String(val).trim() === '';
+  const nieuwBedrag = leeg ? parseFloat(last0?.bedrag || 0) : parseFloat(val);   // leeg = verwacht bedrag
   if (isNaN(nieuwBedrag)) return;
   const bet = getBetaling(id);
-  const oudBedrag = parseFloat(bet?.bedrag_betaald || 0);
+  const oudBedrag = parseFloat(bet?.bedrag_betaald ?? last0?.bedrag ?? 0);
   if (bet) {
     bet.bedrag_betaald = nieuwBedrag;
   } else {
@@ -7563,9 +7585,8 @@ function updateTotalsLive() {
     if (l.categorie === 'inkomen') return;
     if (l.naam === 'Auto sparen' && !isAutoMaandCalc) return;
     if (l.naam === 'Huis sparen' && isAutoMaandCalc) return;
-    const inp = document.getElementById('vl-inp-' + l.id);
     const b = getBetaling(l.id);
-    const bedrag = parseFloat(inp?.value ?? b?.bedrag_betaald ?? l.bedrag ?? 0);
+    const bedrag = vlBedrag(l);
     totaal += bedrag;
     if (b?.betaald) betaaldTot += bedrag;
     else nogTot += bedrag;
@@ -7589,9 +7610,7 @@ function updateTotalsLive() {
     });
     let ct = 0;
     zichtbaar.forEach(l => {
-      const inp = document.getElementById('vl-inp-' + l.id);
-      const b = getBetaling(l.id);
-      ct += parseFloat(inp?.value ?? b?.bedrag_betaald ?? l.bedrag ?? 0);
+      ct += vlBedrag(l);
     });
     el.textContent = euroFmt(ct);
   });
@@ -7609,9 +7628,7 @@ function vlOverzichtBereken() {
   const isAutoMaand = vlMaand % 2 === 1;
   const actief = l => !(l.naam === 'Auto sparen' && !isAutoMaand) && !(l.naam === 'Huis sparen' && isAutoMaand);
   const maandBedrag = l => {
-    const inp = document.getElementById('vl-inp-' + l.id);
-    const b = getBetaling(l.id);
-    return parseFloat(inp?.value ?? b?.bedrag_betaald ?? l.bedrag ?? 0) || 0;
+    return vlBedrag(l);
   };
   let uitVerwacht = 0, uitWerkelijk = 0, betaald = 0, nogOpen = 0, nBetaald = 0, nPosten = 0;
   let loonVerwacht = 0, loonWerkelijk = 0;
@@ -7665,7 +7682,7 @@ function updateVlSaldo() {
     if (l.naam === 'Huis sparen' && isAutoMaandCalc) return sum;
     const b = getBetaling(l.id);
     if (b?.betaald) return sum;
-    return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
+    return sum + vlBedrag(l);
   }, 0);
   const over = saldo - nogRaw;
   const overEl = document.getElementById('vl-over');
@@ -7719,7 +7736,7 @@ function vlWatAlsBereken() {
     if (vlWatAlsUit.has(l.id)) return sum;
     const b = getBetaling(l.id);
     if (b?.betaald) return sum;
-    return sum + parseFloat(document.getElementById('vl-inp-'+l.id)?.value || b?.bedrag_betaald || l.bedrag || 0);
+    return sum + vlBedrag(l);
   }, 0);
 
   document.getElementById('vl-watals-count').textContent = vlWatAlsUit.size;
