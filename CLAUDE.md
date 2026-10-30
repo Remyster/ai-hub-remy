@@ -721,6 +721,40 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 30 oktober 2026 — Links zonder menu, rustiger bovenkant, vloeiender
+
+**Links.** De 🔗 Links-dropdown is weg. De acht links staan nu in `#hb-links`, op
+dezelfde rij als de titel, dus één klik en altijd zichtbaar in de vaste balk. De balk
+werd er niet hoger van. Op de telefoon is het een veegbare rij. ⌘K vindt ze nog
+(`#hb-links .hbtn` in `cmdkBuildIndex`). Nieuwe link: één `<a class="hbtn hbtn-muted">`
+in `#hb-links`. Dit vervangt de oude voorkeur "als knop in `.header-btns`".
+
+**Bovenkant, nieuwe volgorde:** `#hub-vandaag` (hero en ochtendbrief als één paneel),
+`#smart-bar`, `#toolzoek-bar`. De prijsbalk is opgegaan in de zoekbalk: één veld met
+✨ Tools en 🛒 Prijs. `dealfinderBarAsk()` leest nu `#toolzoek-input`. Dubbele klok en
+het badge "vandaag" zijn verborgen, de vervormde Syne-datum is Inter geworden.
+
+**Vloeiender.** `auroraDrift` en `shimmerText` staan uit (liepen eindeloos door),
+de blur achter de header en de overlays is weg, overlays komen in 0,18 s binnen
+(`ovIn` / `ovPaneel`, `#pb-overlay` en `#slot-overlay` uitgezonderd). Het Google
+Agenda-iframe laadt pas bij `openAgendaModal()` (kostte ~0,8 s bij elke start). De
+"Wacht even"-popup komt hooguit één keer per dag (`pb_nudge_dag`).
+
+**Stijl.** Nieuwe laatste `<style>`-laag NETJES, na LEESBAARHEID: `--r-klein` en
+`--r-paneel`. **Deze laag moet de laatste `<style>` in de head blijven.**
+
+Getest in Chrome: 10 script-blokken parsen, geen console-fouten, geen horizontaal
+scrollen op 390px, Account-menu blijft binnen beeld, agenda laadt pas bij openen, leeg
+🛒 Prijs doet geen call, overlay-animaties actief. **Niet getest:** de lokale testversie
+was niet ingelogd, dus met nepteksten in plaats van echte data, en niet op een echte
+telefoon. De live versie is alleen vóór de wijziging bekeken.
+
+### 30 oktober 2026 — Council, eindsamenvatting en dealfinder op de nieuwste modellen
+
+Nieuwste, niet de duurste (`4e4e184`): Gemini 4 Argon, Grok 4.7, Sonnet 5.5, Kimi K3.1
+Pro, voorzitters Sonnet 5.5 en GPT-6.1 Terra. `COUNCIL_FINAL_MODEL` is Gemini 4 Argon,
+`DEALFINDER_MODEL` Grok 4.7. Niet getest of `:online` op elk nieuw ID werkt.
+
 ### 22 oktober 2026 (deel 2) — Leesbaarder, 207 regels dode CSS weg, backup compleet
 
 **Leesbaarheid.** Gemeten vóór de wijziging: headerknoppen 9,9px mono in hoofdletters,

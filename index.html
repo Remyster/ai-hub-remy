@@ -1928,109 +1928,6 @@ header h1 {
 </script>
 
 <!-- ══════════════════════════════════════════════════════════
-     AI HUB — HEADER OPGERUIMD
-     De 8 externe link-pillen (GitHub, Drive, Gmail, Photos, Supabase,
-     Twitch, Home Assistant, StekkerSlim) gaan in één "Links" dropdown.
-     Actieknoppen blijven gewoon staan. Er wordt niks verwijderd — de
-     elementen worden alleen verplaatst (niet gekopieerd), hrefs en
-     handlers blijven intact.
-     ══════════════════════════════════════════════════════════ -->
-<style>
-.hb-menu-wrap{ position:relative; display:inline-flex; }
-#hb-menu{
-  position:absolute; top:calc(100% + 8px); right:0; z-index:950;
-  min-width:210px; padding:7px;
-  display:none; flex-direction:column; gap:3px;
-  background:rgba(14,16,24,0.96);
-  backdrop-filter:blur(20px) saturate(1.4);
-  -webkit-backdrop-filter:blur(20px) saturate(1.4);
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:2px;
-  box-shadow:0 12px 40px -8px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.06);
-  transform-origin:top right;
-}
-#hb-menu.open{ display:flex; animation:hbPop .16s cubic-bezier(.34,1.4,.64,1) both; }
-@keyframes hbPop{ from{opacity:0; transform:scale(.94) translateY(-4px);} to{opacity:1; transform:none;} }
-
-#hb-menu .hbtn{
-  display:flex !important; align-items:center; gap:9px;
-  width:100%; margin:0 !important;
-  border-radius:2px !important;
-  border-color:transparent !important;
-  background:transparent !important;
-  background-image:none !important;
-  box-shadow:none !important;
-  text-align:left; justify-content:flex-start;
-  padding:8px 10px !important;
-  font-size:0.68em !important;
-}
-#hb-menu .hbtn:hover{
-  background:rgba(255,255,255,0.07) !important;
-  transform:none !important; filter:none;
-}
-#hb-menu-label{
-  font-size:0.55em; font-weight:700; letter-spacing:0.14em;
-  text-transform:uppercase; color:var(--muted);
-  padding:5px 10px 3px;
-}
-#hb-toggle.open{ filter:brightness(1.3); }
-#hb-toggle .hb-caret{ display:inline-block; transition:transform .18s; margin-left:2px; font-size:0.8em; }
-#hb-toggle.open .hb-caret{ transform:rotate(180deg); }
-</style>
-
-<script>
-(function(){
-  function build(){
-    const bar = document.querySelector('.header-btns');
-    if (!bar || document.getElementById('hb-menu')) return;
-
-    // Alle externe links (<a class="hbtn">) verhuizen naar het menu.
-    const links = [...bar.querySelectorAll('a.hbtn')];
-    if (links.length < 3) return;
-
-    const wrap = document.createElement('div');
-    wrap.className = 'hb-menu-wrap';
-
-    const toggle = document.createElement('span');
-    toggle.className = 'hbtn hbtn-muted';
-    toggle.id = 'hb-toggle';
-    toggle.setAttribute('role','button');
-    toggle.setAttribute('tabindex','0');
-    toggle.setAttribute('aria-haspopup','true');
-    toggle.setAttribute('aria-expanded','false');
-    toggle.innerHTML = '🔗 Links <span class="hb-caret">▾</span>';
-
-    const menu = document.createElement('div');
-    menu.id = 'hb-menu';
-    const label = document.createElement('div');
-    label.id = 'hb-menu-label';
-    label.textContent = 'Snel naar';
-    menu.appendChild(label);
-
-    bar.appendChild(wrap);
-    wrap.appendChild(toggle);
-    wrap.appendChild(menu);
-    links.forEach(a => menu.appendChild(a));   // verplaatsen, niet kopiëren
-
-    function setOpen(v){
-      menu.classList.toggle('open', v);
-      toggle.classList.toggle('open', v);
-      toggle.setAttribute('aria-expanded', v ? 'true' : 'false');
-    }
-    toggle.addEventListener('click', e => { e.stopPropagation(); setOpen(!menu.classList.contains('open')); });
-    toggle.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpen(!menu.classList.contains('open')); }
-    });
-    document.addEventListener('click', e => { if (!wrap.contains(e.target)) setOpen(false); });
-    document.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
-    menu.addEventListener('click', () => setOpen(false));
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
-  else build();
-})();
-</script>
-
-<!-- ══════════════════════════════════════════════════════════
      AI HUB — TOASTS IN PLAATS VAN alert()
      Vervangt de alert()-popups door meldingen die rechtsonder opkomen
      en vanzelf weggaan. Niks anders aangeraakt.
@@ -2549,7 +2446,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 <style>
 /* ══════════════════════════════════════════════════════════════
    LEESBAARHEID  (22 oktober 2026)
-   Laatste laag in de <head>, moet dus achteraan blijven staan.
+   Staat op één na achteraan in de <head>, alleen NETJES komt erna.
    Gemeten vóór deze laag: headerknoppen 9,9px mono in hoofdletters,
    kaarttekst 10,3px, voorbeeldregels 9,9px cursief, sectiekoppen 9,9px.
    Alles in grijs-paars op zwart. Dat leest niet, zeker niet op de telefoon.
@@ -2567,7 +2464,7 @@ body .header-btns .hb-menu-wrap > .hbtn{
   text-transform:none !important; letter-spacing:0.01em !important;
   padding:7px 12px !important; line-height:1.2 !important;
 }
-body #hb-menu .hbtn, body .hb-menu2 .hbtn{ font-size:13px !important; padding:9px 11px !important; }
+body .hb-menu2 .hbtn{ font-size:13px !important; padding:9px 11px !important; }
 body .card h2{ font-size:15px !important; line-height:1.3 !important; }
 body .card p{
   font-size:13px !important; line-height:1.5 !important;
@@ -2579,8 +2476,8 @@ body .card p.voorbeeld{
 }
 body .section-label{ font-size:11.5px !important; color:var(--lees-zacht) !important; }
 body .section-label span, body .section-label small{ color:var(--lees-stil) !important; }
-#toolzoek-input, #dealfinder-bar-input, #smart-input{ font-size:14px !important; }
-#toolzoek-bar button, #dealfinder-bar button, #toolzoek-bar span{ font-size:13px !important; }
+#toolzoek-input, #smart-input{ font-size:14px !important; }
+#toolzoek-bar button, #toolzoek-bar span{ font-size:13px !important; }
 body .smart-action-btn, body .smart-side-btn{ font-size:12.5px !important; }
 body .hint{ color:rgba(255,255,255,0.42) !important; font-size:12px !important; }
 #hero-taken-lijst, #briefing-strip{ font-size:14px; }
@@ -2615,12 +2512,149 @@ body .header-btns .hbtn.backup-oud{
   body .card p{ font-size:13.5px !important; }
   body .card p.voorbeeld{ font-size:12.5px !important; }
   /* iOS zoomt in op invoervelden onder de 16px */
-  #toolzoek-input, #dealfinder-bar-input, #smart-input{ font-size:16px !important; }
+  #toolzoek-input, #smart-input{ font-size:16px !important; }
   /* het belletje kreeg flex:1 én border-radius:50% en werd een grote ovaal */
   #rem-btn{ flex:0 0 44px !important; width:44px !important; height:44px !important; padding:0 !important; }
   /* menu's niet buiten beeld laten vallen op een smal scherm */
-  #hb-menu, .hb-menu2{ right:auto; left:50%; transform:translateX(-50%); }
-  #hb-menu.open, .hb-menu2.open{ animation:none; }
+}
+</style>
+<style>
+/* ══════════════════════════════════════════════════════════════
+   NETJES  (30 oktober 2026)
+   Laatste laag in de <head>, moet dus achteraan blijven staan.
+   Eén rustige bovenkant, links zonder menu, en niets meer dat de
+   hele pagina blijft hertekenen. Kleuren en sfeer blijven.
+   ══════════════════════════════════════════════════════════════ */
+:root{
+  --r-klein:8px;
+  --r-paneel:12px;
+  --rand-zacht:rgba(255,255,255,0.08);
+}
+
+/* ── Vloeiend: niets dat doorloopt terwijl je scrolt ── */
+body::before{ animation:none !important; }
+header h1{ animation:none !important; }
+header{
+  background:rgba(10,12,18,0.97) !important;
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+  animation:none !important;
+}
+
+/* ── Header: titel en links op rij 1, acties op rij 2 ── */
+header{
+  display:flex !important; flex-wrap:wrap; align-items:center;
+  gap:8px 12px; text-align:left;
+}
+header h1{ margin:0 !important; white-space:nowrap; }
+.clock{ margin:0 !important; white-space:nowrap; }
+#hb-links{ display:flex; align-items:center; gap:2px; margin-left:auto; min-width:0; }
+#hb-links .hbtn{
+  background:transparent !important; background-image:none !important;
+  border-color:transparent !important; box-shadow:none !important;
+  color:var(--lees-zacht) !important; text-decoration:none;
+  font-family:'Inter',system-ui,sans-serif !important;
+  font-size:12.5px !important; font-weight:500 !important;
+  text-transform:none !important; letter-spacing:0 !important;
+  padding:6px 8px !important; border-radius:var(--r-klein) !important;
+  white-space:nowrap; margin:0 !important;
+}
+#hb-links .hbtn:hover{ background:rgba(255,255,255,0.08) !important; color:#fff !important; transform:none !important; }
+.header-btns{ flex:0 0 100%; margin:0 !important; justify-content:flex-start !important; }
+body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ border-radius:var(--r-klein) !important; }
+
+.hb-menu-wrap{ position:relative; display:inline-flex; }
+@keyframes hbPop{ from{opacity:0; transform:scale(.96) translateY(-4px);} to{opacity:1; transform:none;} }
+.hb-menu2{ border-radius:var(--r-paneel) !important; }
+.hb-menu2 .hbtn{ border-radius:var(--r-klein) !important; }
+.hb-caret{ display:inline-block; margin-left:2px; font-size:0.8em; transition:transform .18s; }
+#hb-account.open .hb-caret{ transform:rotate(180deg); }
+
+/* ── Vandaag: datum, taken en ochtendbrief zijn één paneel ── */
+#hub-vandaag{
+  max-width:1160px; margin:0 auto 12px; overflow:hidden;
+  background:var(--bg-card); border:1px solid var(--rand-zacht);
+  border-radius:var(--r-paneel); box-shadow:var(--shadow-card);
+  animation:fadeDown .35s ease both;
+}
+#hero-strip{
+  margin:0 !important; background:none !important; border:0 !important;
+  border-radius:0 !important; box-shadow:none !important; animation:none !important;
+  padding:14px 16px !important;
+}
+#hero-strip::before{ display:none; }
+#hero-datum{
+  font-family:'Inter',system-ui,sans-serif !important; font-weight:700 !important;
+  font-size:17px !important; letter-spacing:-0.01em !important;
+}
+#hero-taak .hero-badge, #hero-klok{ display:none; }
+#hero-taak{ font-size:14px !important; align-items:center !important; }
+#briefing-strip{
+  margin:0 !important; background:none !important; border:0 !important;
+  border-top:1px solid var(--rand-zacht) !important; border-radius:0 !important;
+  box-shadow:none !important; padding:11px 16px !important; align-items:center !important;
+}
+
+/* ── Invoer en zoeken: zelfde hoogte, zelfde taal ── */
+#smart-bar{ margin:0 auto 12px !important; gap:8px !important; align-items:stretch !important; animation:none !important; }
+.smart-input-row{ border-radius:var(--r-paneel) !important; border-color:var(--rand-zacht) !important; padding:6px !important; }
+.smart-action-btn{ border-radius:var(--r-klein) !important; }
+.smart-side-btn{ border-radius:var(--r-paneel) !important; border-color:var(--rand-zacht) !important; }
+#rem-btn{ flex:0 0 48px; padding:0 !important; }
+#smart-result{ margin:0 auto 12px !important; }
+
+#toolzoek-bar{ max-width:1160px; margin:0 auto 30px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+#toolzoek-input{
+  flex:1; min-width:240px; padding:11px 14px; color:var(--text);
+  font-family:'Inter',sans-serif; background:var(--bg-card);
+  border:1px solid var(--rand-zacht); border-radius:var(--r-paneel); outline:none;
+  transition:border-color .15s;
+}
+#toolzoek-input:focus, .smart-input-row:focus-within{ border-color:rgba(252,238,10,0.4) !important; }
+#toolzoek-bar button{
+  padding:10px 14px; cursor:pointer; white-space:nowrap; font-weight:600;
+  font-family:'Inter',sans-serif; color:#4dffa6;
+  background:rgba(77,255,166,0.08); border:1px solid rgba(77,255,166,0.25);
+  border-radius:var(--r-klein); transition:background .15s;
+}
+#toolzoek-bar button:hover{ background:rgba(77,255,166,0.15); }
+#toolzoek-blader{ padding:10px 6px; color:var(--muted); cursor:pointer; white-space:nowrap; font-family:'Inter',sans-serif; }
+#toolzoek-blader:hover{ color:var(--text); }
+
+/* ── Kaarten ── */
+.card{ border-radius:var(--r-paneel) !important; }
+.card-ico{ border-radius:var(--r-klein) !important; }
+
+/* ── Overlays komen zacht binnen. Geen blur: die haperde op de telefoon ── */
+@keyframes ovIn{ from{opacity:0;} to{opacity:1;} }
+@keyframes ovPaneel{ from{opacity:0; transform:translateY(10px) scale(.985);} to{opacity:1; transform:none;} }
+[id$="-overlay"]:not(#pb-overlay):not(#slot-overlay){
+  backdrop-filter:none !important; -webkit-backdrop-filter:none !important;
+  animation:ovIn .14s ease-out;
+}
+[id$="-overlay"]:not(#pb-overlay):not(#slot-overlay) > div{
+  animation:ovPaneel .18s cubic-bezier(.2,.8,.3,1);
+}
+
+@media (max-width: 640px){
+  header{ gap:6px 10px; }
+  /* links en acties als één veegbare rij, zodat de vaste balk klein blijft */
+  #hb-links, .header-btns{
+    flex:0 0 100%; flex-wrap:nowrap !important; margin:0 !important;
+    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  #hb-links::-webkit-scrollbar, .header-btns::-webkit-scrollbar{ display:none; }
+  #hb-links .hbtn{ font-size:13px !important; padding:6px 9px !important; }
+  .header-btns .hbtn, .header-btns .hb-menu-wrap{ flex:0 0 auto; }
+  /* binnen een veegrij zou het menu afgeknipt worden */
+  .hb-menu2{ position:fixed; top:auto; right:12px; margin-top:42px; }
+  #hb-account.open .hb-caret{ transform:none; }
+  #smart-bar{ gap:6px !important; }
+  .smart-input-row{ flex:0 0 100% !important; }
+  body .smart-side-btn{ flex:1 1 0 !important; min-width:0; padding:9px 4px !important; white-space:nowrap; }
+  #rem-btn{ flex:0 0 44px !important; }
+  #toolzoek-input{ flex:0 0 100%; }
+  #toolzoek-bar button{ flex:1; }
+  #hero-taak{ min-width:0 !important; flex:0 0 100%; }
 }
 </style>
 <script>
@@ -2647,8 +2681,7 @@ body .header-btns .hbtn.backup-oud{
     toggle.innerHTML = '⚙️ Account <span class="hb-caret">▾</span>';
     const menu = document.createElement('div');
     menu.className = 'hb-menu2';
-    const links = document.getElementById('hb-toggle');
-    bar.insertBefore(wrap, links ? links.closest('.hb-menu-wrap') : null);
+    bar.appendChild(wrap);
     wrap.appendChild(toggle); wrap.appendChild(menu);
     knoppen.forEach(k => menu.appendChild(k));
     function setOpen(v){
@@ -3203,8 +3236,8 @@ body .header-btns .hbtn.backup-oud{
       <button class="agenda-add-btn" onclick="agendaModalToevoegen()">📅 Toevoegen →</button>
     </div>
     <div id="agenda-modal-result"></div>
-    <iframe class="agenda-modal-iframe"
-      src="https://calendar.google.com/calendar/embed?src=remyegberts%40gmail.com&src=d.uittenbogaard%40gmail.com&ctz=Europe%2FAmsterdam&showNav=1&showTitle=0&showPrint=0&showTabs=1&showCalendars=1&mode=WEEK&hl=nl"
+    <iframe class="agenda-modal-iframe" id="agenda-modal-iframe"
+      data-src="https://calendar.google.com/calendar/embed?src=remyegberts%40gmail.com&src=d.uittenbogaard%40gmail.com&ctz=Europe%2FAmsterdam&showNav=1&showTitle=0&showPrint=0&showTabs=1&showCalendars=1&mode=WEEK&hl=nl"
       allowfullscreen></iframe>
   </div>
 </div>
@@ -3382,47 +3415,33 @@ body .header-btns .hbtn.backup-oud{
   <header>
     <h1>🧠 Remy AI Hub</h1>
     <div class="clock" id="clock">laden...</div>
+    <nav id="hb-links" aria-label="Snelkoppelingen">
+      <a href="https://mail.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">📧 Gmail</a>
+      <a href="https://drive.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">☁️ Drive</a>
+      <a href="https://photos.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">📸 Photos</a>
+      <a href="https://github.com/Remyster" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🐙 GitHub</a>
+      <a href="https://supabase.com/dashboard" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🗄️ Supabase</a>
+      <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🏠 Home Assistant</a>
+      <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🎮 Twitch</a>
+      <a href="https://www.stekkerslim.nl/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🔌 StekkerSlim.nl</a>
+    </nav>
     <div class="header-btns">
       <span class="hbtn" style="color:#00f0ff;background:rgba(0,240,255,0.08);border-color:rgba(0,240,255,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
       <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen welke AI dit het handigst kan (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, Gemini Notebook).">🎯 Welke AI?</span>
-      <a href="https://www.stekkerslim.nl/" class="hbtn" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:#ffc53d;background:rgba(255,197,61,0.1);border-color:rgba(255,197,61,0.3);font-weight:700;">🔌 StekkerSlim.nl</a>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
       <span class="hbtn" style="color:rgba(252,238,10,1);background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
       <span class="hbtn" style="color:#fcee0a;background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#7dd3fc;background:rgba(125,211,252,0.08);border-color:rgba(125,211,252,0.2);" onclick="openAgendaModal()" title="Je Google Agenda (jij + Denise) in de hub — bekijken en snel een afspraak toevoegen">📅 Agenda</span>
       <span class="hbtn" style="color:#4dffa6;background:rgba(77,255,166,0.08);border-color:rgba(77,255,166,0.18);" onclick="openWerk()">💼 Werk</span>
-      <a href="https://github.com/Remyster" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🐙 GitHub</a>
-      <a href="https://drive.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">☁️ Drive</a>
-      <a href="https://mail.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📧 Gmail</a>
-      <a href="https://photos.google.com/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">📸 Photos</a>
-      <a href="https://supabase.com/dashboard" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🗄️ Supabase</a>
       <span class="hbtn hbtn-muted" onclick="openVault()">🔐 Kluis</span>
       <span class="hbtn hbtn-muted" id="hs-knop" onclick="hsKnopKlik()" title="Je persoonlijke gegevens staan versleuteld in de database. Dezelfde code als de Kluis.">🔒 Slot</span>
       <span class="hbtn hbtn-muted" onclick="slotWachtwoordWijzigen()" title="Kies een nieuw wachtwoord voor je hub-account">🔑 Wachtwoord</span>
       <span class="hbtn hbtn-muted" onclick="hubUitloggen()" title="Meld je af op dit apparaat">🔓 Uitloggen</span>
-      <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🎮 Twitch</a>
-      <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">🏠 Home Assistant</a>
     </div>
   </header>
 
-<div id="toolzoek-bar" style="max-width:1160px;margin:14px auto 0;display:flex;gap:8px;flex-wrap:wrap;">
-  <input id="toolzoek-input" type="text" placeholder="🔎 Wat wil je? of wat zoek je? (bijv: muziek downloaden, adblocker, telefoonnummer natrekken)" autocomplete="off"
-    style="flex:1;min-width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;box-shadow:var(--shadow-card);"
-    onkeydown="if(event.key==='Enter')toolzoekAsk()">
-  <button id="toolzoek-btn" onclick="toolzoekAsk()" style="padding:10px 16px;background:rgba(77,255,166,0.1);border:1px solid rgba(77,255,166,0.3);border-radius:2px;color:#4dffa6;font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;cursor:pointer;white-space:nowrap;">✨ Zoeken</button>
-  <span onclick="openToolkit('alles')" style="padding:10px 12px;color:var(--muted);font-family:'Inter',sans-serif;font-size:0.78em;cursor:pointer;white-space:nowrap;" title="Alle categorieën zelf doorbladeren">📂 blader alles</span>
-</div>
-<div id="toolzoek-answer" style="display:none;max-width:1160px;margin:10px auto 0;background:rgba(77,255,166,0.06);border:1px solid rgba(77,255,166,0.3);border-radius:2px;padding:14px 16px;"></div>
-<div id="toolzoek-error" style="display:none;max-width:1160px;margin:10px auto 0;color:#ff003c;font-family:'Inter',sans-serif;font-size:0.78em;"></div>
-
-<div id="dealfinder-bar" style="max-width:1160px;margin:8px auto 0;display:flex;gap:8px;flex-wrap:wrap;">
-  <input id="dealfinder-bar-input" type="text" placeholder="🛒 Prijs/aanbieding zoeken in NL — je krijgt een seintje als het klaar is" autocomplete="off"
-    style="flex:1;min-width:240px;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;padding:10px 14px;color:var(--text);font-family:'Inter',sans-serif;font-size:0.8em;box-shadow:var(--shadow-card);"
-    onkeydown="if(event.key==='Enter')dealfinderBarAsk()">
-  <button onclick="dealfinderBarAsk()" style="padding:10px 16px;background:rgba(77,255,166,0.1);border:1px solid rgba(77,255,166,0.3);border-radius:2px;color:#4dffa6;font-family:'Inter',sans-serif;font-size:0.8em;font-weight:600;cursor:pointer;white-space:nowrap;" title="Zoekt op de achtergrond en meldt zich als het klaar is — je hoeft niet te wachten.">🛒 Zoek &amp; meld</button>
-</div>
-
+<div id="hub-vandaag">
 <div id="hero-strip">
   <div id="hero-datum">—</div>
   <div id="hero-taak">
@@ -3437,6 +3456,8 @@ body .header-btns .hbtn.backup-oud{
   <div style="font-size:1.1em;line-height:1.3;">🌅</div>
   <div id="briefing-tekst" style="flex:1;font-family:'Inter',sans-serif;font-size:0.78em;color:var(--text-dim);line-height:1.6;"><div class="skel-bar w100"></div><div class="skel-bar w80"></div></div>
   <button onclick="briefingRefresh()" title="Nieuwe ochtendbrief" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;flex-shrink:0;transition:color 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↻</button>
+</div>
+
 </div>
 
 <!-- SMART BAR: Brain Dump + Plaatsen (Agent Router zit nu bij de 🎯 Welke AI?-knop in de header) -->
@@ -3460,7 +3481,17 @@ body .header-btns .hbtn.backup-oud{
   <button onclick="genContextPakket()" class="smart-side-btn" title="Genereer context-pakket voor elke AI"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:2px;color:var(--text-dim);font-family:'Inter',sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">📦 Context</button>
 </div>
-<div id="smart-result" style="max-width:1160px;margin:-16px auto 20px;display:none;"></div>
+<div id="smart-result" style="max-width:1160px;display:none;"></div>
+
+<div id="toolzoek-bar">
+  <input id="toolzoek-input" type="text" placeholder="🔎 Zoek een tool, of een prijs of aanbieding in NL" autocomplete="off"
+    onkeydown="if(event.key==='Enter')toolzoekAsk()">
+  <button id="toolzoek-btn" onclick="toolzoekAsk()" title="Zoekt in je 386 tools welke hier het beste past">✨ Tools</button>
+  <button id="dealfinder-bar-btn" onclick="dealfinderBarAsk()" title="Zoekt op de achtergrond en meldt zich als het klaar is, je hoeft niet te wachten.">🛒 Prijs</button>
+  <span id="toolzoek-blader" onclick="openToolkit('alles')" title="Alle categorieën zelf doorbladeren">📂 blader alles</span>
+</div>
+<div id="toolzoek-answer" style="display:none;max-width:1160px;margin:0 auto 12px;background:rgba(77,255,166,0.06);border:1px solid rgba(77,255,166,0.3);border-radius:2px;padding:14px 16px;"></div>
+<div id="toolzoek-error" style="display:none;max-width:1160px;margin:0 auto 12px;color:#ff003c;font-family:'Inter',sans-serif;font-size:0.78em;"></div>
 
 <!-- DUMP INBOX MODAL -->
 <div id="dump-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);backdrop-filter:blur(10px);z-index:1500;align-items:flex-start;justify-content:center;padding:8vh 16px;overflow-y:auto;">
@@ -8173,6 +8204,9 @@ function formatCalcResult(n) {
 // ══════════════════════════════════════════════
 function openAgendaModal() {
   document.getElementById('agenda-overlay').classList.add('show');
+  // Pas hier laden: een Google-iframe bij elke hub-start kost ~0,8 s voor niets
+  const f = document.getElementById('agenda-modal-iframe');
+  if (!f.src) f.src = f.dataset.src;
 }
 function closeAgendaModal() {
   document.getElementById('agenda-overlay').classList.remove('show');
@@ -8718,8 +8752,16 @@ function pbNudgeDismiss() {
   document.getElementById('pb-nudge').classList.remove('show');
 }
 
-// Toon de nudge kort na het laden van de hub
-setTimeout(pbShowNudge, 1200);
+// Toon de nudge kort na het laden van de hub, hooguit één keer per dag:
+// de hub is ook een startpagina, en dan staat hij bij elke keer openen in de weg
+(function() {
+  const vandaag = new Date().toDateString();
+  try {
+    if (localStorage.getItem('pb_nudge_dag') === vandaag) return;
+    localStorage.setItem('pb_nudge_dag', vandaag);
+  } catch (e) {}
+  setTimeout(pbShowNudge, 1200);
+})();
 
 // ══════════════════════════════════════════════
 // INIT
@@ -11655,9 +11697,9 @@ document.getElementById('dealfinder-overlay').addEventListener('click', function
 // Ingang vanuit de bar direct onder de header — zoekt meteen op de achtergrond,
 // zodat je niet bij een draaiend rondje hoeft te blijven wachten.
 function dealfinderBarAsk() {
-  const el = document.getElementById('dealfinder-bar-input');
+  const el = document.getElementById('toolzoek-input');
   const val = el.value.trim();
-  if (!val) return;
+  if (!val) { el.focus(); return; }
   el.value = '';
   dealfinderAchtergrond(val);
 }
@@ -11798,7 +11840,7 @@ async function heroLoadTaak() {
     const r = await fetch(`${SB_URL}/rest/v1/weekplanner_items?datum=eq.${iso}&order=klaar,tijd&limit=8`, { headers: SB_GET_HDR });
     if (!r.ok) { el.innerHTML = '<span style="opacity:.6;">Kon taken niet laden</span>'; return; }
     const items = await hsUitLijst(await r.json());
-    if (!items.length) { el.innerHTML = '✅ <b>Niks gepland vandaag</b> — lekker bezig'; return; }
+    if (!items.length) { el.innerHTML = '<span>✅ <b>Niks gepland vandaag</b> — lekker bezig</span>'; return; }
     el.innerHTML = items.map(t => `
       <label class="hero-taak-row${t.klaar ? ' klaar' : ''}">
         <input type="checkbox" ${t.klaar ? 'checked' : ''} onchange="heroToggleTaak(${t.id}, this.checked, this)">
@@ -13319,7 +13361,7 @@ function cmdkBuildIndex() {
     const tag = label ? label.textContent.replace(/[^\wÀ-ž ]/g, '').trim().toLowerCase() : 'kaart';
     cmdkPushEl(lijst, el, tag || 'kaart', '🔗', gezien);
   });
-  document.querySelectorAll('.header-btns .hbtn').forEach(el => cmdkPushEl(lijst, el, 'knop', '🔘', gezien));
+  document.querySelectorAll('.header-btns .hbtn, #hb-links .hbtn').forEach(el => cmdkPushEl(lijst, el, 'knop', '🔘', gezien));
   document.querySelectorAll('.ss-pill').forEach(el => cmdkPushEl(lijst, el, 'checker', '🔍', gezien));
 
   if (typeof SSP_PIPELINES !== 'undefined') {
