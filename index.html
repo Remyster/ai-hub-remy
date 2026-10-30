@@ -2547,7 +2547,7 @@ header{
 }
 header h1{ margin:0 !important; white-space:nowrap; }
 .clock{ margin:0 !important; white-space:nowrap; }
-#hb-links{ display:flex; align-items:center; gap:2px; margin-left:auto; min-width:0; }
+#hb-links{ display:flex; flex-wrap:wrap; justify-content:flex-end; align-items:center; gap:2px; margin-left:auto; min-width:0; }
 #hb-links .hbtn{
   background:transparent !important; background-image:none !important;
   border-color:transparent !important; box-shadow:none !important;
@@ -2624,6 +2624,46 @@ body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ border-radius:
 .card{ border-radius:var(--r-paneel) !important; }
 .card-ico{ border-radius:var(--r-klein) !important; }
 
+/* ── Links beheren ── */
+#hb-links #hl-edit{ opacity:.55; cursor:pointer; }
+#hb-links #hl-edit:hover{ opacity:1; }
+#hl-overlay{
+  display:none; position:fixed; inset:0; z-index:1500; overflow-y:auto;
+  align-items:flex-start; justify-content:center; padding:8vh 16px;
+  background:rgba(4,5,9,0.88);
+}
+#hl-paneel{
+  width:100%; max-width:640px; padding:20px; font-family:'Inter',sans-serif;
+  background:var(--bg-elevated); border:1px solid var(--rand-zacht);
+  border-radius:var(--r-paneel); box-shadow:0 24px 80px rgba(0,0,0,0.6);
+}
+body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
+#hl-kop{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+#hl-titel{ font-weight:700; font-size:16px; color:var(--text); }
+#hl-kop button{ background:none; border:0; color:var(--muted); font-size:18px; cursor:pointer; }
+#hl-paneel input{
+  min-width:0; padding:9px 11px; font:14px 'Inter',sans-serif; color:var(--text); outline:none;
+  background:rgba(255,255,255,0.03); border:1px solid var(--rand-zacht); border-radius:var(--r-klein);
+}
+#hl-paneel input:focus{ border-color:rgba(252,238,10,0.4); }
+#hl-nieuw{ display:grid; grid-template-columns:1.4fr 1fr auto; gap:8px; margin-bottom:14px; }
+#hl-nieuw button, #hl-opslaan{
+  padding:9px 14px; font:600 13px 'Inter',sans-serif; white-space:nowrap; cursor:pointer; color:#4dffa6;
+  background:rgba(77,255,166,0.1); border:1px solid rgba(77,255,166,0.3); border-radius:var(--r-klein);
+}
+#hl-lijst{ display:flex; flex-direction:column; gap:6px; max-height:50vh; overflow-y:auto; }
+.hl-rij{ display:grid; grid-template-columns:28px 28px 1fr 1.4fr 28px; gap:4px; align-items:center; }
+.hl-rij button{
+  height:30px; padding:0; font-size:11px; color:var(--lees-zacht); cursor:pointer;
+  background:none; border:0; border-radius:6px;
+}
+.hl-rij button:hover:not(:disabled){ background:rgba(255,255,255,0.08); color:#fff; }
+.hl-rij button:disabled{ opacity:.25; cursor:default; }
+.hl-rij .hl-url{ color:var(--lees-stil); }
+#hl-voet{ display:flex; align-items:center; gap:10px; margin-top:14px; }
+#hl-status{ flex:1; min-width:0; font-size:12.5px; }
+#hl-standaard{ padding:9px 4px; font:13px 'Inter',sans-serif; color:var(--muted); background:none; border:0; cursor:pointer; white-space:nowrap; }
+
 /* ── Overlays komen zacht binnen. Geen blur: die haperde op de telefoon ── */
 @keyframes ovIn{ from{opacity:0;} to{opacity:1;} }
 @keyframes ovPaneel{ from{opacity:0; transform:translateY(10px) scale(.985);} to{opacity:1; transform:none;} }
@@ -2655,6 +2695,15 @@ body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ border-radius:
   #toolzoek-input{ flex:0 0 100%; }
   #toolzoek-bar button{ flex:1; }
   #hero-taak{ min-width:0 !important; flex:0 0 100%; }
+  #hl-overlay{ padding:12px; }
+  #hl-paneel{ padding:14px; }
+  #hl-paneel input{ font-size:16px; }
+  #hl-nieuw{ grid-template-columns:1fr; }
+  .hl-rij{ grid-template-columns:28px 28px 1fr 28px; }
+  .hl-rij .hl-url{ grid-column:3; grid-row:2; }
+  #hl-voet{ flex-wrap:wrap; }
+  #hl-status{ flex:0 0 100%; order:3; }
+  #hl-opslaan{ margin-left:auto; }
 }
 </style>
 <script>
@@ -3424,6 +3473,7 @@ body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ border-radius:
       <a href="https://ha.ha-remy.uk/home/overview" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🏠 Home Assistant</a>
       <a href="https://www.twitch.tv/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🎮 Twitch</a>
       <a href="https://www.stekkerslim.nl/" class="hbtn hbtn-muted" target="_blank" rel="noopener noreferrer">🔌 StekkerSlim.nl</a>
+      <span class="hbtn hbtn-muted" id="hl-edit" role="button" tabindex="0" onclick="hlOpen()" onkeydown="if(event.key==='Enter')hlOpen()" title="Links toevoegen, wijzigen of verwijderen" aria-label="Links beheren">✏️</span>
     </nav>
     <div class="header-btns">
       <span class="hbtn" style="color:#00f0ff;background:rgba(0,240,255,0.08);border-color:rgba(0,240,255,0.18);" onclick="openVasteLasten()">💶 Vaste Lasten</span>
@@ -3523,6 +3573,28 @@ body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ border-radius:
     <input id="notities-zoek" type="search" oninput="notitiesRender()" placeholder="Zoek in je notities..."
       style="width:100%;margin-bottom:10px;padding:9px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:2px;color:var(--text);font-family:Inter,sans-serif;font-size:0.75em;">
     <div id="notities-lijst" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- LINKS BEHEREN (bewaard in app_settings, sleutel hub_links) -->
+<div id="hl-overlay" onclick="if(event.target===this)hlSluit()">
+  <div id="hl-paneel">
+    <div id="hl-kop">
+      <div id="hl-titel">🔗 Links beheren</div>
+      <button onclick="hlSluit()" aria-label="Sluiten">✕</button>
+    </div>
+    <div id="hl-nieuw">
+      <input id="hl-nieuw-url" type="text" inputmode="url" placeholder="Plak een adres, de naam komt vanzelf" autocomplete="off"
+        oninput="hlUrlGetypt()" onkeydown="if(event.key==='Enter')hlToevoegen()">
+      <input id="hl-nieuw-naam" type="text" placeholder="Naam" autocomplete="off" onkeydown="if(event.key==='Enter')hlToevoegen()">
+      <button onclick="hlToevoegen()">+ Toevoegen</button>
+    </div>
+    <div id="hl-lijst"></div>
+    <div id="hl-voet">
+      <button id="hl-standaard" onclick="hlStandaard()">↺ Standaard</button>
+      <span id="hl-status"></span>
+      <button id="hl-opslaan" onclick="hlOpslaan()">Opslaan</button>
+    </div>
   </div>
 </div>
 
@@ -8721,6 +8793,178 @@ document.addEventListener('keydown', e => {
     closePromptBuilder();
   }
 }, true);
+
+// ══════════════════════════════════════════════
+// LINKS IN DE BALK — zelf te beheren, gelijk op alle apparaten
+// ══════════════════════════════════════════════
+// Staat als JSON in app_settings (rij hub_links), met een kopie in localStorage
+// zodat de balk meteen klopt en niet op de database hoeft te wachten. De links
+// in de HTML zijn de standaard zolang er niets bewaard is.
+const HL_CACHE = 'hub_links_v1';
+const HL_MAX = 20;
+const HL_STANDAARD = [...document.querySelectorAll('#hb-links a')].map(a => ({ naam: a.textContent.trim(), url: a.href }));
+const HL_BEKEND = [
+  ['mail.google', '📧 Gmail'], ['drive.google', '☁️ Drive'], ['docs.google', '📄 Docs'],
+  ['sheets.google', '📊 Sheets'], ['calendar.google', '📅 Agenda'], ['photos.google', '📸 Photos'],
+  ['maps.google', '🗺️ Maps'], ['youtube', '▶️ YouTube'], ['github', '🐙 GitHub'],
+  ['supabase', '🗄️ Supabase'], ['twitch', '🎮 Twitch'], ['netflix', '🎬 Netflix'],
+  ['spotify', '🎵 Spotify'], ['reddit', '👽 Reddit'], ['whatsapp', '💬 WhatsApp'],
+  ['chatgpt', '💬 ChatGPT'], ['claude.ai', '✨ Claude'], ['perplexity', '❓ Perplexity'],
+  ['ing.nl', '🏦 ING'], ['tweakers', '🔧 Tweakers'], ['bol.com', '📦 bol'], ['nos.nl', '📰 NOS']
+];
+let hlConcept = [];
+
+function hlGeldig(lijst) {
+  if (!Array.isArray(lijst)) return [];
+  return lijst.filter(l => l && typeof l.naam === 'string' && l.naam.trim() && veiligeUrl(l.url) !== '#').slice(0, HL_MAX);
+}
+
+function hlRender(lijst) {
+  const balk = document.getElementById('hb-links');
+  const knop = document.getElementById('hl-edit');
+  balk.querySelectorAll('a').forEach(a => a.remove());
+  lijst.forEach(l => {
+    const a = document.createElement('a');
+    a.className = 'hbtn hbtn-muted';
+    a.href = l.url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.textContent = l.naam;
+    balk.insertBefore(a, knop);
+  });
+}
+
+// "tweakers.net" mag ook: alleen http(s) gaat erdoor, javascript: dus nooit
+function hlNormaliseer(invoer) {
+  const u = String(invoer || '').trim();
+  if (!u) return '';
+  if (/^https?:\/\//i.test(u)) return u;
+  if (/^[a-z][a-z0-9+.-]*:/i.test(u) && !/^[^\s/:]+\.[a-z]{2,}(:\d+)?(\/|$)/i.test(u)) return '';
+  return 'https://' + u;
+}
+
+function hlNaamVoor(url) {
+  const bekend = HL_BEKEND.find(([stukje]) => url.toLowerCase().includes(stukje));
+  if (bekend) return bekend[1];
+  try {
+    const domein = new URL(url).hostname.replace(/^www\./, '').split('.')[0];
+    return '🔗 ' + domein.charAt(0).toUpperCase() + domein.slice(1);
+  } catch (e) { return ''; }
+}
+
+function hlStatus(tekst, fout) {
+  const el = document.getElementById('hl-status');
+  el.textContent = tekst;
+  el.style.color = fout ? '#ff5c7a' : 'var(--lees-zacht)';
+}
+
+function hlOpen() {
+  hlConcept = [...document.querySelectorAll('#hb-links a')].map(a => ({ naam: a.textContent, url: a.href }));
+  document.getElementById('hl-nieuw-url').value = '';
+  document.getElementById('hl-nieuw-naam').value = '';
+  delete document.getElementById('hl-nieuw-naam').dataset.zelf;
+  hlStatus('');
+  hlRenderLijst();
+  document.getElementById('hl-overlay').style.display = 'flex';
+}
+
+function hlSluit() {
+  document.getElementById('hl-overlay').style.display = 'none';
+}
+
+function hlRenderLijst() {
+  const wrap = document.getElementById('hl-lijst');
+  wrap.innerHTML = '';
+  hlConcept.forEach((l, i) => {
+    const rij = document.createElement('div');
+    rij.className = 'hl-rij';
+    rij.innerHTML = `<button title="Omhoog" ${i === 0 ? 'disabled' : ''} onclick="hlSchuif(${i},-1)">▲</button>
+      <button title="Omlaag" ${i === hlConcept.length - 1 ? 'disabled' : ''} onclick="hlSchuif(${i},1)">▼</button>
+      <input class="hl-naam" value="${escHtml(l.naam)}" aria-label="Naam" oninput="hlConcept[${i}].naam=this.value">
+      <input class="hl-url" value="${escHtml(l.url)}" aria-label="Adres" oninput="hlConcept[${i}].url=this.value">
+      <button title="Verwijderen" onclick="hlVerwijder(${i})">✕</button>`;
+    wrap.appendChild(rij);
+  });
+}
+
+function hlSchuif(i, stap) {
+  const [l] = hlConcept.splice(i, 1);
+  hlConcept.splice(i + stap, 0, l);
+  hlRenderLijst();
+}
+
+function hlVerwijder(i) {
+  hlConcept.splice(i, 1);
+  hlRenderLijst();
+}
+
+function hlUrlGetypt() {
+  const naam = document.getElementById('hl-nieuw-naam');
+  if (naam.dataset.zelf) return;
+  const url = hlNormaliseer(document.getElementById('hl-nieuw-url').value);
+  naam.value = url.includes('.') ? hlNaamVoor(url) : '';
+}
+
+function hlToevoegen() {
+  const urlEl = document.getElementById('hl-nieuw-url');
+  const naamEl = document.getElementById('hl-nieuw-naam');
+  const url = hlNormaliseer(urlEl.value);
+  if (!url) { hlStatus('Vul een geldig adres in.', true); urlEl.focus(); return; }
+  if (hlConcept.length >= HL_MAX) { hlStatus(`Maximaal ${HL_MAX} links.`, true); return; }
+  hlConcept.push({ naam: naamEl.value.trim() || hlNaamVoor(url) || url, url });
+  urlEl.value = naamEl.value = '';
+  hlStatus('Nog niet bewaard, klik op Opslaan.');
+  hlRenderLijst();
+  urlEl.focus();
+}
+
+function hlStandaard() {
+  hlConcept = HL_STANDAARD.map(l => ({ ...l }));
+  hlStatus('Standaardlijst teruggezet, klik op Opslaan.');
+  hlRenderLijst();
+}
+
+async function hlOpslaan() {
+  const lijst = [];
+  for (const l of hlConcept) {
+    const url = hlNormaliseer(l.url);
+    const naam = String(l.naam || '').trim();
+    if (!url || !naam) { hlStatus(`Klopt niet: ${naam || l.url || 'lege regel'}`, true); return; }
+    lijst.push({ naam, url });
+  }
+  hlRender(lijst);
+  try { localStorage.setItem(HL_CACHE, JSON.stringify(lijst)); } catch (e) {}
+  hlStatus('Opslaan...');
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/app_settings?on_conflict=setting_key`, {
+      method: 'POST',
+      headers: { ...SB_POST_HDR, Prefer: 'resolution=merge-duplicates,return=minimal' },
+      body: JSON.stringify({ setting_key: 'hub_links', setting_value: JSON.stringify(lijst), updated_at: new Date().toISOString() })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    hlStatus('✅ Opgeslagen op al je apparaten');
+  } catch (e) {
+    hlStatus('⚠️ Alleen op dit apparaat bewaard, niet gesynct (' + e.message + ')', true);
+  }
+}
+
+(function hlStart() {
+  try {
+    const lijst = hlGeldig(JSON.parse(localStorage.getItem(HL_CACHE)));
+    if (lijst.length) hlRender(lijst);
+  } catch (e) {}
+  window.addEventListener('load', async () => {
+    if (!hubIngelogd()) return;
+    try {
+      const rows = await sbGet('app_settings', 'setting_key=eq.hub_links&select=setting_value');
+      if (!rows || !rows[0]) return;
+      const lijst = hlGeldig(JSON.parse(rows[0].setting_value));
+      if (!lijst.length) return;
+      hlRender(lijst);
+      localStorage.setItem(HL_CACHE, JSON.stringify(lijst));
+    } catch (e) { console.warn('Links niet opgehaald:', e); }
+  });
+})();
 
 // ══════════════════════════════════════════════
 // PROMPT BUILDER NUDGE (herinnering bij openen hub)

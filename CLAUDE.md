@@ -721,13 +721,31 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 30 oktober 2026 (deel 2) — Links zelf beheren
+
+✏️ achter de links opent `#hl-overlay`: toevoegen, naam en adres wijzigen, ▲▼ verplaatsen,
+verwijderen, ↺ Standaard. Bewaard als JSON in `app_settings` (rij `hub_links`), met een
+kopie in localStorage (`hub_links_v1`) zodat de balk meteen klopt. Geen schemawijziging,
+en de 💾 Backup pakt het al mee. De `<a>`'s in de HTML zijn de standaardlijst
+(`HL_STANDAARD` leest ze uit de DOM), er is dus geen tweede lijst te onderhouden.
+
+Bij een geplakt adres vult `hlNaamVoor()` naam en emoji in uit `HL_BEKEND`, anders
+`🔗 Domeinnaam`. `hlNormaliseer()` maakt van `tweakers.net` een https-adres en weigert elk
+ander schema (`javascript:`, `data:`). Let op: `localhost:3000` moet met `http://` erbij.
+Opslaan is een eigen fetch die `r.ok` controleert, want `sbUpsert` meldt fouten niet.
+Mislukt de sync, dan blijft de melding staan dat het alleen op dit apparaat bewaard is.
+Laatste schrijver wint, en wat de cloud heeft overschrijft de lokale kopie bij het laden.
+
+Getest met nagebootste opslag, niet tegen de echte tabel: POST-inhoud, weigeren van
+`javascript:` en `data:`, HTML in een naam blijft tekst, 403-melding, volgorde en verwijderen,
+venster op 390px. **Niet getest:** echt opslaan en ophalen in de database.
+
 ### 30 oktober 2026 — Links zonder menu, rustiger bovenkant, vloeiender
 
 **Links.** De 🔗 Links-dropdown is weg. De acht links staan nu in `#hb-links`, op
 dezelfde rij als de titel, dus één klik en altijd zichtbaar in de vaste balk. De balk
 werd er niet hoger van. Op de telefoon is het een veegbare rij. ⌘K vindt ze nog
-(`#hb-links .hbtn` in `cmdkBuildIndex`). Nieuwe link: één `<a class="hbtn hbtn-muted">`
-in `#hb-links`. Dit vervangt de oude voorkeur "als knop in `.header-btns`".
+(`#hb-links .hbtn` in `cmdkBuildIndex`). Dit vervangt de oude voorkeur "als knop in `.header-btns`".
 
 **Bovenkant, nieuwe volgorde:** `#hub-vandaag` (hero en ochtendbrief als één paneel),
 `#smart-bar`, `#toolzoek-bar`. De prijsbalk is opgegaan in de zoekbalk: één veld met
