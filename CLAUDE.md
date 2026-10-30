@@ -338,11 +338,11 @@ Eén vraag parallel naar 3 AI's via OpenRouter — geen kruisgesprek, geen ronde
 ### Modellen (constanten `COUNCIL_MODELS` / `COUNCIL_SYNTH_MODELS`, bovenaan bij de AI Council JS)
 | Rol | Model-ID | Bijzonderheid |
 |-----|----------|----------------|
-| Council #1 | `google/gemini-3.5-flash:online` | |
-| Council #2 | `x-ai/grok-4.5:online` | |
-| Council #3 | `anthropic/claude-sonnet-5:online` | |
-| Voorzitter #1 | `anthropic/claude-sonnet-5` | geen `:online` — redeneert over reeds gegronde antwoorden |
-| Voorzitter #2 | `openai/gpt-5.6-terra` | |
+| Council #1 | `google/gemini-4-argon:online` | |
+| Council #2 | `x-ai/grok-4.7:online` | |
+| Council #3 | `anthropic/claude-sonnet-5.5:online` | |
+| Voorzitter #1 | `anthropic/claude-sonnet-5.5` | geen `:online` — redeneert over reeds gegronde antwoorden |
+| Voorzitter #2 | `openai/gpt-6.1-terra` | |
 
 **⚠️ Belangrijke les:** een hoog versienummer in een model-ID (bv. "Sonnet 5", "Gemini 3.5") betekent NIET dat de kennis actueel is. Alle geteste modellen rapporteerden zelf een trainings-cutoff rond begin 2025, los van hun naam. Daarom staat `:online` achter elk Council-model — dat zet OpenRouter's web-search grounding aan. Dit kost ~10-15x meer tokens per call (~€0,03-0,05 per model i.p.v. een paar cent), vandaar de expliciete instructie in de systeemprompt om antwoorden onder de ~200 woorden te houden. Check bij twijfel over actualiteit altijd eerst of `:online` nog aanstaat, niet alleen of het model-ID "nieuw" klinkt.
 

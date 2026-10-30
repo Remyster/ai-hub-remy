@@ -2891,7 +2891,7 @@ body .header-btns .hbtn.backup-oud{
 
     <div id="council-synthesis-section" style="display:none;margin-top:22px;padding-top:18px;border-top:1px solid var(--border);">
       <span class="pb-label">🧑‍⚖️ Voorzitter — wat maak je hiervan?</span>
-      <button id="council-synth-btn" class="pb-generate" onclick="councilSynthesize()">🧑‍⚖️ Vraag synthese (Sonnet 5 + GPT-5.6)</button>
+      <button id="council-synth-btn" class="pb-generate" onclick="councilSynthesize()">🧑‍⚖️ Vraag synthese (Sonnet 5.5 + GPT-6.1 Terra)</button>
 
       <div id="council-final-wrap" style="display:none;margin-top:16px;background:rgba(255,197,61,0.06);border:2px solid rgba(255,197,61,0.35);border-radius:2px;padding:16px;">
         <div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#ffc53d;margin-bottom:8px;font-family:'Inter',sans-serif;text-transform:uppercase;">📌 Lees dit eerst — kort samengevat</div>
@@ -4893,7 +4893,7 @@ function getApiKey() { try { return localStorage.getItem(KEY_STORE) || ''; } cat
   const CLAUDE_PRICING = {
     'claude-haiku-5-5': { in: 0.10, out: 0.50 },
     'claude-haiku-4-5': { in: 1, out: 5 },
-    'claude-sonnet-5': { in: 3, out: 15 },
+    'claude-sonnet-5': { in: 2, out: 10 },
   };
   const USD_EUR = 0.92; // ruwe indicatieve koers, alleen voor weergave
   function claudePriceFor(model) {
@@ -9827,10 +9827,10 @@ async function ctxDelete(id) {
 // ':online' schakelt OpenRouter's web-search grounding in — nodig omdat elk model
 // (ongeacht versienaam) een trainings-cutoff rond begin 2025 blijkt te hebben.
 const COUNCIL_MODELS = [
-  { key: 'gemini', naam: 'Gemini 3.5', model: 'google/gemini-3.5-flash:online', color: '52,211,153' },
-  { key: 'grok',   naam: 'Grok 4.5',   model: 'x-ai/grok-4.5:online',           color: '99,102,241' },
-  { key: 'claude', naam: 'Claude Sonnet 5', model: 'anthropic/claude-sonnet-5:online', color: '204,120,92' },
-  { key: 'kimi',   naam: 'Kimi K2.6', model: 'moonshotai/kimi-k2.6:online',    color: '167,139,250' }
+  { key: 'gemini', naam: 'Gemini 4 Argon', model: 'google/gemini-4-argon:online', color: '52,211,153' },
+  { key: 'grok',   naam: 'Grok 4.7',   model: 'x-ai/grok-4.7:online',           color: '99,102,241' },
+  { key: 'claude', naam: 'Claude Sonnet 5.5', model: 'anthropic/claude-sonnet-5.5:online', color: '204,120,92' },
+  { key: 'kimi',   naam: 'Kimi K3.1 Pro', model: 'moonshotai/kimi-k3.1-pro:online', color: '167,139,250' }
 ];
 
 function openCouncil() {
@@ -9951,8 +9951,8 @@ async function councilAsk() {
 
 // ── Synthese-stap: laat 2 onafhankelijke "voorzitters" oordelen over de 3 antwoorden ──
 const COUNCIL_SYNTH_MODELS = [
-  { key: 'sonnet', naam: 'Claude Sonnet 5', model: 'anthropic/claude-sonnet-5', color: '204,120,92' },
-  { key: 'gpt56',  naam: 'GPT-5.6 Terra',   model: 'openai/gpt-5.6-terra',      color: '16,163,127' }
+  { key: 'sonnet', naam: 'Claude Sonnet 5.5', model: 'anthropic/claude-sonnet-5.5', color: '204,120,92' },
+  { key: 'gpt56',  naam: 'GPT-6.1 Terra',   model: 'openai/gpt-6.1-terra',      color: '16,163,127' }
 ];
 
 function councilBuildSynthesisPrompt() {
@@ -9996,7 +9996,7 @@ async function councilSynthesize() {
   await Promise.allSettled(calls);
 
   btn.disabled = false;
-  btn.textContent = '🧑‍⚖️ Vraag synthese (Sonnet 5 + GPT-5.6)';
+  btn.textContent = '🧑‍⚖️ Vraag synthese (Sonnet 5.5 + GPT-6.1 Terra)';
   councilRunBijwerken({ voorzitters: COUNCIL_LAST_SYNTHESES });
 
   if (Object.keys(COUNCIL_LAST_SYNTHESES).length >= 1) {
@@ -10008,7 +10008,7 @@ async function councilSynthesize() {
 // van zijn eigen eerdere mening) perst de 2 voorzitter-oordelen samen tot een
 // paar bullets. Dit is het EERSTE wat Remy leest — de rest staat eronder voor
 // wie dieper wil. Reden: te veel lezen = dingen missen (ADHD).
-const COUNCIL_FINAL_MODEL = 'google/gemini-3.5-flash';
+const COUNCIL_FINAL_MODEL = 'google/gemini-4-argon';
 
 async function councilFinalSummary() {
   const el = document.getElementById('council-final-out');
@@ -11303,7 +11303,7 @@ async function socraticSend() {
 // webdata, dus een :online-model via OpenRouter, zelfde soort call als de
 // AI Council/toolkitAsk, niet de gewone (niet-grounded) Claude-calls hierboven.
 // ══════════════════════════════════════════════
-const DEALFINDER_MODEL = 'x-ai/grok-4.5:online';
+const DEALFINDER_MODEL = 'x-ai/grok-4.7:online';
 const DEALFINDER_SYSPROMPT = "Je helpt Remy actuele prijzen en aanbiedingen vinden via live websearch. Zoek de huidige prijs, of waar iets in de aanbieding is, of waar hij het product nu direct kan kopen. Geef ALTIJD concrete winkelnamen en, indien mogelijk, een directe productlink. Verzin nooit een prijs of link — als je iets niet met zekerheid kunt vinden, zeg dat expliciet in plaats van te gokken.\n\nLAND — dit is een harde eis. Remy woont in Nederland. Neem UITSLUITEND winkels op die (a) in Nederland gevestigd zijn, of (b) aantoonbaar naar Nederland verzenden. Prijzen altijd in euro's, inclusief btw zoals een Nederlandse klant ze betaalt. Een buitenlandse winkel die niet naar Nederland levert laat je volledig weg — noem 'm niet, ook niet als vergelijking. Verzendt een winkel wel naar NL maar zit hij in het buitenland, zet dan achter die regel: (verzendt naar NL). Vind je in Nederland niets, zeg dat dan gewoon in plaats van uit te wijken naar buitenlandse winkels.\n\nTAAL — antwoord altijd in het Nederlands.\n\nGeef ALLEEN het eindresultaat terug, in platte tekst zonder markdown-opmaak (geen **, geen [links](...)) — per relevante winkel één regel met winkelnaam, prijs en de kale URL. Geen inleiding, geen beschrijving van je zoekstappen (\"ik ga zoeken naar...\", \"ik check ook...\"), geen samenvattende slotzin. Maximaal circa 120 woorden.";
 
 // De NL-eis staat ook hier, niet alleen in de prompt: het model mag zich
