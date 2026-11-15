@@ -7313,7 +7313,7 @@ function renderVasteLasten() {
       if (l.categorie === 'inkomen') {
         html += `<div class="vl-row betaald" id="vl-row-${l.id}" style="border-color:rgba(77,255,166,0.25);background:rgba(77,255,166,0.05);">
           <div>
-            <div class="vl-naam" style="color:#4dffa6;">${escHtml(l.naam)} <button onclick="vlBasisbedrag(${l.id})" title="Pas naam en vast basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button><button onclick="vlVerwijderPost(${l.id})" title="Haal deze post uit Vaste Lasten" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#128465;&#65039;</button></div>
+            <div class="vl-naam" style="color:#4dffa6;">${escHtml(l.naam)} <button onclick="vlBasisbedrag(${l.id})" title="Pas naam, vast basisbedrag en betaaldatum aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button><button onclick="vlVerwijderPost(${l.id})" title="Haal deze post uit Vaste Lasten" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#128465;&#65039;</button></div>
             ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
             ${l.omschrijving ? `<div class="vl-omschrijving">📝 ${escHtml(l.omschrijving)}</div>` : ''}
           </div>
@@ -7332,7 +7332,7 @@ function renderVasteLasten() {
         <div style="display:flex;align-items:center;gap:8px;">
           <input type="checkbox" class="vl-watals-cb" id="vl-watals-${l.id}" ${vlWatAlsUit.has(l.id)?'':'checked'} onchange="vlWatAlsToggle(${l.id})" title="Wat-als: reken deze uitgave er even niet bij">
           <div>
-            <div class="vl-naam">${escHtml(l.naam)}${alterBadge} <button onclick="vlBasisbedrag(${l.id})" title="Pas naam en vast basisbedrag aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button><button onclick="vlVerwijderPost(${l.id})" title="Haal deze post uit Vaste Lasten" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#128465;&#65039;</button></div>
+            <div class="vl-naam">${escHtml(l.naam)}${alterBadge} <button onclick="vlBasisbedrag(${l.id})" title="Pas naam, vast basisbedrag en betaaldatum aan — de standaard waar elke nieuwe maand mee begint" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#9999;&#65039;</button><button onclick="vlVerwijderPost(${l.id})" title="Haal deze post uit Vaste Lasten" style="background:none;border:none;color:rgba(230,232,238,0.7);cursor:pointer;font-size:0.9em;padding:0 2px;">&#128465;&#65039;</button></div>
             ${l.incasso_dag ? `<div class="vl-incasso">${escHtml(l.incasso_dag)}</div>` : ''}
             ${l.omschrijving ? `<div class="vl-omschrijving">📝 ${escHtml(l.omschrijving)}</div>` : ''}
           </div>
@@ -7479,12 +7479,18 @@ async function vlBasisbedrag(id) {
   if (inv === null) return;
   const nieuw = parseFloat(String(inv).replace(',', '.'));
   if (isNaN(nieuw)) { alert('⚠️ Dat is geen geldig bedrag.'); return; }
+  // `incasso_dag` is vrije tekst ("27ste vd maand", "5-7de vd maand") en staat plat in de
+  // kolom, dus geen versleuteling nodig. Leeg laten maken wist de datum.
+  const dagInv = prompt(`Betaaldatum van "${nieuweNaam}" (bijv. 27ste vd maand, 5-7de vd maand, Laatste dag vd maand).\n\nLeeg laten maken = geen datum.`, post.incasso_dag || '');
+  if (dagInv === null) return;
+  const nieuweDag = String(dagInv).trim() || null;
 
-  const res = await sbPatch('vaste_lasten', `id=eq.${id}`, { naam: nieuweNaam, bedrag: nieuw });
+  const res = await sbPatch('vaste_lasten', `id=eq.${id}`, { naam: nieuweNaam, bedrag: nieuw, incasso_dag: nieuweDag });
   if (res === null && !hsKey) return;   // vergrendeld; sbPatch heeft al gemeld
   post.bedrag = nieuw;
   post.naam = nieuweNaam;
-  alert(`✅ "${nieuweNaam}" staat nu op €${nieuw.toFixed(2)}.`);
+  post.incasso_dag = nieuweDag;
+  alert(`✅ "${nieuweNaam}" staat nu op €${nieuw.toFixed(2)}${nieuweDag ? ', ' + nieuweDag : ''}.`);
   renderVasteLasten();
 }
 
