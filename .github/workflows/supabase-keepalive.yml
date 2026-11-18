@@ -47,3 +47,35 @@ jobs:
             echo "Keepalive ping mislukt met status $STATUS" >&2
             exit 1
           fi
+
+  # Project A staat bewust open (anon_all, geen persoonlijke gegevens). Iemand met de
+  # publieke sleutel kan rijen wissen; daarom gaat er om de twee dagen een kopie van
+  # pipeline_state en council_runs naar een workflow-artifact (90 dagen bewaard).
+  # Terugzetten: zie herstel-pipeline.mjs.
+  backup-project-a:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Tabellen ophalen
+        run: |
+          REGEL=$(grep -oP "^\s*A: \{ url: '[^']+', key: '[^']+'" index.html | head -1)
+          SB_URL=$(echo "$REGEL" | grep -oP "url: '\K[^']+")
+          SB_KEY=$(echo "$REGEL" | grep -oP "key: '\K[^']+")
+          if [ -z "$SB_URL" ] || [ -z "$SB_KEY" ]; then echo "Kon url/key van project A niet lezen" >&2; exit 1; fi
+          echo "::add-mask::$SB_KEY"
+          mkdir -p backup
+          for T in pipeline_state council_runs; do
+            STATUS=$(curl -s -o "backup/$T.json" -w "%{http_code}" "$SB_URL/rest/v1/$T?select=*" \
+              -H "apikey: $SB_KEY" -H "Authorization: Bearer $SB_KEY")
+            if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then echo "$T: HTTP $STATUS" >&2; exit 1; fi
+            echo "$T: $(jq length "backup/$T.json") rijen"
+          done
+
+      - name: Bewaren als artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-a-backup-${{ github.run_number }}
+          path: backup/
+          retention-days: 90

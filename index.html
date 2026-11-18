@@ -3286,7 +3286,6 @@ body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
     </div>
     <div id="agenda-modal-result"></div>
     <iframe class="agenda-modal-iframe" id="agenda-modal-iframe"
-      data-src="https://calendar.google.com/calendar/embed?src=remyegberts%40gmail.com&src=d.uittenbogaard%40gmail.com&ctz=Europe%2FAmsterdam&showNav=1&showTitle=0&showPrint=0&showTabs=1&showCalendars=1&mode=WEEK&hl=nl"
       allowfullscreen></iframe>
   </div>
 </div>
@@ -3917,13 +3916,22 @@ body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
 // projectaanduiding en bepaalt het gebruikerstoken wat er mag.
 //
 // De hub praat met twee losse Supabase-projecten, dus twee losse sessies. Beide
-// hebben hetzelfde account (remyegberts@gmail.com). Het loginscherm vraagt één
+// hebben hetzelfde account (jouw e-mailadres). Het loginscherm vraagt één
 // wachtwoord en logt allebei in; wijkt er één af, dan zegt hij welke.
 const HUB_DB = {
   A: { url: 'https://dezyzzkuqkpljhprcbrg.supabase.co', key: 'sb_publishable_uhpUclBMHQEn27ero9fp_A_Cs9VSMLf', naam: 'Pipeline' },
   B: { url: 'https://mdslvdrsggpksqrbtwci.supabase.co', key: 'sb_publishable_up1OFNJ06uqTvpzLo9YNkQ_2u6IvSXj', naam: 'Hub-data' }
 };
-const HUB_AUTH_EMAIL = 'remyegberts@gmail.com';
+// Het e-mailadres staat niet in de code (de repo is publiek). Het komt uit het
+// invulveld van het loginscherm en wordt na een geslaagde login op dit apparaat
+// onthouden, zodat je het maar één keer typt.
+const HUB_MAIL_KEY = 'hub_mail_v1';
+function hubMail() {
+  const veld = document.getElementById('slot-mail');
+  const getypt = veld && veld.value.trim();
+  if (getypt) return getypt;
+  try { return localStorage.getItem(HUB_MAIL_KEY) || ''; } catch (e) { return ''; }
+}
 const HUB_SESSIE_KEY = 'hub_sessie_v1';
 
 // Sessies staan in localStorage zodat je na het sluiten van de tab ingelogd
@@ -3966,12 +3974,13 @@ async function hubLoginDb(db, wachtwoord) {
   const r = await fetch(`${cfg.url}/auth/v1/token?grant_type=password`, {
     method: 'POST',
     headers: { 'apikey': cfg.key, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: HUB_AUTH_EMAIL, password: wachtwoord })
+    body: JSON.stringify({ email: hubMail(), password: wachtwoord })
   });
   const data = await r.json().catch(() => ({}));
   if (!r.ok || !data.access_token) {
     throw new Error(data.error_description || data.msg || data.message || `HTTP ${r.status}`);
   }
+  try { if (hubMail()) localStorage.setItem(HUB_MAIL_KEY, hubMail()); } catch (e) {}
   hubSessies[db] = {
     access_token: data.access_token,
     refresh_token: data.refresh_token,
@@ -8299,11 +8308,33 @@ function formatCalcResult(n) {
 // ══════════════════════════════════════════════
 // AGENDA MODAL
 // ══════════════════════════════════════════════
-function openAgendaModal() {
+// Welke agenda's het venster toont staat in app_settings (rij agenda_bronnen,
+// komma-gescheiden e-mailadressen of agenda-id's), niet in deze publieke code.
+// Ontbreekt die rij, dan alleen je eigen agenda (het login-adres).
+const AGENDA_CACHE = 'hub_agenda_bronnen_v1';
+function agendaEmbedUrl(bronnen) {
+  const src = bronnen.map(b => 'src=' + encodeURIComponent(b)).join('&');
+  return 'https://calendar.google.com/calendar/embed?' + src +
+    '&ctz=Europe%2FAmsterdam&showNav=1&showTitle=0&showPrint=0&showTabs=1&showCalendars=1&mode=WEEK&hl=nl';
+}
+async function agendaBronnen() {
+  try {
+    const rows = await sbGet('app_settings', 'setting_key=eq.agenda_bronnen&select=setting_value');
+    if (rows && rows[0] && rows[0].setting_value) {
+      const lijst = String(rows[0].setting_value).split(',').map(x => x.trim()).filter(Boolean);
+      if (lijst.length) { try { localStorage.setItem(AGENDA_CACHE, JSON.stringify(lijst)); } catch (e) {} return lijst; }
+    }
+  } catch (e) { console.warn('Agenda-bronnen niet opgehaald:', e); }
+  try { const c = JSON.parse(localStorage.getItem(AGENDA_CACHE) || 'null'); if (Array.isArray(c) && c.length) return c; } catch (e) {}
+  return hubMail() ? [hubMail()] : [];
+}
+async function openAgendaModal() {
   document.getElementById('agenda-overlay').classList.add('show');
   // Pas hier laden: een Google-iframe bij elke hub-start kost ~0,8 s voor niets
   const f = document.getElementById('agenda-modal-iframe');
-  if (!f.src) f.src = f.dataset.src;
+  if (f.src) return;
+  const bronnen = await agendaBronnen();
+  if (bronnen.length) f.src = agendaEmbedUrl(bronnen);
 }
 function closeAgendaModal() {
   document.getElementById('agenda-overlay').classList.remove('show');
@@ -14332,7 +14363,7 @@ if (document.readyState !== 'loading') hubArtToepassen();
       Eén keer inloggen per apparaat, daarna blijf je ingelogd.
     </div>
     <label for="slot-mail">E-mail</label>
-    <input type="email" id="slot-mail" autocomplete="username" value="remyegberts@gmail.com">
+    <input type="email" id="slot-mail" autocomplete="username" placeholder="jij@voorbeeld.nl">
     <label for="slot-wachtwoord" id="slot-wachtwoord-label">Wachtwoord</label>
     <input type="password" id="slot-wachtwoord" autocomplete="current-password" placeholder="••••••••">
     <button id="slot-knop" onclick="slotInloggen()">Inloggen</button>
@@ -14358,6 +14389,12 @@ if (document.readyState !== 'loading') hubArtToepassen();
   }
   function slotToon()  { document.getElementById('slot-overlay').classList.add('toon'); }
   function slotWeg()   { document.getElementById('slot-overlay').classList.remove('toon'); }
+  // Eerder gebruikt e-mailadres terugzetten (staat alleen op dit apparaat, niet in de code).
+  try {
+    const bewaard = localStorage.getItem(HUB_MAIL_KEY);
+    const veld = document.getElementById('slot-mail');
+    if (bewaard && veld && !veld.value) veld.value = bewaard;
+  } catch (e) {}
 
   // Eén wachtwoord, één deur. Alleen de projecten in HUB_SLOT_DB moeten lukken;
   // de rest wordt stilletjes meegenomen als hetzelfde wachtwoord daar toevallig
@@ -14366,6 +14403,7 @@ if (document.readyState !== 'loading') hubArtToepassen();
   window.slotInloggen = async function () {
     const knop = document.getElementById('slot-knop');
     const wachtwoord = document.getElementById('slot-wachtwoord').value;
+    if (!hubMail()) { melding('Vul je e-mailadres in.', '#ffc53d'); return; }
     if (!wachtwoord) { melding('Vul je wachtwoord in.', '#ffc53d'); return; }
     knop.disabled = true; knop.textContent = 'Bezig…';
     melding('');

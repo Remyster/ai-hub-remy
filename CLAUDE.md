@@ -721,6 +721,30 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 18 november 2026 — Geen e-mailadressen meer in de code, backup van project A
+
+- **Inloggen:** `HUB_AUTH_EMAIL` is weg. `hubMail()` leest het adres uit het loginveld
+  (`#slot-mail`) en onthoudt het na een geslaagde login in `hub_mail_v1` op dit apparaat.
+  Het veld staat leeg in de HTML. Zonder adres vraagt het loginscherm erom.
+- **Agenda-venster:** de embed-URL met beide agenda-adressen stond letterlijk in de HTML.
+  Nu staan de bronnen in `app_settings` (rij `agenda_bronnen`, komma-gescheiden, eigenaar_only)
+  en bouwt `agendaEmbedUrl()` de URL bij het openen. Kopie in `hub_agenda_bronnen_v1`.
+  Zonder rij: alleen het login-adres. De rij is op 18 november aangemaakt met dezelfde twee
+  adressen als voorheen, dus het venster toont hetzelfde.
+- **Backup project A:** job `backup-project-a` in `supabase-keepalive.yml` haalt om de twee
+  dagen `pipeline_state` en `council_runs` op en bewaart ze 90 dagen als artifact.
+  Terugzetten met `node herstel-pipeline.mjs <map> [--echt]` (zonder `--echt` een proefrun).
+  Reden: project A blijft bewust open, dus wissen door een buitenstaander kan; nu is het
+  terug te zetten.
+- **Open:** `koop_items` staat nog op `anon_all`. De hub stuurt daar al het login-token
+  mee (via `SB_GET_HDR`), dus de policy kan zonder codewijziging naar `eigenaar_only`.
+
+Getest in Chromium met nagebootste Supabase: leeg e-mailveld, melding zonder adres, login
+stuurt het getypte adres, onthouden en terugzetten na herladen, agenda-URL uit de database,
+geen paginafouten, alle 10 script-blokken parsen. Herstelscript getest als proefrun en
+tegen een nep-server. **Niet getest:** de workflow op GitHub zelf (supabase.co is vanuit de
+testomgeving niet bereikbaar).
+
 ### 30 oktober 2026 (deel 2) — Links zelf beheren
 
 ✏️ achter de links opent `#hl-overlay`: toevoegen, naam en adres wijzigen, ▲▼ verplaatsen,
