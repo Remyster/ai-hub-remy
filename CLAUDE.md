@@ -721,6 +721,34 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 18 november 2026 (deel 2) — Zelfde uiterlijk als NotitieHub, notities met mappen
+
+**Uiterlijk.** De cyberpunk-laag is weg: neon-geel/rood/cyaan op paars-zwart, raster,
+scanlines, filmkorrel, monospace-koppen en scherpe hoeken van 2px. Nu dezelfde tokens als
+NotitieHub (`Theme.kt`): achtergrond `#1B1714`, kaart `#26201B`/`#312920`, tekst `#F5EEE6`/
+`#B8AA9A`, perzik `#E9A47E` als enige accent, honing `#E3BE7A`, zacht groen `#A3BD9B`,
+koraal `#E5806F` voor fouten, salie `#9DB8A8` waar eerst cyaan stond. Lettertype Plus Jakarta
+Sans (ook in NotitieHub), cijfervelden en klok blijven JetBrains Mono. Hoeken 10px.
+Gedaan als één-op-één vervanging van elke neonkleur in het hele bestand (CSS én inline
+stijlen in JS), plus een laatste laag **WARM** onderaan de laatste `<style>` in de head.
+**Die laag moet de laatste blijven.** HTML-entiteiten voor emoji (`&#128465;`) zijn bewust
+niet aangeraakt. `manifest.json` en de cachenaam (`ai-hub-v5`) zijn mee bijgewerkt.
+
+**Notities zoals NotitieHub ze kent.** De hub las alleen `tekst` en `foto_url`. Nu ook
+`titel`, `map_id` en `tags`, plus de mappen zelf (`notitie_mappen`, kleur is een sleutel:
+perzik/honing/groen/grijs, zie `NT_MAP_KLEUR`). Filterchips per map met aantallen, zoeken
+in titel + tekst + tags. **+ Notitie** maakt een notitie met dezelfde velden als
+`SupabaseClient.postNotitie` in NotitieHub (tekst, titel, map_id, prive=false).
+**📝 Notitie** bij een dump verplaatst hem naar Notities (foto en thumbnail gaan mee; de
+dump gaat pas weg als de notitie gelukt is), net als "Notitie" bij sorteren in NotitieHub.
+Tags van dumps worden ook getoond.
+
+Getest in Chromium met nagebootste database (12 controles): mapfilters en aantallen,
+zoeken op tag, HTML in een notitie blijft tekst, nieuwe notitie met de juiste velden,
+dump naar notitie met foto en daarna DELETE, geen paginafouten. Voor/na-schermafbeeldingen
+van login, hub, notities, dumps en vaste lasten op 1366 en 390px, geen horizontaal scrollen.
+**Niet getest:** tegen de echte database.
+
 ### 18 november 2026 — Geen e-mailadressen meer in de code, backup van project A
 
 - **Inloggen:** `HUB_AUTH_EMAIL` is weg. `hubMail()` leest het adres uit het loginveld
