@@ -3484,8 +3484,7 @@ body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
       <span class="hbtn" style="color:#fcee0a;background:rgba(252,238,10,0.08);border-color:rgba(252,238,10,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#7dd3fc;background:rgba(125,211,252,0.08);border-color:rgba(125,211,252,0.2);" onclick="openAgendaModal()" title="Je Google Agenda (jij + Denise) in de hub — bekijken en snel een afspraak toevoegen">📅 Agenda</span>
       <span class="hbtn" style="color:#4dffa6;background:rgba(77,255,166,0.08);border-color:rgba(77,255,166,0.18);" onclick="openWerk()">💼 Werk</span>
-      <span class="hbtn hbtn-muted" onclick="openVault()">🔐 Kluis</span>
-      <span class="hbtn hbtn-muted" id="hs-knop" onclick="hsKnopKlik()" title="Je persoonlijke gegevens staan versleuteld in de database. Dezelfde code als de Kluis.">🔒 Slot</span>
+      <span class="hbtn hbtn-muted" id="hs-knop" onclick="hsKnopKlik()" title="Je persoonlijke gegevens staan versleuteld in de database. Ontgrendelen met je code of herstelcode.">🔒 Slot</span>
       <span class="hbtn hbtn-muted" onclick="slotWachtwoordWijzigen()" title="Kies een nieuw wachtwoord voor je hub-account">🔑 Wachtwoord</span>
       <span class="hbtn hbtn-muted" onclick="hubUitloggen()" title="Meld je af op dit apparaat">🔓 Uitloggen</span>
     </div>
@@ -5875,7 +5874,7 @@ async function hsVraagCode() {
     rows.forEach(r => vltMeta[r.key] = r.value);
   }
   if (!vltMeta.salt_a) {
-    alert('⚠️ Er is nog geen code ingesteld. Open eerst 🔐 Kluis en kies daar een code en een herstelcode — de hub gebruikt dezelfde.');
+    alert('⚠️ Er is nog geen code ingesteld in vault_meta, dus er valt niets te ontgrendelen.');
     return;
   }
   const code = prompt('🔒 Vul je code in (je herstelcode werkt hier ook):');
@@ -13550,7 +13549,6 @@ const CMDK_ACTIES = [
   { ico: '🛒', title: 'Kopen',                  sub: 'Wenslijst per ruimte + prioriteit',           fn: 'openKoop' },
   { ico: '🏷️', title: 'Prijzen & Aanbiedingen', sub: 'Live prijs/aanbieding opzoeken',              fn: 'openDealfinder' },
   { ico: '✦',  title: 'Prompt Builder',         sub: 'Ruw idee → nette prompt',                fn: 'openPromptBuilder' },
-  { ico: '🔐', title: 'Kluis',                  sub: 'Wachtwoorden, versleuteld',                   fn: 'openVault' },
   { ico: '🗓️', title: 'Week Planner',           sub: 'Taken per dag + foto-import',                 fn: 'openWeekplanner' },
   { ico: '💶', title: 'Vaste Lasten',           sub: 'Financieel dashboard + CSV-import',           fn: 'openVasteLasten' },
   { ico: '💼', title: 'Werk',                   sub: 'Werklinks en KM-registratie',                 fn: 'openWerk' },
