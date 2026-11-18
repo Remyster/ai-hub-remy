@@ -2744,6 +2744,39 @@ header h1{letter-spacing:-0.02em !important;}
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
 .card:hover{box-shadow:0 6px 24px -10px rgba(233,164,126,.35) !important;}
 ::selection{background:rgba(233,164,126,.35);color:#F5EEE6;}
+
+/* Opengevouwen telefoon en tablet (641-1100px): zelfde opbouw als de telefoon. Daartussen
+   bleef de invoerbalk te breed voor zijn rij en schoven Plaats, Dump, de bel en Inbox over
+   elkaar; de kopbalk werd drie regels hoog en viel over de Vandaag-regel. */
+#smart-input{ min-width:0; }
+@media (min-width:641px) and (max-width:1100px){
+  #hb-links, .header-btns{
+    flex:0 0 100%; flex-wrap:nowrap !important; margin:0 !important; justify-content:flex-start !important;
+    overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch;
+  }
+  #hb-links::-webkit-scrollbar, .header-btns::-webkit-scrollbar{ display:none; }
+  .header-btns .hbtn, .header-btns .hb-menu-wrap{ flex:0 0 auto; }
+  .hb-menu2{ position:fixed; top:auto; right:12px; margin-top:42px; }
+  .smart-input-row{ flex:0 0 100% !important; min-width:0 !important; }
+  body .smart-side-btn{ flex:1 1 0 !important; min-width:0; white-space:nowrap; }
+  #rem-btn{ flex:0 0 44px !important; }
+}
+
+/* Eén icoonkleur zoals NotitieHub: emoji in knoppen en kaarttegels worden een warme
+   monochrome tint in plaats van tien felle kleuren. .emo wordt door het script hieronder
+   om de emoji aan het begin van een knop gezet. */
+.emo, .card-ico{ filter:grayscale(1) sepia(1) saturate(1.35) hue-rotate(-12deg) brightness(1.02); }
+.emo{ display:inline-block; margin-right:4px; }
+/* Eén hoofdknop: Vaste Lasten gevuld in perzik. Welke AI? omlijnd, zoals de rest. */
+.hbtn[onclick*="openVasteLasten"]{
+  background-image:none !important; background-color:#E9A47E !important; color:#2A1A10 !important; border-color:#E9A47E !important;
+}
+.hbtn[onclick*="openVasteLasten"] .emo{ filter:grayscale(1) brightness(.35) sepia(1) hue-rotate(-12deg); }
+.hbtn-orakel{
+  background-image:none !important; background-color:rgba(233,164,126,0.10) !important;
+  color:#E9A47E !important; border:1px solid rgba(233,164,126,0.45) !important;
+}
+.clock{ font-family:'Plus Jakarta Sans',system-ui,sans-serif !important; letter-spacing:0 !important; }
 </style>
 <script>
 // ⚙️ Account: de knoppen die je zelden nodig hebt uit de hoofdbalk, in een menu.
@@ -3550,7 +3583,7 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
 <!-- SMART BAR: Brain Dump + Plaatsen (Agent Router zit nu bij de 🎯 Welke AI?-knop in de header) -->
 <div id="smart-bar" style="max-width:1160px;margin:0 auto 26px;display:flex;gap:10px;flex-wrap:wrap;animation:fadeDown 0.5s 0.1s ease both;">
   <div class="smart-input-row" style="flex:1;min-width:260px;display:flex;gap:8px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:8px;box-shadow:var(--shadow-card);">
-    <input id="smart-input" type="text" placeholder="🧠 Dump of plaats een gedachte... (of praat 🎤)" autocomplete="off"
+    <input id="smart-input" type="text" placeholder="Dump of plaats een gedachte… (of praat)" autocomplete="off"
       style="flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:Plus Jakarta Sans,sans-serif;font-size:0.8em;padding:6px 10px;">
     <button id="smart-mic-btn" class="smart-action-btn" onclick="smartToggleMic()" title="Spraak inspreken"
       style="padding:9px 12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">🎤</button>
@@ -3571,7 +3604,7 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
 <div id="smart-result" style="max-width:1160px;display:none;"></div>
 
 <div id="toolzoek-bar">
-  <input id="toolzoek-input" type="text" placeholder="🔎 Zoek een tool, of een prijs of aanbieding in NL" autocomplete="off"
+  <input id="toolzoek-input" type="text" placeholder="Zoek een tool, of een prijs of aanbieding in NL" autocomplete="off"
     onkeydown="if(event.key==='Enter')toolzoekAsk()">
   <button id="toolzoek-btn" onclick="toolzoekAsk()" title="Zoekt in je 386 tools welke hier het beste past">✨ Tools</button>
   <button id="dealfinder-bar-btn" onclick="dealfinderBarAsk()" title="Zoekt op de achtergrond en meldt zich als het klaar is, je hoeft niet te wachten.">🛒 Prijs</button>
@@ -14816,6 +14849,32 @@ if (document.readyState !== 'loading') hubArtToepassen();
 })();
 </script>
 
+
+<script>
+/* Emoji aan het begin van knoppen in een eigen <span class="emo"> zetten, zodat ze met CSS
+   dezelfde warme tint krijgen. Alleen het eerste tekststuk wordt aangeraakt; onclick,
+   tellers en andere kinderen blijven staan. */
+(function(){
+  const EMO = /^(\s*)(\p{Extended_Pictographic}(?:\uFE0F)?(?:\u200D\p{Extended_Pictographic}(?:\uFE0F)?)*)\s*/u;
+  function tint(root){
+    (root || document).querySelectorAll('.hbtn, .smart-action-btn, .smart-side-btn, #toolzoek-bar button, #toolzoek-bar a, .nt-nieuw-knop, .nt-naar').forEach(el => {
+      if (el.querySelector(':scope > .emo')) return;
+      const tn = [...el.childNodes].find(n => n.nodeType === 3 && n.textContent.trim());
+      if (!tn || tn !== [...el.childNodes].find(n => n.nodeType === 3 || n.nodeType === 1)) return;
+      const m = tn.textContent.match(EMO);
+      if (!m) return;
+      const span = document.createElement('span');
+      span.className = 'emo'; span.setAttribute('aria-hidden', 'true'); span.textContent = m[2];
+      tn.textContent = tn.textContent.slice(m[0].length);
+      el.insertBefore(span, tn);
+    });
+  }
+  window.hubTintEmoji = tint;
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => tint());
+  else tint();
+  setTimeout(tint, 1500); // knoppen die later in de balk worden gezet (links, Account-menu)
+})();
+</script>
 </body>
 </html>
 
