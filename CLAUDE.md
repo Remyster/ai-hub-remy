@@ -41,7 +41,7 @@ update_pipelines.py  — Hulpscript voor pipeline-updates (niet gecommit)
 - **Tabellen (25, geverifieerd 24 sept 2026):** `vaste_lasten`, `betalingen`, `spaarrekeningen`, `spaar_mutaties`, `app_settings`, `weekplanner_items`, `brain_dumps`, `notities`, `media_items`, `verjaardagen`, `recepten`, `games`, `anime`, `context_blocks`, `pb_projecten`, `km_registratie`, `km_defaults`, `werk_links`, `vault_meta`, `vault_items`, `work_items`, `work_tasks`, `work_docs`, `work_load`, `work_reflect`
 - **Policies (nagekeken 22 okt 2026 via `pg_policies`):** de hub-tabellen staan op
 `eigenaar_only` voor `authenticated`, dus de hub leest ze met de sessie van het
-loginscherm. Uitzondering: `koop_items` heeft `anon_all` voor `anon, authenticated`.
+loginscherm. Sinds 19 november 2026 ook `koop_items` (was `anon_all`).
 De regel hierboven over "weer `anon_all`" (5 oktober) is achterhaald: diezelfde dag
 ging de login terug (deel 3).
 - **Er staan inmiddels ~50 tabellen in B**, niet 25: WerkHub (`work_stops`,
@@ -764,8 +764,9 @@ van login, hub, notities, dumps en vaste lasten op 1366 en 390px, geen horizonta
   Terugzetten met `node herstel-pipeline.mjs <map> [--echt]` (zonder `--echt` een proefrun).
   Reden: project A blijft bewust open, dus wissen door een buitenstaander kan; nu is het
   terug te zetten.
-- **Open:** `koop_items` staat nog op `anon_all`. De hub stuurt daar al het login-token
-  mee (via `SB_GET_HDR`), dus de policy kan zonder codewijziging naar `eigenaar_only`.
+- **`koop_items` dicht (19 november):** `anon_all` vervangen door `eigenaar_only` (alleen
+  Remy's account). De hub stuurde het login-token al mee via `SB_GET_HDR`, dus geen
+  codewijziging nodig. Gecontroleerd: als anon 0 rijen, als Remy alle 3.
 
 Getest in Chromium met nagebootste Supabase: leeg e-mailveld, melding zonder adres, login
 stuurt het getypte adres, onthouden en terugzetten na herladen, agenda-URL uit de database,
