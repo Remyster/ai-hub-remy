@@ -29,6 +29,7 @@
 <title>Remy AI Hub</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1B1714">
+  <meta name="color-scheme" content="dark">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -2777,6 +2778,14 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
   color:#E9A47E !important; border:1px solid rgba(233,164,126,0.45) !important;
 }
 .clock{ font-family:'Plus Jakarta Sans',system-ui,sans-serif !important; letter-spacing:0 !important; }
+
+/* Keuzelijsten: de uitgeklapte lijst tekent Android/Chrome zelf. Zonder color-scheme werd
+   die wit, met de lichte hubtekst erop: onleesbaar (o.a. 📝 Notities in Vaste Lasten).
+   color-scheme:dark laat de browser donkere lijsten, scrollbalken en datumkiezers tekenen;
+   de option-regel is de terugval voor browsers die dat negeren. */
+:root{ color-scheme:dark; }
+select option, select optgroup{ background-color:#26201B !important; color:#F5EEE6 !important; }
+select{ color-scheme:dark; }
 </style>
 <script>
 // ⚙️ Account: de knoppen die je zelden nodig hebt uit de hoofdbalk, in een menu.
