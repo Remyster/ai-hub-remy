@@ -3,7 +3,7 @@
 // Cache-strategie: network-first voor index.html (altijd nieuwste proberen),
 // met fallback naar cache zodra er geen verbinding is. Icons/manifest: cache-first.
 
-const CACHE_NAAM = 'ai-hub-v7';
+const CACHE_NAAM = 'ai-hub-v8';
 const CACHE_BESTANDEN = [
   './',
   './index.html',

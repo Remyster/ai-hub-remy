@@ -2766,13 +2766,13 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
 /* Eén icoonkleur zoals NotitieHub: emoji in knoppen en kaarttegels worden een warme
    monochrome tint in plaats van tien felle kleuren. .emo wordt door het script hieronder
    om de emoji aan het begin van een knop gezet. */
-.emo, .card-ico{ filter:grayscale(1) sepia(1) saturate(1.35) hue-rotate(-12deg) brightness(1.02); }
+.emo, .card-ico{ filter:none; }
 .emo{ display:inline-block; margin-right:4px; }
 /* Eén hoofdknop: Vaste Lasten gevuld in perzik. Welke AI? omlijnd, zoals de rest. */
 .hbtn[onclick*="openVasteLasten"]{
   background-image:none !important; background-color:var(--acc) !important; color:#2A1A10 !important; border-color:var(--acc) !important;
 }
-.hbtn[onclick*="openVasteLasten"] .emo{ filter:grayscale(1) brightness(.35) sepia(1) hue-rotate(-12deg); }
+
 .hbtn-orakel{
   background-image:none !important; background-color:rgba(var(--acc-rgb),0.10) !important;
   color:var(--acc) !important; border:1px solid rgba(var(--acc-rgb),0.45) !important;
@@ -2792,19 +2792,6 @@ select{ color-scheme:dark; }
    onderaan. Standaard (herfst) = het perzik van NotitieHub. */
 :root{ --acc:#E9A47E; --acc-rgb:233,164,126; --accent:var(--acc); --accent-soft:rgba(var(--acc-rgb),0.12);
   --accent-glow:rgba(var(--acc-rgb),0.35); --seizoen-gloed2:229,128,111; }
-html[data-seizoen="sinterklaas"]{ --acc:#E2685C; --acc-rgb:226,104,92;  --seizoen-gloed2:227,190,122; }
-html[data-seizoen="kerst"]      { --acc:#86B98F; --acc-rgb:134,185,143; --seizoen-gloed2:226,104,92; }
-html[data-seizoen="oudjaar"]    { --acc:#E8C170; --acc-rgb:232,193,112; --seizoen-gloed2:157,184,168; }
-html[data-seizoen="winter"]     { --acc:#9FC6DE; --acc-rgb:159,198,222; --seizoen-gloed2:200,214,226; }
-html[data-seizoen="lente"]      { --acc:#E9A6BA; --acc-rgb:233,166,186; --seizoen-gloed2:163,189,155; }
-html[data-seizoen="koningsdag"] { --acc:#F0913A; --acc-rgb:240,145,58;  --seizoen-gloed2:159,198,222; }
-html[data-seizoen="zomer"]      { --acc:#F0BC5E; --acc-rgb:240,188,94;  --seizoen-gloed2:233,166,126; }
-html[data-seizoen="herfst"]     { --acc:#E39A66; --acc-rgb:227,154,102; --seizoen-gloed2:200,120,70; }
-/* zachte gloed bovenin en onderin in de seizoenkleuren */
-body::after{ background:
-  radial-gradient(ellipse 60% 32% at 50% 0%, rgba(var(--acc-rgb),.10), transparent 70%),
-  radial-gradient(ellipse 45% 30% at 92% 92%, rgba(var(--seizoen-gloed2),.07), transparent 70%) !important; }
-.hbtn[onclick*="openVasteLasten"]{ background-color:var(--acc) !important; border-color:var(--acc) !important; }
 .seizoen-teken{ display:inline-block; margin-left:6px; font-size:.8em; vertical-align:2px; }
 .seizoen-chip{ display:inline-flex; align-items:center; gap:5px; margin-left:8px; padding:2px 9px; border-radius:999px;
   font-size:11.5px; font-weight:600; color:var(--acc); background:rgba(var(--acc-rgb),.12); border:1px solid rgba(var(--acc-rgb),.3);
@@ -2822,6 +2809,69 @@ body::after{ background:
 .seizoen-rij{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; font-size:.82em; color:#B8AA9A; }
 .seizoen-rij button{ padding:8px 14px; border-radius:10px; border:none; background:var(--acc); color:#2A1A10; font-weight:700; cursor:pointer; }
 @media (prefers-reduced-motion: reduce){ #seizoen-doek{ display:none !important; } }
+
+/* ══ SEIZOENSPALET (20 nov 2026, ronde 2) ══ Eén kleur per seizoen was te eentonig. Nu zes
+   kleuren per seizoen (--s1..--s6, als r,g,b), verdeeld over kaarten (roulerend per kaart),
+   sectiestippen, kopknoppen, smart bar, titel en achtergrond. --acc = --s1. */
+html{ --s1:227,154,102; --s2:201,87,58; --s3:217,174,58; --s4:176,74,90; --s5:140,168,90; --s6:160,104,62; }
+html[data-seizoen="sinterklaas"]{ --s1:232,71,63;   --s2:242,193,78;  --s3:79,143,232;  --s4:167,123,232; --s5:76,195,138;  --s6:242,140,56; }
+html[data-seizoen="kerst"]      { --s1:76,184,106;  --s2:232,74,74;   --s3:242,193,78;  --s4:95,200,232;  --s5:194,65,107;  --s6:232,241,245; }
+html[data-seizoen="oudjaar"]    { --s1:242,193,78;  --s2:232,90,168;  --s3:90,139,240;  --s4:157,123,240; --s5:214,222,230; --s6:242,154,74; }
+html[data-seizoen="winter"]     { --s1:143,208,242; --s2:180,156,240; --s3:126,224,200; --s4:90,139,240;  --s5:242,168,200; --s6:214,226,236; }
+html[data-seizoen="lente"]      { --s1:242,154,184; --s2:142,212,106; --s3:242,212,90;  --s4:185,156,240; --s5:124,196,242; --s6:245,168,122; }
+html[data-seizoen="koningsdag"] { --s1:245,154,46;  --s2:232,74,74;   --s3:79,127,232;  --s4:242,193,78;  --s5:108,196,138; --s6:240,240,240; }
+html[data-seizoen="zomer"]      { --s1:245,197,66;  --s2:63,207,196;  --s3:242,122,106; --s4:79,163,232;  --s5:240,106,142; --s6:168,216,74; }
+html[data-seizoen="herfst"]     { --s1:232,135,58;  --s2:201,87,58;   --s3:217,174,58;  --s4:176,74,90;   --s5:140,168,90;  --s6:160,104,62; }
+html, html[data-seizoen]{ --acc:rgb(var(--s1)); --acc-rgb:var(--s1); --seizoen-gloed2:var(--s2);
+  --c-agent:var(--s1); --c-general:var(--s4); --c-affiliate:var(--s3); --c-tool:var(--s5); --c-project:var(--s2); --c-marketing:var(--s6); }
+
+/* achtergrond: drie gloeden in drie kleuren */
+body::after{ background:
+  radial-gradient(ellipse 55% 30% at 15% 0%, rgba(var(--s1),.16), transparent 70%),
+  radial-gradient(ellipse 50% 28% at 88% 4%, rgba(var(--s2),.13), transparent 70%),
+  radial-gradient(ellipse 45% 30% at 85% 95%, rgba(var(--s4),.11), transparent 70%),
+  radial-gradient(ellipse 40% 26% at 5% 70%, rgba(var(--s3),.08), transparent 70%) !important; }
+/* kopbalk: dunne kleurband onderlangs en de titel in een verloop */
+header{ border-bottom:0 !important; }
+header::after{ content:''; display:block; position:absolute; left:0; right:0; bottom:0; height:3px;
+  background:linear-gradient(90deg, rgb(var(--s1)), rgb(var(--s2)), rgb(var(--s3)), rgb(var(--s4)), rgb(var(--s5))); opacity:.85; }
+header{ position:sticky; }
+header h1{ background:linear-gradient(90deg, rgb(var(--s1)), rgb(var(--s2)) 55%, rgb(var(--s3))); -webkit-background-clip:text; background-clip:text; color:transparent !important; }
+header h1 .seizoen-teken{ -webkit-text-fill-color:initial; color:initial; }
+
+/* kaarten: kleur rouleert per kaart door het palet, met een gekleurde rand links */
+.grid > .card:nth-child(6n+1){ --c:var(--s1); } .grid > .card:nth-child(6n+2){ --c:var(--s2); }
+.grid > .card:nth-child(6n+3){ --c:var(--s3); } .grid > .card:nth-child(6n+4){ --c:var(--s4); }
+.grid > .card:nth-child(6n+5){ --c:var(--s5); } .grid > .card:nth-child(6n+6){ --c:var(--s6); }
+.grid > .card{ border-color:rgba(var(--c),.28) !important; box-shadow:inset 3px 0 0 rgba(var(--c),.85), 0 10px 26px -14px rgba(0,0,0,.7) !important;
+  background:linear-gradient(160deg, rgba(var(--c),.10), rgba(255,255,255,.015) 55%) !important; }
+.grid > .card .card-ico{ background:rgba(var(--c),.22) !important; border-color:rgba(var(--c),.45) !important; }
+.grid > .card:hover{ border-color:rgba(var(--c),.6) !important; }
+
+/* sectiestippen per sectie een andere kleur */
+.section:nth-of-type(6n+1) .section-label::before{ background:rgb(var(--s1)) !important; box-shadow:0 0 10px rgba(var(--s1),.7) !important; }
+.section:nth-of-type(6n+2) .section-label::before{ background:rgb(var(--s2)) !important; box-shadow:0 0 10px rgba(var(--s2),.7) !important; }
+.section:nth-of-type(6n+3) .section-label::before{ background:rgb(var(--s3)) !important; box-shadow:0 0 10px rgba(var(--s3),.7) !important; }
+.section:nth-of-type(6n+4) .section-label::before{ background:rgb(var(--s4)) !important; box-shadow:0 0 10px rgba(var(--s4),.7) !important; }
+
+/* kopknoppen: elk een eigen kleur uit het palet */
+.hbtn[onclick*="openVasteLasten"]{ background-image:none !important; background-color:rgb(var(--s1)) !important; border-color:rgb(var(--s1)) !important; color:#1B1714 !important; }
+.hbtn-orakel{ background-image:none !important; background-color:rgb(var(--s2)) !important; border-color:rgb(var(--s2)) !important; color:#1B1714 !important; }
+.header-btns .hbtn[onclick*="backupAlles"]   { color:rgb(var(--s3)) !important; border-color:rgba(var(--s3),.45) !important; background:rgba(var(--s3),.10) !important; }
+.header-btns .hbtn[onclick*="openKostenModal"]{ color:rgb(var(--s5)) !important; border-color:rgba(var(--s5),.45) !important; background:rgba(var(--s5),.10) !important; }
+.header-btns .hbtn[onclick*="openWeekplanner"]{ color:rgb(var(--s4)) !important; border-color:rgba(var(--s4),.45) !important; background:rgba(var(--s4),.10) !important; }
+.header-btns .hbtn[onclick*="openAgendaModal"]{ color:rgb(var(--s6)) !important; border-color:rgba(var(--s6),.45) !important; background:rgba(var(--s6),.10) !important; }
+.header-btns .hbtn[onclick*="openWerk"]       { color:rgb(var(--s3)) !important; border-color:rgba(var(--s3),.45) !important; background:rgba(var(--s3),.10) !important; }
+/* smart bar en zoekbalk */
+.smart-action-btn[onclick*="smartAutoPlaats"]{ color:rgb(var(--s3)) !important; border-color:rgba(var(--s3),.5) !important; background:rgba(var(--s3),.12) !important; }
+.smart-action-btn[onclick*="brainDump"]     { color:#1B1714 !important; border-color:rgb(var(--s1)) !important; background:rgb(var(--s1)) !important; }
+#dump-inbox-btn                             { color:rgb(var(--s4)) !important; border-color:rgba(var(--s4),.45) !important; }
+.smart-side-btn[onclick*="openNotities"]    { color:rgb(var(--s5)) !important; border-color:rgba(var(--s5),.45) !important; }
+.smart-side-btn[onclick*="genContextPakket"]{ color:rgb(var(--s6)) !important; border-color:rgba(var(--s6),.45) !important; }
+#toolzoek-bar button:nth-of-type(1){ color:rgb(var(--s5)) !important; border-color:rgba(var(--s5),.5) !important; background:rgba(var(--s5),.10) !important; }
+#toolzoek-bar button:nth-of-type(2){ color:rgb(var(--s2)) !important; border-color:rgba(var(--s2),.5) !important; background:rgba(var(--s2),.10) !important; }
+.seizoen-chip{ color:#1B1714 !important; background:linear-gradient(90deg, rgb(var(--s1)), rgb(var(--s3))) !important; border:none !important; }
+#hub-vandaag{ border-color:rgba(var(--s1),.3) !important; box-shadow:inset 0 2px 0 rgba(var(--s1),.6) !important; }
 </style>
 <script>
 // ⚙️ Account: de knoppen die je zelden nodig hebt uit de hoofdbalk, in een menu.

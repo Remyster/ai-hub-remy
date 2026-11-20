@@ -721,6 +721,17 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 20 november 2026 (deel 2) — Seizoenen kleurrijker
+
+Remy: "te veel op één kleur, het mag best poppen". Elk seizoen heeft nu **zes kleuren**
+(`--s1`..`--s6` als `r,g,b`, laag SEIZOENSPALET onderaan de head); `--acc` = `--s1`. Verdeeld:
+kaarten rouleren per kaart door het palet (`.grid > .card:nth-child(6n+…)`, gekleurde rand
+links en een tintje), sectiestippen per sectie, elke kopknop een eigen kleur (Vaste Lasten en
+Welke AI? gevuld), smart bar en zoekbalk idem, titel als verloop, een kleurband onder de
+kopbalk, aftelchip als verloop, en vier gekleurde gloeden op de achtergrond. De eentonige
+emoji-tint (`.emo`/`.card-ico` sepia-filter) is eruit: emoji's hebben hun eigen kleur weer.
+Cachenaam `ai-hub-v8`. Getest: 14 controles, geen overlap op 412 en 920px.
+
 ### 20 november 2026 — Seizoenen
 
 De accentkleur is één variabele geworden: `--acc` (hex) en `--acc-rgb` (triplet voor
