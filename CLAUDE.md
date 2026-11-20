@@ -721,6 +721,18 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 20 november 2026 (deel 3) — Seizoenen in alle apps
+
+Dezelfde seizoenen, datums, tekens en zes-kleurenpaletten staan nu op vier plekken. **Wijzig je er
+één, doe de andere ook**, anders lopen de apps uit elkaar:
+- AI Hub: `index.html`, blokken SEIZOENEN (script) en SEIZOENSPALET (CSS)
+- WerkHub (repo solo-leveling) en iPad Werkplek: `seizoen.js`, twee identieke kopieën, voor een
+  licht thema (kleurband, gloed, teken + aftelling bij de titel, effect; knoppen ongewijzigd)
+- NotitieHub: `Seizoen.kt` (accent = eerste paletkleur, band onder de kop, effect), met
+  `SeizoenTest` voor de grensdagen
+
+Herstelpunten van vóór de seizoenen: tak `backup/voor-seizoenen-2026-11-20` in alle vier de repo's.
+
 ### 20 november 2026 (deel 2) — Seizoenen kleurrijker
 
 Remy: "te veel op één kleur, het mag best poppen". Elk seizoen heeft nu **zes kleuren**
