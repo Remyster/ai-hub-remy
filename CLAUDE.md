@@ -721,6 +721,29 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 20 november 2026 — Seizoenen
+
+De accentkleur is één variabele geworden: `--acc` (hex) en `--acc-rgb` (triplet voor
+`rgba(var(--acc-rgb),x)`). Alle 77 letterlijke `#E9A47E` en 242 `rgba(233,164,126,…)`
+zijn omgezet, ook inline in JS. **Bewust niet:** `NT_MAP_KLEUR.perzik` (mapkleur uit
+NotitieHub, hoort niet mee te wisselen) en `DUMP_CAT_INFO['AI-HUB'].kleur` (daar plakt de code
+`22` achter de hex). Nieuwe code: gebruik `var(--acc)` / `rgba(var(--acc-rgb),x)`, geen hex.
+
+Het script SEIZOENEN (onderaan, vóór `</body>`) zet `data-seizoen` op `<html>`; de CSS-laag
+SEIZOENEN (laatste `<style>` in de head) geeft per seizoen `--acc` en een tweede gloedkleur.
+`seizoenVoor(datum)`: Sinterklaas 14 nov–5 dec, Kerst 6–26 dec, Oud & nieuw 27 dec–1 jan,
+Winter jan–feb, Lente mrt–mei, Koningsdag 26–27 apr, Zomer jun–aug, Herfst sep–13 nov.
+Per seizoen een teken achter de titel, bij feestdagen een aftelling naast de klok
+("nog 15 nachtjes tot pakjesavond"), en een kort effect bij openen (sneeuw, blaadjes,
+bloesem, pepernoten, glitter, oranje confetti): canvas, ±10 s, daarna weg; alleen bij de
+eerste keer openen per dag (`hub_seizoen_effect_dag`), nooit bij prefers-reduced-motion.
+Account → 🎨 Seizoen: automatisch of vast, effecten aan/uit (`hub_seizoen_v1`, per apparaat).
+
+Getest in Chromium met vaste klok op 20 november (14 controles): 15 grensdagen over het
+hele jaar, kleur, aftelling, teken, effect start en is na ±10 s weg, niet opnieuw dezelfde
+dag, kiezer met 9 keuzes in het Account-menu, vastzetten blijft na herladen, terug naar
+automatisch, effecten uit. Schermafbeeldingen van alle seizoenen bekeken.
+
 ### 18 november 2026 (deel 2) — Zelfde uiterlijk als NotitieHub, notities met mappen
 
 **Uiterlijk.** De cyberpunk-laag is weg: neon-geel/rood/cyaan op paars-zwart, raster,

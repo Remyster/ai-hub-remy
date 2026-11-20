@@ -41,7 +41,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-grad: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(233,164,126,0.06), transparent);
+  --bg-grad: radial-gradient(ellipse 80% 50% at 50% -10%, rgba(var(--acc-rgb),0.06), transparent);
   --surface: rgba(255,255,255,0.03);
   --surface-hover: rgba(255,255,255,0.055);
 }
@@ -81,7 +81,7 @@ body::after {
 }
 .popup-greeting {
   font-family: Plus Jakarta Sans, sans-serif; font-size: 1.3em; font-weight: 800;
-  background: linear-gradient(135deg, #F5EEE6 30%, #E9A47E);
+  background: linear-gradient(135deg, #F5EEE6 30%, var(--acc));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   margin-bottom: 4px;
 }
@@ -102,11 +102,11 @@ body::after {
 }
 .popup-block-label { font-size: 0.62em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bc); margin-bottom: 10px; }
 .popup-block-text { font-size: 0.88em; line-height: 1.72; color: var(--text); }
-.popup-block.quote    { --bc: #E9A47E; }
-.popup-block.lifehack { --bc: #E9A47E; }
+.popup-block.quote    { --bc: var(--acc); }
+.popup-block.lifehack { --bc: var(--acc); }
 .popup-block.fact     { --bc: #A3BD9B; }
 .popup-block.news     { --bc: #E3BE7A; }
-.popup-block.notes    { --bc: #E9A47E; }
+.popup-block.notes    { --bc: var(--acc); }
 .popup-block.reminder { --bc: #D9908A; }
 
 /* Nieuws items */
@@ -117,14 +117,14 @@ body::after {
 /* Notities textarea */
 #popup-notes {
   width: 100%; padding: 10px 14px; margin-top: 8px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(233,164,126,0.2);
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(var(--acc-rgb),0.2);
   border-radius: 10px; color: var(--text);
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.82em; line-height: 1.6;
   resize: vertical; outline: none; transition: border-color 0.2s;
 }
-#popup-notes:focus { border-color: rgba(233,164,126,0.5); }
+#popup-notes:focus { border-color: rgba(var(--acc-rgb),0.5); }
 #popup-notes::placeholder { color: var(--muted); }
-.notes-saved { font-size: 0.68em; color: rgba(233,164,126,0.7); margin-top: 6px; opacity: 0; transition: opacity 0.3s; }
+.notes-saved { font-size: 0.68em; color: rgba(var(--acc-rgb),0.7); margin-top: 6px; opacity: 0; transition: opacity 0.3s; }
 
 /* Reminder */
 .reminder-inner { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
@@ -160,13 +160,13 @@ body::after {
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 .popup-close {
   display: block; width: 100%; margin-top: 14px; padding: 14px;
-  background: linear-gradient(135deg, rgba(233,164,126,0.15), rgba(233,164,126,0.15));
+  background: linear-gradient(135deg, rgba(var(--acc-rgb),0.15), rgba(var(--acc-rgb),0.15));
   border: 1px solid rgba(255,255,255,0.08); border-radius: 10px;
   color: var(--text); font-family: Plus Jakarta Sans, sans-serif;
   font-size: 0.85em; letter-spacing: 0.06em; cursor: pointer;
   transition: all 0.2s; text-align: center;
 }
-.popup-close:hover { background: linear-gradient(135deg, rgba(233,164,126,0.25), rgba(233,164,126,0.25)); }
+.popup-close:hover { background: linear-gradient(135deg, rgba(var(--acc-rgb),0.25), rgba(var(--acc-rgb),0.25)); }
 .popup-refresh {
   display: flex; align-items: center; justify-content: center; gap: 8px;
   width: 100%; margin-top: 8px; padding: 10px;
@@ -186,26 +186,26 @@ body::after {
 }
 #apikey-modal.show { display: flex; }
 #apikey-box {
-  background: #1B1714; border: 1px solid rgba(233,164,126,0.25);
+  background: #1B1714; border: 1px solid rgba(var(--acc-rgb),0.25);
   border-radius: 3px; padding: 36px 30px; max-width: 500px; width: 100%;
-  box-shadow: 0 0 80px rgba(233,164,126,0.06);
+  box-shadow: 0 0 80px rgba(var(--acc-rgb),0.06);
 }
 #apikey-box h3 { font-family: Plus Jakarta Sans, sans-serif; font-size: 1.2em; margin-bottom: 12px; color: #E3BE7A; }
 #apikey-box p { font-size: 0.8em; color: var(--muted); line-height: 1.65; margin-bottom: 18px; }
-#apikey-box a { color: #E9A47E; }
+#apikey-box a { color: var(--acc); }
 .warning-box {
-  background: rgba(233,164,126,0.06); border: 1px solid rgba(233,164,126,0.18);
+  background: rgba(var(--acc-rgb),0.06); border: 1px solid rgba(var(--acc-rgb),0.18);
   border-radius: 10px; padding: 14px 16px;
   font-size: 0.76em; color: #E3BE7A; line-height: 1.65; margin-bottom: 18px;
 }
 #apikey-input {
   width: 100%; padding: 13px 16px;
-  background: rgba(255,255,255,0.05); border: 1px solid rgba(233,164,126,0.2);
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(var(--acc-rgb),0.2);
   border-radius: 10px; color: var(--text);
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.85em;
   outline: none; margin-bottom: 14px; transition: border-color 0.2s;
 }
-#apikey-input:focus { border-color: rgba(233,164,126,0.45); }
+#apikey-input:focus { border-color: rgba(var(--acc-rgb),0.45); }
 #apikey-input::placeholder { color: var(--muted); }
 .apikey-btns { display: flex; gap: 10px; }
 .btn-save {
@@ -230,11 +230,11 @@ body::after {
 }
 #kosten-modal.show { display: flex; }
 #kosten-box {
-  background: #1B1714; border: 1px solid rgba(233,164,126,0.25);
+  background: #1B1714; border: 1px solid rgba(var(--acc-rgb),0.25);
   border-radius: 3px; padding: 32px 28px; max-width: 460px; width: 100%;
-  box-shadow: 0 0 80px rgba(233,164,126,0.06);
+  box-shadow: 0 0 80px rgba(var(--acc-rgb),0.06);
 }
-#kosten-box h3 { font-family: Plus Jakarta Sans, sans-serif; font-size: 1.15em; margin-bottom: 6px; color: rgba(233,164,126,1); }
+#kosten-box h3 { font-family: Plus Jakarta Sans, sans-serif; font-size: 1.15em; margin-bottom: 6px; color: rgba(var(--acc-rgb),1); }
 #kosten-box .kosten-sub { font-size: 0.72em; color: var(--muted); margin-bottom: 18px; }
 .kosten-row {
   display: flex; justify-content: space-between; align-items: center;
@@ -242,7 +242,7 @@ body::after {
   border-radius: 10px; margin-bottom: 8px; font-size: 0.82em;
 }
 .kosten-row .kl { color: var(--text); }
-.kosten-row .kv { color: rgba(233,164,126,1); font-family: Plus Jakarta Sans, sans-serif; font-weight: 600; }
+.kosten-row .kv { color: rgba(var(--acc-rgb),1); font-family: Plus Jakarta Sans, sans-serif; font-weight: 600; }
 .kosten-row .kc { color: var(--muted); font-size: 0.85em; margin-left: 6px; }
 .kosten-note { font-size: 0.68em; color: var(--muted); line-height: 1.6; margin-top: 12px; }
 .kosten-close {
@@ -260,12 +260,12 @@ body::after {
 }
 #ssp-archive-overlay.show { display: flex; }
 #ssp-archive-box {
-  background: #1B1714; border: 1px solid rgba(233,164,126,0.25);
+  background: #1B1714; border: 1px solid rgba(var(--acc-rgb),0.25);
   border-radius: 3px; padding: 30px 26px; max-width: 640px; width: 100%;
   max-height: 82vh; display: flex; flex-direction: column;
-  box-shadow: 0 0 80px rgba(233,164,126,0.06);
+  box-shadow: 0 0 80px rgba(var(--acc-rgb),0.06);
 }
-#ssp-archive-box h3 { font-family: Plus Jakarta Sans, sans-serif; font-size: 1.15em; margin-bottom: 4px; color: #E9A47E; }
+#ssp-archive-box h3 { font-family: Plus Jakarta Sans, sans-serif; font-size: 1.15em; margin-bottom: 4px; color: var(--acc); }
 #ssp-archive-box .ssp-arch-sub { font-size: 0.72em; color: var(--muted); margin-bottom: 16px; }
 #ssp-archive-list { overflow-y: auto; flex: 1; }
 .ssp-arch-row {
@@ -283,7 +283,7 @@ body::after {
 .ssp-arch-btns button:hover { background: rgba(255,255,255,0.09); }
 .ssp-arch-detail { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); max-height: 260px; overflow-y: auto; }
 .ssp-arch-step { margin-bottom: 10px; }
-.ssp-arch-step b { font-size: 0.85em; color: #E9A47E; display: block; margin-bottom: 4px; }
+.ssp-arch-step b { font-size: 0.85em; color: var(--acc); display: block; margin-bottom: 4px; }
 .ssp-arch-step pre { white-space: pre-wrap; word-break: break-word; font-family: Plus Jakarta Sans, sans-serif; font-size: 0.78em; color: var(--muted); line-height: 1.5; margin: 0; }
 .kosten-close.ssp-arch-close { margin-top: 16px; }
 
@@ -309,15 +309,15 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   background: rgba(255,255,255,0.025); font-size: 0.78em; line-height: 1.6; color: rgba(245,238,230,0.8);
 }
 .dex-ai-block-label { font-size: 0.58em; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dbc); margin-bottom: 6px; }
-.dex-ai-block.quote-b  { --dbc: #E9A47E; }
-.dex-ai-block.hack-b   { --dbc: #E9A47E; }
+.dex-ai-block.quote-b  { --dbc: var(--acc); }
+.dex-ai-block.hack-b   { --dbc: var(--acc); }
 .dex-ai-block.fact-b   { --dbc: #A3BD9B; }
 @media (max-width: 700px) { .dex-ai-blocks { grid-template-columns: 1fr; } }
 
 /* ══ DEX CARD ══ */
 .dex-card {
-  background: linear-gradient(135deg, rgba(233,164,126,0.08) 0%, rgba(233,164,126,0.03) 100%);
-  border: 1px solid rgba(233,164,126,0.2);
+  background: linear-gradient(135deg, rgba(var(--acc-rgb),0.08) 0%, rgba(var(--acc-rgb),0.03) 100%);
+  border: 1px solid rgba(var(--acc-rgb),0.2);
   border-radius: 10px; padding: 22px 24px; margin-bottom: 28px;
   animation: fadeDown 0.6s 0.05s ease both; opacity: 0; animation-fill-mode: both;
   position: relative; overflow: hidden;
@@ -325,17 +325,17 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .dex-card::before {
   content: ''; position: absolute; top: -40px; right: -40px;
   width: 200px; height: 200px;
-  background: radial-gradient(circle, rgba(233,164,126,0.1) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--acc-rgb),0.1) 0%, transparent 70%);
   pointer-events: none;
 }
 .dex-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
 .dex-avatar {
   width: 32px; height: 32px;
-  background: linear-gradient(135deg, #E9A47E, #E5806F);
+  background: linear-gradient(135deg, var(--acc), #E5806F);
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
   font-size: 0.85em; flex-shrink: 0;
 }
-.dex-label { font-size: 0.65em; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(233,164,126,0.8); }
+.dex-label { font-size: 0.65em; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(var(--acc-rgb),0.8); }
 .dex-tabs { display: flex; gap: 8px; margin-left: auto; }
 .dex-tab {
   font-size: 0.62em; letter-spacing: 0.08em; text-transform: uppercase;
@@ -344,11 +344,11 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   cursor: pointer; transition: all 0.2s;
   background: none; font-family: Plus Jakarta Sans, sans-serif;
 }
-.dex-tab.active { color: rgba(233,164,126,1); border-color: rgba(233,164,126,0.4); background: rgba(233,164,126,0.08); }
+.dex-tab.active { color: rgba(var(--acc-rgb),1); border-color: rgba(var(--acc-rgb),0.4); background: rgba(var(--acc-rgb),0.08); }
 .dex-content { font-size: 0.88em; line-height: 1.65; color: rgba(245,238,230,0.85); min-height: 48px; position: relative; }
 .dex-content .loading { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 0.85em; }
 .dot-pulse { display: flex; gap: 4px; align-items: center; }
-.dot-pulse span { width: 5px; height: 5px; border-radius: 50%; background: rgba(233,164,126,0.6); animation: dpulse 1.2s infinite; }
+.dot-pulse span { width: 5px; height: 5px; border-radius: 50%; background: rgba(var(--acc-rgb),0.6); animation: dpulse 1.2s infinite; }
 .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
 .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
 @keyframes dpulse { 0%,80%,100%{opacity:0.2;transform:scale(0.8)} 40%{opacity:1;transform:scale(1)} }
@@ -375,22 +375,22 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   outline: none; transition: border-color 0.2s;
 }
 #focus-input::placeholder, #onthouden-input::placeholder { color: var(--muted); }
-#focus-input:focus { border-color: rgba(233,164,126,0.4); }
-#onthouden-input:focus { border-color: rgba(233,164,126,0.4); }
+#focus-input:focus { border-color: rgba(var(--acc-rgb),0.4); }
+#onthouden-input:focus { border-color: rgba(var(--acc-rgb),0.4); }
 .focus-save {
-  padding: 10px 14px; background: rgba(233,164,126,0.12);
-  border: 1px solid rgba(233,164,126,0.25); border-radius: 10px;
-  color: rgba(233,164,126,0.9); font-family: Plus Jakarta Sans, sans-serif;
+  padding: 10px 14px; background: rgba(var(--acc-rgb),0.12);
+  border: 1px solid rgba(var(--acc-rgb),0.25); border-radius: 10px;
+  color: rgba(var(--acc-rgb),0.9); font-family: Plus Jakarta Sans, sans-serif;
   font-size: 0.75em; cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
-.focus-save:hover { background: rgba(233,164,126,0.2); }
+.focus-save:hover { background: rgba(var(--acc-rgb),0.2); }
 .onthouden-save {
-  padding: 10px 14px; background: rgba(233,164,126,0.1);
-  border: 1px solid rgba(233,164,126,0.25); border-radius: 10px;
-  color: rgba(233,164,126,0.9); font-family: Plus Jakarta Sans, sans-serif;
+  padding: 10px 14px; background: rgba(var(--acc-rgb),0.1);
+  border: 1px solid rgba(var(--acc-rgb),0.25); border-radius: 10px;
+  color: rgba(var(--acc-rgb),0.9); font-family: Plus Jakarta Sans, sans-serif;
   font-size: 0.75em; cursor: pointer; transition: all 0.2s; white-space: nowrap;
 }
-.onthouden-save:hover { background: rgba(233,164,126,0.2); }
+.onthouden-save:hover { background: rgba(var(--acc-rgb),0.2); }
 /* Todo lijst */
 .todo-list { margin-top: 6px; display: flex; flex-direction: column; gap: 5px; }
 .todo-item {
@@ -398,8 +398,8 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   background: rgba(255,255,255,0.03); border: 1px solid var(--border);
   border-radius: 10px; font-size: 0.8em; color: var(--text); animation: fadeUp 0.2s ease both;
 }
-.todo-item.type-doel { border-left: 2px solid rgba(233,164,126,0.5); }
-.todo-item.type-onthoud { border-left: 2px solid rgba(233,164,126,0.5); }
+.todo-item.type-doel { border-left: 2px solid rgba(var(--acc-rgb),0.5); }
+.todo-item.type-onthoud { border-left: 2px solid rgba(var(--acc-rgb),0.5); }
 .todo-tag { font-size: 0.62em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); flex-shrink: 0; }
 .todo-text { flex: 1; }
 .todo-del {
@@ -442,23 +442,23 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .notities-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
 #notitie-input {
   flex: 1; padding: 10px 14px;
-  background: rgba(255,255,255,0.04); border: 1px solid rgba(233,164,126,0.2);
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(var(--acc-rgb),0.2);
   border-radius: 10px; color: var(--text);
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.82em; outline: none;
 }
 #notitie-input::placeholder { color: var(--muted); }
-#notitie-input:focus { border-color: rgba(233,164,126,0.4); }
+#notitie-input:focus { border-color: rgba(var(--acc-rgb),0.4); }
 .notitie-add {
-  padding: 10px 14px; background: rgba(233,164,126,0.1);
-  border: 1px solid rgba(233,164,126,0.25); border-radius: 10px;
-  color: rgba(233,164,126,0.9); font-family: Plus Jakarta Sans, sans-serif;
+  padding: 10px 14px; background: rgba(var(--acc-rgb),0.1);
+  border: 1px solid rgba(var(--acc-rgb),0.25); border-radius: 10px;
+  color: rgba(var(--acc-rgb),0.9); font-family: Plus Jakarta Sans, sans-serif;
   font-size: 0.75em; cursor: pointer; white-space: nowrap; transition: all 0.2s;
 }
-.notitie-add:hover { background: rgba(233,164,126,0.2); }
+.notitie-add:hover { background: rgba(var(--acc-rgb),0.2); }
 .notities-lijst { display: flex; flex-direction: column; gap: 5px; }
 .notitie-item {
   display: flex; align-items: center; gap: 8px; padding: 9px 12px;
-  background: rgba(233,164,126,0.04); border: 1px solid rgba(233,164,126,0.12);
+  background: rgba(var(--acc-rgb),0.04); border: 1px solid rgba(var(--acc-rgb),0.12);
   border-radius: 10px; font-size: 0.8em; color: var(--text); animation: fadeUp 0.2s ease both;
 }
 .notitie-ts { font-size: 0.65em; color: var(--muted); flex-shrink: 0; }
@@ -537,10 +537,10 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .recent-tag { letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.75; margin-bottom: 10px; }
 .card.recent .recent-tag { display: block; }
 @keyframes glow-pulse { 0%,100%{box-shadow:0 0 6px var(--glow)} 50%{box-shadow:0 0 16px var(--glow)} }
-.agent   { --glow: #E9A47E; }
-.general { --glow: #E9A47E; }
+.agent   { --glow: var(--acc); }
+.general { --glow: var(--acc); }
 .tool    { --glow: #A3BD9B; }
-.project { --glow: #E9A47E; }
+.project { --glow: var(--acc); }
 .trade   { --glow: #E3BE7A; }
 .affiliate { --glow: #9DB8A8; }
 .card.hidden { display: none; }
@@ -566,16 +566,16 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 #pb-fab {
   position: fixed; bottom: 28px; right: 28px; z-index: 900;
   width: 56px; height: 56px; border-radius: 50%;
-  background: linear-gradient(135deg, #E9A47E, #E5806F);
+  background: linear-gradient(135deg, var(--acc), #E5806F);
   border: none; color: #fff; font-size: 1.5em; cursor: pointer;
-  box-shadow: 0 8px 32px rgba(233,164,126,0.45);
+  box-shadow: 0 8px 32px rgba(var(--acc-rgb),0.45);
   display: flex; align-items: center; justify-content: center;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-#pb-fab:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(233,164,126,0.6); }
+#pb-fab:hover { transform: scale(1.08); box-shadow: 0 12px 40px rgba(var(--acc-rgb),0.6); }
 #pb-fab .fab-tooltip {
   position: absolute; right: 66px; top: 50%; transform: translateY(-50%);
-  background: rgba(38,32,27,0.95); border: 1px solid rgba(233,164,126,0.3);
+  background: rgba(38,32,27,0.95); border: 1px solid rgba(var(--acc-rgb),0.3);
   border-radius: 10px; padding: 6px 12px;
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.7em; letter-spacing: 0.06em;
   white-space: nowrap; color: var(--text); pointer-events: none;
@@ -588,10 +588,10 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   position: fixed; bottom: 96px; right: 28px; z-index: 899;
   max-width: 240px;
   background: rgba(38,32,27,0.97);
-  border: 1px solid rgba(233,164,126,0.4);
+  border: 1px solid rgba(var(--acc-rgb),0.4);
   border-radius: 10px;
   padding: 14px 16px;
-  box-shadow: 0 8px 32px rgba(233,164,126,0.35);
+  box-shadow: 0 8px 32px rgba(var(--acc-rgb),0.35);
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.78em; line-height: 1.5;
   color: var(--text);
   transform: translateY(12px) scale(0.96);
@@ -599,13 +599,13 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   transition: transform 0.25s ease, opacity 0.25s ease;
 }
 #pb-nudge.show { transform: translateY(0) scale(1); opacity: 1; pointer-events: auto; }
-#pb-nudge-title { font-weight: 700; color: #E9A47E; margin-bottom: 4px; }
+#pb-nudge-title { font-weight: 700; color: var(--acc); margin-bottom: 4px; }
 #pb-nudge-actions { display: flex; gap: 8px; margin-top: 10px; }
 #pb-nudge-actions button {
   flex: 1; padding: 7px 0; border-radius: 10px; border: none;
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.85em; cursor: pointer;
 }
-#pb-nudge-go { background: linear-gradient(135deg, #E9A47E, #E5806F); color: #fff; font-weight: 700; }
+#pb-nudge-go { background: linear-gradient(135deg, var(--acc), #E5806F); color: #fff; font-weight: 700; }
 #pb-nudge-dismiss { background: rgba(255,255,255,0.06); color: var(--muted); }
 
 @media (max-width: 640px) { #pb-nudge { bottom: calc(16px + env(safe-area-inset-bottom)); right: 88px; left: 12px; max-width: none; padding: 10px 12px; } }
@@ -619,7 +619,7 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 }
 #pb-overlay.show { animation: fadeIn 0.25s ease both; }
 #pb-modal {
-  background: #1B1714; border: 1px solid rgba(233,164,126,0.2);
+  background: #1B1714; border: 1px solid rgba(var(--acc-rgb),0.2);
   border-radius: 3px; padding: 32px 28px 24px;
   max-width: 620px; width: 100%;
   box-shadow: 0 30px 80px rgba(0,0,0,0.7);
@@ -628,7 +628,7 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 }
 .pb-title {
   font-family: Plus Jakarta Sans, sans-serif; font-size: 1.2em; font-weight: 800;
-  background: linear-gradient(135deg, #F5EEE6 30%, #E9A47E);
+  background: linear-gradient(135deg, #F5EEE6 30%, var(--acc));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   margin-bottom: 4px;
 }
@@ -643,8 +643,8 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.72em; letter-spacing: 0.06em;
   cursor: pointer; transition: all 0.18s; display: flex; align-items: center; gap: 6px;
 }
-.pb-pill:hover { border-color: rgba(233,164,126,0.4); color: var(--text); }
-.pb-pill.active { background: rgba(233,164,126,0.12); border-color: rgba(233,164,126,0.5); color: rgba(233,164,126,1); }
+.pb-pill:hover { border-color: rgba(var(--acc-rgb),0.4); color: var(--text); }
+.pb-pill.active { background: rgba(var(--acc-rgb),0.12); border-color: rgba(var(--acc-rgb),0.5); color: rgba(var(--acc-rgb),1); }
 .pb-pill[data-platform="council"].active,
 .pb-pill[data-platform="multi"].active { box-shadow: 0 0 0 2px rgba(255,255,255,0.25); }
 
@@ -684,18 +684,18 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.85em; line-height: 1.6;
   resize: vertical; outline: none; min-height: 180px; transition: border-color 0.2s;
 }
-#pb-input:focus { border-color: rgba(233,164,126,0.4); }
+#pb-input:focus { border-color: rgba(var(--acc-rgb),0.4); }
 #pb-input::placeholder { color: var(--muted); }
 
 /* Generate button */
 .pb-generate {
   width: 100%; padding: 14px; margin-bottom: 20px;
-  background: linear-gradient(135deg, rgba(233,164,126,0.2), rgba(229,128,111,0.2));
-  border: 1px solid rgba(233,164,126,0.35); border-radius: 10px;
-  color: rgba(233,164,126,1); font-family: Plus Jakarta Sans, sans-serif;
+  background: linear-gradient(135deg, rgba(var(--acc-rgb),0.2), rgba(229,128,111,0.2));
+  border: 1px solid rgba(var(--acc-rgb),0.35); border-radius: 10px;
+  color: rgba(var(--acc-rgb),1); font-family: Plus Jakarta Sans, sans-serif;
   font-size: 0.85em; letter-spacing: 0.06em; cursor: pointer; transition: all 0.2s;
 }
-.pb-generate:hover { background: linear-gradient(135deg, rgba(233,164,126,0.3), rgba(229,128,111,0.3)); }
+.pb-generate:hover { background: linear-gradient(135deg, rgba(var(--acc-rgb),0.3), rgba(229,128,111,0.3)); }
 .pb-generate:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Output */
@@ -766,7 +766,7 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 }
 #vault-overlay.show { display:flex; }
 #vault-overlay > div {
-  background:#1B1714;border:1px solid rgba(233,164,126,0.2);border-radius:10px;
+  background:#1B1714;border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;
   padding:22px 20px;max-width:480px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);
 }
 .vlt-h1 { font-family:Plus Jakarta Sans,sans-serif;font-size:1.05em;font-weight:800;display:flex;align-items:center;gap:8px;margin:0 0 16px;color:var(--text); }
@@ -774,11 +774,11 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;
   padding:10px 12px;color:var(--text);font-family:Plus Jakarta Sans, sans-serif;font-size:0.82em;outline:none;margin-bottom:9px;
 }
-.vlt-input:focus, .vlt-textarea:focus { border-color:rgba(233,164,126,0.5); }
+.vlt-input:focus, .vlt-textarea:focus { border-color:rgba(var(--acc-rgb),0.5); }
 .vlt-textarea { resize:vertical;min-height:56px; }
 .vlt-btn { font-family:Plus Jakarta Sans,sans-serif;font-size:0.75em;font-weight:600;border-radius:10px;border:1px solid;padding:9px 14px;cursor:pointer;transition:all 0.15s; }
-.vlt-btn-primary { background:var(--accent-soft);border-color:rgba(233,164,126,0.4);color:var(--accent);width:100%; }
-.vlt-btn-primary:hover { background:rgba(233,164,126,0.22); }
+.vlt-btn-primary { background:var(--accent-soft);border-color:rgba(var(--acc-rgb),0.4);color:var(--accent);width:100%; }
+.vlt-btn-primary:hover { background:rgba(var(--acc-rgb),0.22); }
 .vlt-btn-muted { background:rgba(255,255,255,0.04);border-color:var(--border);color:var(--text-dim); }
 .vlt-btn-muted:hover { background:rgba(255,255,255,0.08); }
 .vlt-btn-red { background:rgba(229,128,111,0.1);border-color:rgba(229,128,111,0.3);color:#E5806F; }
@@ -878,9 +878,9 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .vl-row.betaald:hover { background:rgba(163,189,155,0.1); }
 .vl-naam { font-size:0.82em;color:var(--text); }
 .vl-row.betaald .vl-naam { color:rgba(163,189,155,0.9);text-decoration:line-through;text-decoration-color:rgba(163,189,155,0.4); }
-.vl-watals-cb { flex:0 0 auto;width:15px;height:15px;accent-color:#E9A47E;cursor:pointer; }
+.vl-watals-cb { flex:0 0 auto;width:15px;height:15px;accent-color:var(--acc);cursor:pointer; }
 .vl-row.vl-watals-uit { opacity:0.4; }
-.vl-row.vl-watals-uit .vl-naam { text-decoration:line-through;text-decoration-color:rgba(233,164,126,0.5); }
+.vl-row.vl-watals-uit .vl-naam { text-decoration:line-through;text-decoration-color:rgba(var(--acc-rgb),0.5); }
 .vl-incasso { font-size:0.65em;color:var(--muted); }
 .vl-omschrijving { font-size:0.65em;color:#E3BE7A;font-style:italic; }
 .vl-bedrag-wrap { display:flex;align-items:center;gap:6px; }
@@ -903,23 +903,23 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 /* Spaarrekeningen */
 .vl-spaar-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-bottom:16px; }
 .vl-spaar-box {
-  padding:12px 14px;border-radius:10px;background:rgba(233,164,126,0.05);
-  border:1px solid rgba(233,164,126,0.15);
+  padding:12px 14px;border-radius:10px;background:rgba(var(--acc-rgb),0.05);
+  border:1px solid rgba(var(--acc-rgb),0.15);
 }
-.vl-spaar-naam { font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:rgba(233,164,126,0.8);margin-bottom:5px; }
-.vl-spaar-saldo { font-family:Plus Jakarta Sans,sans-serif;font-size:1.15em;font-weight:700;color:rgba(233,164,126,0.95); }
+.vl-spaar-naam { font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:rgba(var(--acc-rgb),0.8);margin-bottom:5px; }
+.vl-spaar-saldo { font-family:Plus Jakarta Sans,sans-serif;font-size:1.15em;font-weight:700;color:rgba(var(--acc-rgb),0.95); }
 .vl-spaar-input {
   width:100%;margin-top:6px;padding:5px 8px;background:rgba(255,255,255,0.04);
-  border:1px solid rgba(233,164,126,0.2);border-radius:10px;color:var(--text);
+  border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;color:var(--text);
   font-family:Plus Jakarta Sans, sans-serif;font-size:0.75em;outline:none;
 }
-.vl-spaar-input:focus { border-color:rgba(233,164,126,0.45); }
+.vl-spaar-input:focus { border-color:rgba(var(--acc-rgb),0.45); }
 .vl-spaar-btn {
-  width:100%;margin-top:5px;padding:5px;background:rgba(233,164,126,0.1);
-  border:1px solid rgba(233,164,126,0.2);border-radius:10px;color:rgba(233,164,126,0.9);
+  width:100%;margin-top:5px;padding:5px;background:rgba(var(--acc-rgb),0.1);
+  border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;color:rgba(var(--acc-rgb),0.9);
   font-family:Plus Jakarta Sans, sans-serif;font-size:0.68em;cursor:pointer;transition:all 0.2s;
 }
-.vl-spaar-btn:hover { background:rgba(233,164,126,0.2); }
+.vl-spaar-btn:hover { background:rgba(var(--acc-rgb),0.2); }
 .vl-close { display:block;width:100%;margin-top:16px;padding:12px;background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:Plus Jakarta Sans, sans-serif;font-size:0.78em;cursor:pointer;transition:all 0.2s; }
 .vl-close:hover { background:rgba(255,255,255,0.04);color:var(--text); }
 .vl-loading { text-align:center;padding:40px;color:var(--muted);font-size:0.82em; }
@@ -929,18 +929,18 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 /* ══ SPAAR UITGEBREID ══ */
 .vl-spaar-grid-new { display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px; }
 .vl-spaar-box-new {
-  padding:14px;border-radius:10px;background:rgba(233,164,126,0.05);
-  border:1px solid rgba(233,164,126,0.15);
+  padding:14px;border-radius:10px;background:rgba(var(--acc-rgb),0.05);
+  border:1px solid rgba(var(--acc-rgb),0.15);
 }
 .vl-spaar-top { display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px; }
-.vl-spaar-naam-new { font-size:0.62em;letter-spacing:0.12em;text-transform:uppercase;color:rgba(233,164,126,0.8); }
-.vl-spaar-saldo-new { font-family:Plus Jakarta Sans,sans-serif;font-size:1.2em;font-weight:800;color:rgba(233,164,126,0.95); }
+.vl-spaar-naam-new { font-size:0.62em;letter-spacing:0.12em;text-transform:uppercase;color:rgba(var(--acc-rgb),0.8); }
+.vl-spaar-saldo-new { font-family:Plus Jakarta Sans,sans-serif;font-size:1.2em;font-weight:800;color:rgba(var(--acc-rgb),0.95); }
 .vl-spaar-actions { display:flex;gap:5px;margin-bottom:6px; }
 .vl-spaar-inp-new {
-  flex:1;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(233,164,126,0.2);
+  flex:1;padding:5px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--acc-rgb),0.2);
   border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans, sans-serif;font-size:0.75em;outline:none;min-width:0;
 }
-.vl-spaar-inp-new:focus { border-color:rgba(233,164,126,0.45); }
+.vl-spaar-inp-new:focus { border-color:rgba(var(--acc-rgb),0.45); }
 .vl-spaar-plus { padding:5px 10px;background:rgba(163,189,155,0.1);border:1px solid rgba(163,189,155,0.25);border-radius:10px;color:#A3BD9B;font-family:Plus Jakarta Sans, sans-serif;font-size:0.72em;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
 .vl-spaar-plus:hover { background:rgba(163,189,155,0.2); }
 .vl-spaar-min { padding:5px 10px;background:rgba(229,128,111,0.08);border:1px solid rgba(229,128,111,0.2);border-radius:10px;color:#E5806F;font-family:Plus Jakarta Sans, sans-serif;font-size:0.72em;cursor:pointer;transition:all 0.2s;white-space:nowrap; }
@@ -954,9 +954,9 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .vl-mut-plus { color:#A3BD9B; }
 .vl-mut-min { color:#E5806F; }
 .vl-mut-datum { color:var(--muted);font-size:0.9em; }
-.vl-spaar-totaal { margin-bottom:12px;padding:10px 14px;background:rgba(233,164,126,0.08);border:1px solid rgba(233,164,126,0.2);border-radius:10px;display:flex;justify-content:space-between;align-items:center; }
-.vl-spaar-totaal-label { font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:rgba(233,164,126,0.7); }
-.vl-spaar-totaal-val { font-family:Plus Jakarta Sans,sans-serif;font-size:1.1em;font-weight:800;color:rgba(233,164,126,0.95); }
+.vl-spaar-totaal { margin-bottom:12px;padding:10px 14px;background:rgba(var(--acc-rgb),0.08);border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;display:flex;justify-content:space-between;align-items:center; }
+.vl-spaar-totaal-label { font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:rgba(var(--acc-rgb),0.7); }
+.vl-spaar-totaal-val { font-family:Plus Jakarta Sans,sans-serif;font-size:1.1em;font-weight:800;color:rgba(var(--acc-rgb),0.95); }
 
 
 /* ══ REKENMACHINE (sticky in VL modal) ══ */
@@ -1058,7 +1058,7 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 }
 #wp-overlay.show { display:flex;animation:fadeIn 0.25s ease both; }
 #wp-modal {
-  background:#1B1714;border:1px solid rgba(233,164,126,0.2);border-radius:3px;
+  background:#1B1714;border:1px solid rgba(var(--acc-rgb),0.2);border-radius:3px;
   padding:24px 22px 20px;max-width:1100px;width:100%;
   box-shadow:0 30px 80px rgba(0,0,0,0.7);margin:auto;
   animation:popIn 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
@@ -1066,7 +1066,7 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .wp-header { display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap; }
 .wp-title {
   font-family:Plus Jakarta Sans,sans-serif;font-size:1.2em;font-weight:800;
-  background:linear-gradient(135deg,#E9A47E,#D9908A);
+  background:linear-gradient(135deg,var(--acc),#D9908A);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
 }
 .wp-close { background:none;border:none;color:var(--muted);font-size:1.3em;cursor:pointer;padding:2px 6px;transition:color 0.2s;margin-left:auto; }
@@ -1083,18 +1083,18 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 .wp-add-row { display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center; }
 .wp-add-row select, .wp-add-row input {
   padding:9px 10px;background:rgba(255,255,255,0.04);
-  border:1px solid rgba(233,164,126,0.2);border-radius:10px;color:var(--text);
+  border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;color:var(--text);
   font-family:Plus Jakarta Sans, sans-serif;font-size:0.78em;outline:none;
 }
 .wp-add-row input[type="text"] { flex:1;min-width:140px; }
-.wp-add-row select:focus, .wp-add-row input:focus { border-color:rgba(233,164,126,0.45); }
+.wp-add-row select:focus, .wp-add-row input:focus { border-color:rgba(var(--acc-rgb),0.45); }
 .wp-add-row input::placeholder { color:var(--muted); }
 .wp-add-btn {
-  padding:9px 14px;background:rgba(233,164,126,0.12);border:1px solid rgba(233,164,126,0.3);
-  border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans, sans-serif;font-size:0.75em;cursor:pointer;
+  padding:9px 14px;background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.3);
+  border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans, sans-serif;font-size:0.75em;cursor:pointer;
   white-space:nowrap;transition:all 0.2s;
 }
-.wp-add-btn:hover { background:rgba(233,164,126,0.22); }
+.wp-add-btn:hover { background:rgba(var(--acc-rgb),0.22); }
 #wp-result { font-size:0.7em;color:#A3BD9B;margin-bottom:10px;min-height:14px; }
 
 .wp-grid { display:grid;grid-template-columns:repeat(7,1fr);gap:8px; }
@@ -1105,16 +1105,16 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;
   padding:10px;min-height:110px;display:flex;flex-direction:column;gap:6px;
 }
-.wp-day.vandaag { border-color:rgba(233,164,126,0.4);background:rgba(233,164,126,0.05); }
+.wp-day.vandaag { border-color:rgba(var(--acc-rgb),0.4);background:rgba(var(--acc-rgb),0.05); }
 .wp-day-head { font-size:0.62em;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;align-items:baseline; }
-.wp-day.vandaag .wp-day-head { color:#E9A47E; }
+.wp-day.vandaag .wp-day-head { color:var(--acc); }
 .wp-item {
   display:flex;align-items:flex-start;gap:6px;padding:6px 7px;border-radius:10px;
   background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.05);font-size:0.74em;
 }
 .wp-item.klaar { opacity:0.5; }
 .wp-item.klaar .wp-item-tekst { text-decoration:line-through; }
-.wp-item-cb { margin-top:2px;cursor:pointer;accent-color:#E9A47E;flex-shrink:0; }
+.wp-item-cb { margin-top:2px;cursor:pointer;accent-color:var(--acc);flex-shrink:0; }
 .wp-item-body { flex:1;min-width:0; }
 .wp-item-tekst { color:var(--text);word-break:break-word; }
 .wp-item-meta { color:var(--muted);font-size:0.85em;margin-top:2px; }
@@ -1126,10 +1126,10 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 #wp-foto-status { font-size:0.7em;color:var(--muted); }
 
 #wp-review-box {
-  background:rgba(233,164,126,0.04);border:1px solid rgba(233,164,126,0.25);
+  background:rgba(var(--acc-rgb),0.04);border:1px solid rgba(var(--acc-rgb),0.25);
   border-radius:10px;padding:12px;margin-bottom:14px;
 }
-.wp-review-head { font-size:0.68em;letter-spacing:0.04em;color:#E9A47E;margin-bottom:10px; }
+.wp-review-head { font-size:0.68em;letter-spacing:0.04em;color:var(--acc);margin-bottom:10px; }
 .wp-review-row {
   display:grid;grid-template-columns:22px 64px 1fr 84px 84px auto;gap:6px;margin-bottom:6px;align-items:center;
 }
@@ -1140,7 +1140,7 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
 }
 .wp-review-row.laag { background:rgba(227,190,122,0.08);border-radius:10px;box-shadow:0 0 0 1px rgba(227,190,122,0.25); }
 .wp-review-row select, .wp-review-row input {
-  padding:7px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(233,164,126,0.2);
+  padding:7px 8px;background:rgba(255,255,255,0.04);border:1px solid rgba(var(--acc-rgb),0.2);
   border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans, sans-serif;font-size:0.72em;outline:none;
 }
 .wp-review-btns { display:flex;gap:8px;margin-top:8px;flex-wrap:wrap; }
@@ -1161,8 +1161,8 @@ header { margin-bottom: 28px; animation: fadeDown 0.6s ease both; }
   --ink: #F5EEE6;
   --ink-dim: #B8AA9A;
   --ink-faint: #8A7D70;
-  --brand: #E9A47E;
-  --brand-soft: rgba(233,164,126,0.12);
+  --brand: var(--acc);
+  --brand-soft: rgba(var(--acc-rgb),0.12);
   --ok: #A3BD9B;
   --warn: #E3BE7A;
   --danger: #E5806F;
@@ -1178,7 +1178,7 @@ body {
   font-size: 15px;
 }
 
-::selection { background: rgba(233,164,126,0.3); }
+::selection { background: rgba(var(--acc-rgb),0.3); }
 
 .wrapper { max-width: 1120px; margin: 0 auto; }
 
@@ -1188,7 +1188,7 @@ header {
 }
 header h1 {
   font-family: Plus Jakarta Sans, sans-serif; font-weight: 800;
-  background: linear-gradient(120deg, #fff 20%, #E9A47E 80%);
+  background: linear-gradient(120deg, #fff 20%, var(--acc) 80%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
   margin: 0;
 }
@@ -1204,7 +1204,7 @@ header h1 {
 }
 .hbtn:hover {
   background: var(--panel-2) !important; color: var(--ink) !important;
-  border-color: rgba(233,164,126,0.4) !important;
+  border-color: rgba(var(--acc-rgb),0.4) !important;
 }
 /* Vaste Lasten = cruciaal → altijd zichtbaar accent */
 .hbtn[onclick*="openVasteLasten"] {
@@ -1220,9 +1220,9 @@ header h1 {
   background: linear-gradient(135deg, #E3BE7A, #E3BE7A) !important;
   border-color: transparent !important;
   font-weight: 700;
-  box-shadow: 0 2px 12px rgba(233,164,126,0.35);
+  box-shadow: 0 2px 12px rgba(var(--acc-rgb),0.35);
 }
-.hbtn-orakel:hover { box-shadow: 0 4px 20px rgba(233,164,126,0.5); transform: translateY(-1px); }
+.hbtn-orakel:hover { box-shadow: 0 4px 20px rgba(var(--acc-rgb),0.5); transform: translateY(-1px); }
 
 /* ── SECTIONS ── */
 .section { animation: secIn 0.45s ease both; }
@@ -1238,7 +1238,7 @@ header h1 {
 }
 .section-label::before {
   content: ''; width: 7px; height: 7px; border-radius: 3px;
-  background: var(--brand); box-shadow: 0 0 10px rgba(233,164,126,0.6);
+  background: var(--brand); box-shadow: 0 0 10px rgba(var(--acc-rgb),0.6);
 }
 .section-label::after { content: ''; flex: 1; height: 1px; }
 
@@ -1299,7 +1299,7 @@ input[type="time"], input[type="date"], input[type="number"],
   display: none; align-items: center; justify-content: center;
   transition: all 0.15s ease; box-shadow: var(--shadow-1);
 }
-#scrolltop:hover { color: var(--ink); border-color: rgba(233,164,126,0.4); transform: translateY(-2px); }
+#scrolltop:hover { color: var(--ink); border-color: rgba(var(--acc-rgb),0.4); transform: translateY(-2px); }
 
 @media (max-width: 640px) {
   body { font-size: 14px; }
@@ -1320,15 +1320,15 @@ input[type="time"], input[type="date"], input[type="number"],
   --bg-elevated: #26201B;
   --bg-card: linear-gradient(160deg, rgba(255,255,255,0.045), rgba(255,255,255,0.015));
   --text: #F5EEE6;
-  --accent: #E9A47E;
-  --accent-soft: rgba(233,164,126,0.12);
-  --accent-glow: rgba(233,164,126,0.35);
+  --accent: var(--acc);
+  --accent-soft: rgba(var(--acc-rgb),0.12);
+  --accent-glow: rgba(var(--acc-rgb),0.35);
   --green: #A3BD9B;
   --amber: #E3BE7A;
   --blue: #9DB8A8;
   --rose: #E5806F;
   --shadow-card: 0 1px 2px rgba(0,0,0,0.4), 0 8px 24px -8px rgba(0,0,0,0.5);
-  --shadow-lift: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px -12px rgba(233,164,126,0.25);
+  --shadow-lift: 0 4px 12px rgba(0,0,0,0.5), 0 16px 40px -12px rgba(var(--acc-rgb),0.25);
 }
 
 body {
@@ -1383,7 +1383,7 @@ header h1 {
   font-weight: 800;
   font-size: 1.05em;
   letter-spacing: -0.02em;
-  background: linear-gradient(120deg, #E6DCD0, #E9A47E);
+  background: linear-gradient(120deg, #E6DCD0, var(--acc));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1451,7 +1451,7 @@ main, .section { max-width: 1160px; margin-left: auto; margin-right: auto; }
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(233,164,126,0.08), transparent 40%);
+  background: radial-gradient(400px circle at var(--mx,50%) var(--my,50%), rgba(var(--acc-rgb),0.08), transparent 40%);
   opacity: 0;
   transition: opacity 0.25s;
   pointer-events: none;
@@ -1478,7 +1478,7 @@ main, .section { max-width: 1160px; margin-left: auto; margin-right: auto; }
 }
 
 /* Sectie-accenten: subtiele linker-rand per type i.p.v. neon-glow */
-.card.agent     { border-left: 2px solid rgba(233,164,126,0.5) !important; }
+.card.agent     { border-left: 2px solid rgba(var(--acc-rgb),0.5) !important; }
 .card.general   { border-left: 2px solid rgba(157,184,168,0.4) !important; }
 .card.affiliate { border-left: 2px solid rgba(227,190,122,0.4) !important; }
 .card.tool      { border-left: 2px solid rgba(163,189,155,0.4) !important; }
@@ -1544,7 +1544,7 @@ body::before {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(600px 500px at 15% 15%, rgba(233,164,126,0.11), transparent 60%),
+    radial-gradient(600px 500px at 15% 15%, rgba(var(--acc-rgb),0.11), transparent 60%),
     radial-gradient(520px 440px at 88% 10%, rgba(157,184,168,0.08), transparent 60%),
     radial-gradient(560px 460px at 45% 95%, rgba(163,189,155,0.055), transparent 60%);
   filter: blur(30px);
@@ -1570,7 +1570,7 @@ header h1 {
   background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent 45%);
   pointer-events: none;
 }
-.card.agent     { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(233,164,126,0.4); }
+.card.agent     { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(var(--acc-rgb),0.4); }
 .card.general   { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(157,184,168,0.35); }
 .card.affiliate { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(227,190,122,0.35); }
 .card.tool      { box-shadow: var(--shadow-card), -2px 0 14px -7px rgba(163,189,155,0.35); }
@@ -1611,7 +1611,7 @@ header h1 {
 #cmdk-box {
   max-width: 660px; margin: 0 auto;
   background: linear-gradient(180deg, #26201B 0%, #07050f 100%);
-  border: 1px solid rgba(233,164,126,0.28);
+  border: 1px solid rgba(var(--acc-rgb),0.28);
   border-radius: 3px;
   box-shadow: 0 34px 90px rgba(0,0,0,0.75), inset 0 1px 0 rgba(255,255,255,0.04);
   overflow: hidden;
@@ -1652,8 +1652,8 @@ header h1 {
   border: 1px solid transparent;
 }
 .cmdk-row.sel {
-  background: rgba(233,164,126,0.13);
-  border-color: rgba(233,164,126,0.3);
+  background: rgba(var(--acc-rgb),0.13);
+  border-color: rgba(var(--acc-rgb),0.3);
 }
 .cmdk-ico { font-size: 1.02em; width: 21px; text-align: center; flex-shrink: 0; }
 /* Titel en ondertitel op één regel: met 475 items in de index passen er zo
@@ -1664,7 +1664,7 @@ header h1 {
   color: var(--text); white-space: nowrap; flex-shrink: 0;
   max-width: 62%; overflow: hidden; text-overflow: ellipsis;
 }
-.cmdk-title b { color: #E9A47E; font-weight: 700; }
+.cmdk-title b { color: var(--acc); font-weight: 700; }
 .cmdk-sub {
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.71em; color: var(--muted);
   flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -1676,7 +1676,7 @@ header h1 {
   border: 1px solid var(--border); border-radius: 10px;
   padding: 2px 7px; flex-shrink: 0; white-space: nowrap;
 }
-.cmdk-row.sel .cmdk-tag { color: #E9A47E; border-color: rgba(233,164,126,0.32); background: rgba(233,164,126,0.1); }
+.cmdk-row.sel .cmdk-tag { color: var(--acc); border-color: rgba(var(--acc-rgb),0.32); background: rgba(var(--acc-rgb),0.1); }
 
 #cmdk-empty {
   padding: 30px 16px; text-align: center;
@@ -1756,7 +1756,7 @@ header h1 {
      ══════════════════════════════════════════════════════════ -->
 <style>
 :root{
-  --c-agent:233,164,126;
+  --c-agent:var(--acc-rgb);
   --c-general:157,184,168;
   --c-affiliate:227,190,122;
   --c-tool:163,189,155;
@@ -2053,24 +2053,24 @@ header h1 {
    doet alleen wat een zoek-en-vervang niet kan: textuur en gloed.
    ══════════════════════════════════════════════════════════════ */
 :root{
-  --yel:#E9A47E; --cy:#9DB8A8; --red:#E5806F; --li:#A3BD9B; --mg:#D9908A;
+  --yel:var(--acc); --cy:#9DB8A8; --red:#E5806F; --li:#A3BD9B; --mg:#D9908A;
   /* op een bijna-zwarte basis moet de secundaire tekst juist lichter, niet donkerder */
   --muted:#B8AA9A !important;
   --text-dim:#C9BBAA !important;
-  --border:rgba(233,164,126,0.14) !important;
-  --border-strong:rgba(233,164,126,0.30) !important;
+  --border:rgba(var(--acc-rgb),0.14) !important;
+  --border-strong:rgba(var(--acc-rgb),0.30) !important;
 }
 body{ background:#1B1714 !important; }
 /* kaartranden zichtbaar houden: het oude wit-op-wit verdwijnt op dit zwart */
-.card{border-color:rgba(233,164,126,0.13) !important}
+.card{border-color:rgba(var(--acc-rgb),0.13) !important}
 .card p{color:#B8AA9A !important}
 .card p.voorbeeld{color:#A89A8B !important}
 
 /* raster — vervangt het oude witte raster */
 body::before{
   background-image:
-    linear-gradient(rgba(233,164,126,.030) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(233,164,126,.030) 1px,transparent 1px) !important;
+    linear-gradient(rgba(var(--acc-rgb),.030) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(var(--acc-rgb),.030) 1px,transparent 1px) !important;
   background-size:54px 54px !important;
   -webkit-mask-image:radial-gradient(ellipse 95% 70% at 50% 30%,#000 20%,transparent 100%);
   mask-image:radial-gradient(ellipse 95% 70% at 50% 30%,#000 20%,transparent 100%);
@@ -2080,7 +2080,7 @@ body::after{
   width:100% !important; height:100% !important; top:0 !important; left:0 !important;
   transform:none !important;
   background:
-    radial-gradient(ellipse 55% 30% at 50% 0%,rgba(233,164,126,.10),transparent 70%),
+    radial-gradient(ellipse 55% 30% at 50% 0%,rgba(var(--acc-rgb),.10),transparent 70%),
     radial-gradient(ellipse 45% 30% at 90% 88%,rgba(229,128,111,.09),transparent 70%),
     radial-gradient(ellipse 40% 26% at 6% 45%,rgba(157,184,168,.07),transparent 70%) !important;
 }
@@ -2098,8 +2098,8 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   text-transform:uppercase;font-size:.66em !important}
 
 /* actieve/gloeiende staten krijgen echte gloed i.p.v. een doffe vulling */
-.card:hover{box-shadow:0 0 30px -12px rgba(233,164,126,.55) !important}
-.hbtn:hover{box-shadow:0 0 20px -8px rgba(233,164,126,.8) !important}
+.card:hover{box-shadow:0 0 30px -12px rgba(var(--acc-rgb),.55) !important}
+.hbtn:hover{box-shadow:0 0 20px -8px rgba(var(--acc-rgb),.8) !important}
 
 /* rondjes die rond moeten blijven, ondanks de scherpe-hoekensweep */
 #pb-fab,.dot,#rem-btn{border-radius:50% !important}
@@ -2119,7 +2119,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 }
 .kaart-art::before{
   content:''; position:absolute; inset:0; mix-blend-mode:color;
-  background:linear-gradient(200deg,rgba(233,164,126,.42) 0%,rgba(229,128,111,.34) 52%,rgba(157,184,168,.40) 100%);
+  background:linear-gradient(200deg,rgba(var(--acc-rgb),.42) 0%,rgba(229,128,111,.34) 52%,rgba(157,184,168,.40) 100%);
 }
 /* leesbaarheidsscherm: tekst staat links, dus daar het donkerst */
 .kaart-art::after{
@@ -2137,10 +2137,10 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
    Geel draagt, cyaan steunt, rood alarmeert.
    ══════════════════════════════════════════════════════════════ */
 #pb-overlay{
-  --yel:#E9A47E; --cy:#9DB8A8; --red:#E5806F; --vio:#D9908A; --li:#A3BD9B;
+  --yel:var(--acc); --cy:#9DB8A8; --red:#E5806F; --vio:#D9908A; --li:#A3BD9B;
   --pbx-void:#1B1714; --pbx-panel:#26201B; --pbx-panel-hi:#312920;
   --pbx-text:#F5EEE6; --pbx-dim:#B8AA9A; --pbx-faint:#8A7D70;
-  --pbx-hair:rgba(233,164,126,0.10); --pbx-edge:rgba(233,164,126,0.28);
+  --pbx-hair:rgba(var(--acc-rgb),0.10); --pbx-edge:rgba(var(--acc-rgb),0.28);
   --m:'Plus Jakarta Sans',system-ui,sans-serif;
 }
 #pb-overlay.show{
@@ -2167,7 +2167,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   z-index:80;
   background:
     repeating-linear-gradient(180deg,rgba(0,0,0,.30) 0 1px,transparent 1px 3px),
-    radial-gradient(ellipse 55% 35% at 50% 0%,rgba(233,164,126,.10),transparent 70%),
+    radial-gradient(ellipse 55% 35% at 50% 0%,rgba(var(--acc-rgb),.10),transparent 70%),
     radial-gradient(ellipse 45% 35% at 88% 100%,rgba(229,128,111,.10),transparent 70%);
   box-shadow:inset 0 0 240px 70px rgba(0,0,0,.94);
   opacity:.9;
@@ -2188,7 +2188,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   border-bottom:1px solid var(--pbx-edge);
   background:linear-gradient(180deg,rgba(38,32,27,.96),rgba(27,23,20,.92))}
 .pbx-mark{font-family:var(--m);font-size:14px;font-weight:800;letter-spacing:.3em;color:var(--yel);
-  text-shadow:0 0 18px rgba(233,164,126,.8),0 0 46px rgba(233,164,126,.3)}
+  text-shadow:0 0 18px rgba(var(--acc-rgb),.8),0 0 46px rgba(var(--acc-rgb),.3)}
 .pbx-mark span{color:var(--red);text-shadow:0 0 16px rgba(229,128,111,.9)}
 .pbx-sub{font-family:var(--m);font-size:8px;letter-spacing:.2em;text-transform:uppercase;
   color:var(--pbx-faint);margin-top:3px}
@@ -2197,8 +2197,8 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   padding:6px 12px;color:var(--pbx-faint);position:relative;border:1px solid transparent;white-space:nowrap}
 .pbx-ph.done{color:rgba(163,189,155,.6)}
 .pbx-ph.done::before{content:'▪ '}
-.pbx-ph.on{color:var(--yel);border-color:var(--pbx-edge);background:rgba(233,164,126,.08);
-  text-shadow:0 0 12px rgba(233,164,126,.85)}
+.pbx-ph.on{color:var(--yel);border-color:var(--pbx-edge);background:rgba(var(--acc-rgb),.08);
+  text-shadow:0 0 12px rgba(var(--acc-rgb),.85)}
 .pbx-ph.on::after{content:'';position:absolute;left:10%;right:10%;bottom:-1px;height:2px;
   background:var(--yel);box-shadow:0 0 14px var(--yel);animation:pbxPulse 2.4s ease-in-out infinite}
 .pbx-chips{margin-left:auto;display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end}
@@ -2220,11 +2220,11 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   text-transform:uppercase;padding:6px 13px 9px}
 .pbx-ri{display:flex;gap:9px;align-items:flex-start;padding:7px 13px;cursor:pointer;
   border-left:2px solid transparent;transition:.15s}
-.pbx-ri:hover{background:rgba(233,164,126,.05);border-left-color:rgba(233,164,126,.4)}
-.pbx-ri.on{background:rgba(233,164,126,.1);border-left-color:var(--yel)}
+.pbx-ri:hover{background:rgba(var(--acc-rgb),.05);border-left-color:rgba(var(--acc-rgb),.4)}
+.pbx-ri.on{background:rgba(var(--acc-rgb),.1);border-left-color:var(--yel)}
 .pbx-ri .g{font-size:12px;line-height:1.1}
 .pbx-ri .t{font-family:var(--m);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--pbx-text)}
-.pbx-ri.on .t{color:var(--yel);text-shadow:0 0 11px rgba(233,164,126,.7)}
+.pbx-ri.on .t{color:var(--yel);text-shadow:0 0 11px rgba(var(--acc-rgb),.7)}
 .pbx-ri .s{font-family:var(--m);font-size:7.5px;letter-spacing:.1em;color:var(--pbx-faint);margin-top:2px}
 
 /* ── key art ── */
@@ -2238,11 +2238,11 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   filter:saturate(.5) contrast(1.14) brightness(.94);transition:opacity .16s}
 .pbx-art-img::before{content:'';position:absolute;inset:0;z-index:1;pointer-events:none;
   mix-blend-mode:color;
-  background:linear-gradient(200deg,rgba(233,164,126,.42) 0%,rgba(229,128,111,.34) 52%,rgba(157,184,168,.40) 100%)}
+  background:linear-gradient(200deg,rgba(var(--acc-rgb),.42) 0%,rgba(229,128,111,.34) 52%,rgba(157,184,168,.40) 100%)}
 .pbx-art-img::after{content:'';position:absolute;inset:0;z-index:2;pointer-events:none;
   background:linear-gradient(180deg,rgba(27,23,20,.5) 0%,transparent 22%,transparent 60%,rgba(27,23,20,.92) 100%)}
 .pbx-art-sweep{position:absolute;left:0;right:0;height:90px;z-index:2;pointer-events:none;
-  background:linear-gradient(180deg,transparent,rgba(233,164,126,.13),transparent);
+  background:linear-gradient(180deg,transparent,rgba(var(--acc-rgb),.13),transparent);
   animation:pbxSweep 7s linear infinite}
 @keyframes pbxSweep{0%{top:-90px}100%{top:100%}}
 .pbx-art-cap{padding:11px 12px 13px;border-top:1px solid var(--pbx-hair);
@@ -2250,7 +2250,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 .pbx-art-cap .k{font-family:var(--m);font-size:7.5px;letter-spacing:.24em;color:var(--red);
   text-transform:uppercase;text-shadow:0 0 12px rgba(229,128,111,.8)}
 .pbx-art-cap .h{font-family:var(--m);font-size:12px;font-weight:800;letter-spacing:.13em;color:var(--yel);
-  line-height:1.5;margin:6px 0 7px;text-transform:uppercase;text-shadow:0 0 16px rgba(233,164,126,.5)}
+  line-height:1.5;margin:6px 0 7px;text-transform:uppercase;text-shadow:0 0 16px rgba(var(--acc-rgb),.5)}
 .pbx-art-cap .d{font-family:var(--m);font-size:8px;letter-spacing:.08em;color:var(--pbx-dim);line-height:1.7}
 .pbx-art-tabs{display:flex;border-top:1px solid var(--pbx-hair);position:relative;z-index:3;background:rgba(27,23,20,.92)}
 .pbx-art-tabs div{flex:1;text-align:center;padding:7px 2px;font-family:var(--m);font-size:7.5px;
@@ -2258,7 +2258,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   border-right:1px solid var(--pbx-hair);cursor:pointer;transition:.15s}
 .pbx-art-tabs div:last-child{border-right:0}
 .pbx-art-tabs div:hover{color:var(--pbx-text)}
-.pbx-art-tabs div.on{color:var(--yel);background:rgba(233,164,126,.1)}
+.pbx-art-tabs div.on{color:var(--yel);background:rgba(var(--acc-rgb),.1)}
 
 /* ── statusbalk ── */
 .pbx-status{display:flex;border-top:1px solid var(--pbx-edge);height:30px;align-items:stretch;
@@ -2297,7 +2297,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 #pb-overlay.show.pbx-gast .pbx-phases,
 #pb-overlay.show.pbx-gast .pbx-chips{display:none}
 #pbx-host::-webkit-scrollbar{width:7px}
-#pbx-host::-webkit-scrollbar-thumb{background:rgba(233,164,126,.25)}
+#pbx-host::-webkit-scrollbar-thumb{background:rgba(var(--acc-rgb),.25)}
 /* het verplaatste paneel vult de kolom i.p.v. een smalle modal te blijven */
 #pbx-host > *{
   max-width:900px !important; margin:0 auto !important;
@@ -2307,11 +2307,11 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 .pbx-terug{
   display:none; align-items:center; gap:8px; margin-bottom:14px;
   font-family:var(--m); font-size:9.5px; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--yel); background:rgba(233,164,126,.08);
+  color:var(--yel); background:rgba(var(--acc-rgb),.08);
   border:1px solid var(--pbx-edge); padding:7px 12px; cursor:pointer;
 }
 #pb-overlay.show.pbx-gast .pbx-terug{display:inline-flex}
-.pbx-terug:hover{background:rgba(233,164,126,.18);box-shadow:0 0 20px -6px var(--yel)}
+.pbx-terug:hover{background:rgba(var(--acc-rgb),.18);box-shadow:0 0 20px -6px var(--yel)}
 /* een overlay waarvan het paneel in het cockpit hangt: leeg, onzichtbaar, klikdoorlatend */
 .pbx-verhuisd{
   background:none !important; backdrop-filter:none !important;
@@ -2319,7 +2319,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   box-shadow:none !important;
 }
 #pb-overlay.show #pb-modal::-webkit-scrollbar{width:7px}
-#pb-overlay.show #pb-modal::-webkit-scrollbar-thumb{background:rgba(233,164,126,.25)}
+#pb-overlay.show #pb-modal::-webkit-scrollbar-thumb{background:rgba(var(--acc-rgb),.25)}
 
 #pb-overlay .pb-title{
   font-family:Plus Jakarta Sans,sans-serif !important; font-size:30px !important; font-weight:900 !important;
@@ -2328,7 +2328,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   margin-bottom:8px !important;
 }
 #pb-overlay .pb-title em{font-style:normal;color:var(--yel);-webkit-text-fill-color:var(--yel);
-  text-shadow:0 0 30px rgba(233,164,126,.6)}
+  text-shadow:0 0 30px rgba(var(--acc-rgb),.6)}
 #pb-overlay .pb-sub{font-size:12.5px !important;line-height:1.75;color:var(--pbx-dim) !important;
   max-width:52ch;margin-bottom:22px !important;letter-spacing:0 !important}
 
@@ -2350,10 +2350,10 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   border:1px solid var(--pbx-hair) !important; background:rgba(255,255,255,.015) !important;
 }
 #pb-overlay .pb-pill{padding:6px 11px !important}
-#pb-overlay .pb-pill:hover,#pb-overlay .pb-type:hover{border-color:rgba(233,164,126,.45) !important;color:var(--pbx-text) !important}
+#pb-overlay .pb-pill:hover,#pb-overlay .pb-type:hover{border-color:rgba(var(--acc-rgb),.45) !important;color:var(--pbx-text) !important}
 #pb-overlay .pb-pill.active{
-  border-color:var(--yel) !important; color:var(--yel) !important; background:rgba(233,164,126,.13) !important;
-  box-shadow:0 0 18px -4px rgba(233,164,126,.75),inset 0 0 18px -9px rgba(233,164,126,.9) !important;
+  border-color:var(--yel) !important; color:var(--yel) !important; background:rgba(var(--acc-rgb),.13) !important;
+  box-shadow:0 0 18px -4px rgba(var(--acc-rgb),.75),inset 0 0 18px -9px rgba(var(--acc-rgb),.9) !important;
 }
 #pb-overlay .pb-pill[data-platform="multi"],#pb-overlay .pb-pill[data-platform="council"]{
   border-color:rgba(229,128,111,.4) !important;color:var(--red) !important;background:rgba(229,128,111,.07) !important}
@@ -2380,7 +2380,7 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
 }
 #pb-overlay textarea:focus,#pb-overlay input:focus{
   border-color:var(--yel) !important;
-  box-shadow:0 0 0 1px rgba(233,164,126,.25),0 0 28px -10px rgba(233,164,126,1) !important}
+  box-shadow:0 0 0 1px rgba(var(--acc-rgb),.25),0 0 28px -10px rgba(var(--acc-rgb),1) !important}
 #pb-overlay #pb-output{background:rgba(157,184,168,.04) !important;border-color:rgba(157,184,168,.28) !important;
   color:#C9DCD0 !important}
 
@@ -2394,8 +2394,8 @@ h1,h2,.section-title,.card h3{font-family:'JetBrains Mono',monospace !important;
   background:var(--yel) !important; border-color:var(--yel) !important; color:#0a0800 !important;
   font-weight:700 !important;
 }
-#pb-overlay #pb-gen-btn:hover{background:#F0C9A8 !important;box-shadow:0 0 34px -6px rgba(233,164,126,1) !important}
-#pb-overlay #pb-gen-btn:disabled{background:rgba(233,164,126,.25) !important;color:rgba(0,0,0,.5) !important}
+#pb-overlay #pb-gen-btn:hover{background:#F0C9A8 !important;box-shadow:0 0 34px -6px rgba(var(--acc-rgb),1) !important}
+#pb-overlay #pb-gen-btn:disabled{background:rgba(var(--acc-rgb),.25) !important;color:rgba(0,0,0,.5) !important}
 #pb-overlay .pb-copy{background:rgba(157,184,168,.1) !important;border-color:rgba(157,184,168,.4) !important;
   color:var(--cy) !important}
 #pb-overlay .pb-copy:hover{background:rgba(157,184,168,.2) !important;box-shadow:0 0 24px -7px var(--cy) !important}
@@ -2610,7 +2610,7 @@ body .header-btns .hbtn, body .header-btns .hb-menu-wrap > .hbtn{ border-radius:
   border:1px solid var(--rand-zacht); border-radius:var(--r-paneel); outline:none;
   transition:border-color .15s;
 }
-#toolzoek-input:focus, .smart-input-row:focus-within{ border-color:rgba(233,164,126,0.4) !important; }
+#toolzoek-input:focus, .smart-input-row:focus-within{ border-color:rgba(var(--acc-rgb),0.4) !important; }
 #toolzoek-bar button{
   padding:10px 14px; cursor:pointer; white-space:nowrap; font-weight:600;
   font-family:Plus Jakarta Sans,sans-serif; color:#A3BD9B;
@@ -2646,7 +2646,7 @@ body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
   min-width:0; padding:9px 11px; font:14px 'Plus Jakarta Sans',sans-serif; color:var(--text); outline:none;
   background:rgba(255,255,255,0.03); border:1px solid var(--rand-zacht); border-radius:var(--r-klein);
 }
-#hl-paneel input:focus{ border-color:rgba(233,164,126,0.4); }
+#hl-paneel input:focus{ border-color:rgba(var(--acc-rgb),0.4); }
 #hl-nieuw{ display:grid; grid-template-columns:1.4fr 1fr auto; gap:8px; margin-bottom:14px; }
 #hl-nieuw button, #hl-opslaan{
   padding:9px 14px; font:600 13px 'Plus Jakarta Sans',sans-serif; white-space:nowrap; cursor:pointer; color:#A3BD9B;
@@ -2731,7 +2731,7 @@ body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
 .nt-tags span{font-size:0.62em;padding:1px 7px;border-radius:999px;background:rgba(227,190,122,0.12);color:#E3BE7A;}
 .nt-kopieer{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;}
 .nt-leeg{text-align:center;padding:24px;color:var(--muted);font-size:0.78em;}
-.nt-naar{background:rgba(233,164,126,0.12);border:1px solid rgba(233,164,126,0.35);border-radius:8px;color:#E9A47E;font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;}
+.nt-naar{background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.35);border-radius:8px;color:var(--acc);font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;}
 
 /* ══ WARM (18 nov 2026) ══ Zelfde uiterlijk als NotitieHub: koffiebruin, perzik als accent,
    Plus Jakarta Sans, ronde hoeken. Haalt de cyberpunk-laag weg (raster, scanlines, korrel,
@@ -2743,8 +2743,8 @@ h1,h2,.section-title,.card h3{letter-spacing:-0.01em !important;}
 .hbtn{letter-spacing:0 !important;}
 header h1{letter-spacing:-0.02em !important;}
 body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
-.card:hover{box-shadow:0 6px 24px -10px rgba(233,164,126,.35) !important;}
-::selection{background:rgba(233,164,126,.35);color:#F5EEE6;}
+.card:hover{box-shadow:0 6px 24px -10px rgba(var(--acc-rgb),.35) !important;}
+::selection{background:rgba(var(--acc-rgb),.35);color:#F5EEE6;}
 
 /* Opengevouwen telefoon en tablet (641-1100px): zelfde opbouw als de telefoon. Daartussen
    bleef de invoerbalk te breed voor zijn rij en schoven Plaats, Dump, de bel en Inbox over
@@ -2770,12 +2770,12 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
 .emo{ display:inline-block; margin-right:4px; }
 /* Eén hoofdknop: Vaste Lasten gevuld in perzik. Welke AI? omlijnd, zoals de rest. */
 .hbtn[onclick*="openVasteLasten"]{
-  background-image:none !important; background-color:#E9A47E !important; color:#2A1A10 !important; border-color:#E9A47E !important;
+  background-image:none !important; background-color:var(--acc) !important; color:#2A1A10 !important; border-color:var(--acc) !important;
 }
 .hbtn[onclick*="openVasteLasten"] .emo{ filter:grayscale(1) brightness(.35) sepia(1) hue-rotate(-12deg); }
 .hbtn-orakel{
-  background-image:none !important; background-color:rgba(233,164,126,0.10) !important;
-  color:#E9A47E !important; border:1px solid rgba(233,164,126,0.45) !important;
+  background-image:none !important; background-color:rgba(var(--acc-rgb),0.10) !important;
+  color:var(--acc) !important; border:1px solid rgba(var(--acc-rgb),0.45) !important;
 }
 .clock{ font-family:'Plus Jakarta Sans',system-ui,sans-serif !important; letter-spacing:0 !important; }
 
@@ -2786,6 +2786,42 @@ body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;}
 :root{ color-scheme:dark; }
 select option, select optgroup{ background-color:#26201B !important; color:#F5EEE6 !important; }
 select{ color-scheme:dark; }
+
+/* ══ SEIZOENEN (20 nov 2026) ══ Eén accentkleur (--acc / --acc-rgb) die per seizoen
+   wisselt; de rest van het warme palet blijft. data-seizoen op <html> zet het script
+   onderaan. Standaard (herfst) = het perzik van NotitieHub. */
+:root{ --acc:#E9A47E; --acc-rgb:233,164,126; --accent:var(--acc); --accent-soft:rgba(var(--acc-rgb),0.12);
+  --accent-glow:rgba(var(--acc-rgb),0.35); --seizoen-gloed2:229,128,111; }
+html[data-seizoen="sinterklaas"]{ --acc:#E2685C; --acc-rgb:226,104,92;  --seizoen-gloed2:227,190,122; }
+html[data-seizoen="kerst"]      { --acc:#86B98F; --acc-rgb:134,185,143; --seizoen-gloed2:226,104,92; }
+html[data-seizoen="oudjaar"]    { --acc:#E8C170; --acc-rgb:232,193,112; --seizoen-gloed2:157,184,168; }
+html[data-seizoen="winter"]     { --acc:#9FC6DE; --acc-rgb:159,198,222; --seizoen-gloed2:200,214,226; }
+html[data-seizoen="lente"]      { --acc:#E9A6BA; --acc-rgb:233,166,186; --seizoen-gloed2:163,189,155; }
+html[data-seizoen="koningsdag"] { --acc:#F0913A; --acc-rgb:240,145,58;  --seizoen-gloed2:159,198,222; }
+html[data-seizoen="zomer"]      { --acc:#F0BC5E; --acc-rgb:240,188,94;  --seizoen-gloed2:233,166,126; }
+html[data-seizoen="herfst"]     { --acc:#E39A66; --acc-rgb:227,154,102; --seizoen-gloed2:200,120,70; }
+/* zachte gloed bovenin en onderin in de seizoenkleuren */
+body::after{ background:
+  radial-gradient(ellipse 60% 32% at 50% 0%, rgba(var(--acc-rgb),.10), transparent 70%),
+  radial-gradient(ellipse 45% 30% at 92% 92%, rgba(var(--seizoen-gloed2),.07), transparent 70%) !important; }
+.hbtn[onclick*="openVasteLasten"]{ background-color:var(--acc) !important; border-color:var(--acc) !important; }
+.seizoen-teken{ display:inline-block; margin-left:6px; font-size:.8em; vertical-align:2px; }
+.seizoen-chip{ display:inline-flex; align-items:center; gap:5px; margin-left:8px; padding:2px 9px; border-radius:999px;
+  font-size:11.5px; font-weight:600; color:var(--acc); background:rgba(var(--acc-rgb),.12); border:1px solid rgba(var(--acc-rgb),.3);
+  white-space:nowrap; vertical-align:middle; }
+#seizoen-doek{ position:fixed; inset:0; pointer-events:none; z-index:80; transition:opacity 1.2s ease; }
+#seizoen-ov{ position:fixed; inset:0; z-index:3000; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center; padding:16px; }
+#seizoen-ov.open{ display:flex; }
+#seizoen-paneel{ width:100%; max-width:380px; background:#26201B; border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:18px; color:#F5EEE6; }
+#seizoen-paneel h3{ margin:0 0 4px; font-size:1.05em; }
+#seizoen-paneel p{ margin:0 0 12px; font-size:.8em; color:#B8AA9A; }
+.seizoen-keuze{ display:flex; align-items:center; gap:10px; width:100%; padding:9px 11px; margin-bottom:6px; border-radius:10px;
+  border:1px solid rgba(255,255,255,.07); background:rgba(255,255,255,.02); color:#F5EEE6; font:inherit; font-size:.85em; cursor:pointer; text-align:left; }
+.seizoen-keuze .stip{ width:14px; height:14px; border-radius:50%; flex:0 0 14px; }
+.seizoen-keuze.actief{ border-color:var(--acc); background:rgba(var(--acc-rgb),.12); }
+.seizoen-rij{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:10px; font-size:.82em; color:#B8AA9A; }
+.seizoen-rij button{ padding:8px 14px; border-radius:10px; border:none; background:var(--acc); color:#2A1A10; font-weight:700; cursor:pointer; }
+@media (prefers-reduced-motion: reduce){ #seizoen-doek{ display:none !important; } }
 </style>
 <script>
 // ⚙️ Account: de knoppen die je zelden nodig hebt uit de hoofdbalk, in een menu.
@@ -2797,7 +2833,7 @@ select{ color-scheme:dark; }
     const ids = ['hs-knop'];
     const knoppen = [...bar.querySelectorAll(':scope > .hbtn')].filter(el => {
       const oc = el.getAttribute('onclick') || '';
-      return ids.includes(el.id) || /openApiKeyModal|slotWachtwoordWijzigen|hubUitloggen/.test(oc);
+      return ids.includes(el.id) || /openApiKeyModal|slotWachtwoordWijzigen|hubUitloggen|seizoenOpen/.test(oc);
     });
     if (knoppen.length < 2) return;
     const wrap = document.createElement('div');
@@ -2895,7 +2931,7 @@ select{ color-scheme:dark; }
       <button class="pb-pill" data-platform="chatgpt">💬 ChatGPT</button>
       <button class="pb-pill" data-platform="copilot">🪟 Copilot</button>
       <button class="pb-pill" data-platform="grok">𝕏 Grok</button>
-      <button class="pb-pill" data-platform="multi" style="background:rgba(233,164,126,0.15);border-color:rgba(233,164,126,0.4);color:#E9A47E;">🔀 Multi</button>
+      <button class="pb-pill" data-platform="multi" style="background:rgba(var(--acc-rgb),0.15);border-color:rgba(var(--acc-rgb),0.4);color:var(--acc);">🔀 Multi</button>
       <button class="pb-pill" data-platform="council" style="background:rgba(227,190,122,0.12);border-color:rgba(227,190,122,0.35);color:#E3BE7A;">🏛️ Council</button>
     </div>
     <div id="pb-council-hint" style="display:none;font-size:0.68em;color:#E3BE7A;background:rgba(227,190,122,0.07);border:1px solid rgba(227,190,122,0.18);border-radius:10px;padding:7px 10px;margin-top:-8px;margin-bottom:16px;line-height:1.45;">🏛️ Council-modus — de prompt wordt model-neutraal geschreven zodat je 'm ongewijzigd naar Gemini, Grok én Claude tegelijk kan sturen.</div>
@@ -2909,11 +2945,11 @@ select{ color-scheme:dark; }
       <button class="pb-type" data-type="roleplay"><span class="pb-type-ico">🎭</span>Roleplay</button>
       <button class="pb-type" data-type="leren"><span class="pb-type-ico">🎓</span>Leren</button>
     </div>
-    <div id="pb-type-hint" style="font-size:0.68em;color:#E9A47E;background:rgba(233,164,126,0.07);border:1px solid rgba(233,164,126,0.18);border-radius:10px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
+    <div id="pb-type-hint" style="font-size:0.68em;color:var(--acc);background:rgba(var(--acc-rgb),0.07);border:1px solid rgba(var(--acc-rgb),0.18);border-radius:10px;padding:7px 10px;margin-top:6px;margin-bottom:4px;display:none;line-height:1.45;"></div>
 
     <span class="pb-label">🧭 Situatie</span>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
-      <button type="button" id="pb-modus-nieuw" onclick="pbSetModus('nieuw')" style="flex:1;min-width:130px;background:rgba(233,164,126,0.18);border:1px solid rgba(233,164,126,0.45);color:#E9A47E;border-radius:10px;padding:9px 12px;font-size:0.74em;font-family:Plus Jakarta Sans,sans-serif;cursor:pointer;">✦ Nieuw idee</button>
+      <button type="button" id="pb-modus-nieuw" onclick="pbSetModus('nieuw')" style="flex:1;min-width:130px;background:rgba(var(--acc-rgb),0.18);border:1px solid rgba(var(--acc-rgb),0.45);color:var(--acc);border-radius:10px;padding:9px 12px;font-size:0.74em;font-family:Plus Jakarta Sans,sans-serif;cursor:pointer;">✦ Nieuw idee</button>
       <button type="button" id="pb-modus-lopend" onclick="pbSetModus('lopend')" style="flex:1;min-width:130px;background:rgba(255,255,255,0.03);border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:9px 12px;font-size:0.74em;font-family:Plus Jakarta Sans,sans-serif;cursor:pointer;">🔄 Loopt al / bestaat al</button>
     </div>
 
@@ -2945,18 +2981,18 @@ select{ color-scheme:dark; }
     </div>
     <button type="button" id="pb-ctx-addbtn" onclick="ctxShowAddForm()" style="background:none;border:1px dashed var(--border);color:var(--muted);border-radius:10px;padding:6px 10px;font-size:0.68em;cursor:pointer;margin-bottom:12px;">+ Nieuw context-blok</button>
 
-    <span class="pb-label" id="pb-idee-label">💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(233,164,126,0.12);color:#E9A47E;padding:1px 5px;border-radius:10px;">{{tags}}</code> voor herbruikbare stukken</span>
+    <span class="pb-label" id="pb-idee-label">💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(var(--acc-rgb),0.12);color:var(--acc);padding:1px 5px;border-radius:10px;">{{tags}}</code> voor herbruikbare stukken</span>
     <textarea id="pb-input" placeholder="bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af... (of met tags: schrijf een e-mail naar {{naam}} over {{onderwerp}})"></textarea>
 
-    <div id="pb-vars-wrap" style="display:none;margin-top:-10px;margin-bottom:16px;background:rgba(233,164,126,0.05);border:1px solid rgba(233,164,126,0.18);border-radius:10px;padding:10px 12px;">
-      <div style="font-size:0.64em;color:#E9A47E;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🧩 Variabelen gevonden — vul in, worden automatisch verwerkt bij genereren</div>
+    <div id="pb-vars-wrap" style="display:none;margin-top:-10px;margin-bottom:16px;background:rgba(var(--acc-rgb),0.05);border:1px solid rgba(var(--acc-rgb),0.18);border-radius:10px;padding:10px 12px;">
+      <div style="font-size:0.64em;color:var(--acc);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">🧩 Variabelen gevonden — vul in, worden automatisch verwerkt bij genereren</div>
       <div id="pb-vars-list" style="display:flex;flex-direction:column;gap:6px;"></div>
     </div>
 
     <div style="display:flex;gap:8px;">
       <button class="pb-generate" id="pb-gen-btn" onclick="generatePrompt()" style="flex:1;">✦ Genereer prompt</button>
       <button class="pb-generate" id="pb-vraag-btn" onclick="pbVraagMeUit()" title="Claude stelt je eerst 1 tot 4 korte vragen, en schrijft daarna pas de prompt" style="flex:0 0 auto;width:auto;padding:14px 16px;background:rgba(163,189,155,0.1);border-color:rgba(163,189,155,0.3);color:#A3BD9B;white-space:nowrap;">🎤 Vraag me uit</button>
-      <button class="pb-generate" id="pb-chain-btn" onclick="pbChainSplit()" title="Hakt je idee op in 3 losse prompts die je ná elkaar plakt: Analyseer → Outline → Schrijf" style="flex:0 0 auto;width:auto;padding:14px 16px;background:rgba(233,164,126,0.1);border-color:rgba(233,164,126,0.3);color:#E9A47E;white-space:nowrap;">🔗 3 stappen</button>
+      <button class="pb-generate" id="pb-chain-btn" onclick="pbChainSplit()" title="Hakt je idee op in 3 losse prompts die je ná elkaar plakt: Analyseer → Outline → Schrijf" style="flex:0 0 auto;width:auto;padding:14px 16px;background:rgba(var(--acc-rgb),0.1);border-color:rgba(var(--acc-rgb),0.3);color:var(--acc);white-space:nowrap;">🔗 3 stappen</button>
     </div>
 
     <div id="pb-vragen-wrap" style="display:none;margin-top:14px;background:rgba(163,189,155,0.05);border:1px solid rgba(163,189,155,0.22);border-radius:10px;padding:12px;">
@@ -3012,7 +3048,7 @@ select{ color-scheme:dark; }
       <div id="pb-multi-content" style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:14px;font-size:0.8em;line-height:1.6;white-space:pre-wrap;max-height:260px;overflow-y:auto;color:var(--text);"></div>
       <div style="display:flex;gap:8px;margin-top:10px;">
         <button class="pb-copy" onclick="copyMultiPrompt()">📋 Kopieer geselecteerde</button>
-        <button class="pb-copy" onclick="copyAllMultiPrompts()" style="background:rgba(233,164,126,0.15);border-color:rgba(233,164,126,0.3);color:#E9A47E;">📋 Kopieer allemaal</button>
+        <button class="pb-copy" onclick="copyAllMultiPrompts()" style="background:rgba(var(--acc-rgb),0.15);border-color:rgba(var(--acc-rgb),0.3);color:var(--acc);">📋 Kopieer allemaal</button>
       </div>
     </div>
     <button class="pb-close-btn" onclick="closePromptBuilder()">✕ Sluiten</button>
@@ -3026,7 +3062,7 @@ select{ color-scheme:dark; }
 
 <!-- ══ AI COUNCIL ══ -->
 <div id="council-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
-  <div id="council-modal" style="background:#1B1714;border:1px solid rgba(233,164,126,0.2);border-radius:3px;padding:32px 28px 24px;max-width:1080px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+  <div id="council-modal" style="background:#1B1714;border:1px solid rgba(var(--acc-rgb),0.2);border-radius:3px;padding:32px 28px 24px;max-width:1080px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title">🏛️ AI Council</div>
     <div class="pb-sub">Eén vraag → parallel naar vier modellen met web-grounding, daarna twee onafhankelijke voorzitters en één korte eindsamenvatting. Elke run wordt bewaard, dus je kunt later terugzien wat er is geadviseerd en wat je ermee gedaan hebt.</div>
 
@@ -3083,7 +3119,7 @@ select{ color-scheme:dark; }
 
 <!-- ══ TOOLKIT BROWSER (FMHY + OSINT4All, uitgedund) ══ -->
 <div id="toolkit-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
-  <div id="toolkit-modal" style="background:#1B1714;border:1px solid rgba(233,164,126,0.2);border-radius:3px;padding:32px 28px 24px;max-width:860px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+  <div id="toolkit-modal" style="background:#1B1714;border:1px solid rgba(var(--acc-rgb),0.2);border-radius:3px;padding:32px 28px 24px;max-width:860px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title" id="toolkit-title">🧰 Toolkit</div>
     <div class="pb-sub" id="toolkit-sub"></div>
 
@@ -3091,7 +3127,7 @@ select{ color-scheme:dark; }
     <input id="toolkit-input" placeholder="bijv: ik wil weten of deze foto echt is" style="width:100%;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;color:var(--text);font-family:Plus Jakarta Sans,sans-serif;font-size:0.82em;box-sizing:border-box;" onkeydown="if(event.key==='Enter')toolkitAsk()">
     <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
       <button class="pb-generate" id="toolkit-ask-btn" onclick="toolkitAsk()" style="flex:1 1 200px;width:auto;margin-top:0;">✨ Zoek de juiste tool</button>
-      <button class="pb-generate" onclick="toolkitSurprise()" style="flex:0 1 150px;width:auto;margin-top:0;background:rgba(227,190,122,0.12);border-color:rgba(227,190,122,0.4);color:#E9A47E;">🎲 Verras me</button>
+      <button class="pb-generate" onclick="toolkitSurprise()" style="flex:0 1 150px;width:auto;margin-top:0;background:rgba(227,190,122,0.12);border-color:rgba(227,190,122,0.4);color:var(--acc);">🎲 Verras me</button>
     </div>
 
     <div class="pb-error" id="toolkit-error"></div>
@@ -3108,7 +3144,7 @@ select{ color-scheme:dark; }
 </div>
 
 <div id="orakel-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.82);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px;">
-  <div id="orakel-modal" style="background:#1B1714;border:1px solid rgba(233,164,126,0.2);border-radius:3px;padding:32px 28px 24px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
+  <div id="orakel-modal" style="background:#1B1714;border:1px solid rgba(var(--acc-rgb),0.2);border-radius:3px;padding:32px 28px 24px;max-width:600px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,0.7);max-height:92vh;overflow-y:auto;">
     <div class="pb-title">🎯 Welke AI?</div>
     <div class="pb-sub">Wat dit is: omschrijf waar je mee bezig bent en hoor welke AI dit het handigst kan — Claude, Perplexity, ChatGPT, Grok, Gemini, DeepSeek, Kimi, Gemini Notebook of Copilot. Met de vraag meteen op je klembord, en een knop om te lezen wat die AI precies kan. (Gaat niet over je eigen Claude-projecten; die staan gewoon op de hub.)</div>
 
@@ -3255,14 +3291,14 @@ select{ color-scheme:dark; }
     </div>
 
     <div id="vl-overzicht" style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;"></div>
-    <div id="vl-watals-box" style="display:none;margin-bottom:16px;background:rgba(233,164,126,0.06);border:1px solid rgba(233,164,126,0.3);border-radius:10px;padding:12px 16px;">
+    <div id="vl-watals-box" style="display:none;margin-bottom:16px;background:rgba(var(--acc-rgb),0.06);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;padding:12px 16px;">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
-        <div style="font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:#E9A47E;">🧪 Wat-als — <span id="vl-watals-count">0</span> uitgezet</div>
-        <button onclick="vlWatAlsReset()" style="background:none;border:1px solid rgba(233,164,126,0.35);color:#E9A47E;border-radius:10px;padding:4px 10px;font-size:0.68em;cursor:pointer;">↺ Alles weer aan</button>
+        <div style="font-size:0.65em;letter-spacing:0.1em;text-transform:uppercase;color:var(--acc);">🧪 Wat-als — <span id="vl-watals-count">0</span> uitgezet</div>
+        <button onclick="vlWatAlsReset()" style="background:none;border:1px solid rgba(var(--acc-rgb),0.35);color:var(--acc);border-radius:10px;padding:4px 10px;font-size:0.68em;cursor:pointer;">↺ Alles weer aan</button>
       </div>
       <div style="display:flex;gap:18px;margin-top:8px;flex-wrap:wrap;">
-        <div><div style="font-size:0.62em;color:var(--muted);">Fictief nog te betalen</div><div style="font-family:Plus Jakarta Sans,sans-serif;font-weight:700;font-size:1em;color:#E9A47E;" id="vl-watals-nog">€0</div></div>
-        <div><div style="font-size:0.62em;color:var(--muted);">Fictief besteedbaar</div><div style="font-family:Plus Jakarta Sans,sans-serif;font-weight:700;font-size:1em;color:#E9A47E;" id="vl-watals-over">€0</div></div>
+        <div><div style="font-size:0.62em;color:var(--muted);">Fictief nog te betalen</div><div style="font-family:Plus Jakarta Sans,sans-serif;font-weight:700;font-size:1em;color:var(--acc);" id="vl-watals-nog">€0</div></div>
+        <div><div style="font-size:0.62em;color:var(--muted);">Fictief besteedbaar</div><div style="font-family:Plus Jakarta Sans,sans-serif;font-weight:700;font-size:1em;color:var(--acc);" id="vl-watals-over">€0</div></div>
       </div>
     </div>
 
@@ -3560,12 +3596,13 @@ select{ color-scheme:dark; }
       <span class="hbtn hbtn-orakel" onclick="openOrakel()" title="Omschrijf je taak of vraag — krijg te horen welke AI dit het handigst kan (Claude, Gemini, Perplexity, Grok, DeepSeek, Kimi, ChatGPT, Copilot, Gemini Notebook).">🎯 Welke AI?</span>
       <span class="hbtn hbtn-yellow" onclick="openApiKeyModal()">🔑 API Key</span>
       <span class="hbtn hbtn-muted" onclick="backupAlles()" id="backup-btn" title="Download alle Supabase-data als JSON">💾 Backup</span>
-      <span class="hbtn" style="color:rgba(233,164,126,1);background:rgba(233,164,126,0.08);border-color:rgba(233,164,126,0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
-      <span class="hbtn" style="color:#E9A47E;background:rgba(233,164,126,0.08);border-color:rgba(233,164,126,0.18);" onclick="openWeekplanner()">🗓️ Week</span>
+      <span class="hbtn" style="color:rgba(var(--acc-rgb),1);background:rgba(var(--acc-rgb),0.08);border-color:rgba(var(--acc-rgb),0.2);" onclick="openKostenModal()" id="kosten-btn" title="AI-kosten deze maand (schatting)">💳 €0,00</span>
+      <span class="hbtn" style="color:var(--acc);background:rgba(var(--acc-rgb),0.08);border-color:rgba(var(--acc-rgb),0.18);" onclick="openWeekplanner()">🗓️ Week</span>
       <span class="hbtn" style="color:#9DB8A8;background:rgba(157,184,168,0.08);border-color:rgba(157,184,168,0.2);" onclick="openAgendaModal()" title="Je Google Agenda (jij + Denise) in de hub — bekijken en snel een afspraak toevoegen">📅 Agenda</span>
       <span class="hbtn" style="color:#A3BD9B;background:rgba(163,189,155,0.08);border-color:rgba(163,189,155,0.18);" onclick="openWerk()">💼 Werk</span>
       <span class="hbtn hbtn-muted" id="hs-knop" onclick="hsKnopKlik()" title="Je persoonlijke gegevens staan versleuteld in de database. Ontgrendelen met je code of herstelcode.">🔒 Slot</span>
       <span class="hbtn hbtn-muted" onclick="slotWachtwoordWijzigen()" title="Kies een nieuw wachtwoord voor je hub-account">🔑 Wachtwoord</span>
+      <span class="hbtn hbtn-muted" id="seizoen-knop" onclick="seizoenOpen()" title="Kleuren en sfeer per seizoen: automatisch of zelf kiezen">🎨 Seizoen</span>
       <span class="hbtn hbtn-muted" onclick="hubUitloggen()" title="Meld je af op dit apparaat">🔓 Uitloggen</span>
     </div>
   </header>
@@ -3599,7 +3636,7 @@ select{ color-scheme:dark; }
     <button class="smart-action-btn" onclick="smartAutoPlaats()" title="AI kijkt wat dit is, kiest een datum (alleen vandaag als je dat ook zegt) en zet het op de goede plek — met herinnering en agenda-knop"
       style="padding:9px 14px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:#E3BE7A;font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">📍 Plaats</button>
     <button class="smart-action-btn" onclick="brainDump()" title="Bewaar als gedachte — sorteer later"
-      style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
+      style="padding:9px 14px;background:var(--accent-soft);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;white-space:nowrap;">💭 Dump</button>
   </div>
   <button onclick="remOpenLijst()" id="rem-btn" class="smart-side-btn" title="Herinneringen"
     style="padding:9px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;color:var(--text-dim);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;font-weight:600;cursor:pointer;box-shadow:var(--shadow-card);">🔔 <span id="rem-count" style="color:#A3BD9B;"></span></button>
@@ -3628,7 +3665,7 @@ select{ color-scheme:dark; }
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div style="font-family:Plus Jakarta Sans,sans-serif;font-weight:800;font-size:1em;color:var(--text);">📥 Brain Dump Inbox</div>
       <div style="display:flex;gap:8px;">
-        <button onclick="dumpSorteer()" id="dump-sort-btn" style="padding:8px 14px;background:var(--accent-soft);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;font-weight:600;cursor:pointer;">✨ AI Sorteer</button>
+        <button onclick="dumpSorteer()" id="dump-sort-btn" style="padding:8px 14px;background:var(--accent-soft);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;font-weight:600;cursor:pointer;">✨ AI Sorteer</button>
         <button onclick="closeDumpInbox()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
       </div>
     </div>
@@ -3645,7 +3682,7 @@ select{ color-scheme:dark; }
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
       <div style="font-family:Plus Jakarta Sans,sans-serif;font-weight:800;font-size:1em;color:var(--text);">📝 Notities</div>
       <div style="display:flex;gap:8px;">
-        <button onclick="notitiesLaad(true)" style="padding:8px 14px;background:var(--accent-soft);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;font-weight:600;cursor:pointer;">↻ Vernieuw</button>
+        <button onclick="notitiesLaad(true)" style="padding:8px 14px;background:var(--accent-soft);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;font-weight:600;cursor:pointer;">↻ Vernieuw</button>
         <button onclick="closeNotities()" style="background:none;border:none;color:var(--muted);font-size:1.2em;cursor:pointer;">✕</button>
       </div>
     </div>
@@ -3797,7 +3834,7 @@ select{ color-scheme:dark; }
         <h2>🔌 Stekkerslim Bouwen</h2><p>Site bouwen, prijscheck &amp; actielijst</p>
         <p class="voorbeeld">→ pagina aanpassen, Site Guardian stap 4 en 5</p>
       </a>
-      <a href="#" class="card agent" onclick="openCouncil(); return false;" style="border-color:rgba(233,164,126,0.35);background:linear-gradient(135deg,rgba(233,164,126,0.07),rgba(255,255,255,0.02));">
+      <a href="#" class="card agent" onclick="openCouncil(); return false;" style="border-color:rgba(var(--acc-rgb),0.35);background:linear-gradient(135deg,rgba(var(--acc-rgb),0.07),rgba(255,255,255,0.02));">
         <div class="dot"></div>
         <h2>🏛️ AI Council</h2><p>Gemini, Grok, Claude &amp; Kimi tegelijk: 1 vraag, 4 antwoorden</p>
         <p class="voorbeeld">→ een beslissing waar je meerdere meningen over wilt, met geschiedenis</p>
@@ -3963,7 +4000,7 @@ select{ color-scheme:dark; }
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
       <button onclick="sspPrevStep()" style="padding:9px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-size:1em;">&#8592;</button>
-      <div id="ssp-step-label" style="flex:1;text-align:center;font-family:Plus Jakarta Sans, sans-serif;font-size:0.7em;color:#E9A47E;line-height:1.4;"></div>
+      <div id="ssp-step-label" style="flex:1;text-align:center;font-family:Plus Jakarta Sans, sans-serif;font-size:0.7em;color:var(--acc);line-height:1.4;"></div>
       <button onclick="sspNextStep()" style="padding:9px 14px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);cursor:pointer;font-size:1em;">&#8594;</button>
     </div>
     <div id="ssp-dots" style="display:flex;gap:6px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;"></div>
@@ -3974,11 +4011,11 @@ select{ color-scheme:dark; }
         <span style="font-size:0.6em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;flex:1;">Prompt — aanpasbaar, kopieer en plak in de AI</span>
         <span id="ssp-charcount" style="font-size:0.62em;font-family:Plus Jakarta Sans, sans-serif;"></span>
       </div>
-      <textarea id="ssp-prompt" style="width:100%;height:200px;background:rgba(255,255,255,0.03);border:1px solid rgba(233,164,126,0.22);border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans, sans-serif;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>
+      <textarea id="ssp-prompt" style="width:100%;height:200px;background:rgba(255,255,255,0.03);border:1px solid rgba(var(--acc-rgb),0.22);border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans, sans-serif;font-size:0.68em;padding:11px;box-sizing:border-box;resize:none;outline:none;line-height:1.55;"></textarea>
     </div>
     <div style="display:flex;gap:8px;margin-bottom:12px;">
       <button onclick="sspCopyPrompt()" style="flex:2;padding:12px;background:rgba(163,189,155,0.14);border:1px solid rgba(163,189,155,0.36);border-radius:10px;color:#A3BD9B;font-family:Plus Jakarta Sans, sans-serif;font-size:0.76em;cursor:pointer;font-weight:700;">&#128203; Kopieer prompt</button>
-      <button id="ssp-ai-btn" onclick="sspOpenAI()" style="flex:2;padding:12px;background:rgba(233,164,126,0.12);border:1px solid rgba(233,164,126,0.32);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans, sans-serif;font-size:0.72em;cursor:pointer;">&#128279; Open AI</button>
+      <button id="ssp-ai-btn" onclick="sspOpenAI()" style="flex:2;padding:12px;background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.32);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans, sans-serif;font-size:0.72em;cursor:pointer;">&#128279; Open AI</button>
     </div>
     </div>
     <div id="ssp-filenote-block" style="display:none;margin-bottom:14px;background:rgba(157,184,168,0.05);border:1px solid rgba(157,184,168,0.22);border-radius:10px;padding:11px;">
@@ -4493,7 +4530,7 @@ function sspRender() {
     };
     dotsEl.innerHTML = steps.map((_,i) => {
       const done=hasOut(i), active=i===sspStepIdx;
-      const col=done?'#A3BD9B':active?'#E9A47E':'rgba(255,255,255,0.15)', sz=active?'10px':'8px';
+      const col=done?'#A3BD9B':active?'var(--acc)':'rgba(255,255,255,0.15)', sz=active?'10px':'8px';
       return '<div style="width:'+sz+';height:'+sz+';border-radius:50%;background:'+col+';cursor:pointer;flex-shrink:0;" onclick="sspGoTo('+i+')" title="Stap '+(i+1)+'"></div>';
     }).join('');
   }
@@ -4506,7 +4543,7 @@ function sspRender() {
       ? s.ais.some(ai => !!localStorage.getItem(sspMultiKey(p,i,ai.key)))
       : !!localStorage.getItem(sspKey(p,i))).length;
     tab.textContent = tabLabels[p] + (doneCount > 0 ? ' \u2713' + doneCount : '');
-    if(active) { tab.style.borderColor='rgba('+c+',0.45)'; tab.style.background='rgba('+c+',0.14)'; tab.style.color=p==='blog'?'#E3BE7A':p==='site'?'#E9A47E':'#9DB8A8'; }
+    if(active) { tab.style.borderColor='rgba('+c+',0.45)'; tab.style.background='rgba('+c+',0.14)'; tab.style.color=p==='blog'?'#E3BE7A':p==='site'?'var(--acc)':'#9DB8A8'; }
     else { tab.style.borderColor='var(--border)'; tab.style.background='rgba(255,255,255,0.04)'; tab.style.color='var(--muted)'; }
   });
   sspRenderOutputContainer(step);
@@ -4524,7 +4561,7 @@ function sspRenderDots() {
   };
   dotsEl.innerHTML = steps.map((_,i) => {
     const done=hasOut(i), active=i===sspStepIdx;
-    const col=done?'#A3BD9B':active?'#E9A47E':'rgba(255,255,255,0.15)', sz=active?'10px':'8px';
+    const col=done?'#A3BD9B':active?'var(--acc)':'rgba(255,255,255,0.15)', sz=active?'10px':'8px';
     return '<div style="width:'+sz+';height:'+sz+';border-radius:50%;background:'+col+';cursor:pointer;flex-shrink:0;" onclick="sspGoTo('+i+')" title="Stap '+(i+1)+'"></div>';
   }).join('');
 }
@@ -4538,19 +4575,19 @@ function sspRenderOutputContainer(step) {
       html += '<div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;">'
         + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'
         + '<span style="font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;color:var(--muted);flex:1;">'+ai.label+'</span>'
-        + '<button onclick="sspOpenAIByIdx('+i+')" style="padding:7px 12px;background:rgba(233,164,126,0.12);border:1px solid rgba(233,164,126,0.32);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;">&#128279; Open</button>'
+        + '<button onclick="sspOpenAIByIdx('+i+')" style="padding:7px 12px;background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.32);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;">&#128279; Open</button>'
         + '<span id="ssp-mbadge-'+i+'" style="font-size:0.65em;color:#A3BD9B;"></span>'
         + '</div>'
         + (ai.prompt ? (
             '<div style="font-size:0.58em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">Prompt \u2014 kopieer naar ' + ai.label + '</div>'
-          + '<textarea id="ssp-mprompt-'+i+'" readonly style="width:100%;height:110px;background:rgba(0,0,0,0.25);border:1px solid rgba(233,164,126,0.22);border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans,sans-serif;font-size:0.64em;padding:9px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;margin-bottom:6px;"></textarea>'
+          + '<textarea id="ssp-mprompt-'+i+'" readonly style="width:100%;height:110px;background:rgba(0,0,0,0.25);border:1px solid rgba(var(--acc-rgb),0.22);border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans,sans-serif;font-size:0.64em;padding:9px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;margin-bottom:6px;"></textarea>'
           + '<button onclick="sspCopyAiPrompt('+i+')" style="width:100%;padding:9px;background:rgba(163,189,155,0.14);border:1px solid rgba(163,189,155,0.36);border-radius:10px;color:#A3BD9B;font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;cursor:pointer;font-weight:700;margin-bottom:9px;">&#128203; Kopieer deze prompt</button>'
           + '<div style="font-size:0.58em;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-bottom:4px;">Antwoord van ' + ai.label + '</div>'
           ) : '')
         + '<textarea id="ssp-mout-'+i+'" oninput="sspAutoSaveMulti('+i+')" placeholder="Plak antwoord van '+ai.label+'..." style="width:100%;height:120px;background:rgba(0,0,0,0.2);border:1px solid rgba(157,184,168,0.2);border-radius:10px;color:var(--text);font-family:Plus Jakarta Sans,sans-serif;font-size:0.67em;padding:9px;box-sizing:border-box;resize:none;outline:none;line-height:1.5;"></textarea>'
         + '<div style="display:flex;gap:6px;margin-top:7px;">'
         + '<button onclick="sspImportBestand('+i+')" style="padding:8px 10px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.28);border-radius:10px;color:#E3BE7A;font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;" title="Antwoord als artifact of bestand gekregen? Download het daar en kies het hier">&#128206;</button>'
-        + (typeof sspStapRaaktPerplexity!=='function'||sspStapRaaktPerplexity(sspPipeline,sspStepIdx,ai.key)?'<button onclick="sspCleanupMulti('+i+')" style="padding:8px 10px;background:rgba(233,164,126,0.1);border:1px solid rgba(233,164,126,0.28);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>':'')
+        + (typeof sspStapRaaktPerplexity!=='function'||sspStapRaaktPerplexity(sspPipeline,sspStepIdx,ai.key)?'<button onclick="sspCleanupMulti('+i+')" style="padding:8px 10px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.28);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>':'')
         + '<button id="ssp-save-btn-'+i+'" onclick="sspSaveMulti('+i+')" style="flex:1;padding:8px;background:rgba(157,184,168,0.1);border:1px solid rgba(157,184,168,0.28);border-radius:10px;color:#9DB8A8;font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;">&#128190; Opslaan</button>'
         + '<button onclick="sspDeleteMulti('+i+')" style="padding:8px 12px;background:rgba(229,128,111,0.06);border:1px solid rgba(229,128,111,0.2);border-radius:10px;color:#E5806F;font-family:Plus Jakarta Sans,sans-serif;font-size:0.68em;cursor:pointer;">&#128465;</button>'
         + '</div></div>';
@@ -4564,8 +4601,8 @@ function sspRenderOutputContainer(step) {
     // ook op de multi-AI stappen (blog 1, 9 en 11).
     html += '<div style="display:flex;gap:8px;margin-top:4px;flex-wrap:wrap;">'
       + SSP_DOSSIER_BTN
-      + '<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>'
-      + '<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(233,164,126,0.1);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>'
+      + '<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>'
+      + '<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>'
       + '</div>';
     c.innerHTML = html;
     step.ais.forEach((ai,i) => {
@@ -4579,9 +4616,9 @@ function sspRenderOutputContainer(step) {
     const curStep=SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
     const _allSteps=SSP_PIPELINES[sspPipeline].steps;
     const _isEdge=(sspStepIdx===0||sspStepIdx===_allSteps.length-1);
-    const clearAllBtn='<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>';
-    const archiveBtn=_isEdge?'<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(233,164,126,0.1);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>':'';
-    const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(233,164,126,0.12);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':'';
+    const clearAllBtn='<button onclick="sspClearAll()" style="flex:1;min-width:90px;padding:11px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Wis alle opgeslagen antwoorden van deze pipeline in een keer — lokaal en in de cloud, met archiefkopie">&#128465; Wis alles</button>';
+    const archiveBtn=_isEdge?'<button onclick="sspOpenArchive()" style="flex:1;min-width:90px;padding:11px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Bekijk gearchiveerde pipeline-runs">&#128193; Archief</button>':'';
+    const downloadBtn=curStep.downloadButton?'<button onclick="sspDownloadHtml()" style="flex:1;min-width:90px;padding:11px;background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;">&#128229; Download .html</button>':'';
     // Technische poort op de stappen die een hele pagina opleveren. Geen AI-call:
     // deze controles zijn objectief, dus doet de hub ze zelf. Zie sspHtmlControles.
     const htmlCheckBtn=curStep.htmlCheck?'<button onclick="sspHtmlCheck()" style="flex:1;min-width:90px;padding:11px;background:rgba(163,189,155,0.12);border:1px solid rgba(163,189,155,0.34);border-radius:10px;color:#A3BD9B;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;font-weight:700;" title="Controleert de HTML zelf op DOCTYPE, nav, footer, CSS, één h1, canonical, og-image, geldig JSON-LD, merchant-schema, sponsored-links en vreemde merknamen. Kost niets.">&#128269; HTML-check</button>':'';
@@ -4592,7 +4629,7 @@ function sspRenderOutputContainer(step) {
       +'<button onclick="sspImportBestand(null)" style="flex:1;min-width:90px;padding:11px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:#E3BE7A;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Gaf de AI het antwoord als artifact of bestand? Download het daar en kies het hier — de inhoud komt in dit veld te staan">&#128206; Bestand</button>'
       // Opschonen alleen tonen waar het ook echt draait (Perplexity-stappen).
       // Een knop die stilletjes niets doet is erger dan geen knop.
-      +(typeof sspStapRaaktPerplexity!=='function'||sspStapRaaktPerplexity(sspPipeline,sspStepIdx)?'<button onclick="sspCleanup()" style="flex:1;min-width:90px;padding:11px;background:rgba(233,164,126,0.1);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:#E9A47E;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>':'')
+      +(typeof sspStapRaaktPerplexity!=='function'||sspStapRaaktPerplexity(sspPipeline,sspStepIdx)?'<button onclick="sspCleanup()" style="flex:1;min-width:90px;padding:11px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--acc);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;" title="Haalt bronstatus/connector-checks en ander meta-gedoe eruit, laat alleen het echte antwoord staan">&#129529; Opschonen</button>':'')
       +'<button id="ssp-save-btn" onclick="sspSave()" style="flex:1;min-width:90px;padding:11px;background:rgba(157,184,168,0.12);border:1px solid rgba(157,184,168,0.32);border-radius:10px;color:#9DB8A8;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;">&#128190; Opslaan</button>'
       +'<button onclick="sspShare()" style="flex:1;min-width:90px;padding:11px;background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:10px;color:var(--muted);font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;">&#8599; Delen</button>'
       +'<button onclick="sspDelete()" style="flex:1;min-width:90px;padding:11px;background:rgba(229,128,111,0.08);border:1px solid rgba(229,128,111,0.22);border-radius:10px;color:#E5806F;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;cursor:pointer;">&#128465; Verwijderen</button>'
@@ -4710,7 +4747,7 @@ function sspOpenAI() {
     return;
   }
   window.open(step.url,'_blank','noopener');
-  sspStatus('\u2713 '+step.aiLabel+' geopend.','#E9A47E');
+  sspStatus('\u2713 '+step.aiLabel+' geopend.','var(--acc)');
 }
 function sspCopyToClipboard(text) {
   const tmp=document.createElement('textarea'); tmp.value=text;
@@ -4905,7 +4942,7 @@ function sspDownloadGenHtml() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href=url; a.download=filename+'.html';
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  sspStatus('\u2713 '+filename+'.html gedownload.','#E9A47E');
+  sspStatus('\u2713 '+filename+'.html gedownload.','var(--acc)');
 }
 function sspCopyGenHtml() {
   const html = localStorage.getItem(sspKey(sspPipeline,sspStepIdx)+'_html') || '';
@@ -4934,7 +4971,7 @@ function sspDownloadHtml() {
   const url=URL.createObjectURL(blob);
   const a=document.createElement('a'); a.href=url; a.download='stekkerslim-blog-final.html';
   document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  sspStatus('\u2713 .html bestand gedownload \u2014 hernoem naar de juiste slug en push naar GitHub.','#E9A47E');
+  sspStatus('\u2713 .html bestand gedownload \u2014 hernoem naar de juiste slug en push naar GitHub.','var(--acc)');
 }
 function sspDownloadCombinedMulti() {
   const step = SSP_PIPELINES[sspPipeline].steps[sspStepIdx];
@@ -5183,7 +5220,7 @@ function openKostenModal() {
     rows.innerHTML = '<span style="opacity:0.5;font-size:0.8em;">Nog geen AI-calls gemeten deze maand.</span>';
   } else {
     rows.innerHTML = keys.map(k => `<div class="kosten-row"><span class="kl">${bronnen[k]}</span><span><span class="kv">${kostenFmt(d[k].euro)}</span><span class="kc">(${d[k].calls}x)</span></span></div>`).join('')
-      + `<div class="kosten-row" style="border-color:rgba(233,164,126,0.3);"><span class="kl"><b>Totaal</b></span><span class="kv"><b>${kostenFmt(kostenTotaal(d))}</b></span></div>`;
+      + `<div class="kosten-row" style="border-color:rgba(var(--acc-rgb),0.3);"><span class="kl"><b>Totaal</b></span><span class="kv"><b>${kostenFmt(kostenTotaal(d))}</b></span></div>`;
   }
   document.getElementById('kosten-modal').classList.add('show');
 }
@@ -5958,10 +5995,10 @@ function hsToonBalk() {
   if (document.getElementById('hs-balk')) return;
   const balk = document.createElement('div');
   balk.id = 'hs-balk';
-  balk.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9998;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 14px;background:rgba(233,164,126,0.1);border-top:1px solid rgba(233,164,126,0.3);backdrop-filter:blur(8px);font-family:Plus Jakarta Sans,sans-serif;font-size:0.74em;color:#E9A47E;';
+  balk.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:9998;display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;padding:10px 14px;background:rgba(var(--acc-rgb),0.1);border-top:1px solid rgba(var(--acc-rgb),0.3);backdrop-filter:blur(8px);font-family:Plus Jakarta Sans,sans-serif;font-size:0.74em;color:var(--acc);';
   balk.innerHTML =
     '<span>🔒 Je persoonlijke gegevens zijn versleuteld opgeslagen en nu nog vergrendeld.</span>' +
-    '<button onclick="hsVraagCode()" style="padding:6px 14px;background:rgba(233,164,126,0.16);border:1px solid rgba(233,164,126,0.4);border-radius:10px;color:#E9A47E;font-family:inherit;font-size:1em;cursor:pointer;font-weight:700;">Code invullen</button>' +
+    '<button onclick="hsVraagCode()" style="padding:6px 14px;background:rgba(var(--acc-rgb),0.16);border:1px solid rgba(var(--acc-rgb),0.4);border-radius:10px;color:var(--acc);font-family:inherit;font-size:1em;cursor:pointer;font-weight:700;">Code invullen</button>' +
     '<button onclick="document.getElementById(\'hs-balk\').remove()" title="Je kunt de hub gewoon blijven gebruiken; de versleutelde onderdelen tonen dan een slotje" style="padding:6px 10px;background:none;border:none;color:rgba(245,238,230,0.5);font-family:inherit;font-size:1em;cursor:pointer;text-decoration:underline;">later</button>';
   document.body.appendChild(balk);
 }
@@ -6044,8 +6081,8 @@ function hsPaneel(titel, html, knopHtml) {
     document.body.appendChild(el);
   }
   el.innerHTML =
-    '<div style="width:100%;max-width:520px;max-height:80vh;overflow:auto;background:#1B1714;border:1px solid rgba(233,164,126,0.2);border-radius:4px;padding:24px;font-family:monospace;color:#F5EEE6;font-size:0.8em;line-height:1.7;">' +
-      '<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:1.3em;color:#E9A47E;margin-bottom:14px;">' + titel + '</div>' +
+    '<div style="width:100%;max-width:520px;max-height:80vh;overflow:auto;background:#1B1714;border:1px solid rgba(var(--acc-rgb),0.2);border-radius:4px;padding:24px;font-family:monospace;color:#F5EEE6;font-size:0.8em;line-height:1.7;">' +
+      '<div style="font-family:Plus Jakarta Sans,sans-serif;font-size:1.3em;color:var(--acc);margin-bottom:14px;">' + titel + '</div>' +
       html +
       (knopHtml ? '<div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">' + knopHtml + '</div>' : '') +
     '</div>';
@@ -6087,7 +6124,7 @@ async function hsMigreer(bevestigd) {
       '</div>' +
       '<div>Draai eerst <b>hub-fix.sql</b> (staat op je bureaublad) in de Supabase SQL Editor. Deel A daarvan voegt precies deze kolommen toe. Daarna kun je hier verder.</div>' +
       '<div style="margin-top:10px;color:rgba(245,238,230,0.5);">Er is niets gewijzigd.</div>',
-      '<button onclick="hsPaneelWeg(false)" style="padding:9px 16px;background:rgba(233,164,126,0.14);border:1px solid rgba(233,164,126,0.35);border-radius:10px;color:#E9A47E;font-family:inherit;cursor:pointer;">Sluiten</button>');
+      '<button onclick="hsPaneelWeg(false)" style="padding:9px 16px;background:rgba(var(--acc-rgb),0.14);border:1px solid rgba(var(--acc-rgb),0.35);border-radius:10px;color:var(--acc);font-family:inherit;cursor:pointer;">Sluiten</button>');
     return;
   }
 
@@ -8576,7 +8613,7 @@ function pbVarsRender() {
   wrap.style.display = 'block';
   list.innerHTML = tags.map(tag => `
     <div style="display:flex;align-items:center;gap:8px;">
-      <span style="font-family:Plus Jakarta Sans, sans-serif;font-size:0.68em;color:#E9A47E;min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{${escHtml(tag)}}}</span>
+      <span style="font-family:Plus Jakarta Sans, sans-serif;font-size:0.68em;color:var(--acc);min-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{${escHtml(tag)}}}</span>
       <input type="text" data-tag="${escHtml(tag)}" value="${escHtml(pbVarsValues[tag]||'')}" oninput="pbVarsValues[this.dataset.tag]=this.value" placeholder="waarde..."
         style="flex:1;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:6px 9px;color:var(--text);font-family:Plus Jakarta Sans,sans-serif;font-size:0.75em;">
     </div>`).join('');
@@ -8613,7 +8650,7 @@ document.querySelectorAll('.pb-pill').forEach(btn => {
     if (p === 'multi') {
       pbMultiMode = !pbMultiMode;
       btn.classList.toggle('active', pbMultiMode);
-      btn.style.background = pbMultiMode ? 'rgba(233,164,126,0.35)' : 'rgba(233,164,126,0.15)';
+      btn.style.background = pbMultiMode ? 'rgba(var(--acc-rgb),0.35)' : 'rgba(var(--acc-rgb),0.15)';
       if (pbMultiMode) {
         // Zet huidige selectie als multi-start
         pbMultiSelected = new Set([pbPlatform === 'multi' ? 'claude' : pbPlatform]);
@@ -8627,7 +8664,7 @@ document.querySelectorAll('.pb-pill').forEach(btn => {
         document.querySelectorAll('.pb-pill').forEach(b => b.classList.remove('active'));
         document.querySelector('.pb-pill[data-platform="claude"]').classList.add('active');
         pbPlatform = 'claude';
-        btn.style.background = 'rgba(233,164,126,0.15)';
+        btn.style.background = 'rgba(var(--acc-rgb),0.15)';
         document.getElementById('pb-multi-wrap').style.display = 'none';
         document.getElementById('pb-output-wrap').style.display = 'none';
       }
@@ -8832,8 +8869,8 @@ Geef ALLEEN dit JSON terug, geen uitleg, geen backticks:
     ];
     const list = document.getElementById('pb-chain-list');
     list.innerHTML = pbChainData.map((s, i) => `
-      <div style="background:rgba(233,164,126,0.05);border:1px solid rgba(233,164,126,0.2);border-radius:10px;padding:12px 14px;">
-        <div style="font-size:0.66em;color:#E9A47E;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;">${escHtml(s.label)}</div>
+      <div style="background:rgba(var(--acc-rgb),0.05);border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:0.66em;color:var(--acc);font-weight:700;letter-spacing:0.06em;text-transform:uppercase;margin-bottom:6px;">${escHtml(s.label)}</div>
         <div style="font-size:0.78em;color:var(--text);line-height:1.6;white-space:pre-wrap;margin-bottom:8px;">${escHtml(s.tekst)}</div>
         <button class="pb-copy" style="width:100%;" onclick="pbChainCopy(${i})">📋 Kopieer stap ${i+1}</button>
       </div>`).join('');
@@ -9236,7 +9273,7 @@ Geef ALLEEN de prompt terug. Geen uitleg, geen intro, geen aanhalingstekens erom
     tab.style.cssText = 'padding:5px 12px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:"Plus Jakarta Sans",monospace;font-size:0.72em;cursor:pointer;transition:all 0.2s;';
     tab.onclick = () => {
       tabsEl.querySelectorAll('button').forEach(b => { b.style.background='transparent'; b.style.color='var(--muted)'; b.style.borderColor='var(--border)'; });
-      tab.style.background = 'rgba(233,164,126,0.15)'; tab.style.color = '#E9A47E'; tab.style.borderColor = 'rgba(233,164,126,0.4)';
+      tab.style.background = 'rgba(var(--acc-rgb),0.15)'; tab.style.color = 'var(--acc)'; tab.style.borderColor = 'rgba(var(--acc-rgb),0.4)';
       contentEl.textContent = pbMultiResults[p] || '';
       pbMultiActive = p;
     };
@@ -9810,7 +9847,7 @@ let pbProjectId = null;
 let pbInterviewTekst = '';
 const PB_PROJ_SEL_KEY = 'pb_laatste_project_v1';
 
-const PB_LABEL_NIEUW  = '💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(233,164,126,0.12);color:#E9A47E;padding:1px 5px;border-radius:10px;">{{tags}}</code> voor herbruikbare stukken';
+const PB_LABEL_NIEUW  = '💡 Jouw idee (hoe ruwer hoe beter) — gebruik <code style="background:rgba(var(--acc-rgb),0.12);color:var(--acc);padding:1px 5px;border-radius:10px;">{{tags}}</code> voor herbruikbare stukken';
 const PB_LABEL_LOPEND = '🎯 Wat moet er nu gebeuren? (de volgende stap, niet het hele project opnieuw)';
 const PB_PLH_NIEUW    = 'bijv: ik wil een routine voor krachtraining maar ik heb ADHD en val snel af... (of met tags: schrijf een e-mail naar {{naam}} over {{onderwerp}})';
 const PB_PLH_LOPEND   = 'bijv: de conclusie is slap en er staan geen interne links in, maak dat af zonder de rest te herschrijven';
@@ -9819,7 +9856,7 @@ function pbSetModus(m) {
   pbModus = m;
   const bN = document.getElementById('pb-modus-nieuw');
   const bL = document.getElementById('pb-modus-lopend');
-  const aan = { nieuw: 'rgba(233,164,126,0.18)|rgba(233,164,126,0.45)|#E9A47E', lopend: 'rgba(157,184,168,0.18)|rgba(157,184,168,0.45)|#9DB8A8' };
+  const aan = { nieuw: 'rgba(var(--acc-rgb),0.18)|rgba(var(--acc-rgb),0.45)|var(--acc)', lopend: 'rgba(157,184,168,0.18)|rgba(157,184,168,0.45)|#9DB8A8' };
   [['nieuw', bN], ['lopend', bL]].forEach(([k, b]) => {
     if (!b) return;
     if (k === m) { const [bg, br, kl] = aan[k].split('|'); b.style.background = bg; b.style.borderColor = br; b.style.color = kl; }
@@ -11247,7 +11284,7 @@ function toolkitSurprise() {
   while (picks.length < 3 && pool.length) picks.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
   const el = document.getElementById('toolkit-answer');
   el.style.display = 'block';
-  el.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:#E9A47E;margin-bottom:10px;text-transform:uppercase;font-family:Plus Jakarta Sans,sans-serif;">🎲 Drie willekeurige</div>
+  el.innerHTML = `<div style="font-size:0.7em;font-weight:700;letter-spacing:0.08em;color:var(--acc);margin-bottom:10px;text-transform:uppercase;font-family:Plus Jakarta Sans,sans-serif;">🎲 Drie willekeurige</div>
     <div style="display:flex;flex-direction:column;gap:4px;">${picks.map(toolkitItemHtml).join('')}</div>`;
 }
 
@@ -12574,7 +12611,7 @@ function dumpRenderList() {
     const foto = d.thumb ? `<img src="${escHtml(d.thumb)}" loading="lazy" onclick="dumpLightbox(${i})" alt="Foto bij deze gedachte" style="width:72px;height:72px;object-fit:cover;border-radius:10px;border:1px solid var(--border);cursor:zoom-in;flex-shrink:0;">` : '';
     const ocr = d.ocr ? `<div style="font-size:0.62em;color:var(--muted);margin-top:4px;"><span style="cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none';">🔍 Tekst in foto</span><div style="display:none;white-space:pre-wrap;margin-top:3px;padding:6px 8px;background:rgba(255,255,255,0.03);border-radius:10px;">${escHtml(d.ocr)}</div></div>` : '';
     const structKey = d.id != null ? d.id : 'i' + i;
-    const structBtn = `<button id="dump-struct-btn-${i}" onclick="dumpStructureer(${i})" style="background:rgba(233,164,126,0.12);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:#E9A47E;font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;" title="Zet deze gedachte om in samenvatting, bullets en actiepunten">🧩 Structuur</button>`;
+    const structBtn = `<button id="dump-struct-btn-${i}" onclick="dumpStructureer(${i})" style="background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--acc);font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;" title="Zet deze gedachte om in samenvatting, bullets en actiepunten">🧩 Structuur</button>`;
     return `
     <div style="background:rgba(255,255,255,0.02);border:1px solid var(--border);border-radius:10px;padding:11px 13px;display:flex;gap:10px;align-items:flex-start;">
       ${foto}
@@ -12853,7 +12890,7 @@ function dumpStructRenderHtml(structKey, i) {
       <button onclick="dumpActieNaarPlanner(${i},${ai})" style="background:rgba(163,189,155,0.12);border:1px solid rgba(163,189,155,0.3);border-radius:10px;color:#A3BD9B;font-size:0.62em;font-weight:600;padding:2px 7px;cursor:pointer;white-space:nowrap;">📅 Planner</button>
     </div>`
   ).join('');
-  return `<div style="margin-top:8px;padding:9px 11px;background:rgba(233,164,126,0.06);border:1px solid rgba(233,164,126,0.2);border-radius:10px;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;color:var(--text-dim);line-height:1.6;">
+  return `<div style="margin-top:8px;padding:9px 11px;background:rgba(var(--acc-rgb),0.06);border:1px solid rgba(var(--acc-rgb),0.2);border-radius:10px;font-family:Plus Jakarta Sans,sans-serif;font-size:0.72em;color:var(--text-dim);line-height:1.6;">
     <div style="font-weight:700;color:var(--text);margin-bottom:4px;">${escHtml(s.samenvatting || '')}</div>
     ${bullets ? `<ul style="margin:0 0 4px 16px;padding:0;">${bullets}</ul>` : ''}
     ${acties}
@@ -13010,7 +13047,7 @@ categorie is exact één van: WEEKPLANNER-TAAK, BLOG-IDEE, STEKKERSLIM-SITE, AI-
     _dumpCache = arr; dumpSaveLocal(arr);
     dumpRenderList();
     resEl.innerHTML = json.snelste_win
-      ? '<div style="background:var(--accent-soft);border:1px solid rgba(233,164,126,0.25);border-radius:10px;padding:12px;">⚡ Snelste win: ' + escHtml(json.snelste_win) + '</div>'
+      ? '<div style="background:var(--accent-soft);border:1px solid rgba(var(--acc-rgb),0.25);border-radius:10px;padding:12px;">⚡ Snelste win: ' + escHtml(json.snelste_win) + '</div>'
       : '';
   } catch(err) {
     resEl.textContent = '⚠ Sorteren mislukt: ' + err.message;
@@ -13446,7 +13483,7 @@ function remToonBanner(r, soort) {
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;">
           <button onclick="remKlaar('${r.id}')" style="padding:6px 11px;background:rgba(163,189,155,0.12);border:1px solid rgba(163,189,155,0.32);border-radius:10px;color:#A3BD9B;font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">✓ Gezien</button>
           <button onclick="remSnooze('${r.id}',10)" style="padding:6px 11px;background:rgba(227,190,122,0.1);border:1px solid rgba(227,190,122,0.3);border-radius:10px;color:#E3BE7A;font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">😴 10 min</button>
-          <button onclick="openWeekplanner()" style="padding:6px 11px;background:rgba(233,164,126,0.1);border:1px solid rgba(233,164,126,0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">🗓️ Planner</button>
+          <button onclick="openWeekplanner()" style="padding:6px 11px;background:rgba(var(--acc-rgb),0.1);border:1px solid rgba(var(--acc-rgb),0.3);border-radius:10px;color:var(--accent);font-family:Plus Jakarta Sans,sans-serif;font-size:0.7em;font-weight:600;cursor:pointer;">🗓️ Planner</button>
         </div>
       </div>
       <button onclick="document.getElementById('rem-banner').classList.remove('show')" style="background:none;border:none;color:var(--muted);font-size:1.05em;cursor:pointer;line-height:1;">✕</button>
@@ -14114,7 +14151,7 @@ sspRenderHubProgress();
 <button id="scrolltop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Naar boven">↑</button>
 
 <!-- iOS "Zet op beginscherm" banner — Apple heeft geen install-prompt API, dus dit moet handmatig -->
-<div id="ios-install-banner" style="display:none;position:fixed;left:14px;right:14px;bottom:14px;z-index:2500;background:#26201B;border:1px solid rgba(233,164,126,0.35);border-radius:10px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,0.5);font-family:Plus Jakarta Sans,sans-serif;">
+<div id="ios-install-banner" style="display:none;position:fixed;left:14px;right:14px;bottom:14px;z-index:2500;background:#26201B;border:1px solid rgba(var(--acc-rgb),0.35);border-radius:10px;padding:12px 14px;box-shadow:0 12px 40px rgba(0,0,0,0.5);font-family:Plus Jakarta Sans,sans-serif;">
   <div style="display:flex;align-items:center;gap:10px;">
     <span style="font-size:1.3em;">📲</span>
     <div style="flex:1;font-size:0.76em;color:var(--text-dim);line-height:1.5;">
@@ -14486,14 +14523,14 @@ if (document.readyState !== 'loading') hubArtToepassen();
   display: none; align-items: center; justify-content: center;
   background: #1B1714;
   background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(233,164,126,0.08), transparent);
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(var(--acc-rgb),0.08), transparent);
   padding: 24px;
 }
 #slot-overlay.toon { display: flex; }
 #slot-box {
   width: 100%; max-width: 420px;
   background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(233,164,126,0.14);
+  border: 1px solid rgba(var(--acc-rgb),0.14);
   border-radius: 10px;
   padding: 30px 28px;
   font-family: Plus Jakarta Sans, sans-serif;
@@ -14501,7 +14538,7 @@ if (document.readyState !== 'loading') hubArtToepassen();
 }
 #slot-box h2 {
   font-family: Plus Jakarta Sans, sans-serif; font-size: 1.3em;
-  color: #E9A47E; margin-bottom: 6px; letter-spacing: 0.02em;
+  color: var(--acc); margin-bottom: 6px; letter-spacing: 0.02em;
 }
 #slot-box .slot-sub {
   font-size: 0.74em; color: rgba(245,238,230,0.42);
@@ -14514,19 +14551,19 @@ if (document.readyState !== 'loading') hubArtToepassen();
 #slot-box input {
   width: 100%; padding: 12px 13px; margin-bottom: 16px;
   background: rgba(0,0,0,0.35); color: #F5EEE6;
-  border: 1px solid rgba(233,164,126,0.12); border-radius: 10px;
+  border: 1px solid rgba(var(--acc-rgb),0.12); border-radius: 10px;
   /* 16px voorkomt dat iOS Safari bij het focussen inzoomt */
   font-family: Plus Jakarta Sans, sans-serif; font-size: 16px;
 }
-#slot-box input:focus { outline: none; border-color: rgba(233,164,126,0.45); }
+#slot-box input:focus { outline: none; border-color: rgba(var(--acc-rgb),0.45); }
 #slot-knop {
   width: 100%; padding: 13px; cursor: pointer;
-  background: rgba(233,164,126,0.12); color: #E9A47E;
-  border: 1px solid rgba(233,164,126,0.35); border-radius: 10px;
+  background: rgba(var(--acc-rgb),0.12); color: var(--acc);
+  border: 1px solid rgba(var(--acc-rgb),0.35); border-radius: 10px;
   font-family: Plus Jakarta Sans, sans-serif; font-size: 0.85em; font-weight: 700;
   letter-spacing: 0.05em;
 }
-#slot-knop:hover { background: rgba(233,164,126,0.2); }
+#slot-knop:hover { background: rgba(var(--acc-rgb),0.2); }
 #slot-knop:disabled { opacity: 0.5; cursor: wait; }
 .slot-hulp {
   margin-top: 18px; padding-top: 16px;
@@ -14882,6 +14919,143 @@ if (document.readyState !== 'loading') hubArtToepassen();
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', () => tint());
   else tint();
   setTimeout(tint, 1500); // knoppen die later in de balk worden gezet (links, Account-menu)
+})();
+</script>
+
+<div id="seizoen-ov" onclick="if(event.target===this)seizoenSluit()">
+  <div id="seizoen-paneel" role="dialog" aria-label="Seizoen kiezen">
+    <h3>🎨 Seizoen</h3>
+    <p>De hub wisselt vanzelf mee met de tijd van het jaar. Je kunt ook zelf een seizoen vastzetten.</p>
+    <div id="seizoen-lijst"></div>
+    <div class="seizoen-rij">
+      <label><input type="checkbox" id="seizoen-effect" onchange="seizoenEffectWissel(this.checked)"> Sneeuw, blaadjes enz. bij openen</label>
+      <button onclick="seizoenSluit()">Klaar</button>
+    </div>
+  </div>
+</div>
+<script>
+/* SEIZOENEN — kiest op datum een thema, zet data-seizoen op <html> (kleuren in de CSS-laag
+   SEIZOENEN), een teken achter de titel, een aftelling naar de feestdag en een kort effect
+   bij het openen. Keuze en effect-aan/uit staan per apparaat in localStorage. */
+(function(){
+  const KEY = 'hub_seizoen_v1';
+  const SEIZOENEN = {
+    sinterklaas: { naam:'Sinterklaas', teken:'🎁', kleur:'#E2685C', effect:'pepernoten', feest:[12,5],  aftel:n => n===0 ? 'Pakjesavond!' : `nog ${n} ${n===1?'nachtje':'nachtjes'} tot pakjesavond` },
+    kerst:       { naam:'Kerst',       teken:'🎄', kleur:'#86B98F', effect:'sneeuw',     feest:[12,25], aftel:n => n===0 ? 'Fijne kerst!' : `nog ${n} ${n===1?'dag':'dagen'} tot kerst` },
+    oudjaar:     { naam:'Oud & nieuw', teken:'🎆', kleur:'#E8C170', effect:'glitter',    feest:[12,31], aftel:n => n===0 ? 'Oudejaarsavond!' : `nog ${n} ${n===1?'dag':'dagen'} tot oudjaar` },
+    winter:      { naam:'Winter',      teken:'❄️', kleur:'#9FC6DE', effect:'sneeuw' },
+    lente:       { naam:'Lente',       teken:'🌷', kleur:'#E9A6BA', effect:'bloesem' },
+    koningsdag:  { naam:'Koningsdag',  teken:'👑', kleur:'#F0913A', effect:'oranje',     feest:[4,27],  aftel:n => n===0 ? 'Fijne Koningsdag!' : `nog ${n} ${n===1?'dag':'dagen'} tot Koningsdag` },
+    zomer:       { naam:'Zomer',       teken:'☀️', kleur:'#F0BC5E', effect:null },
+    herfst:      { naam:'Herfst',      teken:'🍂', kleur:'#E39A66', effect:'blaadjes' }
+  };
+  // Welk seizoen hoort bij een datum (Nederlandse kalender).
+  function seizoenVoor(d){
+    const m = d.getMonth()+1, dag = d.getDate(), md = m*100+dag;
+    if (md >= 1114 && md <= 1205) return 'sinterklaas';   // intocht tot pakjesavond
+    if (md >= 1206 && md <= 1226) return 'kerst';
+    if (md >= 1227 || md <= 101)  return 'oudjaar';
+    if (md >= 426 && md <= 427)   return 'koningsdag';
+    if (m <= 2)  return 'winter';
+    if (m <= 5)  return 'lente';
+    if (m <= 8)  return 'zomer';
+    return 'herfst';                                       // sep tot 13 nov
+  }
+  function lees(){ try { return Object.assign({ keuze:'auto', effect:true }, JSON.parse(localStorage.getItem(KEY)||'{}')); } catch(e){ return { keuze:'auto', effect:true }; } }
+  function bewaar(st){ try { localStorage.setItem(KEY, JSON.stringify(st)); } catch(e){} }
+  function actief(st){ return st.keuze !== 'auto' && SEIZOENEN[st.keuze] ? st.keuze : seizoenVoor(new Date()); }
+  function dagenTot(maand, dag){
+    const nu = new Date(); nu.setHours(0,0,0,0);
+    let doel = new Date(nu.getFullYear(), maand-1, dag);
+    if (doel < nu) doel = new Date(nu.getFullYear()+1, maand-1, dag);
+    return Math.round((doel - nu) / 864e5);
+  }
+
+  function pasToe(){
+    const st = lees(), key = actief(st), z = SEIZOENEN[key];
+    document.documentElement.setAttribute('data-seizoen', key);
+    const h1 = document.querySelector('header h1');
+    if (h1){
+      let t = h1.querySelector('.seizoen-teken');
+      if (!t){ t = document.createElement('span'); t.className = 'seizoen-teken'; t.setAttribute('aria-hidden','true'); h1.appendChild(t); }
+      t.textContent = z.teken; t.title = z.naam;
+    }
+    const klok = document.getElementById('clock');
+    let chip = document.getElementById('seizoen-chip');
+    if (z.feest && klok){
+      if (!chip){ chip = document.createElement('span'); chip.id = 'seizoen-chip'; chip.className = 'seizoen-chip'; klok.insertAdjacentElement('afterend', chip); }
+      chip.textContent = z.teken + ' ' + z.aftel(dagenTot(z.feest[0], z.feest[1]));
+    } else if (chip) chip.remove();
+    return { key, z, st };
+  }
+
+  // ── kort effect bij openen: ±10 seconden, daarna vervaagt het en stopt het helemaal ──
+  function effect(soort){
+    if (!soort || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const oud = document.getElementById('seizoen-doek'); if (oud) oud.remove();
+    const doek = document.createElement('canvas'); doek.id = 'seizoen-doek'; doek.setAttribute('aria-hidden','true');
+    document.body.appendChild(doek);
+    const ctx = doek.getContext('2d'), dpr = Math.min(window.devicePixelRatio||1, 2);
+    function maat(){ doek.width = innerWidth*dpr; doek.height = innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); }
+    maat(); addEventListener('resize', maat);
+    const KLEUREN = { sneeuw:['#F5EEE6','#DDE8F0'], blaadjes:['#E39A66','#C8784A','#E3BE7A','#A0643A'], bloesem:['#F2C4D0','#E9A6BA','#FBE3EA'],
+      pepernoten:['#8A5A35','#A0693F','#6E4529'], glitter:['#E8C170','#F5EEE6','#E2685C'], oranje:['#F0913A','#F5EEE6','#E8732A'] };
+    const kl = KLEUREN[soort] || KLEUREN.sneeuw, N = soort === 'glitter' || soort === 'oranje' ? 40 : 26;
+    const d = Array.from({length:N}, () => ({ x:Math.random()*innerWidth, y:-20-Math.random()*innerHeight*.8,
+      r: soort==='sneeuw' ? 1.5+Math.random()*2.5 : soort==='pepernoten' ? 3+Math.random()*2.5 : 4+Math.random()*4,
+      vy: .5+Math.random()*1.1, vx: -.3+Math.random()*.6, hoek: Math.random()*6.28, draai: -.04+Math.random()*.08,
+      kleur: kl[Math.floor(Math.random()*kl.length)], fase: Math.random()*6.28 }));
+    const start = performance.now(), DUUR = 9000;
+    function teken(dt){
+      ctx.clearRect(0,0,innerWidth,innerHeight);
+      for (const p of d){
+        p.fase += .02; p.y += p.vy*dt; p.x += (p.vx + Math.sin(p.fase)*.4)*dt; p.hoek += p.draai*dt;
+        ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.hoek); ctx.fillStyle = p.kleur; ctx.globalAlpha = .75;
+        if (soort==='sneeuw' || soort==='pepernoten'){ ctx.beginPath(); ctx.arc(0,0,p.r,0,6.28); ctx.fill(); }
+        else if (soort==='blaadjes' || soort==='bloesem'){ ctx.beginPath(); ctx.ellipse(0,0,p.r,p.r*.55,0,0,6.28); ctx.fill(); }
+        else { ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2); }
+        ctx.restore();
+      }
+    }
+    let vorige = performance.now();
+    function stap(nu){
+      if (!doek.isConnected) return;
+      const dt = Math.min((nu-vorige)/16.7, 3); vorige = nu;
+      if (!document.hidden) teken(dt);
+      if (nu - start > DUUR && !doek.dataset.weg){ doek.dataset.weg = '1'; doek.style.opacity = '0'; setTimeout(() => { doek.remove(); removeEventListener('resize', maat); }, 1300); return; }
+      requestAnimationFrame(stap);
+    }
+    requestAnimationFrame(stap);
+  }
+
+  // ── kiezer (Account → 🎨 Seizoen) ──
+  function tekenLijst(){
+    const st = lees(), nu = seizoenVoor(new Date());
+    const regels = [['auto', `Automatisch (nu: ${SEIZOENEN[nu].teken} ${SEIZOENEN[nu].naam})`, SEIZOENEN[nu].kleur]]
+      .concat(Object.entries(SEIZOENEN).map(([k,z]) => [k, `${z.teken} ${z.naam}`, z.kleur]));
+    document.getElementById('seizoen-lijst').innerHTML = regels.map(([k,label,kleur]) =>
+      `<button class="seizoen-keuze${st.keuze===k?' actief':''}" onclick="seizoenKies('${k}')"><span class="stip" style="background:${kleur}"></span>${escHtml(label)}</button>`).join('');
+    document.getElementById('seizoen-effect').checked = !!st.effect;
+  }
+  window.seizoenOpen = function(){ tekenLijst(); document.getElementById('seizoen-ov').classList.add('open'); };
+  window.seizoenSluit = function(){ document.getElementById('seizoen-ov').classList.remove('open'); };
+  window.seizoenKies = function(k){
+    const st = lees(); st.keuze = k; bewaar(st);
+    const r = pasToe(); tekenLijst();
+    if (st.effect) effect(r.z.effect);
+  };
+  window.seizoenEffectWissel = function(aan){ const st = lees(); st.effect = !!aan; bewaar(st); };
+  window.seizoenVoor = seizoenVoor;   // voor testen
+
+  const r = pasToe();
+  // Effect alleen bij de eerste keer openen per dag: elke keer opnieuw wordt snel irritant.
+  const vandaag = new Date().toDateString();
+  let gezien = null; try { gezien = localStorage.getItem('hub_seizoen_effect_dag'); } catch(e){}
+  if (r.st.effect && gezien !== vandaag){
+    try { localStorage.setItem('hub_seizoen_effect_dag', vandaag); } catch(e){}
+    setTimeout(() => effect(r.z.effect), 600);
+  }
+  setInterval(pasToe, 60*60*1000);   // om middernacht vanzelf door naar het volgende seizoen/de volgende dag
 })();
 </script>
 </body>
