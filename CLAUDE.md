@@ -721,6 +721,18 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 23 november 2026 — PandaPrint in de hub
+
+Nieuwe sectie **Hobby** (`#sec-hobby`, boven StekkerSlim) met een kaart naar `pandaprint.html`:
+de webweergave van de PandaPrint-app (links en ontwerpen, STL downloaden). Dat is een losse pagina
+naast `index.html`, zoals Remy hem aanleverde, met alleen een favicon, het icoon in de kop en een
+link "← AI Hub" erbij. Het icoon `pandaprint-icon.svg` (3D-printer met een panda op het bed) staat
+in de kaart als `<img>` in een handgemaakte `.card-head`, want de emoji-chip-code pakt alleen emoji.
+De pagina gebruikt de publieke sleutel van project B; het echte slot is de huishoudcode, die
+staat niet in de repo. Beide bestanden in de precache, cachenaam `ai-hub-v9`.
+Getest in Chromium met nagebootste data: kaart en icoon op 1280 en 390px, links en ontwerpen
+renderen, terug-link werkt, geen paginafouten. **Niet getest:** met een echte huishoudcode.
+
 ### 20 november 2026 (deel 3) — Seizoenen in alle apps
 
 Dezelfde seizoenen, datums, tekens en zes-kleurenpaletten staan nu op vier plekken. **Wijzig je er

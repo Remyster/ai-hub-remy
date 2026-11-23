@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PandaPrint web</title>
+<link rel="icon" href="pandaprint-icon.svg"><link rel="apple-touch-icon" href="pandaprint-icon.svg"><meta name="theme-color" content="#151a23">
+<style>
+:root{--achter:#151a23;--vlak:#1d222c;--vlak2:#262c37;--tekst:#f3eee7;--zacht:#9ba1ac;--oranje:#d98c55;--bruin:#2b1d14;--bamboe:#86c98a;--roze:#e8909a}
+*{box-sizing:border-box}body{margin:0;background:var(--achter);color:var(--tekst);font:16px/1.45 system-ui,Segoe UI,sans-serif}
+main{max-width:900px;margin:0 auto;padding:16px}h1{margin:.2em 0 .1em;font-size:1.6em}
+.zacht{color:var(--zacht);font-size:.9em}
+select{font:inherit;border-radius:12px;border:1px solid var(--vlak2);padding:10px 14px;background:var(--vlak);color:var(--tekst)}
+input,button{font:inherit;border-radius:12px;border:1px solid var(--vlak2);padding:10px 14px;background:var(--vlak);color:var(--tekst)}
+button{cursor:pointer;background:var(--oranje);color:#26160b;border:0;font-weight:600}button.stil{background:var(--vlak2);color:var(--tekst)}
+.rij{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.rij input{flex:1;min-width:180px}
+.tabs button{background:var(--vlak);color:var(--tekst)}.tabs button.aan{background:var(--oranje);color:#26160b}
+.bakjes button{background:var(--vlak);color:var(--zacht);border:1px solid var(--vlak2)}.bakjes button.aan{background:var(--bruin);color:var(--oranje);border-color:#4f3321}
+.status{color:var(--oranje);font-weight:600;margin-top:4px}.opm{background:var(--vlak2);border-radius:12px;padding:8px 12px;margin-top:6px}
+.kaart{background:var(--vlak);border-radius:18px;padding:14px 16px;margin:12px 0}.kaart h3{margin:0 0 4px}
+.kaart a{color:var(--oranje)}.chip{display:inline-block;background:var(--vlak2);border-radius:20px;padding:2px 10px;margin:2px 4px 2px 0;font-size:.85em}
+.ok{color:var(--bamboe)}.fout{color:var(--roze)}img{max-width:100%;border-radius:12px;margin-top:8px}
+details{margin-top:8px}ol,ul{padding-left:20px}
+.terug{color:var(--zacht);text-decoration:none;font-size:.9em}.terug:hover{color:var(--oranje)}
+h1{display:flex;align-items:center;gap:10px}h1 img{width:44px;height:44px;margin:0;border-radius:10px}
+</style></head><body><main>
+<a class="terug" href="./">← AI Hub</a>
+<h1><img src="pandaprint-icon.svg" alt="">PandaPrint web</h1>
+<div class="zacht">Je links en ontwerpen van de app, op je computer. Alleen kijken: status, cijfer en opmerking pas je aan in de app.</div>
+<div id="inlog" class="kaart">
+  <b>Huishoudcode</b> <span class="zacht">(in de app: Meer → Instellingen → Samen delen)</span>
+  <div class="rij"><input id="code" placeholder="PANDA-XXXX-XXXX-XXXX" autocomplete="off"><button id="ga">Laat zien</button></div>
+  <div id="melding" class="zacht"></div>
+</div>
+<div id="app" hidden>
+  <div class="rij tabs"><button id="t-link" class="aan">🔗 Links</button><button id="t-proj">🧩 Ontwerpen</button>
+    <select id="cat"><option value="">Alle categorieën</option></select><input id="zoek" placeholder="Zoeken…"><button class="stil" id="ververs">Ververs</button><button class="stil" id="uit">Andere code</button></div>
+  <div class="rij bakjes" id="bakjes"><button data-b="te_doen" class="aan">📌 Te printen</button><button data-b="geprint">🖨️ Geprint</button><button data-b="weg">🗑️ Weggelegd</button><button data-b="">Alle</button></div>
+  <div id="lijst"></div>
+</div>
+<script>
+const BASIS="https://mdslvdrsggpksqrbtwci.supabase.co/rest/v1/";
+const SLEUTEL="sb_publishable_up1OFNJ06uqTvpzLo9YNkQ_2u6IvSXj"; // publieke sleutel; de huishoudcode is het echte slot
+let code="",tab="link",bakje="te_doen",data={link:[],project:[]};
+// Zelfde indeling als de app (v0.64): "" nog printen, "opnieuw" nog een keer → Te printen; "geprint"; "weg" = weggelegd.
+const bakjeVan=x=>x.ps==="geprint"?"geprint":x.ps==="weg"?"weg":"te_doen";
+const STATUS={geprint:"🖨️ Geprint",opnieuw:"🔁 Nog een keer printen",weg:"🗑️ Weggelegd"};
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+async function api(pad){const r=await fetch(BASIS+pad,{headers:{apikey:SLEUTEL,"x-huishouden":code,Accept:"application/json"}});
+  if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
+// Bestanden staan sinds app-versie 0.43 in Supabase Storage (map = huishoudcode); oudere nog in de tabel.
+async function bestand(pad){
+  try{const p=[code,...pad.split("/")].map(encodeURIComponent).join("/");
+    const r=await fetch("https://mdslvdrsggpksqrbtwci.supabase.co/storage/v1/object/authenticated/pandaprint/"+p,{headers:{apikey:SLEUTEL,"x-huishouden":code}});
+    if(r.ok)return new Uint8Array(await r.arrayBuffer());}catch(e){}
+  const a=await api("pandaprint_bestanden?select=inhoud&pad=eq."+encodeURIComponent(pad));
+  if(!a.length)return null;const b=atob(a[0].inhoud),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+async function laad(){
+  $("melding").textContent="Ophalen…";
+  try{
+    const l=await api("pandaprint_items?select=id,data,verwijderd,bijgewerkt&soort=eq.link&order=bijgewerkt.desc&limit=500");
+    const p=await api("pandaprint_items?select=id,verwijderd,bijgewerkt,titel:data->>titel,gram:data->>gram,minuten:data->>minuten,filament:data->>filament,samenvatting:data->>samenvatting,heeftModel:data->>heeftModel,geprint:data->>geprint,ben:data->benodigdheden,stappen:data->stappenplan,instell:data->>printinstellingen&soort=eq.project&order=bijgewerkt.desc&limit=500");
+    data.link=l.filter(x=>!x.verwijderd);data.project=p.filter(x=>!x.verwijderd&&x.heeftModel==="true");
+    $("melding").textContent="";$("inlog").hidden=true;$("app").hidden=false;try{localStorage.setItem("pp_code",code)}catch(e){}
+    toon();
+  }catch(e){$("melding").innerHTML='<span class="fout">Lukt niet ('+esc(e.message)+'). Klopt de code en heb je internet?</span>';$("inlog").hidden=false;$("app").hidden=true;}
+}
+function naamUitUrl(u){try{const p=new URL(u).pathname.split("/").filter(Boolean).reverse();
+  for(const seg of p){const t=decodeURIComponent(seg).replace(/^\d+-/,"").replace(/[-_+]+/g," ").trim();if(t&&!/^\d+$/.test(t)&&!/^(model|models|en|nl|3d-model|thing)$/i.test(t))return t.charAt(0).toUpperCase()+t.slice(1);}}catch(e){}return "";}
+function details(d){let o={};try{o=JSON.parse(d||"{}")}catch(e){}return o;}
+function toon(){
+  $("t-link").className=tab=="link"?"aan":"";$("t-proj").className=tab=="project"?"aan":"";
+  const q=$("zoek").value.toLowerCase(),L=$("lijst");L.innerHTML="";
+  if(tab=="link"){
+    const sel=$("cat"),cats=[...new Set(data.link.map(x=>x.data.cat).filter(Boolean))].sort(),huidig=sel.value;
+    sel.innerHTML='<option value="">Alle categorieën</option>'+cats.map(c=>`<option ${c===huidig?"selected":""}>${esc(c)}</option>`).join("");
+    sel.style.display=tab=="link"?"":"none";
+    $("bakjes").style.display="";
+    const alle=data.link.map(x=>({id:x.id,...x.data})),tel={te_doen:0,geprint:0,weg:0};alle.forEach(x=>tel[bakjeVan(x)]++);
+    document.querySelectorAll("#bakjes button").forEach(b=>{const k=b.dataset.b;b.className=k===bakje?"aan":"";
+      b.textContent={te_doen:"📌 Te printen",geprint:"🖨️ Geprint",weg:"🗑️ Weggelegd","":"Alle"}[k]+" "+(k?tel[k]:alle.length);});
+    const r=alle.filter(x=>(!bakje||bakjeVan(x)===bakje)&&(x.titel+x.url+x.samenvatting+(x.op||"")).toLowerCase().includes(q)&&(!sel.value||x.cat===sel.value))
+      .sort((a,b)=>(b.ps==="opnieuw")-(a.ps==="opnieuw"));   // "nog een keer" bovenaan
+    if(!r.length)L.innerHTML='<div class="kaart zacht">'+(data.link.length?"Niks in dit bakje.":"Nog geen links. Deel ze in de app via Delen → PandaPrint.")+'</div>';
+    r.forEach(x=>{const d=details(x.details),dom=(x.url||"").replace(/^https?:\/\/(www\.)?/,"").split("/")[0],slug=naamUitUrl(x.url);
+      const c=document.createElement("div");c.className="kaart";
+      c.innerHTML=`${x.titel?`<h3>${esc(x.titel)}</h3>`:""}<div class="zacht">${x.cat?`<span class="chip">${esc(x.cat)}</span> `:""}${esc(dom)}${x.status==="nieuw"?" · nog niet gelezen door de AI":""}</div>${(STATUS[x.ps]||x.cf>0)?`<div class="status">${[STATUS[x.ps],x.cf>0?"⭐ "+esc(x.cf)+"/10":""].filter(Boolean).join(" · ")}</div>`:""}${x.op?`<div class="opm">💬 ${esc(x.op)}</div>`:""}${x.url?`<div class="zacht" style="word-break:break-all"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a></div>`:""}<p>${esc(x.samenvatting||"")}</p>`+
+        ["afmetingen","filament_advies","steun","licentie"].filter(k=>d[k]).map(k=>`<span class="chip">${esc(k.replace("_advies",""))}: ${esc(d[k])}</span>`).join("")+
+        `<div class="rij">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener"><button>Open link</button></a>`:""}<button class="stil" data-foto="${esc(x.id)}">Toon screenshot</button></div><div class="plek"></div>`;
+      c.querySelector("[data-foto]").onclick=async e=>{const b=e.target,u=await bestand("link/"+x.id+".jpg");
+        if(!u){b.remove();return}c.querySelector(".plek").innerHTML='<img src="'+URL.createObjectURL(new Blob([u],{type:"image/jpeg"}))+'">';b.remove();};
+      L.appendChild(c);
+      new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){o.disconnect();c.querySelector("[data-foto]")?.click();}}).observe(c);});
+  }else{
+    $("bakjes").style.display="none";
+    const r=data.project.filter(x=>(x.titel+x.samenvatting).toLowerCase().includes(q));
+    if(!r.length)L.innerHTML='<div class="kaart zacht">Nog geen klare ontwerpen.</div>';
+    r.forEach(x=>{const c=document.createElement("div");c.className="kaart";
+      const ben=(x.ben||[]).map(b=>`<li>${esc(b)}</li>`).join(""),st=(x.stappen||[]).map(b=>`<li>${esc(b)}</li>`).join("");
+      c.innerHTML=`<h3>${esc(x.titel)} ${x.geprint==="true"?'<span class="ok">🖨️ geprint</span>':""}</h3>
+        <span class="chip">${esc(Math.round(+x.gram||0))} g</span><span class="chip">${esc(x.minuten)} min</span><span class="chip">${esc(x.filament)}</span>
+        <p>${esc(x.samenvatting||"")}</p>
+        <div class="rij"><button data-stl>⬇ STL downloaden</button><button class="stil" data-img>Toon aanzicht</button></div><div class="plek zacht"></div>
+        ${x.instell?`<details><summary>Printinstellingen</summary><p>${esc(x.instell)}</p></details>`:""}
+        ${ben?`<details><summary>Benodigdheden</summary><ul>${ben}</ul></details>`:""}${st?`<details><summary>Stappenplan</summary><ol>${st}</ol></details>`:""}
+        <details><summary>Hoe in Bambu Studio?</summary><ol><li>Open Bambu Studio op je pc.</li><li>Sleep het gedownloade .stl-bestand in het venster.</li>
+        <li>Kies bij Filament het juiste materiaal/AMS-slot.</li><li>Staan er meerdere losse onderdelen in het bestand en wil je verschillende kleuren? Rechtsklik → Split → To objects.</li><li>Slice plate → Print (of Send naar de printer).</li></ol></details>`;
+      c.querySelector("[data-stl]").onclick=async e=>{const b=e.target;b.textContent="Ophalen…";
+        try{const u=await bestand("project/"+x.id+"/model.stl");if(!u){b.textContent="Geen model gevonden";return}
+          const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([u],{type:"model/stl"}));a.download=(x.titel||"model").replace(/[^\w\-]+/g,"_")+".stl";a.click();b.textContent="⬇ Nog een keer";}
+        catch(err){b.textContent="Mislukt: "+err.message}};
+      c.querySelector("[data-img]").onclick=async e=>{const b=e.target,u=await bestand("project/"+x.id+"/aanzicht.jpg");
+        if(!u){b.textContent="Geen plaatje";return}c.querySelector(".plek").innerHTML='<img src="'+URL.createObjectURL(new Blob([u],{type:"image/jpeg"}))+'">';b.remove();};
+      L.appendChild(c);});
+  }
+}
+$("ga").onclick=()=>{code=$("code").value.trim().toUpperCase();if(code.length<12){$("melding").textContent="Vul de hele code in.";return}laad();};
+$("t-link").onclick=()=>{tab="link";toon()};$("t-proj").onclick=()=>{tab="project";toon()};
+document.querySelectorAll("#bakjes button").forEach(b=>b.onclick=()=>{bakje=b.dataset.b;toon();});
+$("zoek").oninput=toon;$("cat").onchange=toon;$("ververs").onclick=laad;
+$("uit").onclick=()=>{try{localStorage.removeItem("pp_code")}catch(e){}$("app").hidden=true;$("inlog").hidden=false;};
+try{const c=localStorage.getItem("pp_code");if(c){$("code").value=c;code=c;laad();}}catch(e){}
+</script></main></body></html>

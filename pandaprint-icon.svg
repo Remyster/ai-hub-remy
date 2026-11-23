@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="PandaPrint">
+  <title>PandaPrint</title>
+  <!-- printerframe -->
+  <rect x="5" y="4" width="54" height="56" rx="9" fill="#1d222c"/>
+  <rect x="9" y="8" width="46" height="48" rx="6" fill="#262c37"/>
+  <!-- gantry + spuitkop -->
+  <rect x="9" y="12" width="46" height="4" rx="2" fill="#9ba1ac"/>
+  <rect x="25" y="10" width="14" height="9" rx="2.5" fill="#d98c55"/>
+  <path d="M30 19h4l-2 4z" fill="#d98c55"/>
+  <!-- filamentdraadje -->
+  <path d="M32 23v3" stroke="#d98c55" stroke-width="1.6" stroke-linecap="round"/>
+  <!-- printbed -->
+  <rect x="11" y="50" width="42" height="4" rx="2" fill="#9ba1ac"/>
+  <!-- panda -->
+  <circle cx="20.5" cy="31" r="5" fill="#151a23"/>
+  <circle cx="43.5" cy="31" r="5" fill="#151a23"/>
+  <ellipse cx="32" cy="39" rx="13.5" ry="11.5" fill="#f3eee7"/>
+  <ellipse cx="26.5" cy="37.5" rx="3.6" ry="4.4" fill="#151a23" transform="rotate(-25 26.5 37.5)"/>
+  <ellipse cx="37.5" cy="37.5" rx="3.6" ry="4.4" fill="#151a23" transform="rotate(25 37.5 37.5)"/>
+  <circle cx="27" cy="37" r="1.2" fill="#f3eee7"/>
+  <circle cx="37" cy="37" r="1.2" fill="#f3eee7"/>
+  <ellipse cx="32" cy="43" rx="2.4" ry="1.7" fill="#151a23"/>
+  <path d="M29.8 45.6q2.2 1.6 4.4 0" stroke="#151a23" stroke-width="1.1" fill="none" stroke-linecap="round"/>
+  <!-- printlagen onderaan de panda -->
+  <path d="M19.5 46.5h25M18.8 48.5h26.4" stroke="#d98c55" stroke-width="1" opacity=".55"/>
+</svg>
