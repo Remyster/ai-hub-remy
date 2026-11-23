@@ -13,7 +13,10 @@ button{cursor:pointer;background:var(--oranje);color:#26160b;border:0;font-weigh
 .rij{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}.rij input{flex:1;min-width:180px}
 .tabs button{background:var(--vlak);color:var(--tekst)}.tabs button.aan{background:var(--oranje);color:#26160b}
 .bakjes button{background:var(--vlak);color:var(--zacht);border:1px solid var(--vlak2)}.bakjes button.aan{background:var(--bruin);color:var(--oranje);border-color:#4f3321}
-.status{color:var(--oranje);font-weight:600;margin-top:4px}.opm{background:var(--vlak2);border-radius:12px;padding:8px 12px;margin-top:6px}
+.status{color:var(--oranje);font-weight:600;margin-top:4px}
+.bewerk{background:var(--bruin);border:1px solid #4f3321;border-radius:14px;padding:12px;margin-top:10px}
+.keuzes button,.cijfers button{background:var(--vlak2);color:var(--tekst);padding:8px 12px}.keuzes button.aan,.cijfers button.aan{background:var(--oranje);color:#26160b}
+.cijfers button{min-width:40px}textarea{font:inherit;width:100%;min-height:60px;border-radius:12px;border:1px solid var(--vlak2);padding:10px;background:var(--vlak);color:var(--tekst)}.opm{background:var(--vlak2);border-radius:12px;padding:8px 12px;margin-top:6px}
 .kaart{background:var(--vlak);border-radius:18px;padding:14px 16px;margin:12px 0}.kaart h3{margin:0 0 4px}
 .kaart a{color:var(--oranje)}.chip{display:inline-block;background:var(--vlak2);border-radius:20px;padding:2px 10px;margin:2px 4px 2px 0;font-size:.85em}
 .ok{color:var(--bamboe)}.fout{color:var(--roze)}img{max-width:100%;border-radius:12px;margin-top:8px}
@@ -23,7 +26,7 @@ h1{display:flex;align-items:center;gap:10px}h1 img{width:44px;height:44px;margin
 </style></head><body><main>
 <a class="terug" href="./">← AI Hub</a>
 <h1><img src="pandaprint-icon.svg" alt="">PandaPrint web</h1>
-<div class="zacht">Je links en ontwerpen van de app, op je computer. Alleen kijken: status, cijfer en opmerking pas je aan in de app.</div>
+<div class="zacht">Je links en ontwerpen van de app, op je computer. Bij een link: ⭐ Geprint? om status, cijfer en opmerking te zetten. De app neemt het vanzelf over.</div>
 <div id="inlog" class="kaart">
   <b>Huishoudcode</b> <span class="zacht">(in de app: Meer → Instellingen → Samen delen)</span>
   <div class="rij"><input id="code" placeholder="PANDA-XXXX-XXXX-XXXX" autocomplete="off"><button id="ga">Laat zien</button></div>
@@ -47,6 +50,17 @@ const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&g
 async function api(pad){const r=await fetch(BASIS+pad,{headers:{apikey:SLEUTEL,"x-huishouden":code,Accept:"application/json"}});
   if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}
 // Bestanden staan sinds app-versie 0.43 in Supabase Storage (map = huishoudcode); oudere nog in de tabel.
+// Opslaan vanaf de pc (23 nov): zelfde rij als de app schrijft. "door" begint met "pc", dus de telefoons
+// zien het als een wijziging van een ander en nemen het bij de volgende ronde over (binnen ±1 minuut).
+async function bewaarLink(id,velden){
+  const oud=data.link.find(x=>x.id===id);if(!oud)throw new Error("link niet gevonden");
+  const nieuw={...oud.data,...velden};
+  const r=await fetch(BASIS+"pandaprint_items?on_conflict=huishouden,soort,id",{method:"POST",
+    headers:{apikey:SLEUTEL,"x-huishouden":code,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates,return=minimal"},
+    body:JSON.stringify([{huishouden:code,soort:"link",id,data:nieuw,verwijderd:false,door:"pc|website"}])});
+  if(!r.ok)throw new Error("HTTP "+r.status+" "+(await r.text()).slice(0,120));
+  oud.data=nieuw;
+}
 async function bestand(pad){
   try{const p=[code,...pad.split("/")].map(encodeURIComponent).join("/");
     const r=await fetch("https://mdslvdrsggpksqrbtwci.supabase.co/storage/v1/object/authenticated/pandaprint/"+p,{headers:{apikey:SLEUTEL,"x-huishouden":code}});
@@ -84,7 +98,21 @@ function toon(){
       const c=document.createElement("div");c.className="kaart";
       c.innerHTML=`${x.titel?`<h3>${esc(x.titel)}</h3>`:""}<div class="zacht">${x.cat?`<span class="chip">${esc(x.cat)}</span> `:""}${esc(dom)}${x.status==="nieuw"?" · nog niet gelezen door de AI":""}</div>${(STATUS[x.ps]||x.cf>0)?`<div class="status">${[STATUS[x.ps],x.cf>0?"⭐ "+esc(x.cf)+"/10":""].filter(Boolean).join(" · ")}</div>`:""}${x.op?`<div class="opm">💬 ${esc(x.op)}</div>`:""}${x.url?`<div class="zacht" style="word-break:break-all"><a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.url)}</a></div>`:""}<p>${esc(x.samenvatting||"")}</p>`+
         ["afmetingen","filament_advies","steun","licentie"].filter(k=>d[k]).map(k=>`<span class="chip">${esc(k.replace("_advies",""))}: ${esc(d[k])}</span>`).join("")+
-        `<div class="rij">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener"><button>Open link</button></a>`:""}<button class="stil" data-foto="${esc(x.id)}">Toon screenshot</button></div><div class="plek"></div>`;
+        `<div class="rij">${x.url?`<a href="${esc(x.url)}" target="_blank" rel="noopener"><button>Open link</button></a>`:""}<button class="stil" data-bewerk>${x.ps||x.cf>0?"✏️ Aanpassen":"⭐ Geprint?"}</button><button class="stil" data-foto="${esc(x.id)}">Toon screenshot</button></div><div class="bew"></div><div class="plek"></div>`;
+      c.querySelector("[data-bewerk]").onclick=()=>{const plek=c.querySelector(".bew");if(plek.innerHTML){plek.innerHTML="";return}
+        let ps=x.ps||"",cf=+x.cf||0;
+        plek.innerHTML=`<div class="bewerk"><b>Hoe staat het ermee?</b><div class="rij keuzes">${[["","📌 Nog printen"],["geprint","🖨️ Geprint"],["opnieuw","🔁 Nog een keer"],["weg","🗑️ Wegleggen"]].map(([k,n])=>`<button data-ps="${k}" class="${k===ps?"aan":""}">${n}</button>`).join("")}</div>
+          <b>Cijfer</b> <span class="zacht">(nog eens klikken = weg)</span><div class="rij cijfers">${[1,2,3,4,5,6,7,8,9,10].map(n=>`<button data-cf="${n}" class="${n===cf?"aan":""}">${n}</button>`).join("")}</div>
+          <textarea placeholder="Opmerking, bijv. paste niet, volgende keer 110%">${esc(x.op||"")}</textarea>
+          <div class="rij"><button data-opslaan>Bewaar</button><button class="stil" data-annuleer>Annuleer</button><span class="zacht" data-uitslag></span></div></div>`;
+        plek.querySelectorAll("[data-ps]").forEach(b=>b.onclick=()=>{ps=b.dataset.ps;plek.querySelectorAll("[data-ps]").forEach(o=>o.className=o===b?"aan":"");});
+        plek.querySelectorAll("[data-cf]").forEach(b=>b.onclick=()=>{const n=+b.dataset.cf;cf=cf===n?0:n;plek.querySelectorAll("[data-cf]").forEach(o=>o.className=+o.dataset.cf===cf?"aan":"");});
+        plek.querySelector("[data-annuleer]").onclick=()=>{plek.innerHTML=""};
+        plek.querySelector("[data-opslaan]").onclick=async e=>{const u=plek.querySelector("[data-uitslag]");e.target.disabled=true;u.textContent="Opslaan…";
+          try{await bewaarLink(x.id,{ps,cf,op:plek.querySelector("textarea").value.trim()});
+            u.innerHTML='<span class="ok">✅ Bewaard. De app neemt het binnen een minuut over.</span>';setTimeout(toon,1200);}
+          catch(err){u.innerHTML='<span class="fout">Lukt niet: '+esc(err.message)+'</span>';e.target.disabled=false;}};
+      };
       c.querySelector("[data-foto]").onclick=async e=>{const b=e.target,u=await bestand("link/"+x.id+".jpg");
         if(!u){b.remove();return}c.querySelector(".plek").innerHTML='<img src="'+URL.createObjectURL(new Blob([u],{type:"image/jpeg"}))+'">';b.remove();};
       L.appendChild(c);
