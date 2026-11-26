@@ -2005,7 +2005,8 @@ header h1 {
     return '';
   }
 
-  window.hubToast = function(msg, soort, ms){
+  // actie (optioneel): { label, fn } — een knop in de melding, bijv. "↩ Ongedaan".
+  window.hubToast = function(msg, soort, ms, actie){
     msg = String(msg == null ? '' : msg);
     soort = soort || soortVan(msg);
     ms = ms || Math.min(9000, Math.max(3000, msg.length * 55));
@@ -2019,6 +2020,14 @@ header h1 {
     txt.className = 'hub-toast-txt';
     txt.textContent = msg;
     t.appendChild(txt);
+    if (actie && typeof actie.fn === 'function') {
+      const knop = document.createElement('button');
+      knop.type = 'button';
+      knop.className = 'hub-toast-actie';
+      knop.textContent = actie.label || 'Ongedaan';
+      knop.addEventListener('click', e => { e.stopPropagation(); close(); actie.fn(); });
+      t.appendChild(knop);
+    }
 
     const bar = document.createElement('div');
     bar.className = 'hub-toast-bar';
@@ -2730,6 +2739,15 @@ body:has(#hl-overlay[style*="flex"]) #pb-fab{ display:none; }
 .nt-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px;}
 .nt-tags span{font-size:0.62em;padding:1px 7px;border-radius:999px;background:rgba(227,190,122,0.12);color:#E3BE7A;}
 .nt-kopieer{background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9em;padding:2px;}
+.nt-kaart{flex-wrap:wrap;}
+.nt-acties{display:flex;flex-direction:row;gap:2px;flex-shrink:0;align-self:flex-start;}
+.nt-acties .nt-kopieer{min-width:34px;min-height:34px;border-radius:8px;}
+.nt-acties .nt-kopieer:hover{background:rgba(255,255,255,0.06);}
+.nt-acties .nt-weg:hover{color:#E5806F;}
+.nt-verplaats{flex-basis:100%;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px;padding-top:8px;border-top:1px dashed var(--border);font-size:0.74em;color:var(--muted);}
+.nt-verplaats select{flex:1;min-width:150px;min-height:36px;background:var(--bg-card,#26201B);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:4px 8px;font:inherit;font-size:1.05em;}
+.nt-verplaats button{min-height:36px;padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text);cursor:pointer;font:inherit;}
+.hub-toast-actie{margin-top:8px;padding:6px 12px;border-radius:8px;border:1px solid currentColor;background:rgba(255,255,255,0.08);color:inherit;font:inherit;font-weight:700;cursor:pointer;}
 .nt-leeg{text-align:center;padding:24px;color:var(--muted);font-size:0.78em;}
 .nt-naar{background:rgba(var(--acc-rgb),0.12);border:1px solid rgba(var(--acc-rgb),0.35);border-radius:8px;color:var(--acc);font-size:0.64em;font-weight:600;padding:4px 8px;cursor:pointer;white-space:nowrap;}
 
@@ -12772,7 +12790,17 @@ function notitiesRender() {
         ${ntTagsHtml(ntTags(n))}
         <div class="nt-meta">${mapChip}<span>${datum}</span></div>
       </div>
-      <button class="nt-kopieer" onclick="notitieKopieer(${i})" title="Kopieer de tekst">📋</button>
+      <div class="nt-acties">
+        <button class="nt-kopieer" onclick="notitieKopieer(${i})" title="Kopieer de tekst" aria-label="Kopieer de tekst">📋</button>
+        <button class="nt-kopieer" onclick="notitieMapKies(${i})" title="Naar een andere map" aria-label="Naar een andere map">🗂</button>
+        <button class="nt-kopieer nt-weg" onclick="notitieVerwijder(${i})" title="Verwijderen" aria-label="Verwijderen">🗑</button>
+      </div>
+      ${_ntMapOpen === n.id ? `<div class="nt-verplaats">Verplaats naar
+        <select onchange="notitieVerplaats(${i}, this.value)" aria-label="Kies een map">
+          <option value="">Geen map</option>
+          ${_ntMappen.map(m => `<option value="${escHtml(m.id)}" ${m.id === n.map_id ? 'selected' : ''}>${escHtml(m.naam)}</option>`).join('')}
+        </select>
+        <button onclick="notitieMapKies(${i})">Klaar</button></div>` : ''}
     </div>`;
   }).join('');
 }
@@ -12846,6 +12874,89 @@ async function dumpNaarNotitie(i) {
   }
   await dumpDelete(i);
   hubToast('📝 Verplaatst naar Notities');
+  notitiesLaad(false);
+}
+
+// ── Verplaatsen en verwijderen (26 nov 2026) ──
+// Dezelfde tabel als NotitieHub, dus wat je hier doet zie je daar ook. Elke schrijfactie
+// controleert dat er echt een rij veranderd is: een RLS-weigering geeft namelijk geen
+// fout maar een lege lijst terug.
+let _ntMapOpen = null;
+function notitieMapKies(i) {
+  const n = _notities[i];
+  if (!n) return;
+  _ntMapOpen = _ntMapOpen === n.id ? null : n.id;
+  notitiesRender();
+}
+
+async function notitieVerplaats(i, mapId) {
+  const n = _notities[i];
+  if (!n) return;
+  const oud = n.map_id || null, nieuw = mapId || null;
+  if (oud === nieuw) return;
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/notities?id=eq.${encodeURIComponent(n.id)}&select=id`, {
+      method: 'PATCH', headers: { ...SB_POST_HDR, 'Prefer': 'return=representation' },
+      body: JSON.stringify({ map_id: nieuw })
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text()).slice(0, 120));
+    const rijen = await r.json();
+    if (!Array.isArray(rijen) || rijen.length !== 1) throw new Error('niets gewijzigd (ben je ingelogd?)');
+  } catch (e) {
+    hubToast('❌ Verplaatsen mislukt: ' + e.message);
+    return;
+  }
+  n.map_id = nieuw;
+  _ntMapOpen = null;
+  notitiesRender();
+  const naar = ntMap(nieuw);
+  hubToast(`✅ Verplaatst naar ${naar ? naar.naam : 'Geen map'}`, 'ok', 6000,
+    { label: '↩ Ongedaan', fn: () => { const j = _notities.indexOf(n); if (j >= 0) notitieVerplaats(j, oud); } });
+}
+
+// Er is geen prullenbak in de tabel: verwijderen is meteen weg, ook in NotitieHub.
+// Daarom eerst de hele rij ophalen, zodat Ongedaan hem met hetzelfde id kan terugzetten.
+// Foto's in de opslag worden niet aangeraakt. tsv is een berekende kolom en gaat niet mee.
+async function notitieVerwijder(i) {
+  const n = _notities[i];
+  if (!n) return;
+  const naam = n.titel || (n.tekst || '').slice(0, 40) || 'deze notitie';
+  if (!confirm(`"${naam}" verwijderen?\nHij verdwijnt ook uit NotitieHub. Je kunt het daarna nog even ongedaan maken.`)) return;
+  let kopie;
+  try {
+    const rg = await fetch(`${SB_URL}/rest/v1/notities?id=eq.${encodeURIComponent(n.id)}&select=*`, { headers: SB_GET_HDR });
+    if (!rg.ok) throw new Error('HTTP ' + rg.status);
+    kopie = (await rg.json())[0];
+    if (!kopie) throw new Error('notitie niet gevonden (ben je ingelogd?)');
+    delete kopie.tsv;
+    const r = await fetch(`${SB_URL}/rest/v1/notities?id=eq.${encodeURIComponent(n.id)}&select=id`, {
+      method: 'DELETE', headers: { ...SB_POST_HDR, 'Prefer': 'return=representation' }
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text()).slice(0, 120));
+    const rijen = await r.json();
+    if (!Array.isArray(rijen) || rijen.length !== 1) throw new Error('niets verwijderd (ben je ingelogd?)');
+  } catch (e) {
+    hubToast('❌ Verwijderen mislukt: ' + e.message);
+    return;
+  }
+  _notities = _notities.filter(x => x.id !== n.id);
+  const teller = document.getElementById('notities-count');
+  if (teller) teller.textContent = _notities.length;
+  notitiesRender();
+  hubToast('🗑 Notitie verwijderd', 'warn', 9000, { label: '↩ Ongedaan', fn: () => notitieTerugzetten(kopie) });
+}
+
+async function notitieTerugzetten(kopie) {
+  try {
+    const r = await fetch(`${SB_URL}/rest/v1/notities`, {
+      method: 'POST', headers: { ...SB_POST_HDR, 'Prefer': 'return=minimal' }, body: JSON.stringify(kopie)
+    });
+    if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + (await r.text()).slice(0, 120));
+  } catch (e) {
+    hubToast('❌ Terugzetten mislukt: ' + e.message);
+    return;
+  }
+  hubToast('✅ Notitie staat er weer');
   notitiesLaad(false);
 }
 

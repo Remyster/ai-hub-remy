@@ -721,6 +721,24 @@ overschreven door de versleutelde waarde. Vandaar de knop.
 
 ## Changelog
 
+### 26 november 2026 — Notities verplaatsen en verwijderen
+
+Het Notities-venster had per notitie alleen 📋 kopiëren. Nu ook **🗂** (naar een andere
+map of "Geen map", PATCH op `map_id`) en **🗑** (verwijderen, met bevestiging). Beide met
+**↩ Ongedaan** in de melding: `hubToast(msg, soort, ms, {label, fn})` kan sinds vandaag
+een actieknop tonen.
+- **Er is geen prullenbak in `notities`**: verwijderen is meteen weg, ook in NotitieHub.
+  Daarom haalt `notitieVerwijder()` eerst de hele rij op (`select=*`) en zet
+  `notitieTerugzetten()` hem met hetzelfde id terug. `tsv` is een berekende kolom en gaat
+  niet mee. Foto's in de opslag worden niet aangeraakt, dus die komen ook terug.
+- Elke schrijfactie stuurt `Prefer: return=representation` en eist precies één rij terug,
+  want een RLS-weigering geeft geen fout maar een lege lijst.
+
+Getest in Chromium met nagebootste database: knoppen op elke kaart, verplaatsen en
+ongedaan, verwijderen en terugzetten (zelfde id, map en foto-pad, zonder `tsv`), een lege
+reactie telt als mislukt, geen paginafouten, alle 12 script-blokken parsen.
+**Niet getest:** tegen de echte database.
+
 ### 23 november 2026 — PandaPrint in de hub
 
 Nieuwe sectie **Hobby** (`#sec-hobby`, boven StekkerSlim) met een kaart naar `pandaprint.html`:
